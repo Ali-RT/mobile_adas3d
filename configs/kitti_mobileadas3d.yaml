@@ -1,0 +1,60 @@
+project_name: mobile_adas3d
+
+dataset:
+  name: kitti
+
+  # local_mac is for parser/debugging with fake or tiny sample.
+  # colab_drive is for real training with KITTI stored in Google Drive.
+  active_profile: local_mac
+
+  profiles:
+    local_mac:
+      root_dir: ./datasets/kitti
+
+    colab_drive:
+      root_dir: /content/drive/MyDrive/datasets/kitti
+
+  image_dir: training/image_2
+  label_dir: training/label_2
+  calib_dir: training/calib
+
+  classes:
+    - Car
+    - Pedestrian
+    - Cyclist
+
+model:
+  name: MobileADAS3D
+  backbone: mobilenet_v3_small
+  pretrained: true
+  input_height: 384
+  input_width: 1280
+  output_stride: 32
+  use_sparse_depth: false
+
+targets:
+  class_mean_dims:
+    Car: [1.50, 1.60, 3.90] # h, w, l
+    Pedestrian: [1.70, 0.60, 0.80] # h, w, l
+    Cyclist: [1.70, 0.60, 1.76] # h, w, l
+
+training:
+  batch_size: 2
+  num_workers: 0
+  learning_rate: 0.0001
+  weight_decay: 0.0001
+  epochs: 5
+  device: auto # cuda
+  log_interval: 1
+  save_interval: 1
+
+outputs:
+  output_dir: ./outputs
+  checkpoint_dir: ./outputs/checkpoints
+  log_dir: ./outputs/logs
+  visualization_dir: ./outputs/visualizations
+# outputs:
+#   output_dir: /content/drive/MyDrive/mobile_adas3d_outputs
+#   checkpoint_dir: /content/drive/MyDrive/mobile_adas3d_outputs/checkpoints
+#   log_dir: /content/drive/MyDrive/mobile_adas3d_outputs/logs
+#   visualization_dir: /content/drive/MyDrive/mobile_adas3d_outputs/visualizations
