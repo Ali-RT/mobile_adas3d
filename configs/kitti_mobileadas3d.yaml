@@ -77,6 +77,15 @@ logging:
   save_jsonl: true
   save_csv: true
 
+loss:
+  cls_weight: 1.0
+  box2d_weight: 2.0
+  depth_weight: 1.0
+  depth_uncertainty_weight: 0.0
+  dim_weight: 1.0
+  yaw_weight: 1.0
+  offset_weight: 0.5
+  
 outputs:
   # Local default.
   output_dir: ./outputs

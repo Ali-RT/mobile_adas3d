@@ -287,9 +287,18 @@ def main() -> None:
     model = build_model(config)
     model.to(device)
 
+    loss_cfg = config.get("loss", {})
+
     criterion = MobileADAS3DLoss(
         input_height=config["model"]["input_height"],
         input_width=config["model"]["input_width"],
+        cls_weight=loss_cfg.get("cls_weight", 1.0),
+        box2d_weight=loss_cfg.get("box2d_weight", 2.0),
+        depth_weight=loss_cfg.get("depth_weight", 1.0),
+        depth_uncertainty_weight=loss_cfg.get("depth_uncertainty_weight", 0.0),
+        dim_weight=loss_cfg.get("dim_weight", 1.0),
+        yaw_weight=loss_cfg.get("yaw_weight", 1.0),
+        offset_weight=loss_cfg.get("offset_weight", 0.5),
     )
 
     optimizer = torch.optim.AdamW(
