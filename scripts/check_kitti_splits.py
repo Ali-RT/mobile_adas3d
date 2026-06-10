@@ -2,7 +2,7 @@ from pathlib import Path
 
 from data.splits import create_train_val_test_split, write_split_file
 from tools.cli import parse_config_arg
-from tools.config import load_config
+from tools.config import load_runtime_config_from_args
 
 
 def discover_valid_sample_ids(root_dir: Path, image_dir: str, label_dir: str, calib_dir: str) -> list[str]:
@@ -29,7 +29,7 @@ def discover_valid_sample_ids(root_dir: Path, image_dir: str, label_dir: str, ca
 
 def main() -> None:
     args = parse_config_arg("Create KITTI train/val/test splits")
-    config = load_config(args.config)
+    config = load_runtime_config_from_args(args)
 
     dataset_cfg = config["dataset"]
     split_cfg = dataset_cfg["splits"]

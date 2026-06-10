@@ -12,11 +12,11 @@ from data.split_resolver import get_split_file
 from losses.mobile_adas3d_loss import MobileADAS3DLoss
 from models.build import build_model
 from tools.cli import parse_config_profile_args
-from tools.config import load_config, apply_runtime_overrides
 from tools.device import get_device
 from tools.metrics_logger import MetricsLogger
 from tools.run_manager import create_run_dir
 from tools.seed import seed_everything
+from tools.config import load_runtime_config_from_args, apply_runtime_overrides
 
 
 def move_targets_to_device(
@@ -237,12 +237,7 @@ def is_better_metric(
 
 def main() -> None:
     args = parse_config_profile_args("Train MobileADAS3D")
-    config = load_config(args.config)
-    config = apply_runtime_overrides(
-        config=config,
-        profile=args.profile,
-        run_name=args.run_name,
-    )
+    config = load_runtime_config_from_args(args)
 
     training_cfg = config["training"]
     validation_cfg = config["validation"]

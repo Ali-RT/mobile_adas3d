@@ -6,7 +6,7 @@ from data.target_builder import build_targets_for_sample
 from losses.mobile_adas3d_loss import MobileADAS3DLoss
 from models.build import build_model
 from tools.cli import parse_config_arg
-from tools.config import load_config
+from tools.config import load_runtime_config_from_args
 
 
 def add_batch_dim_to_targets(targets):
@@ -18,7 +18,7 @@ def add_batch_dim_to_targets(targets):
 
 def main() -> None:
     args = parse_config_arg("Check one-batch MobileADAS3D loss")
-    config = load_config(args.config)
+    config = load_runtime_config_from_args(args)
 
     dataset_cfg = config["dataset"]
     model_cfg = config["model"]

@@ -4,7 +4,7 @@ import subprocess
 
 from data.splits import create_train_val_test_split, write_split_file
 from tools.cli import parse_config_arg
-from tools.config import load_config
+from tools.config import load_runtime_config_from_args
 
 
 def run_cmd(cmd: list[str]) -> None:
@@ -83,7 +83,7 @@ def discover_valid_sample_ids(root_dir: Path) -> list[str]:
 
 def main() -> None:
     args = parse_config_arg("Prepare KITTI local copy and train/val/test splits")
-    config = load_config(args.config)
+    config = load_runtime_config_from_args(args)
 
     if "colab_data" not in config:
         raise KeyError("Missing colab_data section in config.")

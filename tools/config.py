@@ -24,20 +24,17 @@ def apply_runtime_overrides(
     profile: Optional[str] = None,
     run_name: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """
-    Apply command-line overrides without editing the YAML file.
-    """
     if profile is not None:
         if profile not in config["dataset"]["profiles"]:
             raise ValueError(
                 f"Unknown profile '{profile}'. "
                 f"Available profiles: {list(config['dataset']['profiles'].keys())}"
             )
+
         config["dataset"]["active_profile"] = profile
 
     active_profile = config["dataset"]["active_profile"]
 
-    # Resolve output_dir from profile_output_dirs.
     outputs_cfg = config["outputs"]
     profile_output_dirs = outputs_cfg.get("profile_output_dirs", {})
 
@@ -54,5 +51,17 @@ def apply_runtime_overrides(
 
     if run_name is not None:
         config["logging"]["run_name"] = run_name
+
+    return config
+
+
+def load_runtime_config_from_args(args) -> Dict[str, Any]:
+    config = load_config(args.config)
+
+    config = apply_runtime_overrides(
+        config=config,
+        profile=args.profile,
+        run_name=getattr(args, "run_name", None),
+    )
 
     return config

@@ -3,12 +3,12 @@ from pathlib import Path
 from data.kitti_dataset import KITTIDataset
 from data.visualization import draw_2d_boxes
 from tools.cli import parse_config_arg
-from tools.config import load_config
+from tools.config import load_runtime_config_from_args
 
 
 def main() -> None:
     args = parse_config_arg("Check KITTI dataset")
-    config = load_config(args.config)
+    config = load_runtime_config_from_args(args)
 
     dataset_cfg = config["dataset"]
     active_profile = dataset_cfg["active_profile"]

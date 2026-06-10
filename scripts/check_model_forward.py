@@ -4,13 +4,12 @@ import torch.nn.functional as F
 from data.kitti_dataset import KITTIDataset
 from models.build import build_model
 from tools.cli import parse_config_arg
-from tools.config import load_config
-
+from tools.config import load_runtime_config_from_args
 
 def main() -> None:
     args = parse_config_arg("Check MobileADAS3D model forward pass")
-    config = load_config(args.config)
-
+    config = load_runtime_config_from_args(args)
+    
     dataset_cfg = config["dataset"]
     active_profile = dataset_cfg["active_profile"]
     root_dir = dataset_cfg["profiles"][active_profile]["root_dir"]

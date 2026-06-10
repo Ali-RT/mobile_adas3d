@@ -1,10 +1,10 @@
 import torch
 
-from tools.config import load_config
+from tools.config import load_runtime_config_from_args
 
 
 def main() -> None:
-    config = load_config("configs/kitti_mobileadas3d.yaml")
+    config = load_runtime_config_from_args("configs/kitti_mobileadas3d.yaml")
 
     print("Config loaded successfully.")
     print(f"Project: {config['project_name']}")

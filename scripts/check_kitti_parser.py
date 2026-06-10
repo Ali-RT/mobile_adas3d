@@ -2,12 +2,12 @@ from pprint import pprint
 
 from data.kitti_parser import load_kitti_sample
 from tools.cli import parse_config_arg
-from tools.config import load_config
+from tools.config import load_runtime_config_from_args
 
 
 def main() -> None:
     args = parse_config_arg("Check KITTI parser")
-    config = load_config(args.config)
+    config = load_runtime_config_from_args(args)
 
     dataset_cfg = config["dataset"]
     active_profile = dataset_cfg["active_profile"]
