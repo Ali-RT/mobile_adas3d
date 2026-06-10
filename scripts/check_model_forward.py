@@ -3,11 +3,13 @@ import torch.nn.functional as F
 
 from data.kitti_dataset import KITTIDataset
 from models.build import build_model
+from tools.cli import parse_config_arg
 from tools.config import load_config
 
 
 def main() -> None:
-    config = load_config("configs/kitti_mobileadas3d.yaml")
+    args = parse_config_arg("Check MobileADAS3D model forward pass")
+    config = load_config(args.config)
 
     dataset_cfg = config["dataset"]
     active_profile = dataset_cfg["active_profile"]
@@ -41,6 +43,8 @@ def main() -> None:
         outputs = model(image)
 
     print("Model forward pass successful.")
+    print(f"Using config: {args.config}")
+    print(f"Active profile: {active_profile}")
     print(f"Input image shape: {tuple(image.shape)}")
 
     total_params = sum(p.numel() for p in model.parameters())

@@ -31,6 +31,7 @@ class KITTIDataset(Dataset):
         label_dir: str = "training/label_2",
         calib_dir: str = "training/calib",
         sample_ids: Optional[List[str]] = None,
+        split_file: Optional[str] = None,
     ) -> None:
         self.root_dir = Path(root_dir)
         self.classes = classes
@@ -40,17 +41,47 @@ class KITTIDataset(Dataset):
         self.label_dir = self.root_dir / label_dir
         self.calib_dir = self.root_dir / calib_dir
 
-        if sample_ids is None:
-            self.sample_ids = self._discover_sample_ids()
-        else:
-            self.sample_ids = sample_ids
+        if sample_ids is not None and split_file is not None:
+            raise ValueError("Use either sample_ids or split_file, not both.")
 
+        if split_file is not None:
+            from data.splits import read_split_file
+            self.sample_ids = read_split_file(split_file)
+        elif sample_ids is not None:
+            self.sample_ids = sample_ids
+        else:
+            self.sample_ids = self._discover_sample_ids()
+
+        self._validate_sample_files()
+        
         if len(self.sample_ids) == 0:
             raise ValueError(
                 f"No KITTI samples found in {self.image_dir}. "
                 "Expected files like 000000.png"
             )
 
+    def _validate_sample_files(self) -> None:
+        missing = []
+
+        for sample_id in self.sample_ids[:20]:
+            image_path = self.image_dir / f"{sample_id}.png"
+            label_path = self.label_dir / f"{sample_id}.txt"
+            calib_path = self.calib_dir / f"{sample_id}.txt"
+
+            if not image_path.exists():
+                missing.append(str(image_path))
+
+            if not label_path.exists():
+                missing.append(str(label_path))
+
+            if not calib_path.exists():
+                missing.append(str(calib_path))
+
+        if missing:
+            raise FileNotFoundError(
+                "Some sample files are missing. First missing files:\n"
+                + "\n".join(missing[:20])
+            )
     def _discover_sample_ids(self) -> List[str]:
         image_paths = sorted(self.image_dir.glob("*.png"))
         sample_ids = [p.stem for p in image_paths]

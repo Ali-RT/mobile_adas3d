@@ -2,11 +2,13 @@ from pathlib import Path
 
 from data.kitti_dataset import KITTIDataset
 from data.visualization import draw_2d_boxes
+from tools.cli import parse_config_arg
 from tools.config import load_config
 
 
 def main() -> None:
-    config = load_config("configs/kitti_mobileadas3d.yaml")
+    args = parse_config_arg("Check KITTI dataset")
+    config = load_config(args.config)
 
     dataset_cfg = config["dataset"]
     active_profile = dataset_cfg["active_profile"]
@@ -21,6 +23,7 @@ def main() -> None:
     )
 
     print("KITTI Dataset loaded successfully.")
+    print(f"Using config: {args.config}")
     print(f"Active profile: {active_profile}")
     print(f"Root dir: {root_dir}")
     print(f"Number of samples: {len(dataset)}")

@@ -1,18 +1,19 @@
 from pprint import pprint
 
 from data.kitti_parser import load_kitti_sample
+from tools.cli import parse_config_arg
 from tools.config import load_config
 
 
 def main() -> None:
-    config = load_config("configs/kitti_mobileadas3d.yaml")
+    args = parse_config_arg("Check KITTI parser")
+    config = load_config(args.config)
 
     dataset_cfg = config["dataset"]
     active_profile = dataset_cfg["active_profile"]
     root_dir = dataset_cfg["profiles"][active_profile]["root_dir"]
-    classes = config["dataset"]["classes"]
-    
-    # Change this if you test another sample.
+    classes = dataset_cfg["classes"]
+
     sample_id = "000000"
 
     sample = load_kitti_sample(
@@ -22,6 +23,8 @@ def main() -> None:
     )
 
     print("Loaded KITTI sample successfully.")
+    print(f"Using config: {args.config}")
+    print(f"Active profile: {active_profile}")
     print(f"Sample ID: {sample['sample_id']}")
     print(f"Image path: {sample['image_path']}")
     print(f"Number of selected objects: {len(sample['objects'])}")

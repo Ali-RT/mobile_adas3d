@@ -5,14 +5,11 @@ from data.kitti_dataset import KITTIDataset
 from data.target_builder import build_targets_for_sample
 from losses.mobile_adas3d_loss import MobileADAS3DLoss
 from models.build import build_model
+from tools.cli import parse_config_arg
 from tools.config import load_config
 
 
 def add_batch_dim_to_targets(targets):
-    """
-    Convert target maps from [C, H, W] to [B, C, H, W].
-    For this check, B = 1.
-    """
     return {
         name: tensor.unsqueeze(0)
         for name, tensor in targets.items()
@@ -20,7 +17,8 @@ def add_batch_dim_to_targets(targets):
 
 
 def main() -> None:
-    config = load_config("configs/kitti_mobileadas3d.yaml")
+    args = parse_config_arg("Check one-batch MobileADAS3D loss")
+    config = load_config(args.config)
 
     dataset_cfg = config["dataset"]
     model_cfg = config["model"]
@@ -74,6 +72,8 @@ def main() -> None:
     losses = criterion(outputs, targets)
 
     print("One-batch loss check successful.")
+    print(f"Using config: {args.config}")
+    print(f"Active profile: {active_profile}")
     print(f"Sample ID: {sample['sample_id']}")
     print(f"Image shape: {tuple(image.shape)}")
 

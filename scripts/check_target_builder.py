@@ -1,10 +1,12 @@
 from data.kitti_dataset import KITTIDataset
 from data.target_builder import build_targets_for_sample
+from tools.cli import parse_config_arg
 from tools.config import load_config
 
 
 def main() -> None:
-    config = load_config("configs/kitti_mobileadas3d.yaml")
+    args = parse_config_arg("Check target builder")
+    config = load_config(args.config)
 
     dataset_cfg = config["dataset"]
     model_cfg = config["model"]
@@ -33,6 +35,8 @@ def main() -> None:
     )
 
     print("Target builder ran successfully.")
+    print(f"Using config: {args.config}")
+    print(f"Active profile: {active_profile}")
     print(f"Sample ID: {sample['sample_id']}")
     print(f"Number of objects in sample: {len(sample['objects'])}")
 

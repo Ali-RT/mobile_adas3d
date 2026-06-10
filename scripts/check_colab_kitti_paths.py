@@ -1,10 +1,12 @@
 from pathlib import Path
 
+from tools.cli import parse_config_arg
 from tools.config import load_config
 
 
 def main() -> None:
-    config = load_config("configs/kitti_mobileadas3d_colab.yaml")
+    args = parse_config_arg("Check KITTI dataset paths")
+    config = load_config(args.config)
 
     dataset_cfg = config["dataset"]
     active_profile = dataset_cfg["active_profile"]
@@ -14,7 +16,8 @@ def main() -> None:
     label_dir = root_dir / dataset_cfg["label_dir"]
     calib_dir = root_dir / dataset_cfg["calib_dir"]
 
-    print("Checking Colab KITTI paths...")
+    print("Checking KITTI paths...")
+    print(f"Using config: {args.config}")
     print(f"Active profile: {active_profile}")
     print(f"Root dir: {root_dir}")
 
@@ -58,7 +61,7 @@ def main() -> None:
             "Some KITTI directories are missing:\n" + "\n".join(missing)
         )
 
-    print("\nColab KITTI path check complete.")
+    print("\nKITTI path check complete.")
 
 
 if __name__ == "__main__":

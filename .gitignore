@@ -218,3 +218,29 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Datasets
+datasets/
+data/
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# ML artifacts
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.pkl
+*.joblib
+*.npy
+*.npz
+
+# Logs / outputs
+runs/
+outputs/    
+checkpoints/
+wandb/
+__pycache__/
+.ipynb_checkpoints/

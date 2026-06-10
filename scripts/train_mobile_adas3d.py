@@ -2,6 +2,7 @@ from functools import partial
 from pathlib import Path
 from typing import Dict
 import argparse
+from data.split_resolver import get_split_file
 
 import torch
 from torch.utils.data import DataLoader
@@ -12,16 +13,8 @@ from losses.mobile_adas3d_loss import MobileADAS3DLoss
 from models.build import build_model
 from tools.config import load_config
 from tools.device import get_device
+from tools.cli import parse_config_arg
 
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Train MobileADAS3D")
-    parser.add_argument(
-        "--config",
-        type=str,
-        default="configs/kitti_mobileadas3d.yaml",
-        help="Path to YAML config file.",
-    )
-    return parser.parse_args()
 
 def move_targets_to_device(
     targets: Dict[str, torch.Tensor],
@@ -56,7 +49,7 @@ def save_checkpoint(
 
 
 def main() -> None:
-    args = parse_args()
+    args = parse_config_arg("Train MobileADAS3D")
     config = load_config(args.config)
     print(f"Using config: {args.config}")
 
@@ -76,13 +69,21 @@ def main() -> None:
     print(f"Dataset root: {root_dir}")
     print(f"Device: {device}")
 
+    split_file = None
+    if "splits" in dataset_cfg:
+        split_file = get_split_file(config, "train")
+        print(f"Using train split file: {split_file}")
+
     dataset = KITTIDataset(
         root_dir=root_dir,
         classes=dataset_cfg["classes"],
         image_dir=dataset_cfg["image_dir"],
         label_dir=dataset_cfg["label_dir"],
         calib_dir=dataset_cfg["calib_dir"],
+        split_file=split_file,
     )
+
+    print(f"Training samples: {len(dataset)}")
 
     collate_fn = partial(
         mobile_adas3d_collate_fn,

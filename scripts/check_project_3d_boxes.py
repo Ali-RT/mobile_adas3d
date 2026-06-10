@@ -4,11 +4,13 @@ import numpy as np
 
 from data.kitti_dataset import KITTIDataset
 from data.visualization import draw_2d_boxes, draw_projected_3d_boxes
+from tools.cli import parse_config_arg
 from tools.config import load_config
 
 
 def main() -> None:
-    config = load_config("configs/kitti_mobileadas3d.yaml")
+    args = parse_config_arg("Check projected KITTI 3D boxes")
+    config = load_config(args.config)
 
     dataset_cfg = config["dataset"]
     active_profile = dataset_cfg["active_profile"]
@@ -25,6 +27,8 @@ def main() -> None:
     sample = dataset[0]
 
     print("Loaded sample for 3D projection.")
+    print(f"Using config: {args.config}")
+    print(f"Active profile: {active_profile}")
     print(f"Sample ID: {sample['sample_id']}")
     print(f"Number of objects: {len(sample['objects'])}")
     print(f"P2 shape: {tuple(sample['P2'].shape)}")

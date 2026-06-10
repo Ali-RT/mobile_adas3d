@@ -3,7 +3,8 @@ project_name: mobile_adas3d
 dataset:
   name: kitti
 
-  active_profile: colab_drive
+  # Use colab_localdisk after copying KITTI from Drive to /content.
+  active_profile: colab_localdisk
 
   profiles:
     local_mac:
@@ -11,6 +12,9 @@ dataset:
 
     colab_drive:
       root_dir: /content/drive/MyDrive/datasets/kitti
+
+    colab_localdisk:
+      root_dir: /content/datasets/kitti
 
   image_dir: training/image_2
   label_dir: training/label_2
@@ -21,6 +25,24 @@ dataset:
     - Pedestrian
     - Cyclist
 
+  splits:
+    split_dir: /content/drive/MyDrive/mobile_adas3d_splits/kitti
+    train_file: train.txt
+    val_file: val.txt
+    test_file: test.txt
+    seed: 42
+    train_ratio: 0.70
+    val_ratio: 0.15
+    test_ratio: 0.15
+
+colab_data:
+  drive_root_dir: /content/drive/MyDrive/datasets/kitti
+  local_root_dir: /content/datasets/kitti
+  required_subdirs:
+    - training/image_2
+    - training/label_2
+    - training/calib
+    
 model:
   name: MobileADAS3D
   backbone: mobilenet_v3_small
