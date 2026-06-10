@@ -3,7 +3,10 @@ project_name: mobile_adas3d
 dataset:
   name: kitti
 
-  active_profile: colab_drive
+  # Default for local debugging.
+  # In Colab, override with:
+  #   --profile colab_drive
+  active_profile: local_mac
 
   profiles:
     local_mac:
@@ -42,22 +45,43 @@ model:
 
 targets:
   class_mean_dims:
-    Car: [1.50, 1.60, 3.90] # h, w, l
-    Pedestrian: [1.70, 0.60, 0.80] # h, w, l
-    Cyclist: [1.70, 0.60, 1.76] # h, w, l
+    Car: [1.50, 1.60, 3.90]
+    Pedestrian: [1.70, 0.60, 0.80]
+    Cyclist: [1.70, 0.60, 1.76]
 
 training:
-  batch_size: 2
-  num_workers: 0
+  seed: 42
+  batch_size: 8
+  num_workers: 2
   learning_rate: 0.0001
   weight_decay: 0.0001
-  epochs: 5
-  device: auto # cuda
-  log_interval: 1
+  epochs: 20
+  device: auto
+  log_interval: 20
   save_interval: 1
+  use_amp: true
+  gradient_clip_norm: 5.0
+
+validation:
+  enabled: true
+  batch_size: 8
+  num_workers: 2
+  interval_epochs: 1
+  monitor_metric: val_total_loss
+  mode: min
+
+logging:
+  run_name: baseline_mobilenetv3_kitti
+  use_tensorboard: true
+  save_config_snapshot: true
+  save_jsonl: true
+  save_csv: true
 
 outputs:
-  output_dir: /content/drive/MyDrive/mobile_adas3d_outputs
-  checkpoint_dir: /content/drive/MyDrive/mobile_adas3d_outputs/checkpoints
-  log_dir: /content/drive/MyDrive/mobile_adas3d_outputs/logs
-  visualization_dir: /content/drive/MyDrive/mobile_adas3d_outputs/visualizations
+  # Local default.
+  output_dir: ./outputs
+
+  # For Colab, override automatically when --profile colab_drive is used.
+  profile_output_dirs:
+    local_mac: ./outputs
+    colab_drive: /content/drive/MyDrive/mobile_adas3d_outputs
