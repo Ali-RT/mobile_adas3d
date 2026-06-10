@@ -84,6 +84,49 @@ def masked_smooth_l1_loss(
 
     return loss.sum() / denom
 
+def masked_depth_uncertainty_loss(
+    pred_log_depth: torch.Tensor,
+    target_log_depth: torch.Tensor,
+    pred_logvar: torch.Tensor,
+    valid_mask: torch.Tensor,
+) -> torch.Tensor:
+    """
+    Uncertainty-weighted depth loss.
+
+    pred_log_depth:    [B, 1, H, W]
+    target_log_depth:  [B, 1, H, W]
+    pred_logvar:       [B, 1, H, W]
+    valid_mask:        [B, 1, H, W]
+
+    This trains both:
+      - the depth prediction
+      - the uncertainty prediction
+
+    Loss form:
+      0.5 * exp(-logvar) * error^2 + 0.5 * logvar
+    """
+    if pred_log_depth.shape != target_log_depth.shape:
+        raise ValueError(
+            f"Depth shape mismatch: pred={pred_log_depth.shape}, target={target_log_depth.shape}"
+        )
+
+    if pred_logvar.shape != pred_log_depth.shape:
+        raise ValueError(
+            f"logvar shape mismatch: logvar={pred_logvar.shape}, depth={pred_log_depth.shape}"
+        )
+
+    # Clamp for numerical stability.
+    pred_logvar = torch.clamp(pred_logvar, min=-5.0, max=5.0)
+
+    error = pred_log_depth - target_log_depth
+
+    loss = 0.5 * torch.exp(-pred_logvar) * error.pow(2) + 0.5 * pred_logvar
+
+    loss = loss * valid_mask
+
+    denom = valid_mask.sum().clamp(min=1.0)
+
+    return loss.sum() / denom
 
 def normalize_box2d(
     box: torch.Tensor,
@@ -128,6 +171,7 @@ class MobileADAS3DLoss(nn.Module):
         dim_weight: float = 1.0,
         yaw_weight: float = 1.0,
         offset_weight: float = 0.5,
+        depth_uncertainty_weight: float = 0.2,
     ) -> None:
         super().__init__()
 
@@ -140,6 +184,7 @@ class MobileADAS3DLoss(nn.Module):
         self.dim_weight = dim_weight
         self.yaw_weight = yaw_weight
         self.offset_weight = offset_weight
+        self.depth_uncertainty_weight = depth_uncertainty_weight
 
     def forward(
         self,
@@ -183,6 +228,12 @@ class MobileADAS3DLoss(nn.Module):
             valid_mask=valid_mask,
         )
 
+        depth_uncertainty_loss = masked_depth_uncertainty_loss(
+            pred_log_depth=outputs["log_depth"],
+            target_log_depth=log_depth_target,
+            pred_logvar=outputs["depth_logvar"],
+            valid_mask=valid_mask,
+        )
         dim_loss = masked_smooth_l1_loss(
             pred=outputs["dim_residual"],
             target=dim_target,
@@ -209,6 +260,7 @@ class MobileADAS3DLoss(nn.Module):
             self.cls_weight * cls_loss
             + self.box2d_weight * box2d_loss
             + self.depth_weight * depth_loss
+            + self.depth_uncertainty_weight * depth_uncertainty_loss
             + self.dim_weight * dim_loss
             + self.yaw_weight * yaw_loss
             + self.offset_weight * offset_loss
@@ -219,6 +271,7 @@ class MobileADAS3DLoss(nn.Module):
             "cls_loss": cls_loss,
             "box2d_loss": box2d_loss,
             "depth_loss": depth_loss,
+            "depth_uncertainty_loss": depth_uncertainty_loss,
             "dim_loss": dim_loss,
             "yaw_loss": yaw_loss,
             "offset_loss": offset_loss,
