@@ -140,3 +140,52 @@ def draw_projected_3d_boxes(
 
     image_bgr = cv2.cvtColor(image_vis, cv2.COLOR_RGB2BGR)
     cv2.imwrite(str(output_path), image_bgr)
+
+def draw_predictions_2d(
+    image_rgb: np.ndarray,
+    predictions: List[Dict[str, Any]],
+    output_path: str | Path,
+) -> None:
+    """
+    Draw predicted 2D boxes, class, score, and depth.
+    """
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    image_vis = image_rgb.copy()
+
+    for pred in predictions:
+        x1, y1, x2, y2 = pred["bbox_2d"]
+
+        x1 = int(round(x1))
+        y1 = int(round(y1))
+        x2 = int(round(x2))
+        y2 = int(round(y2))
+
+        label = (
+            f"{pred['class_name']} "
+            f"{pred['score']:.2f} "
+            f"z={pred['depth']:.1f}m"
+        )
+
+        cv2.rectangle(
+            image_vis,
+            (x1, y1),
+            (x2, y2),
+            color=(0, 255, 0),
+            thickness=2,
+        )
+
+        cv2.putText(
+            image_vis,
+            label,
+            (x1, max(y1 - 8, 15)),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.5,
+            color=(0, 255, 0),
+            thickness=1,
+            lineType=cv2.LINE_AA,
+        )
+
+    image_bgr = cv2.cvtColor(image_vis, cv2.COLOR_RGB2BGR)
+    cv2.imwrite(str(output_path), image_bgr)
