@@ -3,9 +3,7 @@ project_name: mobile_adas3d
 dataset:
   name: kitti
 
-  # local_mac is for parser/debugging with fake or tiny sample.
-  # colab_drive is for real training with KITTI stored in Google Drive.
-  active_profile: local_mac
+  active_profile: colab_drive
 
   profiles:
     local_mac:
@@ -22,6 +20,16 @@ dataset:
     - Car
     - Pedestrian
     - Cyclist
+
+  splits:
+    split_dir: /content/drive/MyDrive/mobile_adas3d_splits/kitti
+    train_file: train.txt
+    val_file: val.txt
+    test_file: test.txt
+    seed: 42
+    train_ratio: 0.70
+    val_ratio: 0.15
+    test_ratio: 0.15
 
 model:
   name: MobileADAS3D
@@ -49,12 +57,7 @@ training:
   save_interval: 1
 
 outputs:
-  output_dir: ./outputs
-  checkpoint_dir: ./outputs/checkpoints
-  log_dir: ./outputs/logs
-  visualization_dir: ./outputs/visualizations
-# outputs:
-#   output_dir: /content/drive/MyDrive/mobile_adas3d_outputs
-#   checkpoint_dir: /content/drive/MyDrive/mobile_adas3d_outputs/checkpoints
-#   log_dir: /content/drive/MyDrive/mobile_adas3d_outputs/logs
-#   visualization_dir: /content/drive/MyDrive/mobile_adas3d_outputs/visualizations
+  output_dir: /content/drive/MyDrive/mobile_adas3d_outputs
+  checkpoint_dir: /content/drive/MyDrive/mobile_adas3d_outputs/checkpoints
+  log_dir: /content/drive/MyDrive/mobile_adas3d_outputs/logs
+  visualization_dir: /content/drive/MyDrive/mobile_adas3d_outputs/visualizations
