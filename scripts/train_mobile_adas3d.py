@@ -1,8 +1,9 @@
 from functools import partial
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, Any
 
 import torch
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
@@ -12,11 +13,12 @@ from data.split_resolver import get_split_file
 from losses.mobile_adas3d_loss import MobileADAS3DLoss
 from models.build import build_model
 from tools.cli import parse_config_profile_args
+from tools.config import load_runtime_config_from_args
 from tools.device import get_device
 from tools.metrics_logger import MetricsLogger
 from tools.run_manager import create_run_dir
 from tools.seed import seed_everything
-from tools.config import load_runtime_config_from_args, apply_runtime_overrides
+from tools.training_control import EarlyStopping, get_current_lr
 
 
 def move_targets_to_device(
@@ -24,7 +26,7 @@ def move_targets_to_device(
     device: torch.device,
 ) -> Dict[str, torch.Tensor]:
     return {
-        key: value.to(device)
+        key: value.to(device, non_blocking=True)
         for key, value in targets.items()
     }
 
@@ -33,30 +35,33 @@ def save_checkpoint(
     checkpoint_path: Path,
     model: torch.nn.Module,
     optimizer: torch.optim.Optimizer,
+    scheduler: Optional[ReduceLROnPlateau],
     epoch: int,
     global_step: int,
-    loss_value: float,
-    config: Dict,
+    metric_value: float,
+    config: Dict[str, Any],
     is_best: bool = False,
 ) -> None:
     checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
 
-    torch.save(
-        {
-            "epoch": epoch,
-            "global_step": global_step,
-            "model_state_dict": model.state_dict(),
-            "optimizer_state_dict": optimizer.state_dict(),
-            "loss": loss_value,
-            "config": config,
-            "is_best": is_best,
-        },
-        checkpoint_path,
-    )
+    payload = {
+        "epoch": epoch,
+        "global_step": global_step,
+        "model_state_dict": model.state_dict(),
+        "optimizer_state_dict": optimizer.state_dict(),
+        "metric_value": metric_value,
+        "config": config,
+        "is_best": is_best,
+    }
+
+    if scheduler is not None:
+        payload["scheduler_state_dict"] = scheduler.state_dict()
+
+    torch.save(payload, checkpoint_path)
 
 
 def build_dataloader(
-    config: Dict,
+    config: Dict[str, Any],
     split_name: str,
     batch_size: int,
     num_workers: int,
@@ -110,7 +115,64 @@ def build_dataloader(
     return loader
 
 
-def average_losses(loss_sums: Dict[str, float], num_batches: int) -> Dict[str, float]:
+def build_criterion(config: Dict[str, Any]) -> MobileADAS3DLoss:
+    loss_cfg = config.get("loss", {})
+
+    return MobileADAS3DLoss(
+        input_height=config["model"]["input_height"],
+        input_width=config["model"]["input_width"],
+        cls_weight=loss_cfg.get("cls_weight", 1.0),
+        box2d_weight=loss_cfg.get("box2d_weight", 2.0),
+        depth_weight=loss_cfg.get("depth_weight", 1.0),
+        depth_uncertainty_weight=loss_cfg.get("depth_uncertainty_weight", 0.0),
+        dim_weight=loss_cfg.get("dim_weight", 1.0),
+        yaw_weight=loss_cfg.get("yaw_weight", 1.0),
+        offset_weight=loss_cfg.get("offset_weight", 0.5),
+    )
+
+
+def build_scheduler(
+    optimizer: torch.optim.Optimizer,
+    config: Dict[str, Any],
+) -> Optional[ReduceLROnPlateau]:
+    scheduler_cfg = config.get("scheduler", {})
+
+    if not scheduler_cfg.get("enabled", False):
+        return None
+
+    if scheduler_cfg.get("name") != "ReduceLROnPlateau":
+        raise ValueError(f"Unsupported scheduler: {scheduler_cfg.get('name')}")
+
+    return ReduceLROnPlateau(
+        optimizer,
+        mode=scheduler_cfg.get("mode", "min"),
+        factor=float(scheduler_cfg.get("factor", 0.5)),
+        patience=int(scheduler_cfg.get("patience", 4)),
+        threshold=float(scheduler_cfg.get("threshold", 0.0005)),
+        threshold_mode=scheduler_cfg.get("threshold_mode", "rel"),
+        cooldown=int(scheduler_cfg.get("cooldown", 1)),
+        min_lr=float(scheduler_cfg.get("min_lr", 1e-6)),
+    )
+
+
+def build_early_stopper(config: Dict[str, Any]) -> Optional[EarlyStopping]:
+    early_cfg = config.get("early_stopping", {})
+
+    if not early_cfg.get("enabled", False):
+        return None
+
+    return EarlyStopping(
+        mode=early_cfg.get("mode", "min"),
+        patience=int(early_cfg.get("patience", 12)),
+        min_delta=float(early_cfg.get("min_delta", 0.0005)),
+        start_epoch=int(early_cfg.get("start_epoch", 10)),
+    )
+
+
+def average_losses(
+    loss_sums: Dict[str, float],
+    num_batches: int,
+) -> Dict[str, float]:
     return {
         key: value / max(num_batches, 1)
         for key, value in loss_sums.items()
@@ -122,6 +184,7 @@ def train_one_epoch(
     dataloader: DataLoader,
     criterion: MobileADAS3DLoss,
     optimizer: torch.optim.Optimizer,
+    scaler: torch.cuda.amp.GradScaler,
     device: torch.device,
     epoch: int,
     epochs: int,
@@ -132,8 +195,6 @@ def train_one_epoch(
     gradient_clip_norm: Optional[float],
 ) -> tuple[Dict[str, float], int]:
     model.train()
-
-    scaler = torch.cuda.amp.GradScaler(enabled=(use_amp and device.type == "cuda"))
 
     loss_sums: Dict[str, float] = {}
 
@@ -166,21 +227,26 @@ def train_one_epoch(
             loss_sums[name] = loss_sums.get(name, 0.0) + float(value.item())
 
         if batch_idx % log_interval == 0:
-            msg = (
+            lr = get_current_lr(optimizer)
+
+            print(
                 f"epoch={epoch:03d}/{epochs:03d} "
                 f"batch={batch_idx:04d}/{len(dataloader):04d} "
                 f"step={global_step:06d} "
-                f"train_total={losses['total_loss'].item():.4f} "
-                f"cls={losses['cls_loss'].item():.4f} "
-                f"box2d={losses['box2d_loss'].item():.4f} "
-                f"depth={losses['depth_loss'].item():.4f} "
-                f"dim={losses['dim_loss'].item():.4f} "
-                f"yaw={losses['yaw_loss'].item():.4f} "
-                f"offset={losses['offset_loss'].item():.4f}"
+                f"lr={lr:.8f} "
+                f"train_total={losses['total_loss'].item():.6f} "
+                f"cls={losses['cls_loss'].item():.6f} "
+                f"box2d={losses['box2d_loss'].item():.6f} "
+                f"depth={losses['depth_loss'].item():.6f} "
+                f"unc={losses.get('depth_uncertainty_loss', torch.tensor(0.0)).item():.6f} "
+                f"dim={losses['dim_loss'].item():.6f} "
+                f"yaw={losses['yaw_loss'].item():.6f} "
+                f"offset={losses['offset_loss'].item():.6f}"
             )
-            print(msg)
 
             if writer is not None:
+                writer.add_scalar("train_step/learning_rate", lr, global_step)
+
                 for name, value in losses.items():
                     writer.add_scalar(f"train_step/{name}", value.item(), global_step)
 
@@ -222,15 +288,16 @@ def is_better_metric(
     current: float,
     best: Optional[float],
     mode: str,
+    min_delta: float = 0.0,
 ) -> bool:
     if best is None:
         return True
 
     if mode == "min":
-        return current < best
+        return current < best - min_delta
 
     if mode == "max":
-        return current > best
+        return current > best + min_delta
 
     raise ValueError(f"Unsupported mode: {mode}")
 
@@ -242,6 +309,8 @@ def main() -> None:
     training_cfg = config["training"]
     validation_cfg = config["validation"]
     logging_cfg = config["logging"]
+    scheduler_cfg = config.get("scheduler", {})
+    early_cfg = config.get("early_stopping", {})
 
     seed_everything(int(training_cfg.get("seed", 42)))
 
@@ -259,7 +328,8 @@ def main() -> None:
 
     print("Starting MobileADAS3D training.")
     print(f"Using config: {args.config}")
-    print(f"Active profile: {active_profile}")
+    print(f"Requested profile: {args.profile}")
+    print(f"Resolved active profile: {active_profile}")
     print(f"Dataset root: {root_dir}")
     print(f"Device: {device}")
     print(f"Run dir: {run_dirs['run_dir']}")
@@ -267,8 +337,8 @@ def main() -> None:
     train_loader = build_dataloader(
         config=config,
         split_name="train",
-        batch_size=training_cfg["batch_size"],
-        num_workers=training_cfg["num_workers"],
+        batch_size=int(training_cfg["batch_size"]),
+        num_workers=int(training_cfg["num_workers"]),
         shuffle=True,
         device=device,
     )
@@ -278,8 +348,8 @@ def main() -> None:
         val_loader = build_dataloader(
             config=config,
             split_name="val",
-            batch_size=validation_cfg["batch_size"],
-            num_workers=validation_cfg["num_workers"],
+            batch_size=int(validation_cfg["batch_size"]),
+            num_workers=int(validation_cfg["num_workers"]),
             shuffle=False,
             device=device,
         )
@@ -287,25 +357,16 @@ def main() -> None:
     model = build_model(config)
     model.to(device)
 
-    loss_cfg = config.get("loss", {})
-
-    criterion = MobileADAS3DLoss(
-        input_height=config["model"]["input_height"],
-        input_width=config["model"]["input_width"],
-        cls_weight=loss_cfg.get("cls_weight", 1.0),
-        box2d_weight=loss_cfg.get("box2d_weight", 2.0),
-        depth_weight=loss_cfg.get("depth_weight", 1.0),
-        depth_uncertainty_weight=loss_cfg.get("depth_uncertainty_weight", 0.0),
-        dim_weight=loss_cfg.get("dim_weight", 1.0),
-        yaw_weight=loss_cfg.get("yaw_weight", 1.0),
-        offset_weight=loss_cfg.get("offset_weight", 0.5),
-    )
+    criterion = build_criterion(config)
 
     optimizer = torch.optim.AdamW(
         model.parameters(),
-        lr=training_cfg["learning_rate"],
-        weight_decay=training_cfg["weight_decay"],
+        lr=float(training_cfg["learning_rate"]),
+        weight_decay=float(training_cfg["weight_decay"]),
     )
+
+    scheduler = build_scheduler(optimizer, config)
+    early_stopper = build_early_stopper(config)
 
     epochs = int(training_cfg["epochs"])
     log_interval = int(training_cfg.get("log_interval", 20))
@@ -313,18 +374,36 @@ def main() -> None:
     use_amp = bool(training_cfg.get("use_amp", True))
     gradient_clip_norm = training_cfg.get("gradient_clip_norm", None)
 
+    if gradient_clip_norm is not None:
+        gradient_clip_norm = float(gradient_clip_norm)
+
+    scaler = torch.cuda.amp.GradScaler(enabled=(use_amp and device.type == "cuda"))
+
     monitor_metric = validation_cfg.get("monitor_metric", "val_total_loss")
     monitor_mode = validation_cfg.get("mode", "min")
+    monitor_min_delta = float(early_cfg.get("min_delta", 0.0))
 
-    best_metric = None
+    best_metric: Optional[float] = None
     global_step = 0
 
+    print("\nTraining controls:")
+    print(f"  Max epochs: {epochs}")
+    print(f"  AMP enabled: {use_amp}")
+    print(f"  Gradient clip norm: {gradient_clip_norm}")
+    print(f"  Scheduler enabled: {scheduler is not None}")
+    print(f"  Early stopping enabled: {early_stopper is not None}")
+    print(f"  Monitor metric: {monitor_metric}")
+    print(f"  Monitor mode: {monitor_mode}")
+
     for epoch in range(1, epochs + 1):
+        lr_before_epoch = get_current_lr(optimizer)
+
         train_losses, global_step = train_one_epoch(
             model=model,
             dataloader=train_loader,
             criterion=criterion,
             optimizer=optimizer,
+            scaler=scaler,
             device=device,
             epoch=epoch,
             epochs=epochs,
@@ -335,17 +414,18 @@ def main() -> None:
             gradient_clip_norm=gradient_clip_norm,
         )
 
-        epoch_metrics = {
+        epoch_metrics: Dict[str, Any] = {
             "epoch": epoch,
             "global_step": global_step,
+            "learning_rate": lr_before_epoch,
         }
 
         for name, value in train_losses.items():
             epoch_metrics[f"train_{name}"] = value
 
         print(
-            f"Epoch {epoch:03d} train complete. "
-            f"train_total_loss={train_losses['total_loss']:.4f}"
+            f"\nEpoch {epoch:03d} train complete. "
+            f"train_total_loss={train_losses['total_loss']:.6f}"
         )
 
         if val_loader is not None and epoch % int(validation_cfg["interval_epochs"]) == 0:
@@ -362,69 +442,147 @@ def main() -> None:
 
             print(
                 f"Epoch {epoch:03d} validation complete. "
-                f"val_total_loss={val_losses['total_loss']:.4f}"
+                f"val_total_loss={val_losses['total_loss']:.6f}"
             )
-
-        if writer is not None:
-            for name, value in epoch_metrics.items():
-                if name not in {"epoch", "global_step"}:
-                    writer.add_scalar(f"epoch/{name}", value, epoch)
-
-        metrics_logger.log(epoch_metrics)
-
-        latest_path = run_dirs["checkpoint_dir"] / "latest.pt"
 
         current_metric = epoch_metrics.get(monitor_metric)
 
-        is_best = False
-        if current_metric is not None:
-            is_best = is_better_metric(
-                current=float(current_metric),
-                best=best_metric,
-                mode=monitor_mode,
+        if current_metric is None:
+            raise KeyError(
+                f"Monitor metric '{monitor_metric}' was not found in epoch metrics. "
+                f"Available keys: {list(epoch_metrics.keys())}"
             )
 
-            if is_best:
-                best_metric = float(current_metric)
+        current_metric = float(current_metric)
 
+        is_best = is_better_metric(
+            current=current_metric,
+            best=best_metric,
+            mode=monitor_mode,
+            min_delta=monitor_min_delta,
+        )
+
+        if is_best:
+            best_metric = current_metric
+
+        # Step LR scheduler after validation.
+        if scheduler is not None:
+            scheduler_metric_name = scheduler_cfg.get("monitor_metric", monitor_metric)
+            scheduler_metric = epoch_metrics.get(scheduler_metric_name)
+
+            if scheduler_metric is None:
+                raise KeyError(
+                    f"Scheduler monitor metric '{scheduler_metric_name}' not found. "
+                    f"Available keys: {list(epoch_metrics.keys())}"
+                )
+
+            old_lr = get_current_lr(optimizer)
+            scheduler.step(float(scheduler_metric))
+            new_lr = get_current_lr(optimizer)
+
+            epoch_metrics["learning_rate_after_scheduler"] = new_lr
+
+            if new_lr != old_lr:
+                print(
+                    f"LR reduced by scheduler: {old_lr:.8f} -> {new_lr:.8f} "
+                    f"based on {scheduler_metric_name}={float(scheduler_metric):.6f}"
+                )
+        else:
+            epoch_metrics["learning_rate_after_scheduler"] = get_current_lr(optimizer)
+
+        # Early stopping state update.
+        should_stop = False
+        if early_stopper is not None:
+            early_metric_name = early_cfg.get("monitor_metric", monitor_metric)
+            early_metric = epoch_metrics.get(early_metric_name)
+
+            if early_metric is None:
+                raise KeyError(
+                    f"Early stopping monitor metric '{early_metric_name}' not found. "
+                    f"Available keys: {list(epoch_metrics.keys())}"
+                )
+
+            should_stop = early_stopper.step(
+                current=float(early_metric),
+                epoch=epoch,
+            )
+
+            epoch_metrics["early_stopping_bad_epochs"] = early_stopper.num_bad_epochs
+            epoch_metrics["early_stopping_best"] = early_stopper.best
+        else:
+            epoch_metrics["early_stopping_bad_epochs"] = 0
+            epoch_metrics["early_stopping_best"] = best_metric
+
+        # TensorBoard epoch logging.
+        if writer is not None:
+            for name, value in epoch_metrics.items():
+                if name in {"epoch", "global_step"}:
+                    continue
+
+                if isinstance(value, (int, float)):
+                    writer.add_scalar(f"epoch/{name}", value, epoch)
+
+        # CSV/JSONL logging.
+        metrics_logger.log(epoch_metrics)
+
+        # Save latest checkpoint every epoch.
+        latest_path = run_dirs["checkpoint_dir"] / "latest.pt"
         save_checkpoint(
             checkpoint_path=latest_path,
             model=model,
             optimizer=optimizer,
+            scheduler=scheduler,
             epoch=epoch,
             global_step=global_step,
-            loss_value=float(epoch_metrics.get(monitor_metric, train_losses["total_loss"])),
+            metric_value=current_metric,
             config=config,
             is_best=False,
         )
 
+        # Save epoch checkpoint at interval.
         if epoch % save_interval == 0:
             epoch_path = run_dirs["checkpoint_dir"] / f"epoch_{epoch:03d}.pt"
             save_checkpoint(
                 checkpoint_path=epoch_path,
                 model=model,
                 optimizer=optimizer,
+                scheduler=scheduler,
                 epoch=epoch,
                 global_step=global_step,
-                loss_value=float(epoch_metrics.get(monitor_metric, train_losses["total_loss"])),
+                metric_value=current_metric,
                 config=config,
                 is_best=False,
             )
 
+        # Save best checkpoint.
         if is_best:
             best_path = run_dirs["checkpoint_dir"] / "best.pt"
             save_checkpoint(
                 checkpoint_path=best_path,
                 model=model,
                 optimizer=optimizer,
+                scheduler=scheduler,
                 epoch=epoch,
                 global_step=global_step,
-                loss_value=float(current_metric),
+                metric_value=current_metric,
                 config=config,
                 is_best=True,
             )
+
             print(f"New best checkpoint saved: {best_path}")
             print(f"Best {monitor_metric}: {best_metric:.6f}")
+
+        print(
+            f"Epoch {epoch:03d} summary: "
+            f"{monitor_metric}={current_metric:.6f}, "
+            f"best={best_metric:.6f}, "
+            f"lr={get_current_lr(optimizer):.8f}, "
+            f"bad_epochs={epoch_metrics['early_stopping_bad_epochs']}"
+        )
+
+        if should_stop:
+            print(early_stopper.stop_reason)
+            break
 
     if writer is not None:
         writer.close()

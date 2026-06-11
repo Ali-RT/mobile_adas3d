@@ -55,12 +55,32 @@ training:
   num_workers: 2
   learning_rate: 0.0001
   weight_decay: 0.0001
-  epochs: 20
+  epochs: 80
   device: auto
   log_interval: 20
   save_interval: 1
   use_amp: true
   gradient_clip_norm: 5.0
+
+scheduler:
+  name: ReduceLROnPlateau
+  enabled: true
+  monitor_metric: val_total_loss
+  mode: min
+  factor: 0.5
+  patience: 4
+  threshold: 0.0005
+  threshold_mode: rel
+  cooldown: 1
+  min_lr: 0.000001
+
+early_stopping:
+  enabled: true
+  monitor_metric: val_total_loss
+  mode: min
+  patience: 12
+  min_delta: 0.0005
+  start_epoch: 10
 
 validation:
   enabled: true
@@ -70,13 +90,6 @@ validation:
   monitor_metric: val_total_loss
   mode: min
 
-logging:
-  run_name: baseline_mobilenetv3_kitti
-  use_tensorboard: true
-  save_config_snapshot: true
-  save_jsonl: true
-  save_csv: true
-
 loss:
   cls_weight: 1.0
   box2d_weight: 2.0
@@ -85,6 +98,14 @@ loss:
   dim_weight: 1.0
   yaw_weight: 1.0
   offset_weight: 0.5
+
+logging:
+  run_name: baseline_mobilenetv3_kitti
+  use_tensorboard: true
+  save_config_snapshot: true
+  save_jsonl: true
+  save_csv: true
+  
   
 outputs:
   # Local default.
