@@ -1,9 +1,40 @@
-from typing import Any, Dict, List
+from __future__ import annotations
+
+from typing import Any, Dict, List, Optional
 
 import torch
 import torch.nn.functional as F
 
 from data.target_builder import build_targets_for_sample
+
+
+def resize_image_tensor(
+    image: torch.Tensor,
+    input_height: int,
+    input_width: int,
+) -> torch.Tensor:
+    """
+    image: [3, H, W], float in [0, 1]
+    """
+    resized = F.interpolate(
+        image.unsqueeze(0),
+        size=(input_height, input_width),
+        mode="bilinear",
+        align_corners=False,
+    )
+
+    return resized.squeeze(0)
+
+
+def stack_target_dicts(
+    target_dicts: List[Dict[str, torch.Tensor]],
+) -> Dict[str, torch.Tensor]:
+    keys = target_dicts[0].keys()
+
+    return {
+        key: torch.stack([target[key] for target in target_dicts], dim=0)
+        for key in keys
+    }
 
 
 def mobile_adas3d_collate_fn(
@@ -13,40 +44,35 @@ def mobile_adas3d_collate_fn(
     input_width: int,
     output_stride: int,
     class_mean_dims: Dict[str, List[float]],
+    center_sampling_radius: int = 1,
+    class_weights: Optional[Dict[str, float]] = None,
 ) -> Dict[str, Any]:
-    """
-    Collate function for MobileADAS3D.
-
-    Converts a list of dataset samples into:
-      images:  [B, 3, H, W]
-      targets: dict of [B, C, Hf, Wf] tensors
-      metadata: sample-level info
-    """
     images = []
-    targets_list = []
+    targets = []
     metadata = []
 
     for sample in batch:
-        image = sample["image"].unsqueeze(0)
-
-        image = F.interpolate(
-            image,
-            size=(input_height, input_width),
-            mode="bilinear",
-            align_corners=False,
-        ).squeeze(0)
-
-        targets = build_targets_for_sample(
-            sample=sample,
-            classes=classes,
+        image = resize_image_tensor(
+            image=sample["image"],
             input_height=input_height,
             input_width=input_width,
+        )
+
+        target = build_targets_for_sample(
+            objects=sample["objects"],
+            original_width=int(sample["original_size"]["width"]),
+            original_height=int(sample["original_size"]["height"]),
+            input_width=input_width,
+            input_height=input_height,
             output_stride=output_stride,
+            classes=classes,
             class_mean_dims=class_mean_dims,
+            center_sampling_radius=center_sampling_radius,
+            class_weights=class_weights,
         )
 
         images.append(image)
-        targets_list.append(targets)
+        targets.append(target)
 
         metadata.append(
             {
@@ -59,18 +85,8 @@ def mobile_adas3d_collate_fn(
             }
         )
 
-    images_tensor = torch.stack(images, dim=0)
-
-    batched_targets = {}
-
-    for key in targets_list[0].keys():
-        batched_targets[key] = torch.stack(
-            [targets[key] for targets in targets_list],
-            dim=0,
-        )
-
     return {
-        "images": images_tensor,
-        "targets": batched_targets,
+        "images": torch.stack(images, dim=0),
+        "targets": stack_target_dicts(targets),
         "metadata": metadata,
     }

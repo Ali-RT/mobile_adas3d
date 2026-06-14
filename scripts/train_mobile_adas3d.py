@@ -90,6 +90,13 @@ def build_dataloader(
         split_file=split_file,
     )
 
+    loss_cfg = config.get("loss", {})
+    center_sampling_cfg = target_cfg.get("center_sampling", {})
+
+    center_sampling_radius = 0
+    if center_sampling_cfg.get("enabled", False):
+        center_sampling_radius = int(center_sampling_cfg.get("radius", 1))
+
     collate_fn = partial(
         mobile_adas3d_collate_fn,
         classes=dataset_cfg["classes"],
@@ -97,6 +104,8 @@ def build_dataloader(
         input_width=model_cfg["input_width"],
         output_stride=model_cfg["output_stride"],
         class_mean_dims=target_cfg["class_mean_dims"],
+        center_sampling_radius=center_sampling_radius,
+        class_weights=loss_cfg.get("class_weights", {}),
     )
 
     loader = DataLoader(
@@ -121,6 +130,8 @@ def build_criterion(config: Dict[str, Any]) -> MobileADAS3DLoss:
     return MobileADAS3DLoss(
         input_height=config["model"]["input_height"],
         input_width=config["model"]["input_width"],
+        classes=config["dataset"]["classes"],
+        class_weights=loss_cfg.get("class_weights", {}),
         cls_weight=loss_cfg.get("cls_weight", 1.0),
         box2d_weight=loss_cfg.get("box2d_weight", 2.0),
         depth_weight=loss_cfg.get("depth_weight", 1.0),

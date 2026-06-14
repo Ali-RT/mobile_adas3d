@@ -1,4 +1,6 @@
-from typing import Any, Dict, List, Tuple
+from __future__ import annotations
+
+from typing import Any, Dict, List, Optional, Tuple
 
 import torch
 
@@ -10,125 +12,186 @@ def scale_bbox_2d(
     input_width: int,
     input_height: int,
 ) -> List[float]:
-    """
-    Scale a 2D bounding box from original image size to model input size.
-    """
+    x_scale = input_width / float(original_width)
+    y_scale = input_height / float(original_height)
+
     x1, y1, x2, y2 = bbox
 
-    scale_x = input_width / original_width
-    scale_y = input_height / original_height
-
     return [
-        x1 * scale_x,
-        y1 * scale_y,
-        x2 * scale_x,
-        y2 * scale_y,
+        float(x1 * x_scale),
+        float(y1 * y_scale),
+        float(x2 * x_scale),
+        float(y2 * y_scale),
     ]
 
 
-def get_box_center(bbox: List[float]) -> Tuple[float, float]:
-    """
-    Return center x/y of a 2D box.
-    """
-    x1, y1, x2, y2 = bbox
-    cx = 0.5 * (x1 + x2)
-    cy = 0.5 * (y1 + y2)
-    return cx, cy
-
-
-def build_targets_for_sample(
-    sample: Dict[str, Any],
-    classes: List[str],
+def compute_feature_shape(
     input_height: int,
     input_width: int,
     output_stride: int,
+) -> Tuple[int, int]:
+    if input_height % output_stride != 0:
+        raise ValueError(
+            f"input_height={input_height} must be divisible by output_stride={output_stride}"
+        )
+
+    if input_width % output_stride != 0:
+        raise ValueError(
+            f"input_width={input_width} must be divisible by output_stride={output_stride}"
+        )
+
+    return input_height // output_stride, input_width // output_stride
+
+
+def get_class_id(class_name: str, classes: List[str]) -> int:
+    if class_name not in classes:
+        raise ValueError(f"Unknown class_name={class_name}; classes={classes}")
+
+    return classes.index(class_name)
+
+
+def get_positive_cells(
+    center_x: float,
+    center_y: float,
+    input_width: int,
+    input_height: int,
+    output_stride: int,
+    radius: int,
+) -> List[Tuple[int, int]]:
+    feature_h, feature_w = compute_feature_shape(
+        input_height=input_height,
+        input_width=input_width,
+        output_stride=output_stride,
+    )
+
+    center_cell_x = int(center_x // output_stride)
+    center_cell_y = int(center_y // output_stride)
+
+    center_cell_x = max(0, min(center_cell_x, feature_w - 1))
+    center_cell_y = max(0, min(center_cell_y, feature_h - 1))
+
+    cells: List[Tuple[int, int]] = []
+
+    for dy in range(-radius, radius + 1):
+        for dx in range(-radius, radius + 1):
+            cell_x = center_cell_x + dx
+            cell_y = center_cell_y + dy
+
+            if cell_x < 0 or cell_x >= feature_w:
+                continue
+
+            if cell_y < 0 or cell_y >= feature_h:
+                continue
+
+            cells.append((cell_x, cell_y))
+
+    return cells
+
+
+def build_ltrb_box_target(
+    bbox: List[float],
+    center_x: float,
+    center_y: float,
+    input_width: int,
+    input_height: int,
+) -> List[float]:
+    """
+    Local l/t/r/b box encoding relative to object center.
+
+    Normalized by image width/height:
+      l = (cx - x1) / input_width
+      t = (cy - y1) / input_height
+      r = (x2 - cx) / input_width
+      b = (y2 - cy) / input_height
+    """
+    x1, y1, x2, y2 = bbox
+
+    l = max(0.0, center_x - x1) / float(input_width)
+    t = max(0.0, center_y - y1) / float(input_height)
+    r = max(0.0, x2 - center_x) / float(input_width)
+    b = max(0.0, y2 - center_y) / float(input_height)
+
+    return [l, t, r, b]
+
+
+def build_center_offset_target(
+    center_x: float,
+    center_y: float,
+    cell_x: int,
+    cell_y: int,
+    output_stride: int,
+) -> List[float]:
+    """
+    Offset from feature-cell center to object center, normalized by stride.
+
+    Feature point:
+      px = (cell_x + 0.5) * stride
+      py = (cell_y + 0.5) * stride
+
+    Target:
+      dx = (center_x - px) / stride
+      dy = (center_y - py) / stride
+
+    With center_sampling radius=1, this can be roughly in [-1.5, 1.5].
+    """
+    point_x = (cell_x + 0.5) * output_stride
+    point_y = (cell_y + 0.5) * output_stride
+
+    dx = (center_x - point_x) / float(output_stride)
+    dy = (center_y - point_y) / float(output_stride)
+
+    return [float(dx), float(dy)]
+
+
+def build_targets_for_sample(
+    objects: List[Dict[str, Any]],
+    original_width: int,
+    original_height: int,
+    input_width: int,
+    input_height: int,
+    output_stride: int,
+    classes: List[str],
     class_mean_dims: Dict[str, List[float]],
+    center_sampling_radius: int = 1,
+    class_weights: Optional[Dict[str, float]] = None,
 ) -> Dict[str, torch.Tensor]:
-    """
-    Build dense target maps for one KITTI sample.
+    feature_h, feature_w = compute_feature_shape(
+        input_height=input_height,
+        input_width=input_width,
+        output_stride=output_stride,
+    )
 
-    Assignment rule:
-      - Each object is assigned to one feature-map cell.
-      - The cell is determined by the resized 2D box center.
-      - If multiple objects land in the same cell, keep the closer object.
-
-    Returns:
-      Dictionary of target tensors.
-    """
     num_classes = len(classes)
-    class_to_id = {name: idx for idx, name in enumerate(classes)}
 
-    feature_height = input_height // output_stride
-    feature_width = input_width // output_stride
+    cls_target = torch.zeros(num_classes, feature_h, feature_w, dtype=torch.float32)
+    box2d_target = torch.zeros(4, feature_h, feature_w, dtype=torch.float32)
+    log_depth_target = torch.zeros(1, feature_h, feature_w, dtype=torch.float32)
+    dim_target = torch.zeros(3, feature_h, feature_w, dtype=torch.float32)
+    yaw_target = torch.zeros(2, feature_h, feature_w, dtype=torch.float32)
+    offset_target = torch.zeros(2, feature_h, feature_w, dtype=torch.float32)
+    valid_mask = torch.zeros(1, feature_h, feature_w, dtype=torch.float32)
 
-    cls_target = torch.zeros(
-        num_classes,
-        feature_height,
-        feature_width,
-        dtype=torch.float32,
-    )
+    # Used to apply class-balanced regression/object losses.
+    loss_weight_target = torch.ones(1, feature_h, feature_w, dtype=torch.float32)
 
-    box2d_target = torch.zeros(
-        4,
-        feature_height,
-        feature_width,
-        dtype=torch.float32,
-    )
-
-    log_depth_target = torch.zeros(
-        1,
-        feature_height,
-        feature_width,
-        dtype=torch.float32,
-    )
-
-    dim_target = torch.zeros(
-        3,
-        feature_height,
-        feature_width,
-        dtype=torch.float32,
-    )
-
-    yaw_target = torch.zeros(
-        2,
-        feature_height,
-        feature_width,
-        dtype=torch.float32,
-    )
-
-    offset_target = torch.zeros(
-        2,
-        feature_height,
-        feature_width,
-        dtype=torch.float32,
-    )
-
-    valid_mask = torch.zeros(
-        1,
-        feature_height,
-        feature_width,
-        dtype=torch.float32,
-    )
-
-    # Used to resolve collisions. Smaller z means closer object.
-    assigned_depth = torch.full(
-        (feature_height, feature_width),
+    # For collision handling: closer object wins.
+    priority_depth = torch.full(
+        (feature_h, feature_w),
         fill_value=float("inf"),
         dtype=torch.float32,
     )
 
-    original_height = int(sample["original_size"]["height"])
-    original_width = int(sample["original_size"]["width"])
-
-    objects = sample["objects"]
+    class_weights = class_weights or {}
 
     for obj in objects:
         class_name = obj["class_name"]
 
-        if class_name not in class_to_id:
+        if class_name not in classes:
             continue
 
-        bbox_resized = scale_bbox_2d(
+        class_id = get_class_id(class_name, classes)
+
+        bbox = scale_bbox_2d(
             bbox=obj["bbox_2d"],
             original_width=original_width,
             original_height=original_height,
@@ -136,85 +199,102 @@ def build_targets_for_sample(
             input_height=input_height,
         )
 
-        x1, y1, x2, y2 = bbox_resized
+        x1, y1, x2, y2 = bbox
 
-        # Clamp box to resized image bounds.
-        x1 = max(0.0, min(float(input_width - 1), x1))
-        y1 = max(0.0, min(float(input_height - 1), y1))
-        x2 = max(0.0, min(float(input_width - 1), x2))
-        y2 = max(0.0, min(float(input_height - 1), y2))
-
+        # Filter invalid / tiny boxes.
         if x2 <= x1 or y2 <= y1:
             continue
 
-        center_x, center_y = get_box_center([x1, y1, x2, y2])
+        center_x = 0.5 * (x1 + x2)
+        center_y = 0.5 * (y1 + y2)
 
-        grid_x_float = center_x / output_stride
-        grid_y_float = center_y / output_stride
-
-        grid_x = int(grid_x_float)
-        grid_y = int(grid_y_float)
-
-        if grid_x < 0 or grid_x >= feature_width:
+        if center_x < 0 or center_x >= input_width:
             continue
 
-        if grid_y < 0 or grid_y >= feature_height:
+        if center_y < 0 or center_y >= input_height:
             continue
 
-        depth_z = float(obj["location_3d"][2])
+        depth = float(obj["location_3d"][2])
 
-        if depth_z <= 0:
+        if depth <= 0.0:
             continue
 
-        # If cell is occupied, keep the closer object.
-        if depth_z >= float(assigned_depth[grid_y, grid_x]):
-            continue
-
-        assigned_depth[grid_y, grid_x] = depth_z
-
-        class_id = class_to_id[class_name]
-
-        # Clear previous class assignment at this cell, then assign current object.
-        cls_target[:, grid_y, grid_x] = 0.0
-        cls_target[class_id, grid_y, grid_x] = 1.0
-
-        # Store resized absolute box coordinates in input-image pixel space.
-        box2d_target[:, grid_y, grid_x] = torch.tensor(
-            [x1, y1, x2, y2],
-            dtype=torch.float32,
+        positive_cells = get_positive_cells(
+            center_x=center_x,
+            center_y=center_y,
+            input_width=input_width,
+            input_height=input_height,
+            output_stride=output_stride,
+            radius=center_sampling_radius,
         )
 
-        # Predict log depth for stability.
-        log_depth_target[0, grid_y, grid_x] = torch.log(
-            torch.tensor(depth_z, dtype=torch.float32)
+        ltrb_target = build_ltrb_box_target(
+            bbox=bbox,
+            center_x=center_x,
+            center_y=center_y,
+            input_width=input_width,
+            input_height=input_height,
         )
 
-        # Dimension residual relative to class mean dimensions.
-        # KITTI dimensions are [h, w, l].
-        dims = torch.tensor(obj["dimensions_3d"], dtype=torch.float32)
-        mean_dims = torch.tensor(class_mean_dims[class_name], dtype=torch.float32)
+        dims = obj["dimensions_3d"]  # KITTI [h, w, l]
+        mean_dims = class_mean_dims[class_name]
 
-        dim_target[:, grid_y, grid_x] = torch.log(dims / mean_dims)
+        dim_residual = [
+            torch.log(torch.tensor(max(dims[i], 1e-6) / max(mean_dims[i], 1e-6))).item()
+            for i in range(3)
+        ]
 
-        # Predict yaw as sin/cos to avoid angle wrap discontinuity.
-        yaw = torch.tensor(float(obj["rotation_y"]), dtype=torch.float32)
-        yaw_target[:, grid_y, grid_x] = torch.tensor(
-            [torch.sin(yaw), torch.cos(yaw)],
-            dtype=torch.float32,
-        )
+        yaw = float(obj["rotation_y"])
+        yaw_sin = torch.sin(torch.tensor(yaw)).item()
+        yaw_cos = torch.cos(torch.tensor(yaw)).item()
 
-        # Fractional offset inside feature cell.
-        offset_x = grid_x_float - grid_x
-        offset_y = grid_y_float - grid_y
+        sample_class_weight = float(class_weights.get(class_name, 1.0))
 
-        offset_target[:, grid_y, grid_x] = torch.tensor(
-            [offset_x, offset_y],
-            dtype=torch.float32,
-        )
+        for cell_x, cell_y in positive_cells:
+            # Collision policy: closer object owns the cell.
+            if depth > float(priority_depth[cell_y, cell_x]):
+                continue
 
-        valid_mask[0, grid_y, grid_x] = 1.0
+            # If replacing an old assignment, clear all class channels for this cell.
+            cls_target[:, cell_y, cell_x] = 0.0
 
-    targets = {
+            cls_target[class_id, cell_y, cell_x] = 1.0
+
+            box2d_target[:, cell_y, cell_x] = torch.tensor(
+                ltrb_target,
+                dtype=torch.float32,
+            )
+
+            log_depth_target[0, cell_y, cell_x] = torch.log(
+                torch.tensor(depth, dtype=torch.float32)
+            )
+
+            dim_target[:, cell_y, cell_x] = torch.tensor(
+                dim_residual,
+                dtype=torch.float32,
+            )
+
+            yaw_target[:, cell_y, cell_x] = torch.tensor(
+                [yaw_sin, yaw_cos],
+                dtype=torch.float32,
+            )
+
+            offset_target[:, cell_y, cell_x] = torch.tensor(
+                build_center_offset_target(
+                    center_x=center_x,
+                    center_y=center_y,
+                    cell_x=cell_x,
+                    cell_y=cell_y,
+                    output_stride=output_stride,
+                ),
+                dtype=torch.float32,
+            )
+
+            valid_mask[0, cell_y, cell_x] = 1.0
+            loss_weight_target[0, cell_y, cell_x] = sample_class_weight
+            priority_depth[cell_y, cell_x] = depth
+
+    return {
         "cls_target": cls_target,
         "box2d_target": box2d_target,
         "log_depth_target": log_depth_target,
@@ -222,6 +302,10 @@ def build_targets_for_sample(
         "yaw_target": yaw_target,
         "offset_target": offset_target,
         "valid_mask": valid_mask,
+        "loss_weight_target": loss_weight_target,
     }
 
-    return targets
+
+# Backward-compatible alias if older code imports build_targets.
+def build_targets(*args, **kwargs):
+    return build_targets_for_sample(*args, **kwargs)

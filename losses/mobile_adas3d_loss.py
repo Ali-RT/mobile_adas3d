@@ -1,4 +1,6 @@
-from typing import Dict
+from __future__ import annotations
+
+from typing import Dict, List, Optional
 
 import torch
 import torch.nn as nn
@@ -8,17 +10,11 @@ import torch.nn.functional as F
 def sigmoid_focal_loss(
     logits: torch.Tensor,
     targets: torch.Tensor,
+    weights: Optional[torch.Tensor] = None,
     alpha: float = 0.25,
     gamma: float = 2.0,
-    reduction: str = "mean",
+    normalizer: Optional[torch.Tensor] = None,
 ) -> torch.Tensor:
-    """
-    Binary focal loss for dense multi-label class maps.
-
-    Args:
-      logits:  [B, C, H, W]
-      targets: [B, C, H, W], values 0 or 1
-    """
     prob = torch.sigmoid(logits)
 
     ce_loss = F.binary_cross_entropy_with_logits(
@@ -28,49 +24,35 @@ def sigmoid_focal_loss(
     )
 
     p_t = prob * targets + (1.0 - prob) * (1.0 - targets)
+    focal_factor = (1.0 - p_t).pow(gamma)
 
-    focal_weight = (1.0 - p_t).pow(gamma)
+    loss = ce_loss * focal_factor
 
-    alpha_t = alpha * targets + (1.0 - alpha) * (1.0 - targets)
+    if alpha >= 0:
+        alpha_t = alpha * targets + (1.0 - alpha) * (1.0 - targets)
+        loss = alpha_t * loss
 
-    loss = alpha_t * focal_weight * ce_loss
+    if weights is not None:
+        loss = loss * weights
 
-    if reduction == "mean":
-        return loss.mean()
+    if normalizer is None:
+        normalizer = torch.clamp(targets.sum(), min=1.0)
 
-    if reduction == "sum":
-        return loss.sum()
-
-    if reduction == "none":
-        return loss
-
-    raise ValueError(f"Unsupported reduction: {reduction}")
+    return loss.sum() / torch.clamp(normalizer, min=1.0)
 
 
-def masked_smooth_l1_loss(
+def masked_weighted_smooth_l1_loss(
     pred: torch.Tensor,
     target: torch.Tensor,
     valid_mask: torch.Tensor,
+    loss_weight: Optional[torch.Tensor] = None,
     beta: float = 1.0,
 ) -> torch.Tensor:
     """
-    SmoothL1 loss only on positive object cells.
-
-    Args:
-      pred:       [B, C, H, W]
-      target:     [B, C, H, W]
-      valid_mask: [B, 1, H, W]
+    pred/target: [B, C, H, W]
+    valid_mask: [B, 1, H, W]
+    loss_weight: [B, 1, H, W]
     """
-    if pred.shape != target.shape:
-        raise ValueError(
-            f"pred and target shape mismatch: pred={pred.shape}, target={target.shape}"
-        )
-
-    if valid_mask.ndim != 4 or valid_mask.shape[1] != 1:
-        raise ValueError(f"Expected valid_mask shape [B, 1, H, W], got {valid_mask.shape}")
-
-    mask = valid_mask.expand_as(pred)
-
     loss = F.smooth_l1_loss(
         pred,
         target,
@@ -78,100 +60,49 @@ def masked_smooth_l1_loss(
         beta=beta,
     )
 
-    loss = loss * mask
+    mask = valid_mask.expand_as(loss)
 
-    denom = mask.sum().clamp(min=1.0)
+    if loss_weight is not None:
+        mask = mask * loss_weight.expand_as(loss)
 
-    return loss.sum() / denom
+    numerator = (loss * mask).sum()
+    denominator = torch.clamp(mask.sum(), min=1.0)
 
-def masked_depth_uncertainty_loss(
-    pred_log_depth: torch.Tensor,
-    target_log_depth: torch.Tensor,
-    pred_logvar: torch.Tensor,
+    return numerator / denominator
+
+
+def masked_weighted_l1_loss(
+    pred: torch.Tensor,
+    target: torch.Tensor,
     valid_mask: torch.Tensor,
+    loss_weight: Optional[torch.Tensor] = None,
 ) -> torch.Tensor:
-    """
-    Uncertainty-weighted depth loss.
+    loss = torch.abs(pred - target)
+    mask = valid_mask.expand_as(loss)
 
-    pred_log_depth:    [B, 1, H, W]
-    target_log_depth:  [B, 1, H, W]
-    pred_logvar:       [B, 1, H, W]
-    valid_mask:        [B, 1, H, W]
+    if loss_weight is not None:
+        mask = mask * loss_weight.expand_as(loss)
 
-    This trains both:
-      - the depth prediction
-      - the uncertainty prediction
+    numerator = (loss * mask).sum()
+    denominator = torch.clamp(mask.sum(), min=1.0)
 
-    Loss form:
-      0.5 * exp(-logvar) * error^2 + 0.5 * logvar
-    """
-    if pred_log_depth.shape != target_log_depth.shape:
-        raise ValueError(
-            f"Depth shape mismatch: pred={pred_log_depth.shape}, target={target_log_depth.shape}"
-        )
-
-    if pred_logvar.shape != pred_log_depth.shape:
-        raise ValueError(
-            f"logvar shape mismatch: logvar={pred_logvar.shape}, depth={pred_log_depth.shape}"
-        )
-
-    # Clamp for numerical stability.
-    pred_logvar = torch.clamp(pred_logvar, min=-5.0, max=5.0)
-
-    error = pred_log_depth - target_log_depth
-
-    loss = 0.5 * torch.exp(-pred_logvar) * error.pow(2) + 0.5 * pred_logvar
-
-    loss = loss * valid_mask
-
-    denom = valid_mask.sum().clamp(min=1.0)
-
-    return loss.sum() / denom
-
-def normalize_box2d(
-    box: torch.Tensor,
-    input_height: int,
-    input_width: int,
-) -> torch.Tensor:
-    """
-    Normalize absolute box coordinates to [0, 1]-scale.
-
-    box format:
-      [x1, y1, x2, y2]
-    """
-    scale = torch.tensor(
-        [input_width, input_height, input_width, input_height],
-        dtype=box.dtype,
-        device=box.device,
-    )
-
-    return box / scale.view(1, 4, 1, 1)
+    return numerator / denominator
 
 
 class MobileADAS3DLoss(nn.Module):
-    """
-    Combined loss for MobileADAS3D.
-
-    Loss components:
-      - classification focal loss over all cells
-      - 2D box loss on positive cells
-      - log-depth loss on positive cells
-      - dimension residual loss on positive cells
-      - yaw sin/cos loss on positive cells
-      - center offset loss on positive cells
-    """
-
     def __init__(
         self,
         input_height: int,
         input_width: int,
+        classes: Optional[List[str]] = None,
+        class_weights: Optional[Dict[str, float]] = None,
         cls_weight: float = 1.0,
         box2d_weight: float = 2.0,
         depth_weight: float = 1.0,
+        depth_uncertainty_weight: float = 0.0,
         dim_weight: float = 1.0,
         yaw_weight: float = 1.0,
         offset_weight: float = 0.5,
-        depth_uncertainty_weight: float = 0.2,
     ) -> None:
         super().__init__()
 
@@ -181,16 +112,40 @@ class MobileADAS3DLoss(nn.Module):
         self.cls_weight = cls_weight
         self.box2d_weight = box2d_weight
         self.depth_weight = depth_weight
+        self.depth_uncertainty_weight = depth_uncertainty_weight
         self.dim_weight = dim_weight
         self.yaw_weight = yaw_weight
         self.offset_weight = offset_weight
-        self.depth_uncertainty_weight = depth_uncertainty_weight
+
+        classes = classes or []
+        class_weights = class_weights or {}
+
+        weights = [
+            float(class_weights.get(class_name, 1.0))
+            for class_name in classes
+        ]
+
+        if len(weights) == 0:
+            weights = [1.0]
+
+        self.register_buffer(
+            "class_weights_tensor",
+            torch.tensor(weights, dtype=torch.float32),
+        )
 
     def forward(
         self,
         outputs: Dict[str, torch.Tensor],
         targets: Dict[str, torch.Tensor],
     ) -> Dict[str, torch.Tensor]:
+        cls_logits = outputs["cls_logits"]
+        box2d_pred = outputs["box2d"]
+        log_depth_pred = outputs["log_depth"]
+        dim_pred = outputs["dim"]
+        yaw_pred = outputs["yaw"]
+        offset_pred = outputs["center_offset"]
+        depth_uncertainty_pred = outputs["depth_uncertainty"]
+
         cls_target = targets["cls_target"]
         box2d_target = targets["box2d_target"]
         log_depth_target = targets["log_depth_target"]
@@ -199,61 +154,101 @@ class MobileADAS3DLoss(nn.Module):
         offset_target = targets["offset_target"]
         valid_mask = targets["valid_mask"]
 
+        loss_weight_target = targets.get(
+            "loss_weight_target",
+            torch.ones_like(valid_mask),
+        )
+
+        if cls_logits.shape != cls_target.shape:
+            raise RuntimeError(
+                f"cls shape mismatch: pred={cls_logits.shape}, target={cls_target.shape}"
+            )
+
+        # Positive class balancing for focal classification.
+        class_weights = self.class_weights_tensor.to(cls_logits.device)
+
+        if class_weights.numel() != cls_logits.shape[1]:
+            class_weights = torch.ones(
+                cls_logits.shape[1],
+                device=cls_logits.device,
+                dtype=cls_logits.dtype,
+            )
+
+        class_weights_view = class_weights.view(1, -1, 1, 1)
+
+        cls_loss_weights = torch.where(
+            cls_target > 0,
+            class_weights_view.expand_as(cls_target),
+            torch.ones_like(cls_target),
+        )
+
+        cls_normalizer = torch.clamp(
+            (cls_target * class_weights_view).sum(),
+            min=1.0,
+        )
+
         cls_loss = sigmoid_focal_loss(
-            logits=outputs["cls_logits"],
+            logits=cls_logits,
             targets=cls_target,
+            weights=cls_loss_weights,
+            alpha=0.25,
+            gamma=2.0,
+            normalizer=cls_normalizer,
         )
 
-        pred_box_norm = normalize_box2d(
-            outputs["box2d"],
-            input_height=self.input_height,
-            input_width=self.input_width,
-        )
-
-        target_box_norm = normalize_box2d(
-            box2d_target,
-            input_height=self.input_height,
-            input_width=self.input_width,
-        )
-
-        box2d_loss = masked_smooth_l1_loss(
-            pred=pred_box_norm,
-            target=target_box_norm,
+        box2d_loss = masked_weighted_smooth_l1_loss(
+            pred=box2d_pred,
+            target=box2d_target,
             valid_mask=valid_mask,
+            loss_weight=loss_weight_target,
+            beta=1.0,
         )
 
-        depth_loss = masked_smooth_l1_loss(
-            pred=outputs["log_depth"],
+        depth_loss = masked_weighted_smooth_l1_loss(
+            pred=log_depth_pred,
             target=log_depth_target,
             valid_mask=valid_mask,
+            loss_weight=loss_weight_target,
+            beta=1.0,
         )
 
-        depth_uncertainty_loss = masked_depth_uncertainty_loss(
-            pred_log_depth=outputs["log_depth"],
-            target_log_depth=log_depth_target,
-            pred_logvar=outputs["depth_logvar"],
+        # Optional uncertainty NLL. Kept safe and clamped.
+        log_scale = torch.clamp(depth_uncertainty_pred, min=-3.0, max=3.0)
+        depth_abs_error = torch.abs(log_depth_pred - log_depth_target)
+
+        depth_uncertainty_raw = torch.exp(-log_scale) * depth_abs_error + log_scale
+
+        depth_uncertainty_loss = masked_weighted_l1_loss(
+            pred=depth_uncertainty_raw,
+            target=torch.zeros_like(depth_uncertainty_raw),
             valid_mask=valid_mask,
+            loss_weight=loss_weight_target,
         )
-        dim_loss = masked_smooth_l1_loss(
-            pred=outputs["dim_residual"],
+
+        dim_loss = masked_weighted_smooth_l1_loss(
+            pred=dim_pred,
             target=dim_target,
             valid_mask=valid_mask,
+            loss_weight=loss_weight_target,
+            beta=1.0,
         )
 
-        # Normalize predicted yaw vector before comparing to target sin/cos.
-        pred_yaw = outputs["yaw_sincos"]
-        pred_yaw = F.normalize(pred_yaw, dim=1, eps=1e-6)
+        yaw_pred_norm = F.normalize(yaw_pred, dim=1, eps=1e-6)
 
-        yaw_loss = masked_smooth_l1_loss(
-            pred=pred_yaw,
+        yaw_loss = masked_weighted_smooth_l1_loss(
+            pred=yaw_pred_norm,
             target=yaw_target,
             valid_mask=valid_mask,
+            loss_weight=loss_weight_target,
+            beta=1.0,
         )
 
-        offset_loss = masked_smooth_l1_loss(
-            pred=outputs["center_offset"],
+        offset_loss = masked_weighted_smooth_l1_loss(
+            pred=offset_pred,
             target=offset_target,
             valid_mask=valid_mask,
+            loss_weight=loss_weight_target,
+            beta=1.0,
         )
 
         total_loss = (

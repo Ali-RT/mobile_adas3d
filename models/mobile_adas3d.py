@@ -1,39 +1,26 @@
-from typing import Dict
+from __future__ import annotations
+
+from typing import Dict, Tuple
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchvision.models import MobileNet_V3_Small_Weights, mobilenet_v3_small
+from torchvision.models import mobilenet_v3_small
 
 
 class ConvHead(nn.Module):
-    """
-    Small convolutional prediction head.
-
-    Input:
-      feature map [B, C, H, W]
-
-    Output:
-      prediction map [B, out_channels, H, W]
-    """
-
     def __init__(
         self,
         in_channels: int,
+        hidden_channels: int,
         out_channels: int,
-        hidden_channels: int = 128,
     ) -> None:
         super().__init__()
 
         self.net = nn.Sequential(
             nn.Conv2d(in_channels, hidden_channels, kernel_size=3, padding=1),
             nn.BatchNorm2d(hidden_channels),
-            nn.SiLU(inplace=True),
-
-            nn.Conv2d(hidden_channels, hidden_channels, kernel_size=3, padding=1),
-            nn.BatchNorm2d(hidden_channels),
-            nn.SiLU(inplace=True),
-
+            nn.ReLU(inplace=True),
             nn.Conv2d(hidden_channels, out_channels, kernel_size=1),
         )
 
@@ -43,146 +30,205 @@ class ConvHead(nn.Module):
 
 class MobileADAS3D(nn.Module):
     """
-    First version of MobileADAS3D.
+    MobileADAS3D v6.
 
-    This model predicts dense feature-map outputs.
+    Structure:
+      RGB image
+        -> MobileNetV3-Small backbone
+        -> stride-16 feature + stride-32 feature
+        -> lightweight FPN fusion at stride 16
+        -> dense prediction heads on 24 x 80 feature map for 384 x 1280 input
 
     Heads:
-      cls_logits:     [B, num_classes, Hf, Wf]
-      box2d:          [B, 4, Hf, Wf]
-      log_depth:      [B, 1, Hf, Wf]
-      dim_residual:   [B, 3, Hf, Wf]
-      yaw_sincos:     [B, 2, Hf, Wf]
-      center_offset:  [B, 2, Hf, Wf]
-      depth_logvar:   [B, 1, Hf, Wf]
+      cls_logits: [B, num_classes, H/16, W/16]
+      box2d:      [B, 4, H/16, W/16] local l/t/r/b normalized distances
+      log_depth:  [B, 1, H/16, W/16]
+      dim:        [B, 3, H/16, W/16]
+      yaw:        [B, 2, H/16, W/16]
+      center_offset: [B, 2, H/16, W/16]
+      depth_uncertainty: [B, 1, H/16, W/16]
     """
 
     def __init__(
         self,
         num_classes: int,
+        backbone_name: str = "mobilenet_v3_small",
         pretrained: bool = True,
-        use_sparse_depth: bool = False,
+        input_height: int = 384,
+        input_width: int = 1280,
+        fpn_channels: int = 128,
+        head_channels: int = 256,
     ) -> None:
         super().__init__()
 
-        self.num_classes = num_classes
-        self.use_sparse_depth = use_sparse_depth
-
-        if pretrained:
-            weights = MobileNet_V3_Small_Weights.DEFAULT
-        else:
-            weights = None
-
-        backbone = mobilenet_v3_small(weights=weights)
-
-        # MobileNetV3 features output [B, 576, H/32, W/32]
-        self.rgb_backbone = backbone.features
-        rgb_channels = 576
-
-        if use_sparse_depth:
-            self.depth_stem = nn.Sequential(
-                nn.Conv2d(2, 16, kernel_size=3, stride=2, padding=1),
-                nn.BatchNorm2d(16),
-                nn.SiLU(inplace=True),
-
-                nn.Conv2d(16, 32, kernel_size=3, stride=2, padding=1),
-                nn.BatchNorm2d(32),
-                nn.SiLU(inplace=True),
-
-                nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1),
-                nn.BatchNorm2d(64),
-                nn.SiLU(inplace=True),
+        if backbone_name != "mobilenet_v3_small":
+            raise ValueError(
+                f"Unsupported backbone '{backbone_name}'. "
+                "This implementation currently supports mobilenet_v3_small."
             )
-            fusion_in_channels = rgb_channels + 64
-        else:
-            self.depth_stem = None
-            fusion_in_channels = rgb_channels
 
-        self.fusion = nn.Sequential(
-            nn.Conv2d(fusion_in_channels, 256, kernel_size=1),
-            nn.BatchNorm2d(256),
-            nn.SiLU(inplace=True),
+        # Keep old torchvision compatibility simple.
+        backbone = mobilenet_v3_small(pretrained=pretrained)
+        self.backbone_features = backbone.features
+
+        self.num_classes = num_classes
+        self.input_height = input_height
+        self.input_width = input_width
+
+        c16, c32 = self._infer_feature_channels(
+            input_height=input_height,
+            input_width=input_width,
         )
 
-        self.cls_head = ConvHead(256, num_classes)
-        self.box2d_head = ConvHead(256, 4)
-        self.depth_head = ConvHead(256, 1)
-        self.dim_head = ConvHead(256, 3)
-        self.yaw_head = ConvHead(256, 2)
-        self.center_offset_head = ConvHead(256, 2)
-        self.depth_uncertainty_head = ConvHead(256, 1)
+        self.proj16 = nn.Sequential(
+            nn.Conv2d(c16, fpn_channels, kernel_size=1),
+            nn.BatchNorm2d(fpn_channels),
+            nn.ReLU(inplace=True),
+        )
 
-        self._init_head_biases()
+        self.proj32 = nn.Sequential(
+            nn.Conv2d(c32, fpn_channels, kernel_size=1),
+            nn.BatchNorm2d(fpn_channels),
+            nn.ReLU(inplace=True),
+        )
 
-    def _init_head_biases(self) -> None:
-        """
-        Initialize classification head bias for sparse object detection.
+        self.fusion = nn.Sequential(
+            nn.Conv2d(fpn_channels * 2, head_channels, kernel_size=3, padding=1),
+            nn.BatchNorm2d(head_channels),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(head_channels, head_channels, kernel_size=3, padding=1),
+            nn.BatchNorm2d(head_channels),
+            nn.ReLU(inplace=True),
+        )
 
-        This prevents the model from starting with high confidence everywhere.
-        """
-        final_cls_layer = self.cls_head.net[-1]
+        self.cls_head = ConvHead(
+            in_channels=head_channels,
+            hidden_channels=head_channels,
+            out_channels=num_classes,
+        )
 
-        if isinstance(final_cls_layer, nn.Conv2d):
-            nn.init.constant_(final_cls_layer.bias, -4.6)
+        self.box2d_head = ConvHead(
+            in_channels=head_channels,
+            hidden_channels=head_channels,
+            out_channels=4,
+        )
 
-    def forward(
+        self.depth_head = ConvHead(
+            in_channels=head_channels,
+            hidden_channels=head_channels,
+            out_channels=1,
+        )
+
+        self.dim_head = ConvHead(
+            in_channels=head_channels,
+            hidden_channels=head_channels,
+            out_channels=3,
+        )
+
+        self.yaw_head = ConvHead(
+            in_channels=head_channels,
+            hidden_channels=head_channels,
+            out_channels=2,
+        )
+
+        self.center_offset_head = ConvHead(
+            in_channels=head_channels,
+            hidden_channels=head_channels,
+            out_channels=2,
+        )
+
+        self.depth_uncertainty_head = ConvHead(
+            in_channels=head_channels,
+            hidden_channels=head_channels,
+            out_channels=1,
+        )
+
+    def _extract_stride_features(
         self,
-        image: torch.Tensor,
-        sparse_depth: torch.Tensor | None = None,
-        sparse_depth_mask: torch.Tensor | None = None,
-    ) -> Dict[str, torch.Tensor]:
-        """
-        Args:
-          image:
-            [B, 3, H, W]
+        x: torch.Tensor,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        input_h = x.shape[-2]
 
-          sparse_depth:
-            optional [B, 1, H, W]
+        feat16 = None
+        feat32 = None
 
-          sparse_depth_mask:
-            optional [B, 1, H, W]
+        out = x
 
-        Returns:
-          dictionary of prediction maps
-        """
-        if image.ndim != 4:
-            raise ValueError(f"Expected image shape [B, 3, H, W], got {tuple(image.shape)}")
+        for layer in self.backbone_features:
+            out = layer(out)
 
-        if image.shape[1] != 3:
-            raise ValueError(f"Expected image with 3 channels, got {image.shape[1]}")
+            stride = int(round(input_h / out.shape[-2]))
 
-        rgb_feat = self.rgb_backbone(image)
+            if stride == 16:
+                feat16 = out
 
-        if self.use_sparse_depth:
-            if sparse_depth is None or sparse_depth_mask is None:
-                raise ValueError(
-                    "sparse_depth and sparse_depth_mask are required when use_sparse_depth=True"
-                )
+            if stride == 32:
+                feat32 = out
 
-            depth_input = torch.cat([sparse_depth, sparse_depth_mask], dim=1)
-            depth_feat = self.depth_stem(depth_input)
+        if feat16 is None:
+            raise RuntimeError("Could not extract stride-16 feature from backbone.")
 
-            depth_feat = F.interpolate(
-                depth_feat,
-                size=rgb_feat.shape[-2:],
-                mode="bilinear",
-                align_corners=False,
-            )
+        if feat32 is None:
+            raise RuntimeError("Could not extract stride-32 feature from backbone.")
 
-            feat = torch.cat([rgb_feat, depth_feat], dim=1)
-        else:
-            feat = rgb_feat
+        return feat16, feat32
 
-        feat = self.fusion(feat)
+    def _infer_feature_channels(
+        self,
+        input_height: int,
+        input_width: int,
+    ) -> Tuple[int, int]:
+        was_training = self.backbone_features.training
+        self.backbone_features.eval()
 
-        outputs = {
-            "cls_logits": self.cls_head(feat),
-            "box2d": self.box2d_head(feat),
-            "log_depth": self.depth_head(feat),
-            "dim_residual": self.dim_head(feat),
-            "yaw_sincos": self.yaw_head(feat),
-            "center_offset": self.center_offset_head(feat),
-            "depth_logvar": self.depth_uncertainty_head(feat),
+        with torch.no_grad():
+            dummy = torch.zeros(1, 3, input_height, input_width)
+            feat16, feat32 = self._extract_stride_features(dummy)
+
+        if was_training:
+            self.backbone_features.train()
+
+        c16 = int(feat16.shape[1])
+        c32 = int(feat32.shape[1])
+
+        print(f"MobileADAS3D FPN channels: stride16={c16}, stride32={c32}")
+
+        return c16, c32
+
+    def forward(self, images: torch.Tensor) -> Dict[str, torch.Tensor]:
+        feat16, feat32 = self._extract_stride_features(images)
+
+        p16 = self.proj16(feat16)
+        p32 = self.proj32(feat32)
+
+        p32_up = F.interpolate(
+            p32,
+            size=p16.shape[-2:],
+            mode="bilinear",
+            align_corners=False,
+        )
+
+        fused = torch.cat([p16, p32_up], dim=1)
+        fused = self.fusion(fused)
+
+        cls_logits = self.cls_head(fused)
+
+        # Local l/t/r/b distances should be non-negative.
+        # Targets are normalized by image width/height.
+        box2d = F.softplus(self.box2d_head(fused))
+
+        log_depth = self.depth_head(fused)
+        dim = self.dim_head(fused)
+        yaw = self.yaw_head(fused)
+        center_offset = self.center_offset_head(fused)
+        depth_uncertainty = self.depth_uncertainty_head(fused)
+
+        return {
+            "cls_logits": cls_logits,
+            "box2d": box2d,
+            "log_depth": log_depth,
+            "dim": dim,
+            "yaw": yaw,
+            "center_offset": center_offset,
+            "depth_uncertainty": depth_uncertainty,
         }
-
-        return outputs

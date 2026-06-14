@@ -1,48 +1,75 @@
-from typing import Any, Dict, List
+from __future__ import annotations
+
+import math
+from typing import Dict, List
 
 import torch
 
 
-def box_iou(box: torch.Tensor, boxes: torch.Tensor) -> torch.Tensor:
+def box_iou(
+    box: torch.Tensor,
+    boxes: torch.Tensor,
+) -> torch.Tensor:
     """
-    box:   [4]
+    box: [4]
     boxes: [N, 4]
-    format: x1, y1, x2, y2
     """
+    if boxes.numel() == 0:
+        return torch.zeros(0, dtype=box.dtype, device=box.device)
+
     x1 = torch.maximum(box[0], boxes[:, 0])
     y1 = torch.maximum(box[1], boxes[:, 1])
     x2 = torch.minimum(box[2], boxes[:, 2])
     y2 = torch.minimum(box[3], boxes[:, 3])
 
-    inter_w = (x2 - x1).clamp(min=0)
-    inter_h = (y2 - y1).clamp(min=0)
+    inter_w = torch.clamp(x2 - x1, min=0)
+    inter_h = torch.clamp(y2 - y1, min=0)
     inter = inter_w * inter_h
 
-    area1 = (box[2] - box[0]).clamp(min=0) * (box[3] - box[1]).clamp(min=0)
-    area2 = (boxes[:, 2] - boxes[:, 0]).clamp(min=0) * (boxes[:, 3] - boxes[:, 1]).clamp(min=0)
+    box_area = torch.clamp(box[2] - box[0], min=0) * torch.clamp(box[3] - box[1], min=0)
+    boxes_area = torch.clamp(boxes[:, 2] - boxes[:, 0], min=0) * torch.clamp(
+        boxes[:, 3] - boxes[:, 1],
+        min=0,
+    )
 
-    union = area1 + area2 - inter
-    return inter / union.clamp(min=1e-6)
+    union = box_area + boxes_area - inter
+    return inter / torch.clamp(union, min=1e-6)
 
 
-def nms_2d(boxes: torch.Tensor, scores: torch.Tensor, iou_threshold: float) -> torch.Tensor:
-    if boxes.numel() == 0:
-        return torch.empty((0,), dtype=torch.long, device=boxes.device)
+def nms_2d(
+    predictions: List[Dict],
+    iou_threshold: float = 0.5,
+) -> List[Dict]:
+    if len(predictions) == 0:
+        return []
 
-    order = scores.argsort(descending=True)
-    keep = []
+    predictions = sorted(predictions, key=lambda p: p["score"], reverse=True)
 
-    while order.numel() > 0:
-        idx = order[0]
-        keep.append(idx)
+    kept: List[Dict] = []
 
-        if order.numel() == 1:
-            break
+    while predictions:
+        current = predictions.pop(0)
+        kept.append(current)
 
-        ious = box_iou(boxes[idx], boxes[order[1:]])
-        order = order[1:][ious <= iou_threshold]
+        remaining = []
 
-    return torch.stack(keep)
+        current_box = torch.tensor(current["bbox_2d"], dtype=torch.float32)
+
+        for pred in predictions:
+            # Class-aware NMS.
+            if pred["class_name"] != current["class_name"]:
+                remaining.append(pred)
+                continue
+
+            pred_box = torch.tensor(pred["bbox_2d"], dtype=torch.float32)
+            iou = box_iou(current_box, pred_box.unsqueeze(0))[0].item()
+
+            if iou <= iou_threshold:
+                remaining.append(pred)
+
+        predictions = remaining
+
+    return kept
 
 
 def decode_mobile_adas3d_outputs(
@@ -51,130 +78,135 @@ def decode_mobile_adas3d_outputs(
     class_mean_dims: Dict[str, List[float]],
     input_height: int,
     input_width: int,
-    score_threshold: float = 0.25,
-    topk: int = 100,
+    score_threshold: float = 0.20,
+    topk: int = 200,
     nms_iou_threshold: float = 0.5,
-) -> List[List[Dict[str, Any]]]:
+) -> List[List[Dict]]:
     """
-    Decode dense model outputs into prediction dictionaries.
+    Decode v6 outputs.
 
-    Returns:
-      batch_predictions: list of length B.
-      Each element is a list of predictions for one image.
+    box2d is l/t/r/b normalized relative to predicted object center.
+    center_offset predicts offset from feature-cell center to object center.
     """
-    cls_scores = torch.sigmoid(outputs["cls_logits"])
+    cls_logits = outputs["cls_logits"]
     box2d = outputs["box2d"]
     log_depth = outputs["log_depth"]
-    dim_residual = outputs["dim_residual"]
-    yaw_sincos = outputs["yaw_sincos"]
+    dim = outputs["dim"]
+    yaw = outputs["yaw"]
     center_offset = outputs["center_offset"]
-    depth_logvar = outputs["depth_logvar"]
+    depth_uncertainty = outputs["depth_uncertainty"]
 
-    B, C, Hf, Wf = cls_scores.shape
+    batch_size, num_classes, feature_h, feature_w = cls_logits.shape
 
-    batch_predictions = []
+    stride_y = input_height / float(feature_h)
+    stride_x = input_width / float(feature_w)
 
-    for b in range(B):
-        scores_flat = cls_scores[b].reshape(-1)
+    scores = torch.sigmoid(cls_logits)
 
-        top_scores, top_indices = torch.topk(
-            scores_flat,
-            k=min(topk, scores_flat.numel()),
-        )
+    batch_predictions: List[List[Dict]] = []
 
-        predictions = []
+    for b in range(batch_size):
+        scores_b = scores[b]
 
-        for score, flat_idx in zip(top_scores, top_indices):
+        flat_scores = scores_b.reshape(-1)
+        k = min(topk, flat_scores.numel())
+
+        top_scores, top_indices = torch.topk(flat_scores, k=k)
+
+        predictions: List[Dict] = []
+
+        for score, flat_index in zip(top_scores, top_indices):
             score_value = float(score.item())
 
             if score_value < score_threshold:
                 continue
 
-            class_id = int(flat_idx // (Hf * Wf))
-            rem = int(flat_idx % (Hf * Wf))
-            gy = rem // Wf
-            gx = rem % Wf
+            flat_index_value = int(flat_index.item())
+
+            class_id = flat_index_value // (feature_h * feature_w)
+            rem = flat_index_value % (feature_h * feature_w)
+            cell_y = rem // feature_w
+            cell_x = rem % feature_w
 
             class_name = classes[class_id]
 
-            raw_box = box2d[b, :, gy, gx]
+            point_x = (cell_x + 0.5) * stride_x
+            point_y = (cell_y + 0.5) * stride_y
 
-            x1 = raw_box[0].clamp(0, input_width - 1)
-            y1 = raw_box[1].clamp(0, input_height - 1)
-            x2 = raw_box[2].clamp(0, input_width - 1)
-            y2 = raw_box[3].clamp(0, input_height - 1)
+            offset_x = float(center_offset[b, 0, cell_y, cell_x].item())
+            offset_y = float(center_offset[b, 1, cell_y, cell_x].item())
 
-            # Ensure valid ordering.
-            x_min = torch.minimum(x1, x2)
-            y_min = torch.minimum(y1, y2)
-            x_max = torch.maximum(x1, x2)
-            y_max = torch.maximum(y1, y2)
+            center_x = point_x + offset_x * stride_x
+            center_y = point_y + offset_y * stride_y
 
-            if (x_max - x_min) < 2 or (y_max - y_min) < 2:
+            l_norm = float(box2d[b, 0, cell_y, cell_x].item())
+            t_norm = float(box2d[b, 1, cell_y, cell_x].item())
+            r_norm = float(box2d[b, 2, cell_y, cell_x].item())
+            b_norm = float(box2d[b, 3, cell_y, cell_x].item())
+
+            l = l_norm * input_width
+            r = r_norm * input_width
+            t = t_norm * input_height
+            bb = b_norm * input_height
+
+            x1 = center_x - l
+            y1 = center_y - t
+            x2 = center_x + r
+            y2 = center_y + bb
+
+            x1 = max(0.0, min(float(x1), float(input_width - 1)))
+            y1 = max(0.0, min(float(y1), float(input_height - 1)))
+            x2 = max(0.0, min(float(x2), float(input_width - 1)))
+            y2 = max(0.0, min(float(y2), float(input_height - 1)))
+
+            if x2 <= x1 or y2 <= y1:
                 continue
 
-            depth = torch.exp(log_depth[b, 0, gy, gx]).clamp(min=0.1, max=200.0)
+            if (x2 - x1) < 2 or (y2 - y1) < 2:
+                continue
 
+            depth = float(torch.exp(log_depth[b, 0, cell_y, cell_x]).item())
+            depth = max(0.1, min(depth, 200.0))
+
+            dim_residual = dim[b, :, cell_y, cell_x]
             mean_dims = torch.tensor(
                 class_mean_dims[class_name],
-                dtype=dim_residual.dtype,
                 device=dim_residual.device,
+                dtype=dim_residual.dtype,
             )
+            dims = torch.exp(dim_residual) * mean_dims
 
-            dims = torch.exp(dim_residual[b, :, gy, gx]) * mean_dims
+            yaw_vec = yaw[b, :, cell_y, cell_x]
+            yaw_sin = float(yaw_vec[0].item())
+            yaw_cos = float(yaw_vec[1].item())
+            yaw_angle = math.atan2(yaw_sin, yaw_cos)
 
-            yaw_vec = yaw_sincos[b, :, gy, gx]
-            yaw = torch.atan2(yaw_vec[0], yaw_vec[1])
-
-            uncertainty = torch.exp(depth_logvar[b, 0, gy, gx]).clamp(min=1e-6, max=1e6)
-
-            stride_x = input_width / Wf
-            stride_y = input_height / Hf
-
-            offset = center_offset[b, :, gy, gx]
-            center_x = (gx + offset[0]) * stride_x
-            center_y = (gy + offset[1]) * stride_y
+            unc = float(depth_uncertainty[b, 0, cell_y, cell_x].item())
 
             predictions.append(
                 {
-                    "class_id": class_id,
+                    "class_id": int(class_id),
                     "class_name": class_name,
                     "score": score_value,
-                    "bbox_2d": [
-                        float(x_min.item()),
-                        float(y_min.item()),
-                        float(x_max.item()),
-                        float(y_max.item()),
-                    ],
-                    "depth": float(depth.item()),
+                    "bbox_2d": [x1, y1, x2, y2],
+                    "center_2d": [float(center_x), float(center_y)],
+                    "depth": depth,
                     "dimensions_3d_hwl": [
                         float(dims[0].item()),
                         float(dims[1].item()),
                         float(dims[2].item()),
                     ],
-                    "yaw": float(yaw.item()),
-                    "center_2d": [
-                        float(center_x.item()),
-                        float(center_y.item()),
-                    ],
-                    "depth_uncertainty": float(uncertainty.item()),
+                    "yaw": yaw_angle,
+                    "depth_uncertainty": unc,
+                    "cell_x": int(cell_x),
+                    "cell_y": int(cell_y),
                 }
             )
 
-        if predictions:
-            boxes = torch.tensor(
-                [p["bbox_2d"] for p in predictions],
-                dtype=torch.float32,
-                device=cls_scores.device,
-            )
-            scores = torch.tensor(
-                [p["score"] for p in predictions],
-                dtype=torch.float32,
-                device=cls_scores.device,
-            )
-
-            keep = nms_2d(boxes, scores, nms_iou_threshold)
-            predictions = [predictions[int(i.item())] for i in keep]
+        predictions = nms_2d(
+            predictions=predictions,
+            iou_threshold=nms_iou_threshold,
+        )
 
         batch_predictions.append(predictions)
 

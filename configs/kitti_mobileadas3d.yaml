@@ -40,10 +40,21 @@ model:
   pretrained: true
   input_height: 384
   input_width: 1280
-  output_stride: 32
+
+  # New version
+  output_stride: 16
+  neck: stride16_fpn
+  box_encoding: ltrb
+
+  fpn_channels: 128
+  head_channels: 256
   use_sparse_depth: false
 
 targets:
+  center_sampling:
+    enabled: true
+    radius: 1
+
   class_mean_dims:
     Car: [1.50, 1.60, 3.90]
     Pedestrian: [1.70, 0.60, 0.80]
@@ -99,6 +110,11 @@ loss:
   yaw_weight: 1.0
   offset_weight: 0.5
 
+  class_weights:
+    Car: 1.0
+    Pedestrian: 2.5
+    Cyclist: 3.0
+    
 logging:
   run_name: baseline_mobilenetv3_kitti
   use_tensorboard: true

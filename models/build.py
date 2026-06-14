@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any, Dict
 
 from models.mobile_adas3d import MobileADAS3D
@@ -7,12 +9,14 @@ def build_model(config: Dict[str, Any]) -> MobileADAS3D:
     dataset_cfg = config["dataset"]
     model_cfg = config["model"]
 
-    num_classes = len(dataset_cfg["classes"])
-
     model = MobileADAS3D(
-        num_classes=num_classes,
-        pretrained=model_cfg.get("pretrained", True),
-        use_sparse_depth=model_cfg.get("use_sparse_depth", False),
+        num_classes=len(dataset_cfg["classes"]),
+        backbone_name=model_cfg.get("backbone", "mobilenet_v3_small"),
+        pretrained=bool(model_cfg.get("pretrained", True)),
+        input_height=int(model_cfg["input_height"]),
+        input_width=int(model_cfg["input_width"]),
+        fpn_channels=int(model_cfg.get("fpn_channels", 128)),
+        head_channels=int(model_cfg.get("head_channels", 256)),
     )
 
     return model
