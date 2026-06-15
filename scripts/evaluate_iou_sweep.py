@@ -367,7 +367,10 @@ def main() -> None:
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    num_images = min(args.max_images, len(dataset))
+    if args.max_images is None or args.max_images < 0:
+        num_images = len(dataset)
+    else:
+        num_images = min(args.max_images, len(dataset))
 
     # Nested results:
     # results[(score_thr, iou_thr)] = stats
