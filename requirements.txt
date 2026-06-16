@@ -8,3 +8,4 @@ tqdm
 matplotlib
 scikit-learn
 tensorboard
+ptflops
