@@ -131,3 +131,9 @@ outputs:
   profile_output_dirs:
     local_mac: ./outputs
     colab_drive: /content/drive/MyDrive/mobile_adas3d_outputs
+
+inference:
+  score_threshold: 0.55
+  topk: 50
+  eval_topk: 100
+  nms_iou_threshold: 0.5
