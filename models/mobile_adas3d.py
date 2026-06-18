@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple
 
 import torch
 import torch.nn as nn
@@ -40,12 +40,12 @@ class MobileADAS3D(nn.Module):
         -> dense prediction heads on 24 x 80 feature map for 384 x 1280 input
 
     Heads:
-      cls_logits: [B, num_classes, H/16, W/16]
-      box2d:      [B, 4, H/16, W/16] local l/t/r/b normalized distances
-      log_depth:  [B, 1, H/16, W/16]
-      dim:        [B, 3, H/16, W/16]
-      yaw:        [B, 2, H/16, W/16]
-      center_offset: [B, 2, H/16, W/16]
+      cls_logits:        [B, num_classes, H/16, W/16]
+      box2d:             [B, 4, H/16, W/16] local l/t/r/b normalized distances
+      log_depth:         [B, 1, H/16, W/16]
+      dim:               [B, 3, H/16, W/16]
+      yaw:               [B, 2, H/16, W/16]
+      center_offset:     [B, 2, H/16, W/16]
       depth_uncertainty: [B, 1, H/16, W/16]
     """
 
@@ -75,9 +75,24 @@ class MobileADAS3D(nn.Module):
         self.input_height = input_height
         self.input_width = input_width
 
-        c16, c32 = self._infer_feature_channels(
+        (
+            self.stride16_feature_index,
+            self.stride32_feature_index,
+            c16,
+            c32,
+        ) = self._infer_stride_feature_indices_and_channels(
             input_height=input_height,
             input_width=input_width,
+        )
+
+        print(
+            "MobileADAS3D FPN channels: "
+            f"stride16={c16}, stride32={c32}"
+        )
+        print(
+            "MobileADAS3D FPN feature indices: "
+            f"stride16_index={self.stride16_feature_index}, "
+            f"stride32_index={self.stride32_feature_index}"
         )
 
         self.proj16 = nn.Sequential(
@@ -143,57 +158,105 @@ class MobileADAS3D(nn.Module):
             out_channels=1,
         )
 
-    def _extract_stride_features(
-        self,
-        x: torch.Tensor,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
-        input_h = x.shape[-2]
-
-        feat16 = None
-        feat32 = None
-
-        out = x
-
-        for layer in self.backbone_features:
-            out = layer(out)
-
-            stride = int(round(input_h / out.shape[-2]))
-
-            if stride == 16:
-                feat16 = out
-
-            if stride == 32:
-                feat32 = out
-
-        if feat16 is None:
-            raise RuntimeError("Could not extract stride-16 feature from backbone.")
-
-        if feat32 is None:
-            raise RuntimeError("Could not extract stride-32 feature from backbone.")
-
-        return feat16, feat32
-
-    def _infer_feature_channels(
+    def _infer_stride_feature_indices_and_channels(
         self,
         input_height: int,
         input_width: int,
-    ) -> Tuple[int, int]:
+    ) -> Tuple[int, int, int, int]:
+        """
+        Find which MobileNetV3 feature layers correspond to stride 16 and stride 32.
+
+        This runs only during __init__, not during forward.
+        That makes the actual forward path TorchScript-trace friendly.
+        """
         was_training = self.backbone_features.training
         self.backbone_features.eval()
 
+        dummy = torch.zeros(1, 3, input_height, input_width)
+
+        stride16_index: Optional[int] = None
+        stride32_index: Optional[int] = None
+        stride16_channels: Optional[int] = None
+        stride32_channels: Optional[int] = None
+
+        out = dummy
+
         with torch.no_grad():
-            dummy = torch.zeros(1, 3, input_height, input_width)
-            feat16, feat32 = self._extract_stride_features(dummy)
+            for layer_idx, layer in enumerate(self.backbone_features):
+                out = layer(out)
+
+                out_h = int(out.shape[-2])
+                out_w = int(out.shape[-1])
+
+                stride_h = int(round(float(input_height) / float(out_h)))
+                stride_w = int(round(float(input_width) / float(out_w)))
+
+                if stride_h != stride_w:
+                    raise RuntimeError(
+                        f"Unexpected non-square stride at layer {layer_idx}: "
+                        f"stride_h={stride_h}, stride_w={stride_w}"
+                    )
+
+                stride = stride_h
+
+                # Keep updating stride16 so we use the deepest stride-16 feature.
+                if stride == 16:
+                    stride16_index = layer_idx
+                    stride16_channels = int(out.shape[1])
+
+                # Keep updating stride32 so we use the deepest stride-32 feature.
+                if stride == 32:
+                    stride32_index = layer_idx
+                    stride32_channels = int(out.shape[1])
 
         if was_training:
             self.backbone_features.train()
 
-        c16 = int(feat16.shape[1])
-        c32 = int(feat32.shape[1])
+        if stride16_index is None or stride16_channels is None:
+            raise RuntimeError("Could not find stride-16 feature in backbone.")
 
-        print(f"MobileADAS3D FPN channels: stride16={c16}, stride32={c32}")
+        if stride32_index is None or stride32_channels is None:
+            raise RuntimeError("Could not find stride-32 feature in backbone.")
 
-        return c16, c32
+        return (
+            stride16_index,
+            stride32_index,
+            stride16_channels,
+            stride32_channels,
+        )
+
+    def _extract_stride_features(
+        self,
+        images: torch.Tensor,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        TorchScript-trace friendly feature extraction.
+
+        Important:
+          Do not compute dynamic stride here.
+          Just collect features from fixed layer indices found during __init__.
+        """
+        out = images
+
+        feat16: Optional[torch.Tensor] = None
+        feat32: Optional[torch.Tensor] = None
+
+        for layer_idx, layer in enumerate(self.backbone_features):
+            out = layer(out)
+
+            if layer_idx == self.stride16_feature_index:
+                feat16 = out
+
+            if layer_idx == self.stride32_feature_index:
+                feat32 = out
+
+        if feat16 is None:
+            raise RuntimeError("stride-16 feature was not extracted.")
+
+        if feat32 is None:
+            raise RuntimeError("stride-32 feature was not extracted.")
+
+        return feat16, feat32
 
     def forward(self, images: torch.Tensor) -> Dict[str, torch.Tensor]:
         feat16, feat32 = self._extract_stride_features(images)
