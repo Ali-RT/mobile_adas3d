@@ -35,6 +35,36 @@ def _box_iou_torch(boxes1: torch.Tensor, boxes2: torch.Tensor) -> torch.Tensor:
     union = area1[:, None] + area2[None, :] - intersection
     return intersection / union.clamp(min=1e-6)
 
+def box_iou(box_a: Any, box_b: Any) -> float:
+    """
+    Public compatibility helper used by evaluation scripts.
+
+    Accepts:
+      box_a: [x1, y1, x2, y2]
+      box_b: [x1, y1, x2, y2]
+
+    Returns:
+      scalar IoU as float
+    """
+    if not torch.is_tensor(box_a):
+        box_a_tensor = torch.tensor(box_a, dtype=torch.float32)
+    else:
+        box_a_tensor = box_a.detach().to(dtype=torch.float32)
+
+    if not torch.is_tensor(box_b):
+        box_b_tensor = torch.tensor(box_b, dtype=torch.float32)
+    else:
+        box_b_tensor = box_b.detach().to(dtype=torch.float32)
+
+    if box_a_tensor.ndim == 1:
+        box_a_tensor = box_a_tensor.unsqueeze(0)
+
+    if box_b_tensor.ndim == 1:
+        box_b_tensor = box_b_tensor.unsqueeze(0)
+
+    iou = _box_iou_torch(box_a_tensor, box_b_tensor)
+
+    return float(iou[0, 0].item())
 
 def _nms_torch_fallback(
     boxes: torch.Tensor,
