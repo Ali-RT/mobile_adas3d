@@ -35,16 +35,23 @@ def _box_iou_torch(boxes1: torch.Tensor, boxes2: torch.Tensor) -> torch.Tensor:
     union = area1[:, None] + area2[None, :] - intersection
     return intersection / union.clamp(min=1e-6)
 
-def box_iou(box_a: Any, box_b: Any) -> float:
+def box_iou(box_a: Any, box_b: Any) -> torch.Tensor:
     """
     Public compatibility helper used by evaluation scripts.
 
-    Accepts:
-      box_a: [x1, y1, x2, y2]
-      box_b: [x1, y1, x2, y2]
+    Supports:
+      box_a: [4] or [N, 4]
+      box_b: [4] or [M, 4]
 
     Returns:
-      scalar IoU as float
+      if box_a is [4] and box_b is [M, 4]:
+        Tensor [M]
+
+      if box_a is [N, 4] and box_b is [M, 4]:
+        Tensor [N, M]
+
+      if both are [4]:
+        Tensor scalar-like [1]
     """
     if not torch.is_tensor(box_a):
         box_a_tensor = torch.tensor(box_a, dtype=torch.float32)
@@ -56,15 +63,36 @@ def box_iou(box_a: Any, box_b: Any) -> float:
     else:
         box_b_tensor = box_b.detach().to(dtype=torch.float32)
 
-    if box_a_tensor.ndim == 1:
+    box_a_was_1d = box_a_tensor.ndim == 1
+    box_b_was_1d = box_b_tensor.ndim == 1
+
+    if box_a_was_1d:
         box_a_tensor = box_a_tensor.unsqueeze(0)
 
-    if box_b_tensor.ndim == 1:
+    if box_b_was_1d:
         box_b_tensor = box_b_tensor.unsqueeze(0)
 
-    iou = _box_iou_torch(box_a_tensor, box_b_tensor)
+    ious = _box_iou_torch(box_a_tensor, box_b_tensor)
 
-    return float(iou[0, 0].item())
+    # Common evaluation case:
+    #   one prediction box vs many GT boxes
+    # Return [M], so caller can do ious.tolist().
+    if box_a_was_1d and not box_b_was_1d:
+        return ious.squeeze(0)
+
+    # Less common:
+    #   many prediction boxes vs one GT box
+    # Return [N].
+    if not box_a_was_1d and box_b_was_1d:
+        return ious.squeeze(1)
+
+    # Single box vs single box.
+    # Return [1], not float, so .tolist() still works.
+    if box_a_was_1d and box_b_was_1d:
+        return ious.reshape(1)
+
+    # Full matrix [N, M].
+    return ious
 
 def _nms_torch_fallback(
     boxes: torch.Tensor,
