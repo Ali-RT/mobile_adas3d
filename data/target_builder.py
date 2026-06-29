@@ -166,6 +166,8 @@ def build_targets_for_sample(
     cls_target = torch.zeros(num_classes, feature_h, feature_w, dtype=torch.float32)
     box2d_target = torch.zeros(4, feature_h, feature_w, dtype=torch.float32)
     log_depth_target = torch.zeros(1, feature_h, feature_w, dtype=torch.float32)
+    loc_xy_target = torch.zeros(2, feature_h, feature_w, dtype=torch.float32)
+    location_xyz_target = torch.zeros(3, feature_h, feature_w, dtype=torch.float32)
     dim_target = torch.zeros(3, feature_h, feature_w, dtype=torch.float32)
     yaw_target = torch.zeros(2, feature_h, feature_w, dtype=torch.float32)
     offset_target = torch.zeros(2, feature_h, feature_w, dtype=torch.float32)
@@ -219,6 +221,17 @@ def build_targets_for_sample(
         if depth <= 0.0:
             continue
 
+        location_x = float(obj["location_3d"][0])
+        location_y = float(obj["location_3d"][1])
+        location_z = depth
+
+        # KITTI camera-frame location encoded as [x / z, y / z].
+        # Decode is unambiguous: x = loc_xy[0] * z, y = loc_xy[1] * z.
+        loc_xy = [
+            location_x / max(location_z, 1e-3),
+            location_y / max(location_z, 1e-3),
+        ]
+
         positive_cells = get_positive_cells(
             center_x=center_x,
             center_y=center_y,
@@ -269,6 +282,16 @@ def build_targets_for_sample(
                 torch.tensor(depth, dtype=torch.float32)
             )
 
+            loc_xy_target[:, cell_y, cell_x] = torch.tensor(
+                loc_xy,
+                dtype=torch.float32,
+            )
+
+            location_xyz_target[:, cell_y, cell_x] = torch.tensor(
+                [location_x, location_y, location_z],
+                dtype=torch.float32,
+            )
+
             dim_target[:, cell_y, cell_x] = torch.tensor(
                 dim_residual,
                 dtype=torch.float32,
@@ -298,6 +321,8 @@ def build_targets_for_sample(
         "cls_target": cls_target,
         "box2d_target": box2d_target,
         "log_depth_target": log_depth_target,
+        "loc_xy_target": loc_xy_target,
+        "location_xyz_target": location_xyz_target,
         "dim_target": dim_target,
         "yaw_target": yaw_target,
         "offset_target": offset_target,

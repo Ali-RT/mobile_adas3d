@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from functools import partial
+from pathlib import Path
 from typing import Any, Dict
 
 import torch
@@ -41,6 +42,9 @@ def build_criterion(config: Dict[str, Any]) -> MobileADAS3DLoss:
         dim_weight=float(loss_cfg.get("dim_weight", 1.0)),
         yaw_weight=float(loss_cfg.get("yaw_weight", 1.0)),
         offset_weight=float(loss_cfg.get("offset_weight", 0.5)),
+        loc_xy_weight=float(loss_cfg.get("loc_xy_weight", 1.0)),
+        corner3d_weight=float(loss_cfg.get("corner3d_weight", 0.0)),
+        class_mean_dims=config["targets"]["class_mean_dims"],
     )
 
 
@@ -59,6 +63,14 @@ def main() -> None:
 
     split_name = getattr(args, "split", "val")
     split_file = get_split_file(config, split_name)
+    requested_split_file = split_file
+
+    if not Path(split_file).exists():
+        print(
+            "Requested split file is missing; using discovered local samples "
+            "for this smoke check only."
+        )
+        split_file = None
 
     device = get_device(training_cfg.get("device", "auto"))
 
@@ -117,7 +129,8 @@ def main() -> None:
     print(f"Active profile: {active_profile}")
     print(f"Dataset root: {root_dir}")
     print(f"Split: {split_name}")
-    print(f"Split file: {split_file}")
+    print(f"Requested split file: {requested_split_file}")
+    print(f"Effective split file: {split_file}")
     print(f"Device: {device}")
     print(f"Batch size: {batch_size}")
     print(f"Input images shape: {tuple(images.shape)}")

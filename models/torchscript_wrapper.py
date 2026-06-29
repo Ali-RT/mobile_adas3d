@@ -14,6 +14,7 @@ TORCHSCRIPT_OUTPUT_NAMES = [
     "yaw",
     "center_offset",
     "depth_uncertainty",
+    "loc_xy",
 ]
 
 
@@ -37,6 +38,7 @@ class MobileADAS3DTupleWrapper(nn.Module):
         yaw,
         center_offset,
         depth_uncertainty,
+        loc_xy,
       )
     """
 

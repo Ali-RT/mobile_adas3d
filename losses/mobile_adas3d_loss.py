@@ -6,6 +6,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from data.geometry import compute_kitti_corners_3d_torch
+
 
 def sigmoid_focal_loss(
     logits: torch.Tensor,
@@ -103,6 +105,9 @@ class MobileADAS3DLoss(nn.Module):
         dim_weight: float = 1.0,
         yaw_weight: float = 1.0,
         offset_weight: float = 0.5,
+        loc_xy_weight: float = 1.0,
+        corner3d_weight: float = 0.0,
+        class_mean_dims: Optional[Dict[str, List[float]]] = None,
     ) -> None:
         super().__init__()
 
@@ -116,6 +121,8 @@ class MobileADAS3DLoss(nn.Module):
         self.dim_weight = dim_weight
         self.yaw_weight = yaw_weight
         self.offset_weight = offset_weight
+        self.loc_xy_weight = loc_xy_weight
+        self.corner3d_weight = corner3d_weight
 
         classes = classes or []
         class_weights = class_weights or {}
@@ -133,6 +140,22 @@ class MobileADAS3DLoss(nn.Module):
             torch.tensor(weights, dtype=torch.float32),
         )
 
+        # [num_classes, 3] in h/w/l order. Only used by the optional corner3d loss.
+        class_mean_dims = class_mean_dims or {}
+
+        mean_dims_values = [
+            [float(v) for v in class_mean_dims.get(class_name, [1.0, 1.0, 1.0])]
+            for class_name in classes
+        ]
+
+        if len(mean_dims_values) == 0:
+            mean_dims_values = [[1.0, 1.0, 1.0]]
+
+        self.register_buffer(
+            "class_mean_dims_tensor",
+            torch.tensor(mean_dims_values, dtype=torch.float32),
+        )
+
     def forward(
         self,
         outputs: Dict[str, torch.Tensor],
@@ -145,6 +168,7 @@ class MobileADAS3DLoss(nn.Module):
         yaw_pred = outputs["yaw"]
         offset_pred = outputs["center_offset"]
         depth_uncertainty_pred = outputs["depth_uncertainty"]
+        loc_xy_pred = outputs["loc_xy"]
 
         cls_target = targets["cls_target"]
         box2d_target = targets["box2d_target"]
@@ -152,6 +176,7 @@ class MobileADAS3DLoss(nn.Module):
         dim_target = targets["dim_target"]
         yaw_target = targets["yaw_target"]
         offset_target = targets["offset_target"]
+        loc_xy_target = targets["loc_xy_target"]
         valid_mask = targets["valid_mask"]
 
         loss_weight_target = targets.get(
@@ -251,6 +276,26 @@ class MobileADAS3DLoss(nn.Module):
             beta=1.0,
         )
 
+        loc_xy_loss = masked_weighted_smooth_l1_loss(
+            pred=loc_xy_pred,
+            target=loc_xy_target,
+            valid_mask=valid_mask,
+            loss_weight=loss_weight_target,
+            beta=1.0,
+        )
+
+        # Optional cuboid corner consistency loss.
+        # Reconstructs the KITTI cuboid from predicted physical pose
+        # (location_xyz + dimensions + yaw) and compares against GT corners.
+        corner3d_loss = torch.zeros((), device=cls_logits.device, dtype=cls_logits.dtype)
+
+        if self.corner3d_weight > 0.0:
+            corner3d_loss = self._compute_corner3d_loss(
+                outputs=outputs,
+                targets=targets,
+                valid_mask=valid_mask,
+            )
+
         total_loss = (
             self.cls_weight * cls_loss
             + self.box2d_weight * box2d_loss
@@ -259,6 +304,8 @@ class MobileADAS3DLoss(nn.Module):
             + self.dim_weight * dim_loss
             + self.yaw_weight * yaw_loss
             + self.offset_weight * offset_loss
+            + self.loc_xy_weight * loc_xy_loss
+            + self.corner3d_weight * corner3d_loss
         )
 
         return {
@@ -270,4 +317,80 @@ class MobileADAS3DLoss(nn.Module):
             "dim_loss": dim_loss,
             "yaw_loss": yaw_loss,
             "offset_loss": offset_loss,
+            "loc_xy_loss": loc_xy_loss,
+            "corner3d_loss": corner3d_loss,
         }
+
+    def _compute_corner3d_loss(
+        self,
+        outputs: Dict[str, torch.Tensor],
+        targets: Dict[str, torch.Tensor],
+        valid_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        """
+        Corner consistency loss over positive cells only.
+
+        Decodes predicted location_xyz, dimensions, and yaw, builds the KITTI
+        cuboid corners, and compares against GT corners reconstructed from the
+        target location/dim/yaw.
+        """
+        pos = valid_mask[:, 0].bool()  # [B, H, W]
+
+        if pos.sum() == 0:
+            return outputs["loc_xy"].sum() * 0.0
+
+        device = outputs["loc_xy"].device
+        dtype = outputs["loc_xy"].dtype
+
+        class_mean_dims = self.class_mean_dims_tensor.to(device=device, dtype=dtype)
+
+        # Per-cell class id from one-hot cls target.
+        cls_target = targets["cls_target"]  # [B, C, H, W]
+        class_ids = cls_target.argmax(dim=1)  # [B, H, W]
+
+        # Gather positive-cell channel-last tensors.
+        def gather(tensor: torch.Tensor) -> torch.Tensor:
+            # tensor: [B, C, H, W] -> [N, C]
+            return tensor.permute(0, 2, 3, 1)[pos]
+
+        loc_xy = gather(outputs["loc_xy"])            # [N, 2]
+        log_depth = gather(outputs["log_depth"])      # [N, 1]
+        dim_residual = gather(outputs["dim"])         # [N, 3]
+        yaw_vec = F.normalize(gather(outputs["yaw"]), dim=-1, eps=1e-6)  # [N, 2]
+
+        pos_class_ids = class_ids[pos]                # [N]
+        mean_dims = class_mean_dims[pos_class_ids]    # [N, 3]
+
+        z = torch.exp(log_depth[:, 0]).clamp(min=0.1, max=200.0)  # [N]
+        x = loc_xy[:, 0] * z
+        y = loc_xy[:, 1] * z
+        pred_location = torch.stack([x, y, z], dim=-1)  # [N, 3]
+
+        pred_dims = (mean_dims * torch.exp(dim_residual)).clamp(min=0.01)  # [N, 3]
+        pred_yaw = torch.atan2(yaw_vec[:, 0], yaw_vec[:, 1])               # [N]
+
+        pred_corners = compute_kitti_corners_3d_torch(
+            dims_hwl=pred_dims,
+            location_xyz=pred_location,
+            rotation_y=pred_yaw,
+        )  # [N, 8, 3]
+
+        # GT corners from target location/dim/yaw.
+        gt_location = gather(targets["location_xyz_target"])  # [N, 3]
+        gt_dim_residual = gather(targets["dim_target"])       # [N, 3]
+        gt_yaw_vec = gather(targets["yaw_target"])            # [N, 2]
+
+        gt_dims = (mean_dims * torch.exp(gt_dim_residual)).clamp(min=0.01)
+        gt_yaw = torch.atan2(gt_yaw_vec[:, 0], gt_yaw_vec[:, 1])
+
+        gt_corners = compute_kitti_corners_3d_torch(
+            dims_hwl=gt_dims,
+            location_xyz=gt_location,
+            rotation_y=gt_yaw,
+        )  # [N, 8, 3]
+
+        return F.smooth_l1_loss(
+            pred_corners.contiguous(),
+            gt_corners.contiguous(),
+            reduction="mean",
+        )

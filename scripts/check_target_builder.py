@@ -24,9 +24,12 @@ def main() -> None:
     )
 
     sample = dataset[0]
+    original_size = sample["original_size"]
 
     targets = build_targets_for_sample(
-        sample=sample,
+        objects=sample["objects"],
+        original_width=int(original_size["width"]),
+        original_height=int(original_size["height"]),
         classes=dataset_cfg["classes"],
         input_height=model_cfg["input_height"],
         input_width=model_cfg["input_width"],
@@ -52,9 +55,12 @@ def main() -> None:
     cls_target = targets["cls_target"]
     box2d_target = targets["box2d_target"]
     log_depth_target = targets["log_depth_target"]
+    loc_xy_target = targets["loc_xy_target"]
+    location_xyz_target = targets["location_xyz_target"]
     dim_target = targets["dim_target"]
     yaw_target = targets["yaw_target"]
     offset_target = targets["offset_target"]
+    loss_weight_target = targets["loss_weight_target"]
 
     positive_indices = valid_mask[0].nonzero(as_tuple=False)
 
@@ -68,18 +74,24 @@ def main() -> None:
 
         box = box2d_target[:, gy, gx].tolist()
         log_depth = float(log_depth_target[0, gy, gx].item())
+        loc_xy = loc_xy_target[:, gy, gx].tolist()
+        location_xyz = location_xyz_target[:, gy, gx].tolist()
         dim_residual = dim_target[:, gy, gx].tolist()
         yaw_sincos = yaw_target[:, gy, gx].tolist()
         offset = offset_target[:, gy, gx].tolist()
+        loss_weight = float(loss_weight_target[0, gy, gx].item())
 
         print(
             f"  cell=(y={gy}, x={gx}) "
             f"class={class_name} "
             f"box={[round(v, 2) for v in box]} "
             f"log_depth={log_depth:.3f} "
+            f"loc_xy={[round(v, 3) for v in loc_xy]} "
+            f"location_xyz={[round(v, 3) for v in location_xyz]} "
             f"dim_residual={[round(v, 3) for v in dim_residual]} "
             f"yaw_sincos={[round(v, 3) for v in yaw_sincos]} "
-            f"offset={[round(v, 3) for v in offset]}"
+            f"offset={[round(v, 3) for v in offset]} "
+            f"loss_weight={loss_weight:.2f}"
         )
 
 

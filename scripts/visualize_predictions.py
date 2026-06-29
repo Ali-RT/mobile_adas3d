@@ -8,7 +8,8 @@ import torch.nn.functional as F
 from data.kitti_dataset import KITTIDataset
 from data.split_resolver import get_split_file
 from data.target_builder import scale_bbox_2d
-from data.visualization import draw_gt_and_predictions_2d
+from data.geometry import scale_p2_for_resize
+from data.visualization import draw_gt_and_predictions_2d, draw_projected_3d_boxes
 from models.build import build_model
 from models.decode import decode_mobile_adas3d_outputs
 from tools.cli import parse_config_profile_args
@@ -221,6 +222,37 @@ def main() -> None:
                 gt_objects=gt_scaled,
                 predictions=predictions,
                 output_path=overlay_path,
+            )
+
+            # Predicted cuboid overlay reconstructed from physical 3D pose
+            # (decoded location_3d + dimensions + yaw), projected with P2.
+            # Do not backproject the 2D bbox center anymore.
+            P2_model = scale_p2_for_resize(
+                P2=np.asarray(sample["P2"], dtype=np.float32),
+                orig_w=int(sample["original_size"]["width"]),
+                orig_h=int(sample["original_size"]["height"]),
+                input_w=input_width,
+                input_h=input_height,
+            )
+
+            pred_cuboid_objects = [
+                {
+                    "class_name": pred["class_name"],
+                    "bbox_2d": pred["bbox_2d"],
+                    "dimensions_3d": pred["dimensions_3d_hwl"],
+                    "location_3d": pred["location_3d"],
+                    "rotation_y": pred["yaw"],
+                }
+                for pred in predictions
+            ]
+
+            cuboid_path = output_dir / f"{sample['sample_id']}_cuboid_pred.png"
+
+            draw_projected_3d_boxes(
+                image_rgb=resized_rgb,
+                objects=pred_cuboid_objects,
+                P2=P2_model,
+                output_path=cuboid_path,
             )
 
             print(

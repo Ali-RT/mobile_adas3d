@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Dict, Optional, Tuple
 
+from PIL.features import features
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -158,6 +159,12 @@ class MobileADAS3D(nn.Module):
             out_channels=1,
         )
 
+        self.loc_xy_head = ConvHead(
+            in_channels=head_channels,
+            hidden_channels=head_channels,
+            out_channels=2,
+        )
+
     def _infer_stride_feature_indices_and_channels(
         self,
         input_height: int,
@@ -285,6 +292,7 @@ class MobileADAS3D(nn.Module):
         yaw = self.yaw_head(fused)
         center_offset = self.center_offset_head(fused)
         depth_uncertainty = self.depth_uncertainty_head(fused)
+        loc_xy = self.loc_xy_head(fused)
 
         return {
             "cls_logits": cls_logits,
@@ -294,4 +302,5 @@ class MobileADAS3D(nn.Module):
             "yaw": yaw,
             "center_offset": center_offset,
             "depth_uncertainty": depth_uncertainty,
+            "loc_xy": loc_xy,
         }

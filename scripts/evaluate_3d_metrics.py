@@ -5,14 +5,21 @@ import csv
 import math
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import torch
 import torch.nn.functional as F
 
+import numpy as np
+
 from data.kitti_dataset import KITTIDataset
 from data.split_resolver import get_split_file
 from data.target_builder import scale_bbox_2d
+from data.geometry import (
+    compute_kitti_cuboid_corners_3d,
+    project_points_p2,
+    scale_p2_for_resize,
+)
 from models.build import build_model
 from models.decode import decode_mobile_adas3d_outputs, box_iou
 from tools.config import load_config, apply_runtime_overrides
@@ -198,6 +205,11 @@ def scale_gt_objects_to_input(
                 "class_id": obj["class_id"],
                 "bbox_2d": [x1, y1, x2, y2],
                 "depth_m": depth_m,
+                "location_3d": [
+                    float(obj["location_3d"][0]),
+                    float(obj["location_3d"][1]),
+                    float(obj["location_3d"][2]),
+                ],
                 "yaw_rad": float(obj["rotation_y"]),
                 "dimensions_3d_hwl": [
                     float(obj["dimensions_3d"][0]),
@@ -314,6 +326,7 @@ def greedy_match_predictions_to_gt(
 def compute_match_metric_row(
     split_name: str,
     match: Dict[str, Any],
+    P2: Optional[np.ndarray] = None,
 ) -> Dict[str, Any]:
     pred = match["prediction"]
     gt = match["gt"]
@@ -362,6 +375,43 @@ def compute_match_metric_row(
     yaw_abs_error_rad = angle_diff_rad(pred_yaw, gt_yaw)
     yaw_abs_error_deg = yaw_abs_error_rad * 180.0 / math.pi
 
+    # Location and cuboid metrics.
+    gt_location = [float(v) for v in gt.get("location_3d", [0.0, 0.0, gt_depth])]
+    pred_location = [float(v) for v in pred.get("location_3d", [0.0, 0.0, pred_depth])]
+
+    location_x_abs_error = abs(pred_location[0] - gt_location[0])
+    location_y_abs_error = abs(pred_location[1] - gt_location[1])
+    location_z_abs_error = abs(pred_location[2] - gt_location[2])
+
+    center_dist_3d = math.sqrt(
+        (pred_location[0] - gt_location[0]) ** 2
+        + (pred_location[1] - gt_location[1]) ** 2
+        + (pred_location[2] - gt_location[2]) ** 2
+    )
+
+    gt_corners_3d = compute_kitti_cuboid_corners_3d(
+        dims_hwl=gt_dims,
+        location_xyz=gt_location,
+        rotation_y=gt_yaw,
+    )
+    pred_corners_3d = compute_kitti_cuboid_corners_3d(
+        dims_hwl=pred_dims,
+        location_xyz=pred_location,
+        rotation_y=pred_yaw,
+    )
+
+    corner3d_mae_m = float(
+        np.mean(np.linalg.norm(pred_corners_3d - gt_corners_3d, axis=1))
+    )
+
+    corner2d_mae_px = float("nan")
+    if P2 is not None:
+        gt_corners_2d = project_points_p2(gt_corners_3d, P2)
+        pred_corners_2d = project_points_p2(pred_corners_3d, P2)
+        corner2d_mae_px = float(
+            np.mean(np.linalg.norm(pred_corners_2d - gt_corners_2d, axis=1))
+        )
+
     return {
         "split": split_name,
         "sample_id": gt["sample_id"],
@@ -379,6 +429,18 @@ def compute_match_metric_row(
         "pred_yaw_rad": pred_yaw,
         "yaw_abs_error_rad": yaw_abs_error_rad,
         "yaw_abs_error_deg": yaw_abs_error_deg,
+        "gt_loc_x_m": gt_location[0],
+        "gt_loc_y_m": gt_location[1],
+        "gt_loc_z_m": gt_location[2],
+        "pred_loc_x_m": pred_location[0],
+        "pred_loc_y_m": pred_location[1],
+        "pred_loc_z_m": pred_location[2],
+        "location_x_abs_error_m": location_x_abs_error,
+        "location_y_abs_error_m": location_y_abs_error,
+        "location_z_abs_error_m": location_z_abs_error,
+        "center_dist_3d_m": center_dist_3d,
+        "corner3d_mae_m": corner3d_mae_m,
+        "corner2d_mae_px": corner2d_mae_px,
         "gt_h_m": float(gt_dims[0]),
         "gt_w_m": float(gt_dims[1]),
         "gt_l_m": float(gt_dims[2]),
@@ -429,6 +491,17 @@ def summarize_metric_rows(
         ious = [float(r["iou_2d"]) for r in group_rows]
         scores = [float(r["score"]) for r in group_rows]
 
+        loc_x_errors = [float(r["location_x_abs_error_m"]) for r in group_rows]
+        loc_y_errors = [float(r["location_y_abs_error_m"]) for r in group_rows]
+        loc_z_errors = [float(r["location_z_abs_error_m"]) for r in group_rows]
+        center_dist_errors = [float(r["center_dist_3d_m"]) for r in group_rows]
+        corner3d_errors = [float(r["corner3d_mae_m"]) for r in group_rows]
+        corner2d_errors = [
+            float(r["corner2d_mae_px"])
+            for r in group_rows
+            if not math.isnan(float(r["corner2d_mae_px"]))
+        ]
+
         summary_rows.append(
             {
                 "group_name": group_name,
@@ -443,6 +516,16 @@ def summarize_metric_rows(
                 "depth_rel_error_mean": mean(depth_rel_errors),
                 "depth_rel_error_p50": percentile(depth_rel_errors, 50),
                 "log_depth_abs_error_mean": mean(log_depth_errors),
+                "location_x_mae_m": mean(loc_x_errors),
+                "location_y_mae_m": mean(loc_y_errors),
+                "location_z_mae_m": mean(loc_z_errors),
+                "center_dist_3d_mae_m": mean(center_dist_errors),
+                "center_dist_3d_p50_m": percentile(center_dist_errors, 50),
+                "center_dist_3d_p90_m": percentile(center_dist_errors, 90),
+                "corner3d_mae_m": mean(corner3d_errors),
+                "corner3d_mae_p90_m": percentile(corner3d_errors, 90),
+                "corner2d_mae_px": mean(corner2d_errors),
+                "corner2d_mae_p90_px": percentile(corner2d_errors, 90),
                 "yaw_abs_error_mean_deg": mean(yaw_errors),
                 "yaw_abs_error_p50_deg": percentile(yaw_errors, 50),
                 "yaw_abs_error_p90_deg": percentile(yaw_errors, 90),
@@ -622,6 +705,14 @@ def main() -> None:
                 input_height=input_height,
             )
 
+            P2_model = scale_p2_for_resize(
+                P2=np.asarray(sample["P2"], dtype=np.float32),
+                orig_w=int(sample["original_size"]["width"]),
+                orig_h=int(sample["original_size"]["height"]),
+                input_w=input_width,
+                input_h=input_height,
+            )
+
             matches, unmatched_predictions, unmatched_gt = greedy_match_predictions_to_gt(
                 predictions=predictions,
                 gt_objects=gt_objects,
@@ -633,6 +724,7 @@ def main() -> None:
                     compute_match_metric_row(
                         split_name=args.split,
                         match=match,
+                        P2=P2_model,
                     )
                 )
 

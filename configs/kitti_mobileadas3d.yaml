@@ -6,7 +6,7 @@ dataset:
   # Default for local debugging.
   # In Colab, override with:
   #   --profile colab_drive
-  active_profile: local_mac
+  active_profile: colab_drive
 
   profiles:
     local_mac:
@@ -34,31 +34,65 @@ dataset:
     val_ratio: 0.15
     test_ratio: 0.15
 
+logging:
+  run_name: "v7_stride16_fpn_cuboid_location"
+
 model:
-  name: MobileADAS3D
-  backbone: mobilenet_v3_small
+  name: "MobileADAS3D"
+  backbone: "mobilenet_v3_small"
   pretrained: true
   input_height: 384
   input_width: 1280
-
-  # New version
   output_stride: 16
-  neck: stride16_fpn
-  box_encoding: ltrb
-
+  neck: "stride16_fpn"
+  box_encoding: "log_ltrb_stride"
   fpn_channels: 128
   head_channels: 256
   use_sparse_depth: false
+
+  heads:
+    cls_logits: true
+    box2d: true
+    log_depth: true
+    dim: true
+    yaw: true
+    center_offset: true
+    depth_uncertainty: true
+    loc_xy: true
 
 targets:
   center_sampling:
     enabled: true
     radius: 1
 
+  box_encoding: "log_ltrb_stride"
+  depth_encoding: "log_z"
+  location_encoding: "xy_over_z"
+  dim_encoding: "log_class_ratio"
+  yaw_encoding: "sin_cos"
+
   class_mean_dims:
     Car: [1.50, 1.60, 3.90]
     Pedestrian: [1.70, 0.60, 0.80]
     Cyclist: [1.70, 0.60, 1.76]
+
+loss:
+  cls_weight: 1.0
+  box2d_weight: 2.0
+  depth_weight: 1.0
+  loc_xy_weight: 1.0
+  dim_weight: 1.0
+  yaw_weight: 1.0
+  offset_weight: 0.5
+  depth_uncertainty_weight: 0.0
+
+  # New cuboid consistency loss.
+  corner3d_weight: 0.25
+
+  class_weights:
+    Car: 1.0
+    Pedestrian: 2.5
+    Cyclist: 3.0
 
 training:
   seed: 42
@@ -67,7 +101,7 @@ training:
   learning_rate: 0.0001
   weight_decay: 0.0001
   epochs: 80
-  device: auto
+  device: "auto"
   log_interval: 20
   save_interval: 1
   use_amp: true
@@ -101,27 +135,7 @@ validation:
   monitor_metric: val_total_loss
   mode: min
 
-loss:
-  cls_weight: 1.0
-  box2d_weight: 2.0
-  depth_weight: 1.0
-  depth_uncertainty_weight: 0.0
-  dim_weight: 1.0
-  yaw_weight: 1.0
-  offset_weight: 0.5
 
-  class_weights:
-    Car: 1.0
-    Pedestrian: 2.5
-    Cyclist: 3.0
-    
-logging:
-  run_name: baseline_mobilenetv3_kitti
-  use_tensorboard: true
-  save_config_snapshot: true
-  save_jsonl: true
-  save_csv: true
-  
   
 outputs:
   # Local default.

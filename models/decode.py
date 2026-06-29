@@ -241,6 +241,12 @@ def _decode_single_image_vectorized(
     yaw = outputs["yaw"][batch_index]                        # [2, H, W]
     center_offset = outputs["center_offset"][batch_index]    # [2, H, W]
 
+    loc_xy: Optional[torch.Tensor]
+    if "loc_xy" in outputs:
+        loc_xy = outputs["loc_xy"][batch_index]              # [2, H, W]
+    else:
+        loc_xy = None
+
     depth_uncertainty: Optional[torch.Tensor]
     if "depth_uncertainty" in outputs:
         depth_uncertainty = outputs["depth_uncertainty"][batch_index]  # [1, H, W]
@@ -291,6 +297,16 @@ def _decode_single_image_vectorized(
     candidate_offset = offset_flat[spatial_indices]
     candidate_log_depth = log_depth_flat[spatial_indices]
 
+    if loc_xy is not None:
+        loc_xy_flat = loc_xy.permute(1, 2, 0).reshape(num_cells, 2)
+        candidate_loc_xy = loc_xy_flat[spatial_indices]
+    else:
+        candidate_loc_xy = torch.zeros(
+            (spatial_indices.shape[0], 2),
+            device=candidate_log_depth.device,
+            dtype=candidate_log_depth.dtype,
+        )
+
     if depth_uncertainty is not None:
         depth_uncertainty_flat = depth_uncertainty.reshape(-1)
         candidate_depth_uncertainty = depth_uncertainty_flat[spatial_indices]
@@ -337,6 +353,7 @@ def _decode_single_image_vectorized(
     candidate_dim_residual = candidate_dim_residual[valid_box_mask]
     candidate_yaw_vec = candidate_yaw_vec[valid_box_mask]
     candidate_depth_uncertainty = candidate_depth_uncertainty[valid_box_mask]
+    candidate_loc_xy = candidate_loc_xy[valid_box_mask]
 
     # Class-aware NMS.
     keep_nms = _class_aware_nms(
@@ -360,16 +377,25 @@ def _decode_single_image_vectorized(
     dim_residual = candidate_dim_residual[keep_nms]
     yaw_vec = candidate_yaw_vec[keep_nms]
     depth_uncertainty_values = candidate_depth_uncertainty[keep_nms]
+    loc_xy_values = candidate_loc_xy[keep_nms]
 
     # Decode depth.
     depth = torch.exp(log_depth_values).clamp(min=0.1, max=max_depth)
 
+    # Decode KITTI camera-frame location from loc_xy + depth.
+    #   z = exp(log_depth)
+    #   x = loc_xy[0] * z
+    #   y = loc_xy[1] * z
+    location_x = loc_xy_values[:, 0] * depth
+    location_y = loc_xy_values[:, 1] * depth
+    location_xyz = torch.stack([location_x, location_y, depth], dim=1)
+
     # Decode dimensions.
-    # Assumption from current target builder:
-    #   predicted dim = class mean dim + residual
-    # If your target builder uses log-ratio dims, change this line to:
-    #   dims = class_mean_dims_tensor[class_ids] * torch.exp(dim_residual)
-    dims = class_mean_dims_tensor[class_ids] + dim_residual
+    # Target builder uses log-class-ratio encoding:
+    #   dim_target = log(dims_hwl / class_mean_dims)
+    # so decode is:
+    #   dims = class_mean_dims * exp(dim_residual)
+    dims = class_mean_dims_tensor[class_ids] * torch.exp(dim_residual)
     dims = dims.clamp(min=0.01)
 
     # Decode yaw.
@@ -384,6 +410,7 @@ def _decode_single_image_vectorized(
     center_x_cpu = center_x.detach().cpu()
     center_y_cpu = center_y.detach().cpu()
     depth_cpu = depth.detach().cpu()
+    location_xyz_cpu = location_xyz.detach().cpu()
     dims_cpu = dims.detach().cpu()
     yaw_cpu = yaw_angle.detach().cpu()
     depth_uncertainty_cpu = depth_uncertainty_values.detach().cpu()
@@ -415,6 +442,11 @@ def _decode_single_image_vectorized(
                     float(center_y_cpu[i].item()),
                 ],
                 "depth": float(depth_cpu[i].item()),
+                "location_3d": [
+                    float(location_xyz_cpu[i][0].item()),
+                    float(location_xyz_cpu[i][1].item()),
+                    float(location_xyz_cpu[i][2].item()),
+                ],
                 "dimensions_3d_hwl": [
                     float(dims_hwl[0]),
                     float(dims_hwl[1]),

@@ -139,6 +139,9 @@ def build_criterion(config: Dict[str, Any]) -> MobileADAS3DLoss:
         dim_weight=loss_cfg.get("dim_weight", 1.0),
         yaw_weight=loss_cfg.get("yaw_weight", 1.0),
         offset_weight=loss_cfg.get("offset_weight", 0.5),
+        loc_xy_weight=loss_cfg.get("loc_xy_weight", 1.0),
+        corner3d_weight=loss_cfg.get("corner3d_weight", 0.0),
+        class_mean_dims=config["targets"]["class_mean_dims"],
     )
 
 
@@ -252,7 +255,8 @@ def train_one_epoch(
                 f"unc={losses.get('depth_uncertainty_loss', torch.tensor(0.0)).item():.6f} "
                 f"dim={losses['dim_loss'].item():.6f} "
                 f"yaw={losses['yaw_loss'].item():.6f} "
-                f"offset={losses['offset_loss'].item():.6f}"
+                f"offset={losses['offset_loss'].item():.6f} "
+                f"loc_xy={losses['loc_xy_loss'].item():.6f}"
             )
 
             if writer is not None:
