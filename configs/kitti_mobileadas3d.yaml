@@ -3,9 +3,7 @@ project_name: mobile_adas3d
 dataset:
   name: kitti
 
-  # Default for local debugging.
-  # In Colab, override with:
-  #   --profile colab_drive
+  # Default training profile. Use --profile local_mac for local debugging.
   active_profile: colab_drive
 
   profiles:
@@ -138,10 +136,10 @@ validation:
 
   
 outputs:
-  # Local default.
+  # Fallback default.
   output_dir: ./outputs
 
-  # For Colab, override automatically when --profile colab_drive is used.
+  # Override automatically based on dataset.active_profile or --profile.
   profile_output_dirs:
     local_mac: ./outputs
     colab_drive: /content/drive/MyDrive/mobile_adas3d_outputs

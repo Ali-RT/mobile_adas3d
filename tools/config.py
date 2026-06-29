@@ -1,14 +1,34 @@
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any, Dict, Optional
 
 import yaml
 
 
-def load_config(config_path: str) -> Dict[str, Any]:
+CONFIG_ALIASES = {
+    "kitti_mobileadas3d_colab.yaml": "kitti_mobileadas3d.yaml",
+}
+
+
+def resolve_config_path(config_path: str) -> Path:
     path = Path(config_path)
 
-    if not path.exists():
-        raise FileNotFoundError(f"Config file not found: {path}")
+    if path.exists():
+        return path
+
+    alias_name = CONFIG_ALIASES.get(path.name)
+
+    if alias_name is not None:
+        alias_path = path.with_name(alias_name)
+
+        if alias_path.exists():
+            return alias_path
+
+    raise FileNotFoundError(f"Config file not found: {path}")
+
+
+def load_config(config_path: str) -> Dict[str, Any]:
+    path = resolve_config_path(config_path)
 
     with path.open("r") as f:
         config = yaml.safe_load(f)
@@ -56,6 +76,12 @@ def apply_runtime_overrides(
 
 
 def load_runtime_config_from_args(args) -> Dict[str, Any]:
+    if isinstance(args, str):
+        args = SimpleNamespace(config=args, profile=None, run_name=None)
+
+    config_path = resolve_config_path(args.config)
+    args.config = str(config_path)
+
     config = load_config(args.config)
 
     config = apply_runtime_overrides(
