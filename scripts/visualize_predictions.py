@@ -128,6 +128,7 @@ def main() -> None:
     checkpoint_path = args.checkpoint
     split_name = args.split
     max_images = int(args.max_images)
+    image_id = args.image_id
     score_threshold = float(args.score_threshold)
 
     if checkpoint_path is None:
@@ -172,16 +173,29 @@ def main() -> None:
     print(f"Split file: {split_file}")
     print(f"Dataset size: {len(dataset)}")
     print(f"Max images: {max_images}")
+    print(f"Image ID: {image_id}")
     print(f"Score threshold: {score_threshold}")
     print(f"Input size: {input_width} x {input_height}")
     print(f"Device: {device}")
     print(f"Output dir: {output_dir}")
 
-    num_images = min(max_images, len(dataset))
+    if image_id is not None:
+        if image_id not in dataset.sample_ids:
+            raise ValueError(
+                f"Image id {image_id} not found in {split_name} split. "
+                f"First available ids: {dataset.sample_ids[:10]}"
+            )
+
+        selected_indices = [dataset.sample_ids.index(image_id)]
+    else:
+        num_images = len(dataset) if max_images < 0 else min(max_images, len(dataset))
+        selected_indices = list(range(num_images))
+
+    num_images = len(selected_indices)
 
     with torch.no_grad():
-        for idx in range(num_images):
-            sample = dataset[idx]
+        for output_idx, dataset_idx in enumerate(selected_indices):
+            sample = dataset[dataset_idx]
 
             # Resize input for model.
             image = sample["image"].unsqueeze(0)
@@ -261,7 +275,7 @@ def main() -> None:
             )
 
             print(
-                f"[{idx + 1}/{num_images}] "
+                f"[{output_idx + 1}/{num_images}] "
                 f"sample={sample['sample_id']} "
                 f"gt={len(gt_scaled)} "
                 f"pred={len(predictions)} "
