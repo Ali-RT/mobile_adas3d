@@ -60,6 +60,38 @@ def tensor_summary(tensor: torch.Tensor) -> Dict[str, Any]:
     }
 
 
+def resolve_export_paths(
+    config: Dict[str, Any],
+    output_dir_arg: Optional[str],
+    filename: str,
+) -> tuple[Path, Path, Path]:
+    if output_dir_arg is not None:
+        requested_path = Path(output_dir_arg)
+
+        if requested_path.suffix in {".pt", ".pth", ".torchscript"}:
+            output_dir = requested_path.parent
+            export_path = requested_path
+        else:
+            output_dir = requested_path
+            export_path = output_dir / filename
+    else:
+        output_dir = Path(config["outputs"]["output_dir"]) / "exports" / "torchscript"
+        export_path = output_dir / filename
+
+    if export_path.exists() and export_path.is_dir():
+        nested_export_path = export_path / filename
+        print(
+            "Warning: requested TorchScript export path is already a directory. "
+            f"Writing the model inside it instead: {nested_export_path}"
+        )
+        output_dir = export_path
+        export_path = nested_export_path
+
+    metadata_path = output_dir / "mobileadas3d_torchscript_metadata.json"
+
+    return output_dir, export_path, metadata_path
+
+
 def main() -> None:
     args = parse_args()
 
@@ -77,15 +109,13 @@ def main() -> None:
 
     device = get_device(args.device)
 
-    if args.output_dir is not None:
-        output_dir = Path(args.output_dir)
-    else:
-        output_dir = Path(config["outputs"]["output_dir"]) / "exports" / "torchscript"
-
+    output_dir, export_path, metadata_path = resolve_export_paths(
+        config=config,
+        output_dir_arg=args.output_dir,
+        filename=args.filename,
+    )
     output_dir.mkdir(parents=True, exist_ok=True)
-
-    export_path = output_dir / args.filename
-    metadata_path = output_dir / "mobileadas3d_torchscript_metadata.json"
+    export_path.parent.mkdir(parents=True, exist_ok=True)
 
     model = build_model(config)
     checkpoint = load_checkpoint(

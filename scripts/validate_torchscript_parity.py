@@ -29,7 +29,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--config", type=str, default="configs/kitti_mobileadas3d.yaml")
     parser.add_argument("--profile", type=str, default=None)
     parser.add_argument("--checkpoint", type=str, required=True)
-    parser.add_argument("--torchscript-path", type=str, required=True)
+    parser.add_argument(
+        "--torchscript-path",
+        "--torchscript",
+        dest="torchscript_path",
+        type=str,
+        required=True,
+        help="TorchScript file path. If a directory is provided, a .pt file inside it is used.",
+    )
     parser.add_argument("--device", type=str, default="cpu")
     parser.add_argument("--num-runs", type=int, default=10)
     parser.add_argument("--output-dir", type=str, default=None)
@@ -111,6 +118,85 @@ def save_json(data: Dict[str, Any], path: Path) -> None:
     print(f"Saved JSON: {path}")
 
 
+def resolve_torchscript_path(torchscript_path: str) -> Path:
+    path = Path(torchscript_path)
+
+    if path.is_file():
+        return path
+
+    if not path.exists():
+        raise FileNotFoundError(f"TorchScript path does not exist: {path}")
+
+    if not path.is_dir():
+        raise ValueError(f"TorchScript path is neither a file nor a directory: {path}")
+
+    candidates: List[Path] = []
+
+    metadata_paths = sorted(path.glob("*metadata*.json"))
+    for metadata_path in metadata_paths:
+        try:
+            with metadata_path.open("r") as f:
+                metadata = json.load(f)
+        except json.JSONDecodeError:
+            continue
+
+        export_path = metadata.get("export_path")
+        if export_path is None:
+            continue
+
+        candidate = Path(export_path)
+        if candidate.is_file():
+            candidates.append(candidate)
+
+    candidates.extend(sorted(path.glob("*.pt")))
+    candidates.extend(sorted(path.glob("*.pth")))
+    candidates.extend(sorted(path.glob("*.torchscript")))
+
+    # Some earlier Colab commands accidentally created a directory whose name
+    # ended in .pt, then wrote the actual model file inside it.
+    candidates.extend(sorted(path.glob("**/*.pt")))
+    candidates.extend(sorted(path.glob("**/*.pth")))
+    candidates.extend(sorted(path.glob("**/*.torchscript")))
+
+    unique_candidates = []
+    seen = set()
+    for candidate in candidates:
+        resolved = candidate.resolve()
+        if resolved in seen:
+            continue
+        seen.add(resolved)
+        unique_candidates.append(candidate)
+
+    if len(unique_candidates) == 1:
+        return unique_candidates[0]
+
+    preferred_names = [
+        "mobileadas3d_torchscript.pt",
+        "mobileadas3d_v7_cuboid_torchscript.pt",
+    ]
+    for preferred_name in preferred_names:
+        matches = [
+            candidate
+            for candidate in unique_candidates
+            if candidate.name == preferred_name
+        ]
+        if len(matches) == 1:
+            return matches[0]
+
+    if not unique_candidates:
+        children = sorted(child.name for child in path.iterdir())[:20]
+        raise FileNotFoundError(
+            "TorchScript path is a directory, but no .pt/.pth/.torchscript "
+            f"file was found inside: {path}. First entries: {children}"
+        )
+
+    raise ValueError(
+        "TorchScript path is a directory with multiple candidate model files. "
+        "Pass one of these files explicitly:\n"
+        + "\n".join(str(candidate) for candidate in unique_candidates)
+    )
+
+
 def main() -> None:
     args = parse_args()
 
@@ -149,7 +235,9 @@ def main() -> None:
     eager_wrapper.to(device)
     eager_wrapper.eval()
 
-    scripted_model = torch.jit.load(args.torchscript_path, map_location=device)
+    resolved_torchscript_path = resolve_torchscript_path(args.torchscript_path)
+
+    scripted_model = torch.jit.load(str(resolved_torchscript_path), map_location=device)
     scripted_model.to(device)
     scripted_model.eval()
 
@@ -158,7 +246,7 @@ def main() -> None:
     print("\nRunning parity validation...")
     print(f"Device: {device}")
     print(f"Num runs: {args.num_runs}")
-    print(f"TorchScript path: {args.torchscript_path}")
+    print(f"TorchScript path: {resolved_torchscript_path}")
 
     with torch.no_grad():
         for run_idx in range(args.num_runs):
@@ -208,7 +296,7 @@ def main() -> None:
         "config": args.config,
         "profile": args.profile,
         "checkpoint": args.checkpoint,
-        "torchscript_path": args.torchscript_path,
+        "torchscript_path": str(resolved_torchscript_path),
         "device": str(device),
         "num_runs": args.num_runs,
         "input_height": input_height,
