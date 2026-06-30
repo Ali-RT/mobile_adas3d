@@ -440,11 +440,16 @@ def compute_match_metric_row(
         "pred_loc_x_m": pred_location[0],
         "pred_loc_y_m": pred_location[1],
         "pred_loc_z_m": pred_location[2],
+        "loc_x_error_m": location_x_abs_error,
+        "loc_y_error_m": location_y_abs_error,
+        "loc_z_error_m": location_z_abs_error,
         "location_x_abs_error_m": location_x_abs_error,
         "location_y_abs_error_m": location_y_abs_error,
         "location_z_abs_error_m": location_z_abs_error,
+        "center3d_error_m": center_dist_3d,
         "center_dist_3d_m": center_dist_3d,
         "corner3d_mae_m": corner3d_mae_m,
+        "corner2d_projected_mae_px": corner2d_mae_px,
         "corner2d_mae_px": corner2d_mae_px,
         "gt_h_m": float(gt_dims[0]),
         "gt_w_m": float(gt_dims[1]),
@@ -524,11 +529,16 @@ def summarize_metric_rows(
                 "location_x_mae_m": mean(loc_x_errors),
                 "location_y_mae_m": mean(loc_y_errors),
                 "location_z_mae_m": mean(loc_z_errors),
+                "loc_x_mae_m": mean(loc_x_errors),
+                "loc_y_mae_m": mean(loc_y_errors),
+                "loc_z_mae_m": mean(loc_z_errors),
+                "center3d_mae_m": mean(center_dist_errors),
                 "center_dist_3d_mae_m": mean(center_dist_errors),
                 "center_dist_3d_p50_m": percentile(center_dist_errors, 50),
                 "center_dist_3d_p90_m": percentile(center_dist_errors, 90),
                 "corner3d_mae_m": mean(corner3d_errors),
                 "corner3d_mae_p90_m": percentile(corner3d_errors, 90),
+                "corner2d_projected_mae_px": mean(corner2d_errors),
                 "corner2d_mae_px": mean(corner2d_errors),
                 "corner2d_mae_p90_px": percentile(corner2d_errors, 90),
                 "yaw_abs_error_mean_deg": mean(yaw_errors),
@@ -558,6 +568,16 @@ def summarize_class_distance(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]
         yaw_errors = [float(r["yaw_abs_error_deg"]) for r in group_rows]
         dim_errors = [float(r["dim_mae_m"]) for r in group_rows]
         ious = [float(r["iou_2d"]) for r in group_rows]
+        loc_x_errors = [float(r["location_x_abs_error_m"]) for r in group_rows]
+        loc_y_errors = [float(r["location_y_abs_error_m"]) for r in group_rows]
+        loc_z_errors = [float(r["location_z_abs_error_m"]) for r in group_rows]
+        center_dist_errors = [float(r["center_dist_3d_m"]) for r in group_rows]
+        corner3d_errors = [float(r["corner3d_mae_m"]) for r in group_rows]
+        corner2d_errors = [
+            float(r["corner2d_mae_px"])
+            for r in group_rows
+            if not math.isnan(float(r["corner2d_mae_px"]))
+        ]
 
         summary_rows.append(
             {
@@ -575,6 +595,15 @@ def summarize_class_distance(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]
                 "dim_mae_m": mean(dim_errors),
                 "dim_mae_p50_m": percentile(dim_errors, 50),
                 "dim_mae_p90_m": percentile(dim_errors, 90),
+                "loc_x_mae_m": mean(loc_x_errors),
+                "loc_y_mae_m": mean(loc_y_errors),
+                "loc_z_mae_m": mean(loc_z_errors),
+                "center3d_mae_m": mean(center_dist_errors),
+                "center3d_p90_m": percentile(center_dist_errors, 90),
+                "corner3d_mae_m": mean(corner3d_errors),
+                "corner3d_mae_p90_m": percentile(corner3d_errors, 90),
+                "corner2d_projected_mae_px": mean(corner2d_errors),
+                "corner2d_projected_mae_p90_px": percentile(corner2d_errors, 90),
             }
         )
 
@@ -830,6 +859,13 @@ def main() -> None:
                 f"depth_rel={row['depth_rel_error_mean']:.3f} "
                 f"yaw_mae={row['yaw_abs_error_mean_deg']:.2f}deg "
                 f"dim_mae={row['dim_mae_m']:.3f}m "
+                f"loc_xyz_mae=("
+                f"{row['loc_x_mae_m']:.3f},"
+                f"{row['loc_y_mae_m']:.3f},"
+                f"{row['loc_z_mae_m']:.3f})m "
+                f"center3d_mae={row['center3d_mae_m']:.3f}m "
+                f"corner3d_mae={row['corner3d_mae_m']:.3f}m "
+                f"corner2d_mae={row['corner2d_projected_mae_px']:.1f}px "
                 f"iou_mean={row['iou_2d_mean']:.3f}"
             )
 
@@ -843,6 +879,9 @@ def main() -> None:
                 f"depth_rel={row['depth_rel_error_mean']:.3f} "
                 f"yaw_mae={row['yaw_abs_error_mean_deg']:.2f}deg "
                 f"dim_mae={row['dim_mae_m']:.3f}m "
+                f"center3d_mae={row['center3d_mae_m']:.3f}m "
+                f"corner3d_mae={row['corner3d_mae_m']:.3f}m "
+                f"corner2d_mae={row['corner2d_projected_mae_px']:.1f}px "
                 f"iou_mean={row['iou_2d_mean']:.3f}"
             )
 
@@ -855,7 +894,10 @@ def main() -> None:
                 f"depth_mae={row['depth_mae_m']:.3f}m "
                 f"depth_rel={row['depth_rel_error_mean']:.3f} "
                 f"yaw_mae={row['yaw_abs_error_mean_deg']:.2f}deg "
-                f"dim_mae={row['dim_mae_m']:.3f}m"
+                f"dim_mae={row['dim_mae_m']:.3f}m "
+                f"center3d_mae={row['center3d_mae_m']:.3f}m "
+                f"corner3d_mae={row['corner3d_mae_m']:.3f}m "
+                f"corner2d_mae={row['corner2d_projected_mae_px']:.1f}px"
             )
 
     print("\nEvaluation complete.")

@@ -50,6 +50,13 @@ def parse_config_profile_args(description: str) -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "--image-id",
+        type=str,
+        default=None,
+        help="Optional KITTI sample id to process, e.g. 007479.",
+    )
+
+    parser.add_argument(
         "--score-threshold",
         type=float,
         default=0.25,
