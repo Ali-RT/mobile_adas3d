@@ -68,7 +68,7 @@ def compute_kitti_corners_3d_torch(dims_hwl, location_xyz, rotation_y):
     return corners_rot + location_xyz.unsqueeze(-2)
 
 
-def project_points_p2_torch(points_3d, P2):
+def project_points_p2_torch(points_3d, P2, min_z=0.1):
     """
     Torch projection of 3D camera-coordinate points using KITTI P2.
 
@@ -76,7 +76,8 @@ def project_points_p2_torch(points_3d, P2):
       P2:        [3, 4] or [..., 3, 4]
 
     Returns:
-      uv: [..., N, 2]
+      uv: [..., N, 2], NaN where projected depth is invalid
+      valid: [..., N]
     """
     ones = torch.ones_like(points_3d[..., :1])
     points_h = torch.cat([points_3d, ones], dim=-1)
@@ -86,9 +87,17 @@ def project_points_p2_torch(points_3d, P2):
     else:
         uvw = torch.matmul(points_h, P2.transpose(-1, -2))
 
-    uv = uvw[..., :2] / uvw[..., 2:3].clamp(min=1e-6)
+    z = uvw[..., 2:3]
+    valid = z > float(min_z)
 
-    return uv
+    uv = torch.full_like(uvw[..., :2], float("nan"))
+    uv = torch.where(
+        valid.expand_as(uv),
+        uvw[..., :2] / z.clamp(min=float(min_z)),
+        uv,
+    )
+
+    return uv, valid.squeeze(-1)
 
 
 def compute_kitti_3d_box_corners(
@@ -153,6 +162,7 @@ def compute_kitti_3d_box_corners(
 def project_points_to_image(
     points_3d: np.ndarray,
     P2: np.ndarray,
+    min_z: float = 0.1,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Project 3D camera-coordinate points to image using KITTI P2.
@@ -163,7 +173,7 @@ def project_points_to_image(
 
     Returns:
       points_2d: [N, 2]
-      valid_mask: [N], True where depth > 0
+      valid_mask: [N], True where projected depth is greater than min_z
     """
     if points_3d.ndim != 2 or points_3d.shape[1] != 3:
         raise ValueError(f"Expected points_3d shape [N, 3], got {points_3d.shape}")
@@ -178,14 +188,13 @@ def project_points_to_image(
         axis=1,
     )
 
-    projected = points_hom @ P2.T
+    uvw = points_hom @ P2.T
 
-    depths = projected[:, 2]
-    valid_mask = depths > 1e-6
+    depths = uvw[:, 2]
+    valid_mask = depths > float(min_z)
 
-    points_2d = np.zeros((num_points, 2), dtype=np.float32)
-    points_2d[valid_mask, 0] = projected[valid_mask, 0] / depths[valid_mask]
-    points_2d[valid_mask, 1] = projected[valid_mask, 1] / depths[valid_mask]
+    points_2d = np.full((num_points, 2), np.nan, dtype=np.float32)
+    points_2d[valid_mask] = uvw[valid_mask, :2] / depths[valid_mask, None]
 
     return points_2d, valid_mask
 
@@ -234,9 +243,11 @@ def scale_p2_for_resize(P2, orig_w, orig_h, input_w, input_h):
     return P2_scaled
 
 
-def project_points_p2(points_3d, P2):
+def project_points_p2_numpy(points_3d, P2, min_z=0.1):
     """
     Project Nx3 camera-coordinate points to image coordinates using KITTI P2.
+
+    Returns NaN for invalid points instead of clamping near-zero depth.
     """
     points_3d = np.asarray(points_3d, dtype=np.float32)
 
@@ -246,9 +257,25 @@ def project_points_p2(points_3d, P2):
     )
 
     uvw = points_h @ P2.T
-    uv = uvw[:, :2] / np.clip(uvw[:, 2:3], 1e-6, None)
+    z = uvw[:, 2]
+    valid = z > float(min_z)
 
-    return uv.astype(np.float32)
+    uv = np.full((points_3d.shape[0], 2), np.nan, dtype=np.float32)
+    uv[valid] = uvw[valid, :2] / z[valid, None]
+
+    return uv.astype(np.float32), valid
+
+
+def project_points_p2(points_3d, P2, min_z=0.1):
+    """
+    Compatibility wrapper returning only projected points.
+
+    Invalid points are NaN; callers that need validity should use
+    project_points_p2_numpy.
+    """
+    uv, _ = project_points_p2_numpy(points_3d, P2, min_z=min_z)
+
+    return uv
 
 
 def project_kitti_location(location_xyz, P2):

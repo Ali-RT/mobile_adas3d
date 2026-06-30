@@ -22,7 +22,6 @@ from data.split_resolver import get_split_file
 from data.target_builder import scale_bbox_2d
 from data.geometry import (
     compute_kitti_cuboid_corners_3d,
-    project_points_p2,
     scale_p2_for_resize,
 )
 from models.build import build_model
@@ -124,6 +123,32 @@ def mean(values: List[float]) -> float:
     return float(sum(values) / len(values))
 
 
+def finite_values(values: List[float]) -> List[float]:
+    return [
+        float(value)
+        for value in values
+        if math.isfinite(float(value))
+    ]
+
+
+def finite_mean(values: List[float]) -> float:
+    values = finite_values(values)
+
+    if len(values) == 0:
+        return float("nan")
+
+    return mean(values)
+
+
+def finite_percentile(values: List[float], q: float) -> float:
+    values = finite_values(values)
+
+    if len(values) == 0:
+        return float("nan")
+
+    return percentile(values, q)
+
+
 def percentile(values: List[float], q: float) -> float:
     if len(values) == 0:
         return 0.0
@@ -173,6 +198,125 @@ def angle_diff_rad(pred: float, gt: float) -> float:
     diff = pred - gt
     diff = (diff + math.pi) % (2.0 * math.pi) - math.pi
     return abs(diff)
+
+
+def project_points_p2_safe(
+    points_3d: np.ndarray,
+    p2: np.ndarray,
+    min_z: float = 0.25,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Project 3D camera-frame points to image using KITTI P2.
+
+    Invalid points are returned as NaN and marked invalid. This avoids
+    exploding projected coordinates when Z is near zero.
+    """
+    points_3d = np.asarray(points_3d, dtype=np.float32)
+    p2 = np.asarray(p2, dtype=np.float32)
+
+    points_h = np.concatenate(
+        [points_3d, np.ones((points_3d.shape[0], 1), dtype=np.float32)],
+        axis=1,
+    )
+
+    uvw = points_h @ p2.T
+    z = uvw[:, 2]
+    valid = z > float(min_z)
+
+    points_2d = np.full((points_3d.shape[0], 2), np.nan, dtype=np.float32)
+    points_2d[valid] = uvw[valid, :2] / z[valid, None]
+
+    return points_2d, valid, z
+
+
+def projected_corner_metrics(
+    pred_corners_3d: np.ndarray,
+    gt_corners_3d: np.ndarray,
+    p2: np.ndarray,
+    image_width: int,
+    image_height: int,
+    min_z: float = 0.25,
+    require_all_corners: bool = True,
+    max_reasonable_error_px: float = 500.0,
+) -> Dict[str, Any]:
+    """
+    Computes projected 2D corner error only when projection is geometrically
+    valid. For near objects whose cuboid crosses the camera plane, this metric
+    is not meaningful.
+    """
+    del image_width, image_height
+
+    pred_corners_2d, pred_valid, pred_z = project_points_p2_safe(
+        pred_corners_3d,
+        p2,
+        min_z=min_z,
+    )
+    gt_corners_2d, gt_valid, gt_z = project_points_p2_safe(
+        gt_corners_3d,
+        p2,
+        min_z=min_z,
+    )
+
+    valid = pred_valid & gt_valid
+    valid_count = int(valid.sum())
+
+    result = {
+        "pred_min_corner_z": float(np.min(pred_z)),
+        "gt_min_corner_z": float(np.min(gt_z)),
+        "pred_invalid_corner_count": int((~pred_valid).sum()),
+        "gt_invalid_corner_count": int((~gt_valid).sum()),
+        "corner2d_valid_count": valid_count,
+    }
+
+    if require_all_corners and valid_count < 8:
+        result.update(
+            {
+                "corner2d_mae_px": float("nan"),
+                "corner2d_projected_mae_px": float("nan"),
+                "corner2d_valid": False,
+                "corner2d_invalid_reason": "not_all_corners_in_front",
+            }
+        )
+        return result
+
+    if valid_count < 4:
+        result.update(
+            {
+                "corner2d_mae_px": float("nan"),
+                "corner2d_projected_mae_px": float("nan"),
+                "corner2d_valid": False,
+                "corner2d_invalid_reason": "too_few_valid_corners",
+            }
+        )
+        return result
+
+    errors = np.linalg.norm(
+        pred_corners_2d[valid] - gt_corners_2d[valid],
+        axis=1,
+    )
+    mean_error = float(np.mean(errors))
+
+    if not math.isfinite(mean_error) or mean_error > max_reasonable_error_px:
+        result.update(
+            {
+                "corner2d_mae_px": float("nan"),
+                "corner2d_projected_mae_px": float("nan"),
+                "corner2d_valid": False,
+                "corner2d_invalid_reason": "unreasonable_projected_error",
+            }
+        )
+        return result
+
+    result.update(
+        {
+            "corner2d_mae_px": mean_error,
+            "corner2d_projected_mae_px": mean_error,
+            "corner2d_valid": True,
+            "corner2d_invalid_reason": "",
+        }
+    )
+
+    return result
 
 
 def scale_gt_objects_to_input(
@@ -332,6 +476,8 @@ def compute_match_metric_row(
     split_name: str,
     match: Dict[str, Any],
     P2: Optional[np.ndarray] = None,
+    image_width: Optional[int] = None,
+    image_height: Optional[int] = None,
 ) -> Dict[str, Any]:
     pred = match["prediction"]
     gt = match["gt"]
@@ -409,13 +555,28 @@ def compute_match_metric_row(
         np.mean(np.linalg.norm(pred_corners_3d - gt_corners_3d, axis=1))
     )
 
-    corner2d_mae_px = float("nan")
     if P2 is not None:
-        gt_corners_2d = project_points_p2(gt_corners_3d, P2)
-        pred_corners_2d = project_points_p2(pred_corners_3d, P2)
-        corner2d_mae_px = float(
-            np.mean(np.linalg.norm(pred_corners_2d - gt_corners_2d, axis=1))
+        corner2d_metrics = projected_corner_metrics(
+            pred_corners_3d=pred_corners_3d,
+            gt_corners_3d=gt_corners_3d,
+            p2=P2,
+            image_width=int(image_width or 0),
+            image_height=int(image_height or 0),
+            min_z=0.25,
+            require_all_corners=True,
         )
+    else:
+        corner2d_metrics = {
+            "pred_min_corner_z": float(np.min(pred_corners_3d[:, 2])),
+            "gt_min_corner_z": float(np.min(gt_corners_3d[:, 2])),
+            "pred_invalid_corner_count": int(np.sum(pred_corners_3d[:, 2] <= 0.25)),
+            "gt_invalid_corner_count": int(np.sum(gt_corners_3d[:, 2] <= 0.25)),
+            "corner2d_valid": False,
+            "corner2d_valid_count": 0,
+            "corner2d_invalid_reason": "missing_p2",
+            "corner2d_projected_mae_px": float("nan"),
+            "corner2d_mae_px": float("nan"),
+        }
 
     return {
         "split": split_name,
@@ -449,8 +610,15 @@ def compute_match_metric_row(
         "center3d_error_m": center_dist_3d,
         "center_dist_3d_m": center_dist_3d,
         "corner3d_mae_m": corner3d_mae_m,
-        "corner2d_projected_mae_px": corner2d_mae_px,
-        "corner2d_mae_px": corner2d_mae_px,
+        "pred_min_corner_z": corner2d_metrics["pred_min_corner_z"],
+        "gt_min_corner_z": corner2d_metrics["gt_min_corner_z"],
+        "pred_invalid_corner_count": corner2d_metrics["pred_invalid_corner_count"],
+        "gt_invalid_corner_count": corner2d_metrics["gt_invalid_corner_count"],
+        "corner2d_valid": corner2d_metrics["corner2d_valid"],
+        "corner2d_valid_count": corner2d_metrics["corner2d_valid_count"],
+        "corner2d_invalid_reason": corner2d_metrics["corner2d_invalid_reason"],
+        "corner2d_projected_mae_px": corner2d_metrics["corner2d_projected_mae_px"],
+        "corner2d_mae_px": corner2d_metrics["corner2d_mae_px"],
         "gt_h_m": float(gt_dims[0]),
         "gt_w_m": float(gt_dims[1]),
         "gt_l_m": float(gt_dims[2]),
@@ -506,11 +674,18 @@ def summarize_metric_rows(
         loc_z_errors = [float(r["location_z_abs_error_m"]) for r in group_rows]
         center_dist_errors = [float(r["center_dist_3d_m"]) for r in group_rows]
         corner3d_errors = [float(r["corner3d_mae_m"]) for r in group_rows]
+        valid_corner2d_rows = [
+            r
+            for r in group_rows
+            if bool(r.get("corner2d_valid", False))
+        ]
         corner2d_errors = [
             float(r["corner2d_mae_px"])
-            for r in group_rows
-            if not math.isnan(float(r["corner2d_mae_px"]))
+            for r in valid_corner2d_rows
         ]
+        corner2d_valid_ratio = len(valid_corner2d_rows) / max(len(group_rows), 1)
+        corner2d_valid_count = len(valid_corner2d_rows)
+        corner2d_total_count = len(group_rows)
 
         summary_rows.append(
             {
@@ -538,9 +713,12 @@ def summarize_metric_rows(
                 "center_dist_3d_p90_m": percentile(center_dist_errors, 90),
                 "corner3d_mae_m": mean(corner3d_errors),
                 "corner3d_mae_p90_m": percentile(corner3d_errors, 90),
-                "corner2d_projected_mae_px": mean(corner2d_errors),
-                "corner2d_mae_px": mean(corner2d_errors),
-                "corner2d_mae_p90_px": percentile(corner2d_errors, 90),
+                "corner2d_valid_ratio": corner2d_valid_ratio,
+                "corner2d_valid_count": corner2d_valid_count,
+                "corner2d_total_count": corner2d_total_count,
+                "corner2d_projected_mae_px": finite_mean(corner2d_errors),
+                "corner2d_mae_px": finite_mean(corner2d_errors),
+                "corner2d_mae_p90_px": finite_percentile(corner2d_errors, 90),
                 "yaw_abs_error_mean_deg": mean(yaw_errors),
                 "yaw_abs_error_p50_deg": percentile(yaw_errors, 50),
                 "yaw_abs_error_p90_deg": percentile(yaw_errors, 90),
@@ -573,11 +751,18 @@ def summarize_class_distance(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]
         loc_z_errors = [float(r["location_z_abs_error_m"]) for r in group_rows]
         center_dist_errors = [float(r["center_dist_3d_m"]) for r in group_rows]
         corner3d_errors = [float(r["corner3d_mae_m"]) for r in group_rows]
+        valid_corner2d_rows = [
+            r
+            for r in group_rows
+            if bool(r.get("corner2d_valid", False))
+        ]
         corner2d_errors = [
             float(r["corner2d_mae_px"])
-            for r in group_rows
-            if not math.isnan(float(r["corner2d_mae_px"]))
+            for r in valid_corner2d_rows
         ]
+        corner2d_valid_ratio = len(valid_corner2d_rows) / max(len(group_rows), 1)
+        corner2d_valid_count = len(valid_corner2d_rows)
+        corner2d_total_count = len(group_rows)
 
         summary_rows.append(
             {
@@ -602,8 +787,11 @@ def summarize_class_distance(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]
                 "center3d_p90_m": percentile(center_dist_errors, 90),
                 "corner3d_mae_m": mean(corner3d_errors),
                 "corner3d_mae_p90_m": percentile(corner3d_errors, 90),
-                "corner2d_projected_mae_px": mean(corner2d_errors),
-                "corner2d_projected_mae_p90_px": percentile(corner2d_errors, 90),
+                "corner2d_valid_ratio": corner2d_valid_ratio,
+                "corner2d_valid_count": corner2d_valid_count,
+                "corner2d_total_count": corner2d_total_count,
+                "corner2d_projected_mae_px": finite_mean(corner2d_errors),
+                "corner2d_projected_mae_p90_px": finite_percentile(corner2d_errors, 90),
             }
         )
 
@@ -759,6 +947,8 @@ def main() -> None:
                         split_name=args.split,
                         match=match,
                         P2=P2_model,
+                        image_width=input_width,
+                        image_height=input_height,
                     )
                 )
 
@@ -865,7 +1055,8 @@ def main() -> None:
                 f"{row['loc_z_mae_m']:.3f})m "
                 f"center3d_mae={row['center3d_mae_m']:.3f}m "
                 f"corner3d_mae={row['corner3d_mae_m']:.3f}m "
-                f"corner2d_mae={row['corner2d_projected_mae_px']:.1f}px "
+                f"corner2d_mae_valid={row['corner2d_projected_mae_px']:.1f}px "
+                f"corner2d_valid_ratio={row['corner2d_valid_ratio']:.3f} "
                 f"iou_mean={row['iou_2d_mean']:.3f}"
             )
 
@@ -881,7 +1072,8 @@ def main() -> None:
                 f"dim_mae={row['dim_mae_m']:.3f}m "
                 f"center3d_mae={row['center3d_mae_m']:.3f}m "
                 f"corner3d_mae={row['corner3d_mae_m']:.3f}m "
-                f"corner2d_mae={row['corner2d_projected_mae_px']:.1f}px "
+                f"corner2d_mae_valid={row['corner2d_projected_mae_px']:.1f}px "
+                f"corner2d_valid_ratio={row['corner2d_valid_ratio']:.3f} "
                 f"iou_mean={row['iou_2d_mean']:.3f}"
             )
 
@@ -897,7 +1089,8 @@ def main() -> None:
                 f"dim_mae={row['dim_mae_m']:.3f}m "
                 f"center3d_mae={row['center3d_mae_m']:.3f}m "
                 f"corner3d_mae={row['corner3d_mae_m']:.3f}m "
-                f"corner2d_mae={row['corner2d_projected_mae_px']:.1f}px"
+                f"corner2d_mae_valid={row['corner2d_projected_mae_px']:.1f}px "
+                f"corner2d_valid_ratio={row['corner2d_valid_ratio']:.3f}"
             )
 
     print("\nEvaluation complete.")

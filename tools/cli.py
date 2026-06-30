@@ -1,7 +1,5 @@
 import argparse
 
-import argparse
-
 
 def parse_config_profile_args(description: str) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=description)
@@ -61,6 +59,13 @@ def parse_config_profile_args(description: str) -> argparse.Namespace:
         type=float,
         default=0.25,
         help="Prediction score threshold.",
+    )
+
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        default=None,
+        help="Optional output directory override.",
     )
 
     return parser.parse_args()

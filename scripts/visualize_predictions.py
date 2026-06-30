@@ -163,7 +163,11 @@ def main() -> None:
         device=device,
     )
 
-    output_dir = Path(config["outputs"]["visualization_dir"]) / "predictions_overlay"
+    if args.output_dir is not None:
+        output_dir = Path(args.output_dir)
+    else:
+        output_dir = Path(config["outputs"]["visualization_dir"]) / "predictions_overlay"
+
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print("\nRunning prediction visualization.")
