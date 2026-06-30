@@ -33,7 +33,13 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument("--config", type=str, default="configs/kitti_mobileadas3d.yaml")
     parser.add_argument("--profile", type=str, default=None)
-    parser.add_argument("--torchscript-path", type=str, required=True)
+    parser.add_argument(
+        "--torchscript-path",
+        "--torchscript",
+        dest="torchscript_path",
+        type=str,
+        required=True,
+    )
     parser.add_argument("--split", type=str, default="test", choices=["train", "val", "test"])
     parser.add_argument("--device", type=str, default="cuda")
     parser.add_argument("--max-images", type=int, default=100)

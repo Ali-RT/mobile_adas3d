@@ -30,6 +30,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--checkpoint", type=str, required=True)
     parser.add_argument("--device", type=str, default="cpu")
     parser.add_argument("--output-dir", type=str, default=None)
+    parser.add_argument("--output-path", type=str, default=None)
     parser.add_argument("--filename", type=str, default="mobileadas3d_torchscript.pt")
     parser.add_argument("--optimize-for-inference", action="store_true")
 
@@ -63,12 +64,20 @@ def tensor_summary(tensor: torch.Tensor) -> Dict[str, Any]:
 def resolve_export_paths(
     config: Dict[str, Any],
     output_dir_arg: Optional[str],
+    output_path_arg: Optional[str],
     filename: str,
 ) -> tuple[Path, Path, Path]:
-    if output_dir_arg is not None:
+    if output_path_arg is not None:
+        export_path = Path(output_path_arg)
+        output_dir = export_path.parent
+    elif output_dir_arg is not None:
         requested_path = Path(output_dir_arg)
 
         if requested_path.suffix in {".pt", ".pth", ".torchscript"}:
+            print(
+                "Warning: --output-dir received a file-like path. "
+                "Prefer --output-path for exact export files."
+            )
             output_dir = requested_path.parent
             export_path = requested_path
         else:
@@ -79,13 +88,13 @@ def resolve_export_paths(
         export_path = output_dir / filename
 
     if export_path.exists() and export_path.is_dir():
-        nested_export_path = export_path / filename
-        print(
-            "Warning: requested TorchScript export path is already a directory. "
-            f"Writing the model inside it instead: {nested_export_path}"
+        raise IsADirectoryError(
+            "Requested TorchScript export path is a directory, but it must be "
+            f"a final model file: {export_path}. Pass --output-dir with a "
+            "directory plus --filename, or pass --output-path with a file path. "
+            "If this directory was created by an earlier export, remove or "
+            "rename it before exporting to that .pt file path."
         )
-        output_dir = export_path
-        export_path = nested_export_path
 
     metadata_path = output_dir / "mobileadas3d_torchscript_metadata.json"
 
@@ -112,6 +121,7 @@ def main() -> None:
     output_dir, export_path, metadata_path = resolve_export_paths(
         config=config,
         output_dir_arg=args.output_dir,
+        output_path_arg=args.output_path,
         filename=args.filename,
     )
     output_dir.mkdir(parents=True, exist_ok=True)

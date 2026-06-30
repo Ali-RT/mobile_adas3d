@@ -1,5 +1,12 @@
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 import argparse
 import json
 from pathlib import Path
@@ -7,14 +14,23 @@ from typing import Any, Dict, List
 
 import torch
 
+from models.torchscript_wrapper import TORCHSCRIPT_OUTPUT_NAMES
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Export MobileADAS3D TorchScript model to Core ML."
     )
 
-    parser.add_argument("--torchscript-path", type=str, required=True)
-    parser.add_argument("--output-dir", type=str, required=True)
+    parser.add_argument(
+        "--torchscript-path",
+        "--torchscript",
+        dest="torchscript_path",
+        type=str,
+        required=True,
+    )
+    parser.add_argument("--output-dir", type=str, default=None)
+    parser.add_argument("--output-path", type=str, default=None)
     parser.add_argument("--filename", type=str, default="MobileADAS3D.mlpackage")
 
     parser.add_argument("--input-height", type=int, default=384)
@@ -42,6 +58,19 @@ def parse_args() -> argparse.Namespace:
     )
 
     return parser.parse_args()
+
+
+def resolve_output_paths(args: argparse.Namespace) -> tuple[Path, Path]:
+    if args.output_path is not None:
+        output_path = Path(args.output_path)
+        output_dir = output_path.parent
+    elif args.output_dir is not None:
+        output_dir = Path(args.output_dir)
+        output_path = output_dir / args.filename
+    else:
+        raise ValueError("Pass either --output-dir or --output-path.")
+
+    return output_dir, output_path
 
 
 def get_coreml_target(ct: Any, target: str) -> Any:
@@ -80,10 +109,9 @@ def main() -> None:
 
     import coremltools as ct
 
-    output_dir = Path(args.output_dir)
+    output_dir, output_path = resolve_output_paths(args)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    output_path = output_dir / args.filename
     metadata_path = output_dir / "MobileADAS3D_coreml_metadata.json"
 
     print("Loading TorchScript model...")
@@ -103,15 +131,16 @@ def main() -> None:
         outputs = ts_model(example_input)
 
     print("TorchScript output shapes:")
-    output_names = [
-        "cls_logits",
-        "box2d",
-        "log_depth",
-        "dim",
-        "yaw",
-        "center_offset",
-        "depth_uncertainty",
-    ]
+    output_names = list(TORCHSCRIPT_OUTPUT_NAMES)
+
+    if not isinstance(outputs, (tuple, list)):
+        outputs = (outputs,)
+
+    if len(outputs) != len(output_names):
+        raise RuntimeError(
+            f"TorchScript output count mismatch: model returned {len(outputs)} "
+            f"outputs but exporter expected {len(output_names)} names: {output_names}"
+        )
 
     for name, tensor in zip(output_names, outputs):
         print(f"  {name}: {list(tensor.shape)}")
@@ -142,13 +171,8 @@ def main() -> None:
             )
         ],
         outputs=[
-            ct.TensorType(name="cls_logits"),
-            ct.TensorType(name="box2d"),
-            ct.TensorType(name="log_depth"),
-            ct.TensorType(name="dim"),
-            ct.TensorType(name="yaw"),
-            ct.TensorType(name="center_offset"),
-            ct.TensorType(name="depth_uncertainty"),
+            ct.TensorType(name=name)
+            for name in output_names
         ],
         convert_to="mlprogram",
         minimum_deployment_target=minimum_deployment_target,

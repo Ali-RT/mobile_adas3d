@@ -573,10 +573,22 @@ def compare_swift_python(
 def main() -> None:
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--torchscript", type=Path, required=True)
+    parser.add_argument(
+        "--torchscript-path",
+        "--torchscript",
+        dest="torchscript",
+        type=Path,
+        required=True,
+    )
     parser.add_argument("--image", type=Path, required=True)
     parser.add_argument("--swift-json", type=Path, default=None)
-    parser.add_argument("--out-dir", type=Path, default=Path("parity_out"))
+    parser.add_argument(
+        "--output-dir",
+        "--out-dir",
+        dest="out_dir",
+        type=Path,
+        default=Path("parity_out"),
+    )
 
     parser.add_argument("--device", type=str, default="cpu")
     parser.add_argument("--input-w", type=int, default=1280)
