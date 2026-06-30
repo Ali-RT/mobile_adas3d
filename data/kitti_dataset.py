@@ -8,6 +8,15 @@ from torch.utils.data import Dataset
 from data.kitti_parser import load_kitti_sample
 
 
+def normalize_kitti_sample_id(sample_id: str) -> str:
+    stem = Path(str(sample_id).strip()).stem
+
+    if stem.isdigit() and len(stem) <= 6:
+        return f"{int(stem):06d}"
+
+    return stem
+
+
 class KITTIDataset(Dataset):
     """
     PyTorch Dataset for KITTI object detection data.
@@ -37,6 +46,10 @@ class KITTIDataset(Dataset):
         self.classes = classes
         self.class_to_id = {name: idx for idx, name in enumerate(classes)}
 
+        self.image_dir_name = image_dir
+        self.label_dir_name = label_dir
+        self.calib_dir_name = calib_dir
+
         self.image_dir = self.root_dir / image_dir
         self.label_dir = self.root_dir / label_dir
         self.calib_dir = self.root_dir / calib_dir
@@ -46,14 +59,20 @@ class KITTIDataset(Dataset):
 
         if split_file is not None:
             from data.splits import read_split_file
-            self.sample_ids = read_split_file(split_file)
+            self.sample_ids = [
+                normalize_kitti_sample_id(sample_id)
+                for sample_id in read_split_file(split_file)
+            ]
         elif sample_ids is not None:
-            self.sample_ids = sample_ids
+            self.sample_ids = [
+                normalize_kitti_sample_id(sample_id)
+                for sample_id in sample_ids
+            ]
         else:
             self.sample_ids = self._discover_sample_ids()
 
         self._validate_sample_files()
-        
+
         if len(self.sample_ids) == 0:
             raise ValueError(
                 f"No KITTI samples found in {self.image_dir}. "
@@ -82,10 +101,22 @@ class KITTIDataset(Dataset):
                 "Some sample files are missing. First missing files:\n"
                 + "\n".join(missing[:20])
             )
+
     def _discover_sample_ids(self) -> List[str]:
         image_paths = sorted(self.image_dir.glob("*.png"))
-        sample_ids = [p.stem for p in image_paths]
+        sample_ids = [normalize_kitti_sample_id(p.stem) for p in image_paths]
         return sample_ids
+
+    def resolve_sample_id(self, sample_id: str) -> str:
+        normalized_sample_id = normalize_kitti_sample_id(sample_id)
+
+        if normalized_sample_id not in self.sample_ids:
+            raise ValueError(
+                f"Image id {normalized_sample_id} not found in dataset. "
+                f"First available ids: {self.sample_ids[:10]}"
+            )
+
+        return normalized_sample_id
 
     def __len__(self) -> int:
         return len(self.sample_ids)
@@ -97,6 +128,9 @@ class KITTIDataset(Dataset):
             root_dir=self.root_dir,
             sample_id=sample_id,
             allowed_classes=self.classes,
+            image_dir=self.image_dir_name,
+            label_dir=self.label_dir_name,
+            calib_dir=self.calib_dir_name,
         )
 
         image_bgr = cv2.imread(sample["image_path"], cv2.IMREAD_COLOR)

@@ -68,6 +68,13 @@ def parse_args() -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "--image-id",
+        type=str,
+        default=None,
+        help="Optional KITTI sample id to evaluate, e.g. 000343 or 343.",
+    )
+
+    parser.add_argument(
         "--score-threshold",
         type=float,
         default=0.55,
@@ -852,10 +859,15 @@ def main() -> None:
         split_file=split_file,
     )
 
-    if args.max_images is None or args.max_images < 0:
-        num_images = len(dataset)
+    if args.image_id is not None:
+        image_id = dataset.resolve_sample_id(args.image_id)
+        selected_indices = [dataset.sample_ids.index(image_id)]
+    elif args.max_images is None or args.max_images < 0:
+        selected_indices = list(range(len(dataset)))
     else:
-        num_images = min(args.max_images, len(dataset))
+        selected_indices = list(range(min(args.max_images, len(dataset))))
+
+    num_images = len(selected_indices)
 
     device = get_device(training_cfg.get("device", "auto"))
 
@@ -887,6 +899,7 @@ def main() -> None:
     print(f"Split file: {split_file}")
     print(f"Dataset size: {len(dataset)}")
     print(f"Evaluating images: {num_images}")
+    print(f"Image ID: {args.image_id}")
     print(f"Input size: {input_width} x {input_height}")
     print(f"Device: {device}")
     print(f"Score threshold: {args.score_threshold}")
@@ -896,8 +909,8 @@ def main() -> None:
     print(f"Output dir: {output_dir}")
 
     with torch.no_grad():
-        for idx in range(num_images):
-            sample = dataset[idx]
+        for output_idx, dataset_idx in enumerate(selected_indices):
+            sample = dataset[dataset_idx]
 
             image = sample["image"].unsqueeze(0)
 
@@ -987,9 +1000,11 @@ def main() -> None:
                     }
                 )
 
-            if (idx + 1) % 50 == 0 or idx + 1 == num_images:
+            if (output_idx + 1) % 50 == 0 or output_idx + 1 == num_images:
                 print(
-                    f"Processed {idx + 1}/{num_images} images. "
+                    f"Processed {output_idx + 1}/{num_images} images. "
+                    f"sample={sample['sample_id']} "
+                    f"image={sample['image_path']} "
                     f"matches={len(matched_rows)} "
                     f"fp={len(false_positive_rows)} "
                     f"fn={len(false_negative_rows)}"

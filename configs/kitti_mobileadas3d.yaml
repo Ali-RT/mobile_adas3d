@@ -13,8 +13,8 @@ dataset:
     colab_drive:
       root_dir: /content/drive/MyDrive/datasets/kitti
 
-  image_dir: training/image_2
-  label_dir: training/label_2
+  image_dir: training/image
+  label_dir: training/label
   calib_dir: training/calib
 
   classes:

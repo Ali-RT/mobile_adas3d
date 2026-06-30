@@ -118,6 +118,7 @@ def main() -> None:
     checkpoint_path = args.checkpoint
     split_name = args.split
     max_images = args.max_images
+    image_id = args.image_id
     score_threshold = args.score_threshold
 
     if checkpoint_path is None:
@@ -155,6 +156,19 @@ def main() -> None:
 
     iou_thresholds = [0.25, 0.50]
 
+    if image_id is not None:
+        image_id = dataset.resolve_sample_id(image_id)
+        selected_indices = [dataset.sample_ids.index(image_id)]
+    else:
+        num_images = (
+            len(dataset)
+            if max_images is None or max_images < 0
+            else min(max_images, len(dataset))
+        )
+        selected_indices = list(range(num_images))
+
+    num_images = len(selected_indices)
+
     totals = {
         thr: {"tp": 0, "fp": 0, "fn": 0, "ious": []}
         for thr in iou_thresholds
@@ -165,13 +179,14 @@ def main() -> None:
     print(f"Split: {split_name}")
     print(f"Dataset size: {len(dataset)}")
     print(f"Max images: {max_images}")
+    print(f"Image ID: {image_id}")
     print(f"Score threshold: {score_threshold}")
     print(f"Input size: {input_width} x {input_height}")
     print(f"Device: {device}")
 
     with torch.no_grad():
-        for idx in range(min(max_images, len(dataset))):
-            sample = dataset[idx]
+        for output_idx, dataset_idx in enumerate(selected_indices):
+            sample = dataset[dataset_idx]
 
             image = sample["image"].unsqueeze(0)
             image = F.interpolate(
@@ -203,8 +218,9 @@ def main() -> None:
             )
 
             print(
-                f"[{idx + 1}/{min(max_images, len(dataset))}] "
+                f"[{output_idx + 1}/{num_images}] "
                 f"sample={sample['sample_id']} "
+                f"image={sample['image_path']} "
                 f"gt={len(gt_scaled)} pred={len(predictions)}"
             )
 

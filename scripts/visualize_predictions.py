@@ -184,12 +184,7 @@ def main() -> None:
     print(f"Output dir: {output_dir}")
 
     if image_id is not None:
-        if image_id not in dataset.sample_ids:
-            raise ValueError(
-                f"Image id {image_id} not found in {split_name} split. "
-                f"First available ids: {dataset.sample_ids[:10]}"
-            )
-
+        image_id = dataset.resolve_sample_id(image_id)
         selected_indices = [dataset.sample_ids.index(image_id)]
     else:
         num_images = len(dataset) if max_images < 0 else min(max_images, len(dataset))
@@ -281,6 +276,7 @@ def main() -> None:
             print(
                 f"[{output_idx + 1}/{num_images}] "
                 f"sample={sample['sample_id']} "
+                f"image={sample['image_path']} "
                 f"gt={len(gt_scaled)} "
                 f"pred={len(predictions)} "
                 f"saved={overlay_path}"

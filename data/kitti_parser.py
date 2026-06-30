@@ -179,15 +179,18 @@ def load_kitti_sample(
     root_dir: str | Path,
     sample_id: str,
     allowed_classes: Optional[List[str]] = None,
+    image_dir: str = "training/image",
+    label_dir: str = "training/label",
+    calib_dir: str = "training/calib",
 ) -> Dict[str, Any]:
     """
     Load one KITTI sample and convert it into our internal dictionary format.
     """
     root_dir = Path(root_dir)
 
-    image_path = root_dir / "training" / "image_2" / f"{sample_id}.png"
-    label_path = root_dir / "training" / "label_2" / f"{sample_id}.txt"
-    calib_path = root_dir / "training" / "calib" / f"{sample_id}.txt"
+    image_path = root_dir / image_dir / f"{sample_id}.png"
+    label_path = root_dir / label_dir / f"{sample_id}.txt"
+    calib_path = root_dir / calib_dir / f"{sample_id}.txt"
 
     if not image_path.exists():
         raise FileNotFoundError(f"Image file not found: {image_path}")
