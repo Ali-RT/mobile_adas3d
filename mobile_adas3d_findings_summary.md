@@ -1,9 +1,15 @@
 # MobileADAS3D Evaluation Findings Summary
 
+> **Historical result set.** This document records the v6/MobileNetV3
+> experiments and their legacy threshold-sweep metrics. The active training
+> baseline is now a fresh MobileNetV4 Conv Small model evaluated on the
+> canonical Chen split with KITTI AP_R40. Do not attribute the numbers below to
+> MobileNetV4 or compare them directly with AP_R40.
+
 **Project:** MobileADAS3D monocular ADAS 3D detector  
 **Dataset:** KITTI object data, classes: Car, Pedestrian, Cyclist  
 **Input size:** 1280 × 384  
-**Current best model version:** `v6_stride16_fpn_ltrb_center_sampling_class_balance`  
+**Historical model version:** `v6_stride16_fpn_ltrb_center_sampling_class_balance`
 **Recommended operating threshold:** `score_threshold = 0.55`
 
 ---
@@ -26,7 +32,7 @@ The refactor from the original stride-32 detector to the stride-16 FPN detector 
 
 Previous stride-32 baseline used MobileNetV3-Small, dense heads on a 12x40 feature map, one positive cell per object, and absolute [x1, y1, x2, y2] box regression. Best IoU>=0.50 F1 from earlier sweep was about 0.3204.
 
-### Current best architecture
+### Historical v6 architecture
 
 ```text
 Input image [B, 3, 384, 1280]
@@ -266,7 +272,7 @@ Notes:
 
 ---
 
-## 9. Current interpretation
+## 9. Interpretation of the v6 result
 
 The detector is no longer the main bottleneck. The largest remaining technical issues are:
 
@@ -289,9 +295,9 @@ The detector is no longer the main bottleneck. The largest remaining technical i
 
 ---
 
-## 10. Recommended next steps
+## 10. Follow-up diagnostics retained from v6
 
-### Immediate next step: yaw diagnostic
+### Yaw diagnostic
 
 Add a yaw diagnostic evaluator that reports:
 
@@ -320,7 +326,7 @@ Decision rules:
 
 ---
 
-## 11. Current recommended defaults
+## 11. Historical v6 evaluation defaults
 
 ```yaml
 model_version: v6_stride16_fpn_ltrb_center_sampling_class_balance
@@ -330,4 +336,8 @@ nms_iou_threshold: 0.50
 topk: 300
 ```
 
-Use `best.pt` from the v6 run for all current evaluations and visualizations.
+Use these settings only when reproducing the historical v6 result. For new
+training, use `configs/kitti_mnv4_conv_small_baseline.yaml`, evaluate the full
+3,769-image Chen validation split, and report the generated KITTI AP_R40
+summary. The next runnable entry point is
+`notebooks/MobileADAS3D_MobileNetV4_Colab_Baseline.ipynb`.

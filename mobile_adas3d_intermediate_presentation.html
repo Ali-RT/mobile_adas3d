@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MobileADAS3D — Interactive Project Presentation</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root {
+  --bg: #0b1020;
+  --panel: #111a33;
+  --panel2: #182344;
+  --text: #f2f6ff;
+  --muted: #aab7d4;
+  --accent: #53e0c1;
+  --accent2: #78a7ff;
+  --warn: #ffcc66;
+  --danger: #ff7d8a;
+  --grid: rgba(255,255,255,.08);
+  --shadow: 0 18px 50px rgba(0,0,0,.35);
+}
+.light {
+  --bg: #f5f7fb;
+  --panel: #ffffff;
+  --panel2: #eef3ff;
+  --text: #172034;
+  --muted: #536178;
+  --accent: #007e6e;
+  --accent2: #2f5eea;
+  --warn: #9a6100;
+  --danger: #bd2140;
+  --grid: rgba(0,0,0,.08);
+  --shadow: 0 18px 50px rgba(42,54,83,.18);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 15% 15%, rgba(83,224,193,.18), transparent 28%),
+    radial-gradient(circle at 85% 20%, rgba(120,167,255,.14), transparent 34%),
+    var(--bg);
+  overflow: hidden;
+}
+button { font: inherit; }
+.deck {
+  display: grid;
+  grid-template-columns: 260px 1fr 360px;
+  gap: 14px;
+  height: 100vh;
+  padding: 14px;
+}
+.sidebar, .notes, .slide {
+  background: rgba(17,26,51,.78);
+  background: color-mix(in srgb, var(--panel) 90%, transparent);
+  border: 1px solid var(--grid);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+}
+.sidebar { padding: 14px; overflow: auto; }
+.brand { display:flex; align-items:center; gap:10px; margin-bottom: 12px; }
+.logo {
+  width: 36px; height: 36px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+}
+.brand h1 { font-size: 16px; margin:0; line-height:1.2; }
+.brand p { font-size: 12px; margin:2px 0 0; color: var(--muted); }
+.nav button {
+  width:100%;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid transparent;
+  border-radius: 14px;
+  padding: 10px 10px;
+  text-align: left;
+  cursor:pointer;
+  margin: 3px 0;
+  line-height:1.25;
+}
+.nav button.active {
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent2) 14%, transparent);
+  border-color: color-mix(in srgb, var(--accent2) 30%, transparent);
+}
+.controls { display:flex; gap:8px; margin-top: 12px; flex-wrap:wrap; }
+.controls button {
+  border:1px solid var(--grid); background: var(--panel2); color: var(--text);
+  border-radius: 12px; padding:8px 10px; cursor:pointer;
+}
+.stage { min-width: 0; position: relative; }
+.slide {
+  height: calc(100vh - 28px);
+  padding: 42px 48px;
+  display:none;
+  overflow: auto;
+  position: relative;
+}
+.slide.active { display:block; }
+.slide h2 {
+  font-size: 44px;
+  line-height: 1.02;
+  margin: 0 0 18px;
+  letter-spacing: -0.03em;
+}
+.slide h3 {
+  font-size: 24px;
+  margin: 18px 0 10px;
+  color: var(--accent);
+}
+.slide p, .slide li {
+  font-size: 20px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.slide .lead {
+  font-size: 26px;
+  line-height:1.35;
+  color: var(--text);
+  max-width: 980px;
+}
+.kicker {
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: .12em;
+  margin-bottom: 12px;
+}
+.two { display:grid; grid-template-columns: 1fr 1fr; gap: 26px; align-items:start; }
+.three { display:grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.cards { display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin: 22px 0; }
+.card {
+  background: color-mix(in srgb, var(--panel2) 80%, transparent);
+  border:1px solid var(--grid);
+  border-radius: 20px;
+  padding: 18px;
+}
+.card .num { font-size: 34px; font-weight: 800; color: var(--text); letter-spacing: -0.04em; }
+.card .label { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.card .sub { font-size: 15px; color: var(--muted); margin-top: 6px; }
+.badge {
+  display:inline-flex; align-items:center; gap:8px;
+  padding: 7px 11px; border-radius:999px;
+  border:1px solid var(--grid); background: var(--panel2);
+  color: var(--text); font-size:14px; margin:4px 6px 4px 0;
+}
+.flow { display:flex; align-items:center; flex-wrap:wrap; gap: 10px; margin: 20px 0; }
+.flow .step {
+  padding: 14px 16px; border:1px solid var(--grid); border-radius: 16px;
+  background: var(--panel2); color: var(--text); font-weight: 700;
+}
+.arrow { color: var(--accent); font-size: 26px; }
+.table {
+  width:100%; border-collapse: collapse; margin: 16px 0; overflow:hidden; border-radius: 16px;
+  font-size: 16px;
+}
+.table th, .table td {
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--grid);
+  color: var(--muted);
+  text-align:right;
+}
+.table th:first-child, .table td:first-child { text-align:left; color: var(--text); }
+.table th { color: var(--text); background: color-mix(in srgb, var(--accent2) 14%, transparent); }
+.table tr:last-child td { border-bottom: 0; }
+.highlight { color: var(--accent); font-weight:800; }
+.warn { color: var(--warn); font-weight:800; }
+.danger { color: var(--danger); font-weight:800; }
+.chart {
+  background: color-mix(in srgb, var(--panel2) 74%, transparent);
+  border: 1px solid var(--grid);
+  border-radius: 20px;
+  padding: 18px;
+  margin-top: 14px;
+}
+.bar-row { display:grid; grid-template-columns: 190px 1fr 75px; gap: 12px; align-items:center; margin: 12px 0; }
+.bar-label { color: var(--text); font-size: 15px; }
+.bar-track { height: 16px; background: rgba(128,128,128,.18); border-radius: 999px; overflow:hidden; }
+.bar { height:100%; border-radius:999px; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 10%; transition: width .5s ease; }
+.bar-value { color: var(--muted); text-align:right; font-variant-numeric: tabular-nums; }
+.notes {
+  padding: 18px;
+  overflow:auto;
+}
+.notes h3 { margin:0 0 12px; color: var(--accent); }
+.notes p { color: var(--muted); font-size: 16px; line-height:1.45; }
+.notes.hidden { display:none; }
+.progress {
+  position:absolute; left: 48px; right: 48px; bottom: 22px;
+  height: 6px; background: rgba(128,128,128,.2); border-radius: 99px;
+}
+.progress > div { height:100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; width: 0; }
+.footer {
+  position:absolute; right: 48px; bottom: 36px; color: var(--muted); font-size: 13px;
+}
+.diagram {
+  display:grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap:12px; align-items:center; margin: 22px 0;
+}
+.block {
+  border:1px solid var(--grid);
+  background: var(--panel2);
+  border-radius: 18px;
+  padding: 18px;
+  min-height: 96px;
+}
+.block strong { display:block; font-size: 18px; margin-bottom:8px; }
+.block span { color: var(--muted); font-size:15px; }
+.code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: rgba(0,0,0,.22);
+  border:1px solid var(--grid);
+  border-radius: 16px;
+  padding: 14px;
+  color: var(--text);
+  font-size: 15px;
+  white-space: pre-wrap;
+}
+.callout {
+  border-left: 5px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  padding: 16px 18px;
+  border-radius: 0 16px 16px 0;
+  margin: 18px 0;
+}
+.small { font-size: 15px !important; }
+@media (max-width: 1180px) {
+  .deck { grid-template-columns: 1fr; }
+  .sidebar, .notes { display:none; }
+  .slide { height: calc(100vh - 28px); }
+  .cards { grid-template-columns: repeat(2,1fr); }
+  .two,.three { grid-template-columns: 1fr; }
+}
+@media print {
+  body { overflow: visible; background: white; }
+  .deck { display:block; height:auto; padding:0; }
+  .sidebar, .notes, .progress, .footer { display:none !important; }
+  .slide { display:block !important; height:auto; page-break-after: always; box-shadow:none; border:0; border-radius:0; color:#111; background:white; }
+}
+</style>
+</head>
+<body>
+<div class="deck">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo"></div>
+      <div><h1>MobileADAS3D</h1><p>Interactive presentation</p></div>
+    </div>
+    <div class="nav" id="nav"></div>
+    <div class="controls">
+      <button id="prevBtn">← Prev</button>
+      <button id="nextBtn">Next →</button>
+      <button id="themeBtn">Theme</button>
+      <button id="notesBtn">Notes</button>
+    </div>
+    <p class="small" style="margin-top:14px;color:var(--muted)">Keyboard: ← →, N for notes, T for theme</p>
+  </aside>
+  <main class="stage" id="stage">
+
+    <section class="slide active" data-title="Title">
+      <div class="kicker">Intermediate project presentation</div>
+      <h2>MobileADAS3D</h2>
+      <p class="lead">Building, evaluating, optimizing, and exporting a lightweight monocular 3D detector for ADAS-style scene understanding.</p>
+      <div class="cards">
+        <div class="card"><div class="num">0.790</div><div class="label">IoU≥0.50 F1</div><div class="sub">test, topK=50</div></div>
+        <div class="card"><div class="num">9.94 ms</div><div class="label">TorchScript E2E</div><div class="sub">CUDA mean latency</div></div>
+        <div class="card"><div class="num">100.6</div><div class="label">FPS</div><div class="sub">TorchScript + vector decode</div></div>
+        <div class="card"><div class="num">12.18 MB</div><div class="label">Core ML FP16</div><div class="sub">mlpackage size</div></div>
+      </div>
+      <div class="callout">Talk focus: the engineering journey from model prototype to measurable edge-deployment readiness.</div>
+      <div class="footer">1 / 18</div><div class="progress"><div></div></div>
+    </section>
+
+    <section class="slide" data-title="Problem">
+      <div class="kicker">Motivation</div>
+      <h2>2D detection is not enough for ADAS</h2>
+      <p class="lead">For driving-scene understanding, we need to estimate not only <b>what</b> and <b>where</b>, but also <b>how far</b>, <b>how large</b>, and <b>which direction</b>.</p>
+      <div class="three">
+        <div class="card"><div class="num">2D</div><div class="label">Image localization</div><div class="sub">bounding boxes and object class</div></div>
+        <div class="card"><div class="num">3D</div><div class="label">Scene geometry</div><div class="sub">depth, size, yaw</div></div>
+        <div class="card"><div class="num">Edge</div><div class="label">Deployment constraint</div><div class="sub">latency, memory, package size</div></div>
+      </div>
+      <div class="flow">
+        <div class="step">single camera image</div><div class="arrow">→</div><div class="step">road user detection</div><div class="arrow">→</div><div class="step">3D-aware output</div><div class="arrow">→</div><div class="step">edge-ready artifact</div>
+      </div>
+      <div class="footer">2 / 18</div><div class="progress"><div></div></div>
+    </section>
+
+    <section class="slide" data-title="Task">
+      <div class="kicker">Task definition</div>
+      <h2>Closed ADAS object list, rich monocular outputs</h2>
+      <div class="two">
+        <div>
+          <h3>Input</h3>
+          <p class="lead">A single RGB frame resized to <b>1280×384</b>.</p>
+          <div class="code">image tensor: [1, 3, 384, 1280]</div>
+          <h3>Classes</h3>
+          <span class="badge">Car</span><span class="badge">Pedestrian</span><span class="badge">Cyclist</span>
+        </div>
+        <div>
+          <h3>Model outputs</h3>
+          <span class="badge">class logits</span>
+          <span class="badge">2D box l/t/r/b</span>
+          <span class="badge">log depth</span>
+          <span class="badge">3D dimensions</span>
+          <span class="badge">yaw</span>
+          <span class="badge">center offset</span>
+          <span class="badge">depth uncertainty</span>
+          <div class="callout">The model is intentionally compact and camera-only, with WildDet3D-style large-model distillation left as future work.</div>
+        </div>
+      </div>
+      <div class="footer">3 / 18</div><div class="progress"><div></div></div>
+    </section>
+
+    <section class="slide" data-title="Baseline">
+      <div class="kicker">Baseline model</div>
+      <h2>First MVP: MobileNetV3 + dense 3D heads</h2>
+      <div class="diagram">
+        <div class="block"><strong>Input</strong><span>RGB image<br>[1,3,384,1280]</span></div>
+        <div class="arrow">→</div>
+        <div class="block"><strong>MobileNetV3-Small</strong><span>lightweight backbone</span></div>
+        <div class="arrow">→</div>
+        <div class="block"><strong>Dense heads</strong><span>class, box, depth, dim, yaw, offset</span></div>
+      </div>
+      <div class="cards">
+        <div class="card"><div class="num">stride-32</div><div class="label">first grid</div><div class="sub">12×40 cells</div></div>
+        <div class="card"><div class="num">absolute</div><div class="label">initial box target</div><div class="sub">x1/y1/x2/y2</div></div>
+        <div class="card"><div class="num">one</div><div class="label">positive cell</div><div class="sub">fragile assignment</div></div>
+        <div class="card"><div class="num">weak</div><div class="label">minority classes</div><div class="sub">Ped/Cyclist underfit</div></div>
+      </div>
+      <div class="footer">4 / 18</div><div class="progress"><div></div></div>
+    </section>
+
+    <section class="slide" data-title="Diagnosis">
+      <div class="kicker">Evidence-driven diagnosis</div>
+      <h2>Stride-32 was too coarse for small road users</h2>
+      <table class="table">
+        <thead><tr><th>Class</th><th>Objects</th><th>Share</th><th>Median W</th><th>Median H</th><th>W&lt;1 cell @32</th><th>W&lt;1 cell @16</th></tr></thead>
+        <tbody>
+          <tr><td>Car</td><td>4458</td><td>83.1%</td><td>81.0px</td><td>48.0px</td><td>9.7%</td><td>0.1%</td></tr><tr><td>Pedestrian</td><td>642</td><td>12.0%</td><td>32.2px</td><td>86.2px</td><td>49.5%</td><td>11.8%</td></tr><tr><td>Cyclist</td><td>264</td><td>4.9%</td><td>41.7px</td><td>61.3px</td><td>34.5%</td><td>8.0%</td></tr>
+        </tbody>
+      </table>
+      <div class="two">
+        <div class="chart" id="cellChart"></div>
+        <div class="callout">
+          <b>Decision:</b> move prediction grid from stride-32 to stride-16, then fix assignment and box encoding.
+          <br><br>
+          The data showed that pedestrians and cyclists were often too narrow for a coarse 32-pixel cell.
+        </div>
+      </div>
+      <div class="footer">5 / 18</div><div class="progress"><div></div></div>
+    </section>
+
+    <section class="slide" data-title="v6 Architecture">
+      <div class="kicker">Architecture refactor</div>
+      <h2>v6: stride-16 FPN + local box regression</h2>
+      <div class="diagram">
+        <div class="block"><strong>MobileNetV3</strong><span>stride-16 + stride-32 features</span></div>
+        <div class="arrow">→</div>
+        <div class="block"><strong>Lightweight FPN</strong><span>upsample + concat + conv fusion</span></div>
+        <div class="arrow">→</div>
+        <div class="block"><strong>Heads @ 24×80</strong><span>dense ADAS predictions</span></div>
+      </div>
+      <div class="cards">
+        <div class="card"><div class="num">24×80</div><div class="label">feature grid</div><div class="sub">4× more cells than stride-32</div></div>
+        <div class="card"><div class="num">l/t/r/b</div><div class="label">box encoding</div><div class="sub">local, translation-friendly</div></div>
+        <div class="card"><div class="num">radius=1</div><div class="label">center sampling</div><div class="sub">multi-positive supervision</div></div>
+        <div class="card"><div class="num">weighted</div><div class="label">class loss</div><div class="sub">Ped/Cyclist stronger gradients</div></div>
+      </div>
+      <div class="footer">6 / 18</div><div class="progress"><div></div></div>
+    </section>
+
+    <section class="slide" data-title="Accuracy">
+      <div class="kicker">Detection results</div>
+      <h2>Detection jumped from MVP to strong baseline</h2>
+      <div class="cards">
+        <div class="card"><div class="num">0.793</div><div class="label">IoU≥0.50 F1</div><div class="sub">formal eval, topK≈100/300</div></div>
+        <div class="card"><div class="num">0.790</div><div class="label">IoU≥0.50 F1</div><div class="sub">deployment setting topK=50</div></div>
+        <div class="card"><div class="num">0.831</div><div class="label">Precision</div><div class="sub">topK=50</div></div>
+        <div class="card"><div class="num">0.753</div><div class="label">Recall</div><div class="sub">topK=50</div></div>
+      </div>
+      <table class="table">
+        <thead><tr><th>Class</th><th>Precision</th><th>Recall</th><th>F1</th><th>mIoU</th></tr></thead>
+        <tbody>
+      <tr><td>Car</td><td>0.880</td><td>0.785</td><td><b>0.830</b></td><td>0.768</td></tr>
+
+      <tr><td>Pedestrian</td><td>0.669</td><td>0.587</td><td><b>0.625</b></td><td>0.708</td></tr>
+
+      <tr><td>Cyclist</td><td>0.569</td><td>0.709</td><td><b>0.631</b></td><td>0.720</td></tr>
+    </tbody>
+      </table>
+      <div class="chart" id="accuracyChart"></div>
+      <div class="footer">7 / 18</div><div class="progress"><div></div></div>
+    </section>
+
+    <section class="slide" data-title="3D Metrics">
+      <div class="kicker">3D output quality</div>
+      <h2>Matched detections were evaluated for depth, yaw, and dimensions</h2>
+      <div class="cards">
+        <div class="card"><div class="num">1.88 m</div><div class="label">Depth MAE</div><div class="sub">matched detections</div></div>
+        <div class="card"><div class="num">7.6%</div><div class="label">Depth rel. err.</div><div class="sub">mean</div></div>
+        <div class="card"><div class="num">10.6°</div><div class="label">Yaw MAE</div><div class="sub">mean angle error</div></div>
+        <div class="card"><div class="num">0.14 m</div><div class="label">Dim MAE</div><div class="sub">height/width/length</div></div>
+      </div>
+      <table class="table">
+        <thead><tr><th>Class</th><th>Matches</th><th>Depth MAE</th><th>Yaw MAE</th><th>Dim MAE</th><th>2D IoU</th></tr></thead>
+        <tbody>
+      <tr><td>Car</td><td>3321</td><td>2.00 m</td><td>8.6°</td><td>0.15 m</td><td>0.768</td></tr>
+
+      <tr><td>Cyclist</td><td>177</td><td>1.51 m</td><td>12.4°</td><td>0.08 m</td><td>0.720</td></tr>
+
+      <tr><td>Pedestrian</td><td>455</td><td>1.10 m</td><td>25.1°</td><td>0.10 m</td><td>0.705</td></tr>
+    </tbody>
+      </table>
+      <div class="chart" id="depthChart"></div>
+      <div class="footer">8 / 18</div><div class="progress"><div></div></div>
+    </section>
+
+    <section class="slide" data-title="Yaw Diagnostics">
+      <div class="kicker">Yaw diagnostics</div>
+      <h2>Orientation issue was not mainly front/back flips</h2>
+      <div class="two">
+        <div class="chart" id="yawChart"></div>
+        <div>
+          <div class="card"><div class="num">1.2%</div><div class="label">flip rate</div><div class="sub">overall front/back candidates</div></div>
+          <div class="callout"><b>Interpretation:</b> Car and Cyclist yaw are usable for a baseline. Pedestrian yaw remains noisy and visually ambiguous, but it is not the priority bottleneck.</div>
+          <p>Axis-aware yaw error improved the mean from <b>10.63°</b> to <b>7.90°</b>, but not enough to indicate a pure 180° flip problem.</p>
+        </div>
+      </div>
+      <div class="footer">9 / 18</div><div class="progress"><div></div></div>
+    </section>
+
+    <section class="slide" data-title="Complexity">
+      <div class="kicker">Static complexity</div>
+      <h2>Small in weights, moderate in compute</h2>
+      <div class="cards">
+        <div class="card"><div class="num">6.33M</div><div class="label">parameters</div><div class="sub">all trainable</div></div>
+        <div class="card"><div class="num">10.85</div><div class="label">GMACs</div><div class="sub">at 1280×384</div></div>
+        <div class="card"><div class="num">24.2 MB</div><div class="label">FP32 weights</div><div class="sub">state_dict</div></div>
+        <div class="card"><div class="num">12.18 MB</div><div class="label">Core ML FP16</div><div class="sub">deployment package</div></div>
+      </div>
+      <div class="callout">The model is not parameter-heavy; compute comes mostly from high input resolution and stride-16 prediction heads.</div>
+      <div class="code">Input: 1280×384   Feature map: 80×24   Outputs: 7 tensors</div>
+      <div class="footer">10 / 18</div><div class="progress"><div></div></div>
+    </section>
+
+    <section class="slide" data-title="Benchmarking">
+      <div class="kicker">Benchmarking strategy</div>
+      <h2>We measured the pipeline in layers</h2>
+      <div class="flow">
+        <div class="step">static complexity</div><div class="arrow">→</div>
+        <div class="step">forward-only latency</div><div class="arrow">→</div>
+        <div class="step">end-to-end latency</div><div class="arrow">→</div>
+        <div class="step">export parity</div><div class="arrow">→</div>
+        <div class="step">Core ML package</div>
+      </div>
+      <div class="three">
+        <div class="card"><div class="num">mean</div><div class="label">average latency</div><div class="sub">throughput estimate</div></div>
+        <div class="card"><div class="num">p95/p99</div><div class="label">tail latency</div><div class="sub">jitter and real-time stability</div></div>
+        <div class="card"><div class="num">parity</div><div class="label">export trust</div><div class="sub">same outputs after conversion</div></div>
+      </div>
+      <div class="footer">11 / 18</div><div class="progress"><div></div></div>
+    </section>
+
+    <section class="slide" data-title="Runtime Evolution">
+      <div class="kicker">Runtime evolution</div>
+      <h2>Postprocessing was the first deployment bottleneck</h2>
+      <div class="chart" id="runtimeChart"></div>
+      <table class="table">
+        <thead><tr><th>Runtime</th><th>Forward</th><th>Decode/NMS</th><th>Total</th><th>FPS</th></tr></thead>
+        <tbody>
+          <tr><td>Eager + old decode</td><td>10.54 ms</td><td>15.84 ms</td><td>29.07 ms</td><td>34.4</td></tr>
+          <tr><td>Eager + vector decode</td><td>8.38 ms</td><td>2.85 ms</td><td>13.67 ms</td><td>73.2</td></tr>
+          <tr><td><b>TorchScript + vector decode</b></td><td><b>5.08 ms</b></td><td><b>2.54 ms</b></td><td><b>9.94 ms</b></td><td><b>100.6</b></td></tr>
+        </tbody>
+      </table>
+      <div class="footer">12 / 18</div><div class="progress"><div></div></div>
+    </section>
+
+    <section class="slide" data-title="topK Sweep">
+      <div class="kicker">Postprocessing tradeoff</div>
+      <h2>topK=50 is the deployment operating point</h2>
+      <div class="chart" id="topkChart"></div>
+      <div class="callout">Accuracy loss from topK=300 to topK=50 was tiny, while latency improved. This is a practical deployment tradeoff: keep just enough candidates for NMS.</div>
+      <div class="cards">
+        <div class="card"><div class="num">50</div><div class="label">deployment topK</div><div class="sub">fast, stable</div></div>
+        <div class="card"><div class="num">100</div><div class="label">formal eval topK</div><div class="sub">accuracy-safe</div></div>
+        <div class="card"><div class="num">0.55</div><div class="label">score threshold</div><div class="sub">balanced F1</div></div>
+        <div class="card"><div class="num">0.5</div><div class="label">NMS IoU</div><div class="sub">duplicate suppression</div></div>
+      </div>
+      <div class="footer">13 / 18</div><div class="progress"><div></div></div>
+    </section>
+
+    <section class="slide" data-title="Decoder Optimization">
+      <div class="kicker">Engineering optimization</div>
+      <h2>Vectorized decode removed CUDA synchronization overhead</h2>
+      <div class="two">
+        <div>
+          <h3>Old decoder</h3>
+          <ul>
+            <li>looped over candidates in Python</li>
+            <li>used repeated <code>.item()</code> calls</li>
+            <li>caused GPU→CPU synchronization</li>
+            <li>decode mean: <span class="danger">15.84 ms</span></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Vectorized decoder</h3>
+          <ul>
+            <li>gathers candidate tensors in batch</li>
+            <li>moves compact results to CPU once</li>
+            <li>uses class-aware NMS</li>
+            <li>decode mean: <span class="highlight">2.54 ms</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout">Biggest lesson: deployment bottlenecks are not always in the neural network.</div>
+      <div class="footer">14 / 18</div><div class="progress"><div></div></div>
+    </section>
+
+    <section class="slide" data-title="TorchScript">
+      <div class="kicker">Export readiness</div>
+      <h2>TorchScript made the model faster and exportable</h2>
+      <div class="cards">
+        <div class="card"><div class="num">5.69 ms</div><div class="label">forward-only</div><div class="sub">TorchScript CUDA</div></div>
+        <div class="card"><div class="num">1e-4</div><div class="label">parity passed</div><div class="sub">all outputs</div></div>
+        <div class="card"><div class="num">9.94</div><div class="label">E2E latency</div><div class="sub">with vectorized decode</div></div>
+        <div class="card"><div class="num">46.8 MB</div><div class="label">peak CUDA mem</div><div class="sub">TorchScript E2E</div></div>
+      </div>
+      <div class="flow">
+        <div class="step">PyTorch eager</div><div class="arrow">→</div>
+        <div class="step">tuple-output wrapper</div><div class="arrow">→</div>
+        <div class="step">TorchScript trace</div><div class="arrow">→</div>
+        <div class="step">parity check</div>
+      </div>
+      <div class="footer">15 / 18</div><div class="progress"><div></div></div>
+    </section>
+
+    <section class="slide" data-title="Core ML">
+      <div class="kicker">Mobile deployment artifact</div>
+      <h2>Core ML FP16 export succeeded</h2>
+      <div class="cards">
+        <div class="card"><div class="num">12.18 MB</div><div class="label">mlpackage size</div><div class="sub">FP16</div></div>
+        <div class="card"><div class="num">iOS 15+</div><div class="label">target</div><div class="sub">ML Program</div></div>
+        <div class="card"><div class="num">7</div><div class="label">outputs</div><div class="sub">same tensor set</div></div>
+        <div class="card"><div class="num">all</div><div class="label">compute units</div><div class="sub">CPU/GPU/NE allowed</div></div>
+      </div>
+      <div class="code">MobileADAS3D_fp16.mlpackage
+input: [1, 3, 384, 1280]
+precision: fp16
+package size: 12.18 MB</div>
+      <div class="footer">16 / 18</div><div class="progress"><div></div></div>
+    </section>
+
+    <section class="slide" data-title="Current Milestone">
+      <div class="kicker">Current milestone</div>
+      <h2>A compact model with a measurable edge path</h2>
+      <div class="cards">
+        <div class="card"><div class="num">6.33M</div><div class="label">Params</div><div class="sub">compact</div></div>
+        <div class="card"><div class="num">0.790</div><div class="label">IoU≥0.50 F1</div><div class="sub">test, topK=50</div></div>
+        <div class="card"><div class="num">9.94</div><div class="label">Latency</div><div class="sub">TorchScript CUDA E2E</div></div>
+        <div class="card"><div class="num">100.6</div><div class="label">FPS</div><div class="sub">TorchScript CUDA</div></div>
+      </div>
+      <div class="callout"><b>Historical v6 milestone:</b> training, diagnostics, model refactor, 3D evaluation, latency benchmarking, TorchScript export, parity, and Core ML FP16 export were complete at this point. The later v7 iPhone integration and recording benchmarks are now complete.</div>
+      <div class="footer">17 / 18</div><div class="progress"><div></div></div>
+    </section>
+
+    <section class="slide" data-title="Next Steps">
+      <div class="kicker">Next steps</div>
+      <h2>Establish the fresh MobileNetV4 training baseline</h2>
+      <div class="flow">
+        <div class="step">Colab preflight</div><div class="arrow">→</div>
+        <div class="step">MobileNetV4 training</div><div class="arrow">→</div>
+        <div class="step">Chen val 3,769</div><div class="arrow">→</div>
+        <div class="step">AP3D / BEV R40</div><div class="arrow">→</div>
+        <div class="step">controlled ablations</div>
+      </div>
+      <div class="two">
+        <div>
+          <h3>Run first</h3>
+          <ul>
+            <li>MobileADAS3D_MobileNetV4_Colab_Baseline.ipynb</li>
+            <li>full canonical Chen validation split</li>
+            <li>require complete_split: true</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Then compare</h3>
+          <ul>
+            <li>AP3D and BEV AP_R40</li>
+            <li>depth, yaw, and class diagnostics</li>
+            <li>Core ML parity and iPhone latency</li>
+            <li>one controlled change per ablation</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer">18 / 18</div><div class="progress"><div></div></div>
+    </section>
+
+  </main>
+  <aside class="notes" id="notes"><h3>Speaker notes</h3><p id="noteText"></p></aside>
+</div>
+
+<script>
+const runtimeData = [{"name": "Eager + old decode", "forward": 10.53843458000074, "decode": 15.842433475015696, "pre": 2.6896226249846222, "total": 29.071676440003102, "fps": 34.39774111629777}, {"name": "Eager + vector decode", "forward": 8.376746954954797, "decode": 2.853712869982701, "pre": 2.436446594992958, "total": 13.668025230026615, "fps": 73.16345874187802}, {"name": "TorchScript + vector decode", "forward": 5.083032199979698, "decode": 2.5446644266601957, "pre": 2.3151149800014537, "total": 9.943795796655195, "fps": 100.56521880068887}];
+const topkData = [{"topk": 50, "total": 29.071676440003102, "decode": 15.842433475015696, "f1": 0.7903}, {"topk": 100, "total": 31.718503284985218, "decode": 17.760096624995185, "f1": 0.7929}, {"topk": 150, "total": 32.00429520999933, "decode": 18.46488468499956, "f1": 0.7929}, {"topk": 300, "total": 33.737303229991085, "decode": 20.069480250008382, "f1": 0.7929}];
+const accData = [{"class": "Car", "precision": 0.8802797955340328, "recall": 0.78521718262539, "f1": 0.8300355149670218}, {"class": "Pedestrian", "precision": 0.6687402799377916, "recall": 0.587431693989071, "f1": 0.6254545454545455}, {"class": "Cyclist", "precision": 0.569078947368421, "recall": 0.7090163934426229, "f1": 0.6313868613138687}];
+const depthData = [{"bucket": "00_20m", "depth": 0.8862119463785624, "yaw": 14.091892093547091, "dim": 0.1355116601116193}, {"bucket": "20_40m", "depth": 2.011593159116201, "yaw": 7.247718315656447, "dim": 0.1449853756905439}, {"bucket": "40_60m", "depth": 3.676185212737148, "yaw": 9.126493950564845, "dim": 0.1549817212249083}, {"bucket": "60m_plus", "depth": 5.729572642933238, "yaw": 12.02672814382972, "dim": 0.1558796205424299}];
+const yawData = [{"class": "Car", "std": 8.56, "axis": 6.42, "p90": 16.94}, {"class": "Cyclist", "std": 12.39, "axis": 9.74, "p90": 24.96}, {"class": "Pedestrian", "std": 25.07, "axis": 18.04, "p90": 68.18}];
+const notes = {"1": "Open with the motivation: this project is an end-to-end exploration of building a compact monocular 3D detector for ADAS, then pushing it through training, evaluation, optimization, export, and edge-readiness. Emphasize that this is a learning and prototyping project built on public KITTI-style data, not a Bosch production system.", "2": "State the core problem: 2D boxes are useful, but ADAS needs distance, size, and orientation. The project asks whether a lightweight single-camera model can produce usable 3D-like outputs while staying deployable.", "3": "Explain the task definition. The model input is one RGB image and the outputs cover class, 2D box, depth, dimensions, yaw, center offset, and uncertainty. The classes are intentionally constrained to ADAS-relevant objects: cars, pedestrians, cyclists.", "4": "Show the baseline architecture. It started with MobileNetV3-Small and dense heads at stride 32. This was a good MVP, but the feature grid was too coarse for smaller road users.", "5": "Use the diagnostic findings to explain why the model struggled. At stride 32, many pedestrians and cyclists occupy roughly one cell or less in width, and collisions are more common. This turned architecture tuning from guesswork into an evidence-driven decision.", "6": "Introduce the v6 changes. Stride-16 FPN improved spatial resolution; l/t/r/b made box regression local; center sampling gave more positives; class-balanced loss countered KITTI imbalance.", "7": "Summarize the accuracy gain. The key story is that the model went from a weak localization baseline to a much stronger detector, especially for pedestrians and cyclists.", "8": "Explain 3D metrics only on matched detections: once a prediction matches the right object by 2D IoU, we evaluate depth, yaw, and dimensions. This separates detection quality from 3D regression quality.", "9": "Yaw diagnostics showed that 180-degree front/back flips were not the main issue. Car and cyclist yaw were acceptable; pedestrian yaw remained the weakest, which is expected because pedestrian orientation is visually ambiguous.", "10": "Transition from model accuracy to deployability. Static complexity shows the model is small in weights but moderate in compute because the input resolution is large and the stride-16 heads cover 1920 cells.", "11": "Explain why end-to-end benchmarking matters. The first CUDA benchmark showed Python decode/NMS was slower than the neural network itself. That changed the optimization priority.", "12": "Show the topK tradeoff. topK=50 gives near-identical accuracy with lower latency, so it became the deployment setting. Formal evaluation can still use topK=100.", "13": "The vectorized decoder was a major engineering win. It reduced repeated CUDA-to-CPU synchronization and moved the decoder from being the bottleneck to being a small part of the pipeline.", "14": "TorchScript provided a second major speedup and a stable export artifact. Parity passed at 1e-4, so we can trust the exported graph.", "15": "Core ML export is the bridge to iPhone. FP16 reduced the package to about 12 MB and produced an iOS 15+ mlpackage with all seven output tensors preserved.", "16": "Summarize the historical v6 milestone: accuracy, model size, latency, FPS, memory, and Core ML package.", "17": "Explain that the later v7 iPhone integration, camera pipeline, recording artifacts, benchmarks, and ZIP sharing are complete. Export parity remains essential before trusting runtime numbers.", "18": "The active next step is to run the fresh MobileNetV4 Conv Small Colab notebook on the canonical Chen split, require complete AP_R40 evaluation, and only then run controlled architecture and deployment comparisons."};
+const slides = Array.from(document.querySelectorAll('.slide'));
+const nav = document.getElementById('nav');
+const noteText = document.getElementById('noteText');
+let current = 0;
+
+function fmt(x, d=2) { return Number(x).toFixed(d); }
+
+function showSlide(i) {
+  current = Math.max(0, Math.min(slides.length - 1, i));
+  slides.forEach((s, idx) => s.classList.toggle('active', idx === current));
+  Array.from(nav.children).forEach((b, idx) => b.classList.toggle('active', idx === current));
+  noteText.textContent = notes[String(current + 1)] || '';
+  document.querySelectorAll('.progress > div').forEach((p, idx) => {
+    p.style.width = ((current + 1) / slides.length * 100) + '%';
+  });
+  renderCharts();
+}
+
+slides.forEach((s, idx) => {
+  const b = document.createElement('button');
+  b.textContent = `${idx + 1}. ${s.dataset.title}`;
+  b.addEventListener('click', () => showSlide(idx));
+  nav.appendChild(b);
+});
+
+document.getElementById('prevBtn').onclick = () => showSlide(current - 1);
+document.getElementById('nextBtn').onclick = () => showSlide(current + 1);
+document.getElementById('themeBtn').onclick = () => document.body.classList.toggle('light');
+document.getElementById('notesBtn').onclick = () => document.getElementById('notes').classList.toggle('hidden');
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight') showSlide(current + 1);
+  if (e.key === 'ArrowLeft') showSlide(current - 1);
+  if (e.key.toLowerCase() === 'n') document.getElementById('notes').classList.toggle('hidden');
+  if (e.key.toLowerCase() === 't') document.body.classList.toggle('light');
+});
+
+function barChart(el, title, rows, valueKey, unit='', maxVal=null) {
+  if (!el) return;
+  const max = maxVal ?? Math.max(...rows.map(r => r[valueKey]), 1);
+  el.innerHTML = `<h3>${title}</h3>` + rows.map(r => {
+    const val = r[valueKey];
+    const w = Math.max(2, val / max * 100);
+    return `<div class="bar-row">
+      <div class="bar-label">${r.name || r.class || r.bucket || ('topK ' + r.topk)}</div>
+      <div class="bar-track"><div class="bar" style="width:${w}%"></div></div>
+      <div class="bar-value">${fmt(val, val < 1 ? 3 : 2)}${unit}</div>
+    </div>`;
+  }).join('');
+}
+
+function stackedRuntimeChart(el) {
+  if (!el) return;
+  const max = Math.max(...runtimeData.map(r => r.total));
+  el.innerHTML = `<h3>End-to-end latency breakdown, ms</h3>` + runtimeData.map(r => {
+    const pre = r.pre / max * 100, f = r.forward / max * 100, d = r.decode / max * 100;
+    return `<div style="margin:14px 0">
+      <div class="bar-label">${r.name} <span style="float:right;color:var(--muted)">${fmt(r.total,2)} ms · ${fmt(r.fps,1)} FPS</span></div>
+      <div class="bar-track" style="height:22px;display:flex">
+        <div title="preprocess" style="width:${pre}%;background:var(--warn)"></div>
+        <div title="forward" style="width:${f}%;background:var(--accent2)"></div>
+        <div title="decode" style="width:${d}%;background:var(--accent)"></div>
+      </div>
+    </div>`;
+  }).join('') + `<p class="small">Legend: yellow=preprocess, blue=forward, green=decode/NMS.</p>`;
+}
+
+function renderCharts() {
+  barChart(document.getElementById('accuracyChart'), 'Per-class F1 at IoU≥0.50', accData, 'f1', '', 1);
+  barChart(document.getElementById('depthChart'), 'Depth MAE by distance bucket', depthData.map(d => ({name:d.bucket, depth:d.depth})), 'depth', 'm');
+  barChart(document.getElementById('yawChart'), 'Yaw MAE by class: standard vs axis-aware', yawData.map(y => ({name:y.class + ' standard', val:y.std})).concat(yawData.map(y => ({name:y.class + ' axis', val:y.axis}))), 'val', '°');
+  stackedRuntimeChart(document.getElementById('runtimeChart'));
+  barChart(document.getElementById('topkChart'), 'topK sweep: total latency vs F1', topkData.map(d => ({name:'topK ' + d.topk, total:d.total, f1:d.f1})), 'total', 'ms');
+  const cell = document.getElementById('cellChart');
+  if (cell) {
+    cell.innerHTML = `<h3>Cell collisions reduced by stride-16</h3>
+      <table class='table'><thead><tr><th>Grid</th><th>Collided cells</th><th>Object collision</th><th>Ped collision</th><th>Cyclist collision</th></tr></thead><tbody><tr><td>stride-16</td><td>49.0</td><td>1.83%</td><td>6.39%</td><td>1.14%</td></tr><tr><td>stride-32</td><td>226.0</td><td>8.59%</td><td>17.13%</td><td>6.82%</td></tr></tbody></table>
+    `;
+  }
+}
+showSlide(0);
+</script>
+</body>
+</html>

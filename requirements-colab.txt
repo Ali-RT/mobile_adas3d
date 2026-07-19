@@ -1,0 +1,10 @@
+# Colab already supplies CUDA-enabled torch and torchvision. Do not replace
+# them with CPU wheels from a generic requirements install.
+timm==1.0.27
+opencv-python-headless
+pillow
+pyyaml
+tqdm
+matplotlib
+scikit-learn
+tensorboard

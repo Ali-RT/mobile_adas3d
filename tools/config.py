@@ -43,6 +43,9 @@ def apply_runtime_overrides(
     config: Dict[str, Any],
     profile: Optional[str] = None,
     run_name: Optional[str] = None,
+    dataset_root: Optional[str] = None,
+    split_dir: Optional[str] = None,
+    output_dir: Optional[str] = None,
 ) -> Dict[str, Any]:
     if profile is not None:
         if profile not in config["dataset"]["profiles"]:
@@ -55,19 +58,28 @@ def apply_runtime_overrides(
 
     active_profile = config["dataset"]["active_profile"]
 
+    if dataset_root is not None:
+        config["dataset"]["profiles"][active_profile]["root_dir"] = dataset_root
+
+    if split_dir is not None:
+        split_cfg = config["dataset"]["splits"]
+        split_cfg.setdefault("profile_split_dirs", {})[active_profile] = split_dir
+
     outputs_cfg = config["outputs"]
     profile_output_dirs = outputs_cfg.get("profile_output_dirs", {})
 
-    if active_profile in profile_output_dirs:
-        output_dir = profile_output_dirs[active_profile]
+    if output_dir is not None:
+        resolved_output_dir = output_dir
+    elif active_profile in profile_output_dirs:
+        resolved_output_dir = profile_output_dirs[active_profile]
     else:
-        output_dir = outputs_cfg.get("output_dir", "./outputs")
+        resolved_output_dir = outputs_cfg.get("output_dir", "./outputs")
 
-    outputs_cfg["output_dir"] = output_dir
-    outputs_cfg["runs_dir"] = str(Path(output_dir) / "runs")
-    outputs_cfg["checkpoint_dir"] = str(Path(output_dir) / "checkpoints")
-    outputs_cfg["log_dir"] = str(Path(output_dir) / "logs")
-    outputs_cfg["visualization_dir"] = str(Path(output_dir) / "visualizations")
+    outputs_cfg["output_dir"] = resolved_output_dir
+    outputs_cfg["runs_dir"] = str(Path(resolved_output_dir) / "runs")
+    outputs_cfg["checkpoint_dir"] = str(Path(resolved_output_dir) / "checkpoints")
+    outputs_cfg["log_dir"] = str(Path(resolved_output_dir) / "logs")
+    outputs_cfg["visualization_dir"] = str(Path(resolved_output_dir) / "visualizations")
 
     if run_name is not None:
         config["logging"]["run_name"] = run_name
@@ -88,6 +100,9 @@ def load_runtime_config_from_args(args) -> Dict[str, Any]:
         config=config,
         profile=args.profile,
         run_name=getattr(args, "run_name", None),
+        dataset_root=getattr(args, "dataset_root", None),
+        split_dir=getattr(args, "split_dir", None),
+        output_dir=getattr(args, "output_dir", None),
     )
 
     return config

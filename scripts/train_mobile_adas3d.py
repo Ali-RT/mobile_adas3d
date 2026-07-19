@@ -23,7 +23,7 @@ from tools.cli import parse_config_profile_args
 from tools.config import load_runtime_config_from_args
 from tools.device import get_device
 from tools.metrics_logger import MetricsLogger
-from tools.run_manager import create_run_dir
+from tools.run_manager import create_run_dir, resume_run_dir
 from tools.seed import seed_everything
 from tools.training_control import EarlyStopping, get_current_lr
 
@@ -46,7 +46,10 @@ def save_checkpoint(
     epoch: int,
     global_step: int,
     metric_value: float,
+    best_metric: Optional[float],
     config: Dict[str, Any],
+    scaler: torch.cuda.amp.GradScaler,
+    early_stopper: Optional[EarlyStopping],
     is_best: bool = False,
 ) -> None:
     checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
@@ -57,14 +60,26 @@ def save_checkpoint(
         "model_state_dict": model.state_dict(),
         "optimizer_state_dict": optimizer.state_dict(),
         "metric_value": metric_value,
+        "best_metric": best_metric,
         "config": config,
         "is_best": is_best,
+        "scaler_state_dict": scaler.state_dict(),
     }
 
     if scheduler is not None:
         payload["scheduler_state_dict"] = scheduler.state_dict()
 
-    torch.save(payload, checkpoint_path)
+    if early_stopper is not None:
+        payload["early_stopping_state"] = {
+            "best": early_stopper.best,
+            "num_bad_epochs": early_stopper.num_bad_epochs,
+            "should_stop": early_stopper.should_stop,
+            "stop_reason": early_stopper.stop_reason,
+        }
+
+    temporary_path = checkpoint_path.with_name(checkpoint_path.name + ".tmp")
+    torch.save(payload, temporary_path)
+    temporary_path.replace(checkpoint_path)
 
 
 def build_dataloader(
@@ -214,16 +229,17 @@ def train_one_epoch(
     writer: Optional[SummaryWriter],
     use_amp: bool,
     gradient_clip_norm: Optional[float],
+    gradient_accumulation_steps: int,
 ) -> tuple[Dict[str, float], int]:
     model.train()
 
     loss_sums: Dict[str, float] = {}
 
+    optimizer.zero_grad(set_to_none=True)
+
     for batch_idx, batch in enumerate(dataloader, start=1):
         images = batch["images"].to(device, non_blocking=True)
         targets = move_targets_to_device(batch["targets"], device)
-
-        optimizer.zero_grad(set_to_none=True)
 
         with torch.cuda.amp.autocast(enabled=(use_amp and device.type == "cuda")):
             outputs = model(images)
@@ -233,16 +249,22 @@ def train_one_epoch(
         if not torch.isfinite(total_loss):
             raise RuntimeError(f"Non-finite train loss detected: {total_loss.item()}")
 
-        scaler.scale(total_loss).backward()
+        scaler.scale(total_loss / gradient_accumulation_steps).backward()
 
-        if gradient_clip_norm is not None:
-            scaler.unscale_(optimizer)
-            torch.nn.utils.clip_grad_norm_(model.parameters(), gradient_clip_norm)
+        should_step = (
+            batch_idx % gradient_accumulation_steps == 0
+            or batch_idx == len(dataloader)
+        )
 
-        scaler.step(optimizer)
-        scaler.update()
+        if should_step:
+            if gradient_clip_norm is not None:
+                scaler.unscale_(optimizer)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), gradient_clip_norm)
 
-        global_step += 1
+            scaler.step(optimizer)
+            scaler.update()
+            optimizer.zero_grad(set_to_none=True)
+            global_step += 1
 
         for name, value in losses.items():
             loss_sums[name] = loss_sums.get(name, 0.0) + float(value.item())
@@ -338,7 +360,10 @@ def main() -> None:
 
     device = get_device(training_cfg.get("device", "auto"))
 
-    run_dirs = create_run_dir(config=config, config_path=args.config)
+    if args.resume is not None:
+        run_dirs = resume_run_dir(args.resume)
+    else:
+        run_dirs = create_run_dir(config=config, config_path=args.config)
     metrics_logger = MetricsLogger(run_dirs["log_dir"])
 
     writer = None
@@ -395,6 +420,11 @@ def main() -> None:
     save_interval = int(training_cfg.get("save_interval", 1))
     use_amp = bool(training_cfg.get("use_amp", True))
     gradient_clip_norm = training_cfg.get("gradient_clip_norm", None)
+    gradient_accumulation_steps = int(
+        training_cfg.get("gradient_accumulation_steps", 1)
+    )
+    if gradient_accumulation_steps < 1:
+        raise ValueError("training.gradient_accumulation_steps must be >= 1")
 
     if gradient_clip_norm is not None:
         gradient_clip_norm = float(gradient_clip_norm)
@@ -407,17 +437,48 @@ def main() -> None:
 
     best_metric: Optional[float] = None
     global_step = 0
+    start_epoch = 1
+
+    if args.resume is not None:
+        resume_path = Path(args.resume)
+        checkpoint = torch.load(resume_path, map_location=device)
+        model.load_state_dict(checkpoint["model_state_dict"])
+        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+        if scheduler is not None and "scheduler_state_dict" in checkpoint:
+            scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
+        if "scaler_state_dict" in checkpoint:
+            scaler.load_state_dict(checkpoint["scaler_state_dict"])
+        global_step = int(checkpoint.get("global_step", 0))
+        start_epoch = int(checkpoint["epoch"]) + 1
+        best_metric = checkpoint.get("best_metric", checkpoint.get("metric_value"))
+        early_state = checkpoint.get("early_stopping_state", {})
+        if early_stopper is not None and early_state:
+            early_stopper.best = early_state.get("best")
+            early_stopper.num_bad_epochs = int(early_state.get("num_bad_epochs", 0))
+            early_stopper.should_stop = False
+            early_stopper.stop_reason = ""
+        print(
+            f"Resumed {resume_path} at epoch {start_epoch}, "
+            f"global_step={global_step}, best_metric={best_metric}"
+        )
 
     print("\nTraining controls:")
     print(f"  Max epochs: {epochs}")
     print(f"  AMP enabled: {use_amp}")
     print(f"  Gradient clip norm: {gradient_clip_norm}")
+    print(f"  Gradient accumulation steps: {gradient_accumulation_steps}")
     print(f"  Scheduler enabled: {scheduler is not None}")
     print(f"  Early stopping enabled: {early_stopper is not None}")
     print(f"  Monitor metric: {monitor_metric}")
     print(f"  Monitor mode: {monitor_mode}")
 
-    for epoch in range(1, epochs + 1):
+    if start_epoch > epochs:
+        print(f"Checkpoint already reached epoch {start_epoch - 1}; nothing to do.")
+        if writer is not None:
+            writer.close()
+        return
+
+    for epoch in range(start_epoch, epochs + 1):
         lr_before_epoch = get_current_lr(optimizer)
 
         train_losses, global_step = train_one_epoch(
@@ -434,6 +495,7 @@ def main() -> None:
             writer=writer,
             use_amp=use_amp,
             gradient_clip_norm=gradient_clip_norm,
+            gradient_accumulation_steps=gradient_accumulation_steps,
         )
 
         epoch_metrics: Dict[str, Any] = {
@@ -557,7 +619,10 @@ def main() -> None:
             epoch=epoch,
             global_step=global_step,
             metric_value=current_metric,
+            best_metric=best_metric,
             config=config,
+            scaler=scaler,
+            early_stopper=early_stopper,
             is_best=False,
         )
 
@@ -572,7 +637,10 @@ def main() -> None:
                 epoch=epoch,
                 global_step=global_step,
                 metric_value=current_metric,
+                best_metric=best_metric,
                 config=config,
+                scaler=scaler,
+                early_stopper=early_stopper,
                 is_best=False,
             )
 
@@ -587,7 +655,10 @@ def main() -> None:
                 epoch=epoch,
                 global_step=global_step,
                 metric_value=current_metric,
+                best_metric=best_metric,
                 config=config,
+                scaler=scaler,
+                early_stopper=early_stopper,
                 is_best=True,
             )
 

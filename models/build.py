@@ -13,6 +13,7 @@ def build_model(config: Dict[str, Any]) -> MobileADAS3D:
         num_classes=len(dataset_cfg["classes"]),
         backbone_name=model_cfg.get("backbone", "mobilenet_v3_small"),
         pretrained=bool(model_cfg.get("pretrained", True)),
+        normalize_imagenet=bool(model_cfg.get("normalize_imagenet", False)),
         input_height=int(model_cfg["input_height"]),
         input_width=int(model_cfg["input_width"]),
         fpn_channels=int(model_cfg.get("fpn_channels", 128)),

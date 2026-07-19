@@ -1,95 +1,55 @@
-# MobileADAS3D TODO
+# MobileADAS3D Roadmap
 
-## Current implementation status
+_Updated: 2026-07-19_
 
-The current target builder is intentionally simple for the first MVP.
+## Active baseline
 
-Current assignment strategy:
+Train a fresh model in Google Colab with:
 
-- Each object is assigned to the feature-map cell containing the resized 2D bounding-box center.
-- Classification target is one-hot at that cell.
-- 2D box target is stored as absolute resized image coordinates.
-- If multiple objects land in the same cell, the closer object is kept.
+- `mobilenetv4_conv_small.e2400_r224_in1k` pretrained backbone;
+- stride-16/32 lightweight FPN and the existing eight prediction heads;
+- `1280x384` RGB `/255.0` external input contract;
+- canonical KITTI Chen `3,712/3,769` train/validation split;
+- KITTI BEV and 3D AP_R40 as the reportable evaluation;
+- Drive-backed atomic checkpoints and automatic resume.
 
-This is acceptable for the initial training/debugging pipeline, but it should be improved before serious model training.
+The deployed iPhone v7/MobileNetV3 model remains a validated deployment
+reference. It is not the checkpoint or architecture being trained by the new
+baseline notebook.
 
----
+## Run next
 
-## Target Builder Improvements
-
-### 1. Use projected 3D center instead of 2D box center
-
-Current:
-
-```text
-object cell = center of 2D bounding box
-
-
-# MobileADAS3D TODO
-
-## Target Builder Improvements
-
-1. Use projected 3D center instead of 2D box center.
-2. Use Gaussian heatmap instead of one-hot cell.
-3. Add multi-scale feature maps.
-4. Add better collision handling.
-5. Add normalized box encoding instead of absolute pixel box.
-
-## Notes
-
-The current target builder is intentionally simple for MVP debugging. It assigns each object to the feature-map cell containing the resized 2D bounding-box center. This is acceptable for initial pipeline validation, but should be improved before serious model training.
-
-Recommended improvement order:
-
-1. Gaussian heatmap
-2. Normalized box encoding
-3. Projected 3D center assignment
-4. Better collision handling
-5. Multi-scale feature maps
-
-
-## Colab Training Plan
-
-Local Mac is only for repository development, parser testing, visualization, and small debug runs.
-
-Real training should run in Google Colab with GPU.
-
-KITTI should not be stored on the local Mac because of disk-space limits. The real dataset should be stored in Google Drive:
+Open
+[`notebooks/MobileADAS3D_MobileNetV4_Colab_Baseline.ipynb`](notebooks/MobileADAS3D_MobileNetV4_Colab_Baseline.ipynb)
+in a Colab GPU runtime and run every cell from top to bottom. The expected KITTI
+root in Drive is:
 
 ```text
-/content/drive/MyDrive/datasets/kitti
-
-Expected KITTI Drive structure:
-
 /content/drive/MyDrive/datasets/kitti/training/image_2
 /content/drive/MyDrive/datasets/kitti/training/label_2
 /content/drive/MyDrive/datasets/kitti/training/calib
+```
 
-
-
----
-
-## KITTI Download Plan for Colab
-
-Real KITTI data should be downloaded/extracted in Google Colab directly into Google Drive.
-
-Target location:
+The run is complete only when Drive contains both:
 
 ```text
-/content/drive/MyDrive/datasets/kitti
+mobile_adas3d_outputs/mnv4_conv_small_baseline/best.pt
+mobile_adas3d_outputs/mnv4_conv_small_baseline/evaluation/kitti_r40_summary.json
+```
 
-Required for current RGB-only MobileADAS3D:
+and the summary reports `complete_split: true` for all 3,769 validation frames.
 
-data_object_image_2.zip
-data_object_label_2.zip
-data_object_calib.zip
+## After the baseline
 
-Expected extracted structure:
+1. Record AP3D/BEV R40, 2D AP, model size, and latency without changing the
+   baseline configuration.
+2. Diagnose per-class depth, yaw, and localization failures.
+3. Add geometry-safe augmentation and calibration propagation.
+4. Compare EMA and validation-AP3D checkpoint selection.
+5. Run controlled mobile ablations such as width, FPN channels, stride-8
+   fusion, FastViT, or MobileNetV4 variants.
+6. Export only a selected Pareto candidate to Core ML and verify numerical
+   parity plus real-iPhone latency.
 
-/content/drive/MyDrive/datasets/kitti/training/image_2
-/content/drive/MyDrive/datasets/kitti/training/label_2
-/content/drive/MyDrive/datasets/kitti/training/calib
-
-Optional later for sparse-depth / LiDAR supervision:
-
-data_object_velodyne.zip
+Do not compare experiments that use different splits, incomplete validation
+runs, or legacy threshold-sweep F1 as if they were the same benchmark.

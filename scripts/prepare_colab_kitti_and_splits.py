@@ -9,7 +9,13 @@ from pathlib import Path
 import shutil
 import subprocess
 
-from data.splits import create_train_val_test_split, write_split_file
+from scripts.prepare_kitti_chen_split import (
+    SOURCES,
+    _read_source,
+    _validate_ids,
+    resolve_output_dir,
+)
+from data.splits import write_split_file
 from tools.cli import parse_config_arg
 from tools.config import load_runtime_config_from_args
 
@@ -132,29 +138,23 @@ def main() -> None:
 
     sample_ids = discover_valid_sample_ids(local_root)
 
-    splits = create_train_val_test_split(
-        sample_ids=sample_ids,
-        train_ratio=float(split_cfg["train_ratio"]),
-        val_ratio=float(split_cfg["val_ratio"]),
-        test_ratio=float(split_cfg["test_ratio"]),
-        seed=int(split_cfg["seed"]),
-    )
+    splits = {
+        name: _validate_ids(name, _read_source(name, source_dir=None))
+        for name in SOURCES
+    }
 
-    split_dir = Path(split_cfg["split_dir"])
+    split_dir = resolve_output_dir(config, override=None)
     train_path = split_dir / split_cfg["train_file"]
     val_path = split_dir / split_cfg["val_file"]
-    test_path = split_dir / split_cfg["test_file"]
 
     write_split_file(splits["train"], train_path)
     write_split_file(splits["val"], val_path)
-    write_split_file(splits["test"], test_path)
 
     print("\nSplit files saved:")
     print(f"Train: {train_path} ({len(splits['train'])})")
     print(f"Val:   {val_path} ({len(splits['val'])})")
-    print(f"Test:  {test_path} ({len(splits['test'])})")
 
-    total = len(splits["train"]) + len(splits["val"]) + len(splits["test"])
+    total = len(splits["train"]) + len(splits["val"])
     print(f"Total split samples: {total}")
 
     if total != len(sample_ids):

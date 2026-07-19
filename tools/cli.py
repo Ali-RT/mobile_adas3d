@@ -26,6 +26,34 @@ def parse_config_profile_args(description: str) -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "--dataset-root",
+        type=str,
+        default=None,
+        help="Override the active profile's KITTI root directory.",
+    )
+
+    parser.add_argument(
+        "--split-dir",
+        type=str,
+        default=None,
+        help="Override the active profile's split directory.",
+    )
+
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        default=None,
+        help="Override the active profile's training output directory.",
+    )
+
+    parser.add_argument(
+        "--resume",
+        type=str,
+        default=None,
+        help="Resume training from a latest.pt checkpoint.",
+    )
+
+    parser.add_argument(
         "--checkpoint",
         type=str,
         default=None,
@@ -59,13 +87,6 @@ def parse_config_profile_args(description: str) -> argparse.Namespace:
         type=float,
         default=0.25,
         help="Prediction score threshold.",
-    )
-
-    parser.add_argument(
-        "--output-dir",
-        type=str,
-        default=None,
-        help="Optional output directory override.",
     )
 
     return parser.parse_args()

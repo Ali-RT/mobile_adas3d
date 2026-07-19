@@ -2,47 +2,37 @@ project_name: mobile_adas3d
 
 dataset:
   name: kitti
-
-  # Default training profile. Use --profile local_mac for local debugging.
   active_profile: colab_drive
-
   profiles:
     local_mac:
       root_dir: ./datasets/kitti
-
     colab_drive:
       root_dir: /content/drive/MyDrive/datasets/kitti
-
   image_dir: training/image_2
   label_dir: training/label_2
   calib_dir: training/calib
-
-  classes:
-    - Car
-    - Pedestrian
-    - Cyclist
-
+  classes: [Car, Pedestrian, Cyclist]
   splits:
-    # Conventional Chen et al. split used by monocular-3D KITTI work:
-    # 3,712 train / 3,769 val. Generate with
-    #   python scripts/prepare_kitti_chen_split.py
     protocol: chen_3712_3769
     split_dir: ./data/splits/kitti_chen
     profile_split_dirs:
       colab_drive: /content/drive/MyDrive/mobile_adas3d_splits/kitti_chen
     train_file: train.txt
     val_file: val.txt
-    # KITTI test labels are private. Keep the legacy "test" CLI choice as an
-    # explicit validation alias; reportable local numbers must use --split val.
     test_file: val.txt
 
 logging:
-  run_name: "v7_stride16_fpn_cuboid_location"
+  run_name: "baseline_mnv4_conv_small_stride16"
+  use_tensorboard: true
+  save_config_snapshot: true
 
 model:
   name: "MobileADAS3D"
-  backbone: "mobilenet_v3_small"
+  backbone: "mobilenetv4_conv_small.e2400_r224_in1k"
   pretrained: true
+  # Input remains RGB float /255.0. ImageNet normalization is part of the
+  # model graph, so the eventual Core ML input contract does not change.
+  normalize_imagenet: true
   input_height: 384
   input_width: 1280
   output_stride: 16
@@ -51,7 +41,6 @@ model:
   fpn_channels: 128
   head_channels: 256
   use_sparse_depth: false
-
   heads:
     cls_logits: true
     box2d: true
@@ -66,13 +55,11 @@ targets:
   center_sampling:
     enabled: true
     radius: 1
-
   box_encoding: "log_ltrb_stride"
   depth_encoding: "log_z"
   location_encoding: "xy_over_z"
   dim_encoding: "log_class_ratio"
   yaw_encoding: "sin_cos"
-
   class_mean_dims:
     Car: [1.50, 1.60, 3.90]
     Pedestrian: [1.70, 0.60, 0.80]
@@ -87,10 +74,7 @@ loss:
   yaw_weight: 1.0
   offset_weight: 0.5
   depth_uncertainty_weight: 0.0
-
-  # New cuboid consistency loss.
   corner3d_weight: 0.25
-
   class_weights:
     Car: 1.0
     Pedestrian: 2.5
@@ -98,14 +82,17 @@ loss:
 
 training:
   seed: 42
-  batch_size: 8
+  # Safe default for a Colab T4 at 1280x384. Accumulation preserves an
+  # effective batch size of 8 without risking an early out-of-memory failure.
+  batch_size: 4
+  gradient_accumulation_steps: 2
   num_workers: 2
   learning_rate: 0.0001
   weight_decay: 0.0001
   epochs: 80
   device: "auto"
   log_interval: 20
-  save_interval: 1
+  save_interval: 10
   use_amp: true
   gradient_clip_norm: 5.0
 
@@ -127,7 +114,7 @@ early_stopping:
   mode: min
   patience: 12
   min_delta: 0.0005
-  start_epoch: 10
+  start_epoch: 15
 
 validation:
   enabled: true
@@ -137,19 +124,14 @@ validation:
   monitor_metric: val_total_loss
   mode: min
 
-
-  
 outputs:
-  # Fallback default.
-  output_dir: ./outputs
-
-  # Override automatically based on dataset.active_profile or --profile.
+  output_dir: ./outputs/mnv4_conv_small_baseline
   profile_output_dirs:
-    local_mac: ./outputs
-    colab_drive: /content/drive/MyDrive/mobile_adas3d_outputs
+    local_mac: ./outputs/mnv4_conv_small_baseline
+    colab_drive: /content/drive/MyDrive/mobile_adas3d_outputs/mnv4_conv_small_baseline
 
 inference:
-  score_threshold: 0.55
+  score_threshold: 0.25
   topk: 50
-  eval_topk: 100
+  eval_topk: 300
   nms_iou_threshold: 0.5

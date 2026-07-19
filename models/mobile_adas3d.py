@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from typing import Dict, Optional, Tuple
+from typing import Dict, Tuple
 
-from PIL.features import features
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchvision.models import mobilenet_v3_small
+from torchvision.models import MobileNet_V3_Small_Weights, mobilenet_v3_small
 
 
 class ConvHead(nn.Module):
@@ -17,7 +16,6 @@ class ConvHead(nn.Module):
         out_channels: int,
     ) -> None:
         super().__init__()
-
         self.net = nn.Sequential(
             nn.Conv2d(in_channels, hidden_channels, kernel_size=3, padding=1),
             nn.BatchNorm2d(hidden_channels),
@@ -29,32 +27,97 @@ class ConvHead(nn.Module):
         return self.net(x)
 
 
+class MobileNetV3SmallPyramid(nn.Module):
+    def __init__(self, pretrained: bool, input_height: int, input_width: int) -> None:
+        super().__init__()
+        weights = MobileNet_V3_Small_Weights.DEFAULT if pretrained else None
+        self.features = mobilenet_v3_small(weights=weights).features
+        (
+            self.stride16_index,
+            self.stride32_index,
+            self.stride16_channels,
+            self.stride32_channels,
+        ) = self._infer_feature_metadata(input_height, input_width)
+
+    def _infer_feature_metadata(
+        self, input_height: int, input_width: int
+    ) -> Tuple[int, int, int, int]:
+        was_training = self.features.training
+        self.features.eval()
+        output = torch.zeros(1, 3, input_height, input_width)
+        found = {}
+        with torch.no_grad():
+            for index, layer in enumerate(self.features):
+                output = layer(output)
+                stride_h = int(round(input_height / float(output.shape[-2])))
+                stride_w = int(round(input_width / float(output.shape[-1])))
+                if stride_h != stride_w:
+                    raise RuntimeError(
+                        f"Non-square backbone stride at layer {index}: "
+                        f"{stride_h} x {stride_w}"
+                    )
+                if stride_h in (16, 32):
+                    found[stride_h] = (index, int(output.shape[1]))
+        self.features.train(was_training)
+        if 16 not in found or 32 not in found:
+            raise RuntimeError("MobileNetV3 must expose stride-16 and stride-32 features")
+        return found[16][0], found[32][0], found[16][1], found[32][1]
+
+    def forward(self, images: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        output = images
+        feat16 = images
+        feat32 = images
+        for index, layer in enumerate(self.features):
+            output = layer(output)
+            if index == self.stride16_index:
+                feat16 = output
+            if index == self.stride32_index:
+                feat32 = output
+        return feat16, feat32
+
+
+class MobileNetV4Pyramid(nn.Module):
+    """timm MobileNetV4 feature extractor returning strides 16 and 32."""
+
+    def __init__(self, model_name: str, pretrained: bool) -> None:
+        super().__init__()
+        try:
+            import timm
+        except ImportError as error:
+            raise ImportError(
+                "MobileNetV4 requires timm. Install requirements.txt or "
+                "`pip install timm==1.0.27`."
+            ) from error
+
+        self.features = timm.create_model(
+            model_name,
+            pretrained=pretrained,
+            features_only=True,
+            out_indices=(3, 4),
+        )
+        reductions = list(self.features.feature_info.reduction())
+        channels = list(self.features.feature_info.channels())
+        if reductions != [16, 32]:
+            raise RuntimeError(
+                f"{model_name} returned reductions {reductions}; expected [16, 32]"
+            )
+        self.stride16_channels = int(channels[0])
+        self.stride32_channels = int(channels[1])
+
+    def forward(self, images: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        features = self.features(images)
+        return features[0], features[1]
+
+
 class MobileADAS3D(nn.Module):
-    """
-    MobileADAS3D v6.
-
-    Structure:
-      RGB image
-        -> MobileNetV3-Small backbone
-        -> stride-16 feature + stride-32 feature
-        -> lightweight FPN fusion at stride 16
-        -> dense prediction heads on 24 x 80 feature map for 384 x 1280 input
-
-    Heads:
-      cls_logits:        [B, num_classes, H/16, W/16]
-      box2d:             [B, 4, H/16, W/16] local l/t/r/b normalized distances
-      log_depth:         [B, 1, H/16, W/16]
-      dim:               [B, 3, H/16, W/16]
-      yaw:               [B, 2, H/16, W/16]
-      center_offset:     [B, 2, H/16, W/16]
-      depth_uncertainty: [B, 1, H/16, W/16]
-    """
+    """Anchor-free mobile monocular-3D detector with a stride-16 FPN."""
 
     def __init__(
         self,
         num_classes: int,
         backbone_name: str = "mobilenet_v3_small",
         pretrained: bool = True,
+        normalize_imagenet: bool = False,
         input_height: int = 384,
         input_width: int = 1280,
         fpn_channels: int = 128,
@@ -62,38 +125,47 @@ class MobileADAS3D(nn.Module):
     ) -> None:
         super().__init__()
 
-        if backbone_name != "mobilenet_v3_small":
-            raise ValueError(
-                f"Unsupported backbone '{backbone_name}'. "
-                "This implementation currently supports mobilenet_v3_small."
+        if backbone_name == "mobilenet_v3_small":
+            self.backbone = MobileNetV3SmallPyramid(
+                pretrained=pretrained,
+                input_height=input_height,
+                input_width=input_width,
             )
-
-        # Keep old torchvision compatibility simple.
-        backbone = mobilenet_v3_small(pretrained=pretrained)
-        self.backbone_features = backbone.features
+        elif backbone_name.startswith("mobilenetv4_conv_"):
+            self.backbone = MobileNetV4Pyramid(
+                model_name=backbone_name,
+                pretrained=pretrained,
+            )
+        else:
+            raise ValueError(
+                f"Unsupported backbone {backbone_name!r}; expected "
+                "mobilenet_v3_small or a timm mobilenetv4_conv_* model"
+            )
 
         self.num_classes = num_classes
         self.input_height = input_height
         self.input_width = input_width
+        self.backbone_name = backbone_name
+        self.normalize_imagenet = normalize_imagenet
 
-        (
-            self.stride16_feature_index,
-            self.stride32_feature_index,
-            c16,
-            c32,
-        ) = self._infer_stride_feature_indices_and_channels(
-            input_height=input_height,
-            input_width=input_width,
+        if normalize_imagenet:
+            mean = [0.485, 0.456, 0.406]
+            std = [0.229, 0.224, 0.225]
+        else:
+            mean = [0.0, 0.0, 0.0]
+            std = [1.0, 1.0, 1.0]
+        self.register_buffer(
+            "input_mean", torch.tensor(mean, dtype=torch.float32).view(1, 3, 1, 1)
+        )
+        self.register_buffer(
+            "input_std", torch.tensor(std, dtype=torch.float32).view(1, 3, 1, 1)
         )
 
+        c16 = self.backbone.stride16_channels
+        c32 = self.backbone.stride32_channels
         print(
-            "MobileADAS3D FPN channels: "
-            f"stride16={c16}, stride32={c32}"
-        )
-        print(
-            "MobileADAS3D FPN feature indices: "
-            f"stride16_index={self.stride16_feature_index}, "
-            f"stride32_index={self.stride32_feature_index}"
+            f"MobileADAS3D backbone={backbone_name} pretrained={pretrained} "
+            f"normalize_imagenet={normalize_imagenet} c16={c16} c32={c32}"
         )
 
         self.proj16 = nn.Sequential(
@@ -101,13 +173,11 @@ class MobileADAS3D(nn.Module):
             nn.BatchNorm2d(fpn_channels),
             nn.ReLU(inplace=True),
         )
-
         self.proj32 = nn.Sequential(
             nn.Conv2d(c32, fpn_channels, kernel_size=1),
             nn.BatchNorm2d(fpn_channels),
             nn.ReLU(inplace=True),
         )
-
         self.fusion = nn.Sequential(
             nn.Conv2d(fpn_channels * 2, head_channels, kernel_size=3, padding=1),
             nn.BatchNorm2d(head_channels),
@@ -117,190 +187,30 @@ class MobileADAS3D(nn.Module):
             nn.ReLU(inplace=True),
         )
 
-        self.cls_head = ConvHead(
-            in_channels=head_channels,
-            hidden_channels=head_channels,
-            out_channels=num_classes,
-        )
-
-        self.box2d_head = ConvHead(
-            in_channels=head_channels,
-            hidden_channels=head_channels,
-            out_channels=4,
-        )
-
-        self.depth_head = ConvHead(
-            in_channels=head_channels,
-            hidden_channels=head_channels,
-            out_channels=1,
-        )
-
-        self.dim_head = ConvHead(
-            in_channels=head_channels,
-            hidden_channels=head_channels,
-            out_channels=3,
-        )
-
-        self.yaw_head = ConvHead(
-            in_channels=head_channels,
-            hidden_channels=head_channels,
-            out_channels=2,
-        )
-
-        self.center_offset_head = ConvHead(
-            in_channels=head_channels,
-            hidden_channels=head_channels,
-            out_channels=2,
-        )
-
-        self.depth_uncertainty_head = ConvHead(
-            in_channels=head_channels,
-            hidden_channels=head_channels,
-            out_channels=1,
-        )
-
-        self.loc_xy_head = ConvHead(
-            in_channels=head_channels,
-            hidden_channels=head_channels,
-            out_channels=2,
-        )
-
-    def _infer_stride_feature_indices_and_channels(
-        self,
-        input_height: int,
-        input_width: int,
-    ) -> Tuple[int, int, int, int]:
-        """
-        Find which MobileNetV3 feature layers correspond to stride 16 and stride 32.
-
-        This runs only during __init__, not during forward.
-        That makes the actual forward path TorchScript-trace friendly.
-        """
-        was_training = self.backbone_features.training
-        self.backbone_features.eval()
-
-        dummy = torch.zeros(1, 3, input_height, input_width)
-
-        stride16_index: Optional[int] = None
-        stride32_index: Optional[int] = None
-        stride16_channels: Optional[int] = None
-        stride32_channels: Optional[int] = None
-
-        out = dummy
-
-        with torch.no_grad():
-            for layer_idx, layer in enumerate(self.backbone_features):
-                out = layer(out)
-
-                out_h = int(out.shape[-2])
-                out_w = int(out.shape[-1])
-
-                stride_h = int(round(float(input_height) / float(out_h)))
-                stride_w = int(round(float(input_width) / float(out_w)))
-
-                if stride_h != stride_w:
-                    raise RuntimeError(
-                        f"Unexpected non-square stride at layer {layer_idx}: "
-                        f"stride_h={stride_h}, stride_w={stride_w}"
-                    )
-
-                stride = stride_h
-
-                # Keep updating stride16 so we use the deepest stride-16 feature.
-                if stride == 16:
-                    stride16_index = layer_idx
-                    stride16_channels = int(out.shape[1])
-
-                # Keep updating stride32 so we use the deepest stride-32 feature.
-                if stride == 32:
-                    stride32_index = layer_idx
-                    stride32_channels = int(out.shape[1])
-
-        if was_training:
-            self.backbone_features.train()
-
-        if stride16_index is None or stride16_channels is None:
-            raise RuntimeError("Could not find stride-16 feature in backbone.")
-
-        if stride32_index is None or stride32_channels is None:
-            raise RuntimeError("Could not find stride-32 feature in backbone.")
-
-        return (
-            stride16_index,
-            stride32_index,
-            stride16_channels,
-            stride32_channels,
-        )
-
-    def _extract_stride_features(
-        self,
-        images: torch.Tensor,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
-        """
-        TorchScript-trace friendly feature extraction.
-
-        Important:
-          Do not compute dynamic stride here.
-          Just collect features from fixed layer indices found during __init__.
-        """
-        out = images
-
-        feat16: Optional[torch.Tensor] = None
-        feat32: Optional[torch.Tensor] = None
-
-        for layer_idx, layer in enumerate(self.backbone_features):
-            out = layer(out)
-
-            if layer_idx == self.stride16_feature_index:
-                feat16 = out
-
-            if layer_idx == self.stride32_feature_index:
-                feat32 = out
-
-        if feat16 is None:
-            raise RuntimeError("stride-16 feature was not extracted.")
-
-        if feat32 is None:
-            raise RuntimeError("stride-32 feature was not extracted.")
-
-        return feat16, feat32
+        self.cls_head = ConvHead(head_channels, head_channels, num_classes)
+        self.box2d_head = ConvHead(head_channels, head_channels, 4)
+        self.depth_head = ConvHead(head_channels, head_channels, 1)
+        self.dim_head = ConvHead(head_channels, head_channels, 3)
+        self.yaw_head = ConvHead(head_channels, head_channels, 2)
+        self.center_offset_head = ConvHead(head_channels, head_channels, 2)
+        self.depth_uncertainty_head = ConvHead(head_channels, head_channels, 1)
+        self.loc_xy_head = ConvHead(head_channels, head_channels, 2)
 
     def forward(self, images: torch.Tensor) -> Dict[str, torch.Tensor]:
-        feat16, feat32 = self._extract_stride_features(images)
-
+        images = (images - self.input_mean) / self.input_std
+        feat16, feat32 = self.backbone(images)
         p16 = self.proj16(feat16)
         p32 = self.proj32(feat32)
-
-        p32_up = F.interpolate(
-            p32,
-            size=p16.shape[-2:],
-            mode="bilinear",
-            align_corners=False,
-        )
-
-        fused = torch.cat([p16, p32_up], dim=1)
-        fused = self.fusion(fused)
-
-        cls_logits = self.cls_head(fused)
-
-        # Local l/t/r/b distances should be non-negative.
-        # Targets are normalized by image width/height.
-        box2d = F.softplus(self.box2d_head(fused))
-
-        log_depth = self.depth_head(fused)
-        dim = self.dim_head(fused)
-        yaw = self.yaw_head(fused)
-        center_offset = self.center_offset_head(fused)
-        depth_uncertainty = self.depth_uncertainty_head(fused)
-        loc_xy = self.loc_xy_head(fused)
+        p32 = F.interpolate(p32, size=p16.shape[-2:], mode="bilinear", align_corners=False)
+        fused = self.fusion(torch.cat([p16, p32], dim=1))
 
         return {
-            "cls_logits": cls_logits,
-            "box2d": box2d,
-            "log_depth": log_depth,
-            "dim": dim,
-            "yaw": yaw,
-            "center_offset": center_offset,
-            "depth_uncertainty": depth_uncertainty,
-            "loc_xy": loc_xy,
+            "cls_logits": self.cls_head(fused),
+            "box2d": F.softplus(self.box2d_head(fused)),
+            "log_depth": self.depth_head(fused),
+            "dim": self.dim_head(fused),
+            "yaw": self.yaw_head(fused),
+            "center_offset": self.center_offset_head(fused),
+            "depth_uncertainty": self.depth_uncertainty_head(fused),
+            "loc_xy": self.loc_xy_head(fused),
         }

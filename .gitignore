@@ -1,4 +1,5 @@
 # Byte-compiled / optimized / DLL files
+.DS_Store
 __pycache__/
 *.py[codz]
 *$py.class
@@ -221,7 +222,6 @@ __marimo__/
 
 # Datasets
 datasets/
-data/
 *.zip
 *.tar
 *.tar.gz
