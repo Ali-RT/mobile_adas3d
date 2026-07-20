@@ -2,6 +2,7 @@ import argparse
 import json
 import shutil
 import subprocess
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -13,6 +14,15 @@ REQUIRED_SUBDIRS = {
     "training/calib": ".txt",
 }
 MANIFEST_NAME = ".mobileadas3d_stage_manifest.json"
+
+
+RSYNC_EXIT_HINTS = {
+    11: "File I/O error. In Colab this is often a Drive mount hiccup or local disk issue.",
+    12: "rsync protocol data stream error. Rerun the cell; Drive mounts can transiently fail.",
+    23: "Partial transfer. Some files could not be copied; rerun the cell to resume.",
+    24: "Partial transfer due to vanished source files; rerun after Drive finishes syncing.",
+    28: "Timeout. Rerun the cell; rsync will resume from the partial copy.",
+}
 
 
 def count_files(directory: Path, suffix: str) -> int:
@@ -71,6 +81,27 @@ def print_counts(title: str, root: Path, counts: dict[str, int]) -> None:
     print(f"\n{title}: {root}")
     for subdir in REQUIRED_SUBDIRS:
         print(f"  {subdir}: {counts[subdir]}")
+    sys.stdout.flush()
+
+
+def print_runtime_diagnostics(source: Path, destination: Path) -> None:
+    print("\nRuntime diagnostics")
+    print(f"  Python: {sys.executable}")
+    print(f"  rsync: {shutil.which('rsync') or 'not found'}")
+    if source.exists():
+        children = sorted(path.name for path in source.iterdir())[:20]
+        print(f"  Source top-level entries: {children}")
+    else:
+        print("  Source top-level entries: source path does not exist")
+
+    try:
+        usage = shutil.disk_usage(destination if destination.exists() else destination.parent)
+    except FileNotFoundError:
+        usage = shutil.disk_usage("/")
+    free_gb = usage.free / (1024.0 ** 3)
+    total_gb = usage.total / (1024.0 ** 3)
+    print(f"  Local disk free: {free_gb:.1f} GB / {total_gb:.1f} GB")
+    sys.stdout.flush()
 
 
 def manifest_path(destination: Path) -> Path:
@@ -181,7 +212,10 @@ def run_rsync(
             progress_bar.close()
 
     if process.returncode != 0:
-        raise subprocess.CalledProcessError(process.returncode, command)
+        hint = RSYNC_EXIT_HINTS.get(process.returncode, "See rsync output above.")
+        raise RuntimeError(
+            f"rsync failed with exit code {process.returncode}: {hint}"
+        )
 
 
 def copy_subdir(
@@ -214,6 +248,8 @@ def stage_kitti(
     print(f"Source:      {source}")
     print(f"Destination: {destination}")
     print(f"Expected files per required folder: {expected_count}")
+    sys.stdout.flush()
+    print_runtime_diagnostics(source, destination)
 
     if shutil.which("rsync") is None:
         raise RuntimeError("rsync is required in Colab for resumable KITTI staging.")
@@ -295,12 +331,26 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    stage_kitti(
-        source=args.source,
-        destination=args.destination,
-        expected_count=args.expected_count,
-        force=args.force,
-    )
+    try:
+        stage_kitti(
+            source=args.source,
+            destination=args.destination,
+            expected_count=args.expected_count,
+            force=args.force,
+        )
+    except Exception as exc:
+        print("\nKITTI staging failed.", file=sys.stderr)
+        print(f"Reason: {exc}", file=sys.stderr)
+        print(
+            "\nMost common fixes:\n"
+            "  1. Confirm Drive is mounted and the source contains training/image_2, "
+            "training/label_2, and training/calib.\n"
+            "  2. If the copy was interrupted, rerun the same staging cell; rsync resumes.\n"
+            "  3. If local disk is full, set STAGE_DATA_TO_LOCAL=False or restart the "
+            "Colab runtime and rerun.\n",
+            file=sys.stderr,
+        )
+        raise SystemExit(1) from exc
 
 
 if __name__ == "__main__":
