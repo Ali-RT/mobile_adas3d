@@ -27,6 +27,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Preflight a MobileADAS3D training run")
     parser.add_argument("--config", required=True)
     parser.add_argument("--profile", default="colab_drive")
+    parser.add_argument("--run-name", default=None)
     parser.add_argument("--dataset-root", default=None)
     parser.add_argument("--split-dir", default=None)
     parser.add_argument("--output-dir", default=None)
@@ -40,6 +41,7 @@ def main() -> None:
     config = apply_runtime_overrides(
         load_config(args.config),
         profile=args.profile,
+        run_name=args.run_name,
         dataset_root=args.dataset_root,
         split_dir=args.split_dir,
         output_dir=args.output_dir,

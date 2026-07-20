@@ -6,6 +6,7 @@ from pathlib import Path
 import torch
 
 from models.build import build_model
+from scripts.check_training_ready import parse_args as parse_training_ready_args
 from scripts.stage_colab_kitti import (
     MANIFEST_NAME,
     collect_counts,
@@ -116,6 +117,22 @@ class MobileNetV4BaselineTests(unittest.TestCase):
         self.assertFalse(config["early_stopping"]["enabled"])
         self.assertEqual(config["training"]["epochs"], 80)
         self.assertEqual(config["training"]["save_interval"], 5)
+
+    def test_training_ready_cli_accepts_run_name(self):
+        with unittest.mock.patch(
+            "sys.argv",
+            [
+                "check_training_ready.py",
+                "--config",
+                str(AP_V1_CONFIG_PATH),
+                "--profile",
+                "colab_drive",
+                "--run-name",
+                "mnv4_v1_long80_no_earlystop",
+            ],
+        ):
+            args = parse_training_ready_args()
+        self.assertEqual(args.run_name, "mnv4_v1_long80_no_earlystop")
 
     def test_stage_manifest_marks_complete_copy(self):
         with tempfile.TemporaryDirectory() as temporary:
