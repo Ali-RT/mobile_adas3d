@@ -30,11 +30,15 @@ root in Drive is:
 /content/drive/MyDrive/datasets/kitti/training/calib
 ```
 
+The notebook stages those files to `/content/kitti` with a per-folder progress
+bar, resumable `rsync`, and `/content/kitti/.mobileadas3d_stage_manifest.json`;
+rerun the staging cell if Colab disconnects during the copy.
+
 The run is complete only when Drive contains both:
 
 ```text
-mobile_adas3d_outputs/mnv4_conv_small_baseline/best.pt
-mobile_adas3d_outputs/mnv4_conv_small_baseline/evaluation/kitti_r40_summary.json
+mobile_adas3d_outputs/mnv4_conv_small_baseline/runs/<run>/checkpoints/best.pt
+mobile_adas3d_outputs/mnv4_conv_small_baseline/runs/<run>/kitti_r40_val/kitti_r40_summary.json
 ```
 
 and the summary reports `complete_split: true` for all 3,769 validation frames.

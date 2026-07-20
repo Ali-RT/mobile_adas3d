@@ -566,16 +566,17 @@ notebooks/MobileADAS3D_MobileNetV4_Colab_Baseline.ipynb
 
 It uses `configs/kitti_mnv4_conv_small_baseline.yaml` and
 `requirements-colab.txt`, mounts Drive, optionally stages KITTI on the Colab
-SSD, installs and verifies the canonical Chen 3,712/3,769 split, performs a
-strict preflight, trains, resumes safely after interruption, and evaluates the
-best checkpoint on all 3,769 validation images.
+SSD with a per-folder progress bar, resumable `rsync`, and a local completion
+manifest, installs and verifies the canonical Chen 3,712/3,769 split, performs
+a strict preflight, trains, resumes safely after interruption, and evaluates
+the best checkpoint on all 3,769 validation images.
 
 Expected Drive outputs:
 
 ```text
-/content/drive/MyDrive/mobile_adas3d_outputs/mnv4_conv_small_baseline/best.pt
-/content/drive/MyDrive/mobile_adas3d_outputs/mnv4_conv_small_baseline/latest.pt
-/content/drive/MyDrive/mobile_adas3d_outputs/mnv4_conv_small_baseline/evaluation/kitti_r40_summary.json
+/content/drive/MyDrive/mobile_adas3d_outputs/mnv4_conv_small_baseline/runs/<run>/checkpoints/best.pt
+/content/drive/MyDrive/mobile_adas3d_outputs/mnv4_conv_small_baseline/runs/<run>/checkpoints/latest.pt
+/content/drive/MyDrive/mobile_adas3d_outputs/mnv4_conv_small_baseline/runs/<run>/kitti_r40_val/kitti_r40_summary.json
 ```
 
 The run is reportable only when `complete_split` is `true`. The evaluator uses

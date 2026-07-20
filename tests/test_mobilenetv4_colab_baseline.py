@@ -6,6 +6,12 @@ from pathlib import Path
 import torch
 
 from models.build import build_model
+from scripts.stage_colab_kitti import (
+    MANIFEST_NAME,
+    collect_counts,
+    is_complete,
+    write_manifest,
+)
 from tools.config import apply_runtime_overrides, load_config
 from tools.run_manager import resume_run_dir
 
@@ -85,6 +91,35 @@ class MobileNetV4BaselineTests(unittest.TestCase):
         self.assertIn("train_mobile_adas3d.py", source)
         self.assertIn("evaluate_kitti_r40.py", source)
         self.assertIn("AUTO_RESUME", source)
+        self.assertIn("stage_colab_kitti.py", source)
+
+    def test_stage_manifest_marks_complete_copy(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "kitti"
+            for subdir, suffix in {
+                "training/image_2": ".png",
+                "training/label_2": ".txt",
+                "training/calib": ".txt",
+            }.items():
+                directory = root / subdir
+                directory.mkdir(parents=True)
+                (directory / f"000000{suffix}").write_text("x", encoding="utf-8")
+
+            counts = collect_counts(root)
+            self.assertEqual(set(counts.values()), {1})
+            self.assertFalse(is_complete(root, expected_count=1))
+
+            write_manifest(
+                root,
+                source=root,
+                expected_count=1,
+                complete=True,
+                source_counts=counts,
+                destination_counts=counts,
+            )
+
+            self.assertTrue((root / MANIFEST_NAME).is_file())
+            self.assertTrue(is_complete(root, expected_count=1))
 
 
 if __name__ == "__main__":
