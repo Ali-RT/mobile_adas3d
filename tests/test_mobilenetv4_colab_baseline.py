@@ -18,6 +18,7 @@ from tools.run_manager import resume_run_dir
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = PROJECT_ROOT / "configs" / "kitti_mnv4_conv_small_baseline.yaml"
+AP_V1_CONFIG_PATH = PROJECT_ROOT / "configs" / "kitti_mnv4_conv_small_ap_v1.yaml"
 NOTEBOOK_PATH = (
     PROJECT_ROOT
     / "notebooks"
@@ -103,6 +104,18 @@ class MobileNetV4BaselineTests(unittest.TestCase):
         self.assertIn("run_streamed", source)
         self.assertIn("PYTHONUNBUFFERED", source)
         self.assertIn("colab_logs", source)
+        self.assertIn("mnv4_v1_long80_no_earlystop", source)
+        self.assertIn("AUTO_RESUME_MATCH_RUN_NAME", source)
+
+    def test_ap_v1_config_has_distinct_run_policy(self):
+        config = load_config(str(AP_V1_CONFIG_PATH))
+        self.assertEqual(
+            config["logging"]["run_name"],
+            "mnv4_v1_long80_no_earlystop",
+        )
+        self.assertFalse(config["early_stopping"]["enabled"])
+        self.assertEqual(config["training"]["epochs"], 80)
+        self.assertEqual(config["training"]["save_interval"], 5)
 
     def test_stage_manifest_marks_complete_copy(self):
         with tempfile.TemporaryDirectory() as temporary:

@@ -576,6 +576,20 @@ The train/resume cell streams stdout/stderr live, saves the same output under
 `mobile_adas3d_outputs/mnv4_conv_small_baseline/colab_logs/`, and prints the
 log tail automatically on failure.
 
+Run comparison IDs:
+
+```text
+v0_earlystop_val_loss:
+  run_id: 20260720_212816_baseline_mnv4_conv_small_stride16
+  config: configs/kitti_mnv4_conv_small_baseline.yaml
+  stopped: epoch 27 by val-loss early stopping
+
+v1_long80_no_earlystop:
+  run_name: mnv4_v1_long80_no_earlystop
+  config: configs/kitti_mnv4_conv_small_ap_v1.yaml
+  policy: no early stopping, save checkpoints every 5 epochs
+```
+
 The Drive dataset may use either canonical KITTI object-folder names
 `training/image_2` and `training/label_2` or raw aliases `training/image_02`
 and `training/label_02`. The notebook stages either form into canonical

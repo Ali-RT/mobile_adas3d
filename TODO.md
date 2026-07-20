@@ -21,8 +21,16 @@ baseline notebook.
 
 Open
 [`notebooks/MobileADAS3D_MobileNetV4_Colab_Baseline.ipynb`](notebooks/MobileADAS3D_MobileNetV4_Colab_Baseline.ipynb)
-in a Colab GPU runtime and run every cell from top to bottom. The expected KITTI
-root in Drive is:
+in a Colab GPU runtime and run every cell from top to bottom. The current
+follow-up run is:
+
+```text
+experiment_id: mnv4_v1_long80_no_earlystop
+config: configs/kitti_mnv4_conv_small_ap_v1.yaml
+v0_reference_run: 20260720_212816_baseline_mnv4_conv_small_stride16
+```
+
+The expected KITTI root in Drive is:
 
 ```text
 /content/drive/MyDrive/datasets/kitti/training/image_2
@@ -51,8 +59,8 @@ mobile_adas3d_outputs/mnv4_conv_small_baseline/runs/<run>/kitti_r40_val/kitti_r4
 
 and the summary reports `complete_split: true` for all 3,769 validation frames.
 If training fails, inspect the matching
-`mobile_adas3d_outputs/mnv4_conv_small_baseline/colab_logs/train_*.log`; the
-notebook also prints the last log lines automatically.
+`mobile_adas3d_outputs/mnv4_conv_small_baseline/colab_logs/train_mnv4_v1_long80_no_earlystop_*.log`;
+the notebook also prints the last log lines automatically.
 
 ## After the baseline
 

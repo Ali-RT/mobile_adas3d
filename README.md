@@ -35,8 +35,12 @@ in Colab and run it from top to bottom with a GPU runtime. It:
   writes live Colab training logs under `colab_logs/`;
 - evaluates all 3,769 validation frames with BEV and 3D AP_R40.
 
-The reproducible baseline configuration is
+The original reproducible baseline configuration is
 [`configs/kitti_mnv4_conv_small_baseline.yaml`](configs/kitti_mnv4_conv_small_baseline.yaml).
+The active AP-oriented follow-up configuration is
+[`configs/kitti_mnv4_conv_small_ap_v1.yaml`](configs/kitti_mnv4_conv_small_ap_v1.yaml);
+its run name is `mnv4_v1_long80_no_earlystop`, disables early stopping, and
+saves checkpoints every five epochs for later checkpoint/AP comparison.
 Only results whose `kitti_r40_summary.json` contains `complete_split: true` are
 reportable.
 
