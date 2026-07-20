@@ -92,7 +92,13 @@ class MobileNetV4BaselineTests(unittest.TestCase):
         self.assertIn("evaluate_kitti_r40.py", source)
         self.assertIn("AUTO_RESUME", source)
         self.assertIn("copy_subdir_with_progress", source)
-        self.assertIn("validate_kitti_root", source)
+        self.assertIn("validate_kitti_source", source)
+        self.assertIn("source_mapping", source)
+        self.assertIn("training/image_02", source)
+        self.assertIn("training/label_02", source)
+        self.assertIn("PREFER_ARCHIVE_STAGE", source)
+        self.assertIn("try_stage_from_archives", source)
+        self.assertIn("DRIVE_ARCHIVE_DIR", source)
         self.assertIn("STAGE_MANIFEST", source)
 
     def test_stage_manifest_marks_complete_copy(self):

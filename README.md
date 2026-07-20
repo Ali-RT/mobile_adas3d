@@ -23,8 +23,9 @@ Open
 in Colab and run it from top to bottom with a GPU runtime. It:
 
 - mounts Google Drive and optionally stages KITTI onto the Colab SSD with
-  explicit notebook diagnostics, a per-folder progress bar, resumable `rsync`,
-  file counts, and a completion manifest;
+  an archive fast path from `datasets/kitti/zips`, explicit notebook
+  diagnostics, a per-folder progress bar, resumable `rsync`, file counts, and
+  a completion manifest;
 - installs the pinned Colab dependencies without replacing CUDA PyTorch;
 - installs and validates the canonical KITTI Chen 3,712/3,769 split;
 - preflights all 7,481 images, labels, calibration files, GPU, pretrained
@@ -37,6 +38,15 @@ The reproducible baseline configuration is
 [`configs/kitti_mnv4_conv_small_baseline.yaml`](configs/kitti_mnv4_conv_small_baseline.yaml).
 Only results whose `kitti_r40_summary.json` contains `complete_split: true` are
 reportable.
+
+The Colab staging cell accepts Drive folders named `training/image_02` and
+`training/label_02`, then stages them into the canonical `image_2` and
+`label_2` names expected by the training loader.
+
+For speed, keep KITTI archives under
+`/content/drive/MyDrive/datasets/kitti/zips`; the notebook copies/extracts
+those large archives locally before falling back to slower per-folder Drive
+sync.
 
 ## Local verification
 

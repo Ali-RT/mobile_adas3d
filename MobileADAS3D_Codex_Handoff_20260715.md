@@ -566,11 +566,17 @@ notebooks/MobileADAS3D_MobileNetV4_Colab_Baseline.ipynb
 
 It uses `configs/kitti_mnv4_conv_small_baseline.yaml` and
 `requirements-colab.txt`, mounts Drive, optionally stages KITTI on the Colab
-SSD with explicit notebook diagnostics, a per-folder progress bar, resumable
-`rsync`, and a local completion manifest, installs and verifies the canonical
-Chen 3,712/3,769 split, performs a strict preflight, trains, resumes safely
-after interruption, and evaluates the best checkpoint on all 3,769 validation
-images.
+SSD using a fast archive path from `datasets/kitti/zips` when available, then
+falls back to folder `rsync`. The staging cell includes explicit notebook
+diagnostics, a per-folder progress bar, resumable copy behavior, and a local
+completion manifest, installs and verifies the canonical Chen 3,712/3,769
+split, performs a strict preflight, trains, resumes safely after interruption,
+and evaluates the best checkpoint on all 3,769 validation images.
+
+The Drive dataset may use either canonical KITTI object-folder names
+`training/image_2` and `training/label_2` or raw aliases `training/image_02`
+and `training/label_02`. The notebook stages either form into canonical
+`/content/kitti/training/image_2` and `/content/kitti/training/label_2`.
 
 Expected Drive outputs:
 
