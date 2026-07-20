@@ -31,7 +31,8 @@ in Colab and run it from top to bottom with a GPU runtime. It:
 - preflights all 7,481 images, labels, calibration files, GPU, pretrained
   MobileNetV4 weights, output shapes, and one real loss;
 - trains MobileNetV4 Conv Small with an effective batch size of eight;
-- atomically checkpoints every epoch to Drive and automatically resumes;
+- atomically checkpoints every epoch to Drive, automatically resumes, and
+  writes live Colab training logs under `colab_logs/`;
 - evaluates all 3,769 validation frames with BEV and 3D AP_R40.
 
 The reproducible baseline configuration is

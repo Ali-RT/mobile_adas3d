@@ -100,6 +100,9 @@ class MobileNetV4BaselineTests(unittest.TestCase):
         self.assertIn("try_stage_from_archives", source)
         self.assertIn("DRIVE_ARCHIVE_DIR", source)
         self.assertIn("STAGE_MANIFEST", source)
+        self.assertIn("run_streamed", source)
+        self.assertIn("PYTHONUNBUFFERED", source)
+        self.assertIn("colab_logs", source)
 
     def test_stage_manifest_marks_complete_copy(self):
         with tempfile.TemporaryDirectory() as temporary:

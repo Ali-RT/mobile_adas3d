@@ -50,6 +50,9 @@ mobile_adas3d_outputs/mnv4_conv_small_baseline/runs/<run>/kitti_r40_val/kitti_r4
 ```
 
 and the summary reports `complete_split: true` for all 3,769 validation frames.
+If training fails, inspect the matching
+`mobile_adas3d_outputs/mnv4_conv_small_baseline/colab_logs/train_*.log`; the
+notebook also prints the last log lines automatically.
 
 ## After the baseline
 

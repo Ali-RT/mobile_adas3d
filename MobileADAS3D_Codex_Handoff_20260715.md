@@ -572,6 +572,9 @@ diagnostics, a per-folder progress bar, resumable copy behavior, and a local
 completion manifest, installs and verifies the canonical Chen 3,712/3,769
 split, performs a strict preflight, trains, resumes safely after interruption,
 and evaluates the best checkpoint on all 3,769 validation images.
+The train/resume cell streams stdout/stderr live, saves the same output under
+`mobile_adas3d_outputs/mnv4_conv_small_baseline/colab_logs/`, and prints the
+log tail automatically on failure.
 
 The Drive dataset may use either canonical KITTI object-folder names
 `training/image_2` and `training/label_2` or raw aliases `training/image_02`
