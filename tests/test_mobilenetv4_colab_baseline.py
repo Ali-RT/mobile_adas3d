@@ -91,7 +91,9 @@ class MobileNetV4BaselineTests(unittest.TestCase):
         self.assertIn("train_mobile_adas3d.py", source)
         self.assertIn("evaluate_kitti_r40.py", source)
         self.assertIn("AUTO_RESUME", source)
-        self.assertIn("stage_colab_kitti.py", source)
+        self.assertIn("copy_subdir_with_progress", source)
+        self.assertIn("validate_kitti_root", source)
+        self.assertIn("STAGE_MANIFEST", source)
 
     def test_stage_manifest_marks_complete_copy(self):
         with tempfile.TemporaryDirectory() as temporary:

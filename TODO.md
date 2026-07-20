@@ -30,9 +30,10 @@ root in Drive is:
 /content/drive/MyDrive/datasets/kitti/training/calib
 ```
 
-The notebook stages those files to `/content/kitti` with a per-folder progress
-bar, resumable `rsync`, and `/content/kitti/.mobileadas3d_stage_manifest.json`;
-rerun the staging cell if Colab disconnects during the copy.
+The notebook stages those files to `/content/kitti` with explicit path
+diagnostics, a per-folder progress bar, resumable `rsync`, and
+`/content/kitti/.mobileadas3d_stage_manifest.json`; rerun the staging cell if
+Colab disconnects during the copy.
 
 The run is complete only when Drive contains both:
 

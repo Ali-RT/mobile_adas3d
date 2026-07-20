@@ -23,8 +23,8 @@ Open
 in Colab and run it from top to bottom with a GPU runtime. It:
 
 - mounts Google Drive and optionally stages KITTI onto the Colab SSD with
-  a per-folder progress bar, resumable `rsync`, file counts, and a completion
-  manifest;
+  explicit notebook diagnostics, a per-folder progress bar, resumable `rsync`,
+  file counts, and a completion manifest;
 - installs the pinned Colab dependencies without replacing CUDA PyTorch;
 - installs and validates the canonical KITTI Chen 3,712/3,769 split;
 - preflights all 7,481 images, labels, calibration files, GPU, pretrained
