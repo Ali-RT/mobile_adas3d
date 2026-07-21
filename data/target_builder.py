@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import torch
+
+from data.geometry import scale_p2_for_resize
 
 
 def scale_bbox_2d(
@@ -143,6 +145,38 @@ def build_center_offset_target(
     return [float(dx), float(dy)]
 
 
+def project_kitti_location_to_image(
+    location_3d: Sequence[float],
+    P2: Sequence[Sequence[float]],
+    min_z: float = 0.1,
+) -> Optional[Tuple[float, float]]:
+    """
+    Project a KITTI camera-frame location into image pixels with P2.
+
+    KITTI object locations are bottom-center 3D points. For v2 geometry training
+    we use this projected bottom-center as an explicit image-space anchor and
+    back-project it at decode time with the predicted depth.
+    """
+    if len(location_3d) != 3:
+        raise ValueError(f"Expected location_3d length 3, got {location_3d}")
+
+    p2_tensor = torch.as_tensor(P2, dtype=torch.float32)
+    if tuple(p2_tensor.shape) != (3, 4):
+        raise ValueError(f"Expected P2 shape [3, 4], got {tuple(p2_tensor.shape)}")
+
+    point = torch.tensor(
+        [float(location_3d[0]), float(location_3d[1]), float(location_3d[2]), 1.0],
+        dtype=torch.float32,
+    )
+    uvw = p2_tensor @ point
+    z = float(uvw[2].item())
+
+    if z <= float(min_z):
+        return None
+
+    return float((uvw[0] / uvw[2]).item()), float((uvw[1] / uvw[2]).item())
+
+
 def build_targets_for_sample(
     objects: List[Dict[str, Any]],
     original_width: int,
@@ -154,6 +188,7 @@ def build_targets_for_sample(
     class_mean_dims: Dict[str, List[float]],
     center_sampling_radius: int = 1,
     class_weights: Optional[Dict[str, float]] = None,
+    P2: Optional[Sequence[Sequence[float]]] = None,
 ) -> Dict[str, torch.Tensor]:
     feature_h, feature_w = compute_feature_shape(
         input_height=input_height,
@@ -171,6 +206,8 @@ def build_targets_for_sample(
     dim_target = torch.zeros(3, feature_h, feature_w, dtype=torch.float32)
     yaw_target = torch.zeros(2, feature_h, feature_w, dtype=torch.float32)
     offset_target = torch.zeros(2, feature_h, feature_w, dtype=torch.float32)
+    projected_center_offset_target = torch.zeros(2, feature_h, feature_w, dtype=torch.float32)
+    projected_center_valid_mask = torch.zeros(1, feature_h, feature_w, dtype=torch.float32)
     valid_mask = torch.zeros(1, feature_h, feature_w, dtype=torch.float32)
 
     # Used to apply class-balanced regression/object losses.
@@ -184,6 +221,16 @@ def build_targets_for_sample(
     )
 
     class_weights = class_weights or {}
+    scaled_p2: Optional[Sequence[Sequence[float]]] = None
+
+    if P2 is not None:
+        scaled_p2 = scale_p2_for_resize(
+            P2=torch.as_tensor(P2, dtype=torch.float32).numpy(),
+            orig_w=original_width,
+            orig_h=original_height,
+            input_w=input_width,
+            input_h=input_height,
+        ).tolist()
 
     for obj in objects:
         class_name = obj["class_name"]
@@ -224,6 +271,20 @@ def build_targets_for_sample(
         location_x = float(obj["location_3d"][0])
         location_y = float(obj["location_3d"][1])
         location_z = depth
+        projected_center: Optional[Tuple[float, float]] = None
+
+        if scaled_p2 is not None:
+            projected_center = project_kitti_location_to_image(
+                location_3d=obj["location_3d"],
+                P2=scaled_p2,
+            )
+            if projected_center is not None:
+                projected_x, projected_y = projected_center
+                if not (
+                    0.0 <= projected_x < float(input_width)
+                    and 0.0 <= projected_y < float(input_height)
+                ):
+                    projected_center = None
 
         # KITTI camera-frame location encoded as [x / z, y / z].
         # Decode is unambiguous: x = loc_xy[0] * z, y = loc_xy[1] * z.
@@ -313,6 +374,19 @@ def build_targets_for_sample(
                 dtype=torch.float32,
             )
 
+            if projected_center is not None:
+                projected_center_offset_target[:, cell_y, cell_x] = torch.tensor(
+                    build_center_offset_target(
+                        center_x=projected_center[0],
+                        center_y=projected_center[1],
+                        cell_x=cell_x,
+                        cell_y=cell_y,
+                        output_stride=output_stride,
+                    ),
+                    dtype=torch.float32,
+                )
+                projected_center_valid_mask[0, cell_y, cell_x] = 1.0
+
             valid_mask[0, cell_y, cell_x] = 1.0
             loss_weight_target[0, cell_y, cell_x] = sample_class_weight
             priority_depth[cell_y, cell_x] = depth
@@ -326,6 +400,8 @@ def build_targets_for_sample(
         "dim_target": dim_target,
         "yaw_target": yaw_target,
         "offset_target": offset_target,
+        "projected_center_offset_target": projected_center_offset_target,
+        "projected_center_valid_mask": projected_center_valid_mask,
         "valid_mask": valid_mask,
         "loss_weight_target": loss_weight_target,
     }

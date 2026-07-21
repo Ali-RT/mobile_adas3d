@@ -18,6 +18,10 @@ def build_model(config: Dict[str, Any]) -> MobileADAS3D:
         input_width=int(model_cfg["input_width"]),
         fpn_channels=int(model_cfg.get("fpn_channels", 128)),
         head_channels=int(model_cfg.get("head_channels", 256)),
+        use_projected_center=bool(
+            model_cfg.get("use_projected_center", False)
+            or model_cfg.get("heads", {}).get("projected_center_offset", False)
+        ),
     )
 
     return model

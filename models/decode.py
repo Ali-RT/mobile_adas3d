@@ -177,6 +177,56 @@ def _class_aware_nms(
     return keep
 
 
+def _select_p2_for_batch(
+    P2: Optional[Any],
+    batch_index: int,
+    device: torch.device,
+    dtype: torch.dtype,
+) -> Optional[torch.Tensor]:
+    if P2 is None:
+        return None
+
+    p2_tensor = torch.as_tensor(P2, device=device, dtype=dtype)
+
+    if p2_tensor.ndim == 2:
+        if tuple(p2_tensor.shape) != (3, 4):
+            raise ValueError(f"Expected P2 shape [3, 4], got {tuple(p2_tensor.shape)}")
+        return p2_tensor
+
+    if p2_tensor.ndim == 3:
+        if tuple(p2_tensor.shape[1:]) != (3, 4):
+            raise ValueError(f"Expected P2 shape [B, 3, 4], got {tuple(p2_tensor.shape)}")
+        return p2_tensor[batch_index]
+
+    raise ValueError(f"Expected P2 shape [3, 4] or [B, 3, 4], got {tuple(p2_tensor.shape)}")
+
+
+def _backproject_uv_depth_with_p2(
+    u: torch.Tensor,
+    v: torch.Tensor,
+    depth: torch.Tensor,
+    P2: torch.Tensor,
+) -> torch.Tensor:
+    """
+    Back-project image coordinates and KITTI z-depth into camera coordinates.
+
+    KITTI P2 is rectified, so:
+      u = (fx * x + cx * z + tx) / z
+      v = (fy * y + cy * z + ty) / z
+    """
+    fx = P2[0, 0].clamp(min=1e-6)
+    fy = P2[1, 1].clamp(min=1e-6)
+    cx = P2[0, 2]
+    cy = P2[1, 2]
+    tx = P2[0, 3]
+    ty = P2[1, 3]
+
+    x = ((u - cx) * depth - tx) / fx
+    y = ((v - cy) * depth - ty) / fy
+
+    return torch.stack([x, y, depth], dim=1)
+
+
 def _make_class_mean_dims_tensor(
     classes: List[str],
     class_mean_dims: Dict[str, List[float]],
@@ -223,6 +273,8 @@ def _decode_single_image_vectorized(
     topk: int,
     nms_iou_threshold: float,
     max_depth: float = 200.0,
+    P2: Optional[torch.Tensor] = None,
+    location_source: str = "loc_xy",
 ) -> List[Dict[str, Any]]:
     """
     Vectorized decode for one image.
@@ -246,6 +298,12 @@ def _decode_single_image_vectorized(
         loc_xy = outputs["loc_xy"][batch_index]              # [2, H, W]
     else:
         loc_xy = None
+
+    projected_center_offset: Optional[torch.Tensor]
+    if "projected_center_offset" in outputs:
+        projected_center_offset = outputs["projected_center_offset"][batch_index]  # [2, H, W]
+    else:
+        projected_center_offset = None
 
     depth_uncertainty: Optional[torch.Tensor]
     if "depth_uncertainty" in outputs:
@@ -307,6 +365,19 @@ def _decode_single_image_vectorized(
             dtype=candidate_log_depth.dtype,
         )
 
+    if projected_center_offset is not None:
+        projected_center_offset_flat = projected_center_offset.permute(1, 2, 0).reshape(
+            num_cells,
+            2,
+        )
+        candidate_projected_center_offset = projected_center_offset_flat[spatial_indices]
+    else:
+        candidate_projected_center_offset = torch.zeros(
+            (spatial_indices.shape[0], 2),
+            device=candidate_log_depth.device,
+            dtype=candidate_log_depth.dtype,
+        )
+
     if depth_uncertainty is not None:
         depth_uncertainty_flat = depth_uncertainty.reshape(-1)
         candidate_depth_uncertainty = depth_uncertainty_flat[spatial_indices]
@@ -354,6 +425,7 @@ def _decode_single_image_vectorized(
     candidate_yaw_vec = candidate_yaw_vec[valid_box_mask]
     candidate_depth_uncertainty = candidate_depth_uncertainty[valid_box_mask]
     candidate_loc_xy = candidate_loc_xy[valid_box_mask]
+    candidate_projected_center_offset = candidate_projected_center_offset[valid_box_mask]
 
     # Class-aware NMS.
     keep_nms = _class_aware_nms(
@@ -378,17 +450,43 @@ def _decode_single_image_vectorized(
     yaw_vec = candidate_yaw_vec[keep_nms]
     depth_uncertainty_values = candidate_depth_uncertainty[keep_nms]
     loc_xy_values = candidate_loc_xy[keep_nms]
+    projected_center_offset_values = candidate_projected_center_offset[keep_nms]
 
     # Decode depth.
     depth = torch.exp(log_depth_values).clamp(min=0.1, max=max_depth)
 
-    # Decode KITTI camera-frame location from loc_xy + depth.
-    #   z = exp(log_depth)
-    #   x = loc_xy[0] * z
-    #   y = loc_xy[1] * z
-    location_x = loc_xy_values[:, 0] * depth
-    location_y = loc_xy_values[:, 1] * depth
-    location_xyz = torch.stack([location_x, location_y, depth], dim=1)
+    effective_location_source = location_source
+
+    if (
+        location_source == "projected_center"
+        and projected_center_offset is not None
+        and P2 is not None
+    ):
+        projected_u = (
+            cell_x.to(projected_center_offset_values.dtype)
+            + 0.5
+            + projected_center_offset_values[:, 0]
+        ) * stride_x
+        projected_v = (
+            cell_y.to(projected_center_offset_values.dtype)
+            + 0.5
+            + projected_center_offset_values[:, 1]
+        ) * stride_y
+        location_xyz = _backproject_uv_depth_with_p2(
+            u=projected_u,
+            v=projected_v,
+            depth=depth,
+            P2=P2,
+        )
+    else:
+        # Decode KITTI camera-frame location from loc_xy + depth.
+        #   z = exp(log_depth)
+        #   x = loc_xy[0] * z
+        #   y = loc_xy[1] * z
+        effective_location_source = "loc_xy"
+        location_x = loc_xy_values[:, 0] * depth
+        location_y = loc_xy_values[:, 1] * depth
+        location_xyz = torch.stack([location_x, location_y, depth], dim=1)
 
     # Decode dimensions.
     # Target builder uses log-class-ratio encoding:
@@ -456,6 +554,7 @@ def _decode_single_image_vectorized(
                 "depth_uncertainty": float(depth_uncertainty_cpu[i].item()),
                 "cell_x": int(cell_x_cpu[i].item()),
                 "cell_y": int(cell_y_cpu[i].item()),
+                "location_decode_source": effective_location_source,
             }
         )
 
@@ -471,6 +570,8 @@ def decode_mobile_adas3d_outputs(
     score_threshold: float = 0.55,
     topk: int = 50,
     nms_iou_threshold: float = 0.5,
+    P2: Optional[Any] = None,
+    location_source: str = "loc_xy",
 ) -> List[List[Dict[str, Any]]]:
     """
     Decode MobileADAS3D raw output tensors into per-image prediction dictionaries.
@@ -511,6 +612,12 @@ def decode_mobile_adas3d_outputs(
         if key not in outputs:
             raise KeyError(f"Missing output tensor: {key}")
 
+    if location_source not in ("loc_xy", "projected_center"):
+        raise ValueError(
+            "location_source must be 'loc_xy' or 'projected_center', "
+            f"got {location_source!r}"
+        )
+
     cls_logits = outputs["cls_logits"]
     batch_size = cls_logits.shape[0]
 
@@ -527,6 +634,12 @@ def decode_mobile_adas3d_outputs(
     batch_predictions: List[List[Dict[str, Any]]] = []
 
     for batch_index in range(batch_size):
+        p2_for_image = _select_p2_for_batch(
+            P2=P2,
+            batch_index=batch_index,
+            device=device,
+            dtype=dtype,
+        )
         preds = _decode_single_image_vectorized(
             outputs=outputs,
             batch_index=batch_index,
@@ -537,6 +650,8 @@ def decode_mobile_adas3d_outputs(
             score_threshold=score_threshold,
             topk=topk,
             nms_iou_threshold=nms_iou_threshold,
+            P2=p2_for_image,
+            location_source=location_source,
         )
 
         batch_predictions.append(preds)

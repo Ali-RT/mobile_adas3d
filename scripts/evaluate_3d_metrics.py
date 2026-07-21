@@ -923,6 +923,14 @@ def main() -> None:
 
             outputs = model(image)
 
+            P2_model = scale_p2_for_resize(
+                P2=np.asarray(sample["P2"], dtype=np.float32),
+                orig_w=int(sample["original_size"]["width"]),
+                orig_h=int(sample["original_size"]["height"]),
+                input_w=input_width,
+                input_h=input_height,
+            )
+
             predictions = decode_mobile_adas3d_outputs(
                 outputs=outputs,
                 classes=dataset_cfg["classes"],
@@ -932,20 +940,14 @@ def main() -> None:
                 score_threshold=args.score_threshold,
                 topk=args.topk,
                 nms_iou_threshold=args.nms_iou_threshold,
+                P2=P2_model,
+                location_source=model_cfg.get("location_source", "loc_xy"),
             )[0]
 
             gt_objects = scale_gt_objects_to_input(
                 sample=sample,
                 input_width=input_width,
                 input_height=input_height,
-            )
-
-            P2_model = scale_p2_for_resize(
-                P2=np.asarray(sample["P2"], dtype=np.float32),
-                orig_w=int(sample["original_size"]["width"]),
-                orig_h=int(sample["original_size"]["height"]),
-                input_w=input_width,
-                input_h=input_height,
             )
 
             matches, unmatched_predictions, unmatched_gt = greedy_match_predictions_to_gt(

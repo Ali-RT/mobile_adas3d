@@ -5,7 +5,9 @@ from pathlib import Path
 
 import torch
 
+from data.target_builder import build_targets_for_sample
 from models.build import build_model
+from models.decode import decode_mobile_adas3d_outputs
 from scripts.check_training_ready import parse_args as parse_training_ready_args
 from scripts.stage_colab_kitti import (
     MANIFEST_NAME,
@@ -20,6 +22,7 @@ from tools.run_manager import resume_run_dir
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = PROJECT_ROOT / "configs" / "kitti_mnv4_conv_small_baseline.yaml"
 AP_V1_CONFIG_PATH = PROJECT_ROOT / "configs" / "kitti_mnv4_conv_small_ap_v1.yaml"
+V2_CONFIG_PATH = PROJECT_ROOT / "configs" / "kitti_mnv4_calibrated_geometry_v2.yaml"
 NOTEBOOK_PATH = (
     PROJECT_ROOT
     / "notebooks"
@@ -109,6 +112,8 @@ class MobileNetV4BaselineTests(unittest.TestCase):
         self.assertIn("AUTO_RESUME_MATCH_RUN_NAME", source)
         self.assertIn("load_checkpoint_summary", source)
         self.assertIn("already reached epoch", source)
+        self.assertIn("mnv4_v2_calibrated_geometry_quality", source)
+        self.assertIn("configs/kitti_mnv4_calibrated_geometry_v2.yaml", source)
 
     def test_ap_v1_config_has_distinct_run_policy(self):
         config = load_config(str(AP_V1_CONFIG_PATH))
@@ -119,6 +124,108 @@ class MobileNetV4BaselineTests(unittest.TestCase):
         self.assertFalse(config["early_stopping"]["enabled"])
         self.assertEqual(config["training"]["epochs"], 80)
         self.assertEqual(config["training"]["save_interval"], 5)
+
+    def test_v2_config_enables_calibrated_projected_center_head(self):
+        config = load_config(str(V2_CONFIG_PATH))
+        config["model"]["pretrained"] = False
+        config["model"]["fpn_channels"] = 32
+        config["model"]["head_channels"] = 32
+
+        self.assertEqual(
+            config["logging"]["run_name"],
+            "mnv4_v2_calibrated_geometry_quality",
+        )
+        self.assertEqual(config["model"]["location_source"], "projected_center")
+        self.assertTrue(config["model"]["heads"]["projected_center_offset"])
+
+        model = build_model(config).eval()
+        with torch.inference_mode():
+            outputs = model(torch.rand(1, 3, 384, 1280))
+
+        self.assertIn("projected_center_offset", outputs)
+        self.assertEqual(tuple(outputs["projected_center_offset"].shape), (1, 2, 24, 80))
+
+    def test_target_builder_adds_projected_center_offset_target(self):
+        P2 = [
+            [1000.0, 0.0, 0.0, 0.0],
+            [0.0, 1000.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+        ]
+        targets = build_targets_for_sample(
+            objects=[
+                {
+                    "class_name": "Car",
+                    "bbox_2d": [190.0, 280.0, 210.0, 320.0],
+                    "location_3d": [2.0, 3.0, 10.0],
+                    "dimensions_3d": [1.5, 1.6, 3.9],
+                    "rotation_y": 0.0,
+                }
+            ],
+            original_width=1280,
+            original_height=384,
+            input_width=1280,
+            input_height=384,
+            output_stride=16,
+            classes=["Car", "Pedestrian", "Cyclist"],
+            class_mean_dims={"Car": [1.5, 1.6, 3.9]},
+            center_sampling_radius=0,
+            P2=P2,
+        )
+
+        self.assertIn("projected_center_offset_target", targets)
+        self.assertIn("projected_center_valid_mask", targets)
+        self.assertEqual(float(targets["valid_mask"][0, 18, 12]), 1.0)
+        self.assertEqual(float(targets["projected_center_valid_mask"][0, 18, 12]), 1.0)
+        projected_offset = targets["projected_center_offset_target"][:, 18, 12]
+        self.assertAlmostEqual(float(projected_offset[0]), 0.0, places=5)
+        self.assertAlmostEqual(float(projected_offset[1]), 0.25, places=5)
+
+    def test_decode_projected_center_backprojects_with_p2(self):
+        outputs = {
+            "cls_logits": torch.full((1, 3, 24, 80), -20.0),
+            "box2d": torch.full((1, 4, 24, 80), 0.01),
+            "log_depth": torch.zeros(1, 1, 24, 80),
+            "dim": torch.zeros(1, 3, 24, 80),
+            "yaw": torch.zeros(1, 2, 24, 80),
+            "center_offset": torch.zeros(1, 2, 24, 80),
+            "depth_uncertainty": torch.zeros(1, 1, 24, 80),
+            "loc_xy": torch.zeros(1, 2, 24, 80),
+            "projected_center_offset": torch.zeros(1, 2, 24, 80),
+        }
+        outputs["cls_logits"][0, 0, 18, 12] = 10.0
+        outputs["log_depth"][0, 0, 18, 12] = torch.log(torch.tensor(10.0))
+        outputs["yaw"][0, :, 18, 12] = torch.tensor([0.0, 1.0])
+        outputs["projected_center_offset"][0, :, 18, 12] = torch.tensor([0.0, 0.25])
+
+        P2 = torch.tensor(
+            [
+                [1000.0, 0.0, 0.0, 0.0],
+                [0.0, 1000.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0],
+            ]
+        )
+        predictions = decode_mobile_adas3d_outputs(
+            outputs=outputs,
+            classes=["Car", "Pedestrian", "Cyclist"],
+            class_mean_dims={
+                "Car": [1.5, 1.6, 3.9],
+                "Pedestrian": [1.7, 0.6, 0.8],
+                "Cyclist": [1.7, 0.6, 1.76],
+            },
+            input_height=384,
+            input_width=1280,
+            score_threshold=0.5,
+            topk=1,
+            nms_iou_threshold=0.5,
+            P2=P2,
+            location_source="projected_center",
+        )[0]
+
+        self.assertEqual(len(predictions), 1)
+        self.assertEqual(predictions[0]["location_decode_source"], "projected_center")
+        self.assertAlmostEqual(predictions[0]["location_3d"][0], 2.0, places=4)
+        self.assertAlmostEqual(predictions[0]["location_3d"][1], 3.0, places=4)
+        self.assertAlmostEqual(predictions[0]["location_3d"][2], 10.0, places=4)
 
     def test_training_ready_cli_accepts_run_name(self):
         with unittest.mock.patch(

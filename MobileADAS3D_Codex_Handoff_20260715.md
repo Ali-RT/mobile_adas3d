@@ -551,10 +551,12 @@ There are now two deliberately separate model lineages:
    MobileADAS3D checkpoint. Do not initialize it from unrelated `best.pt`
    files or report v6/v7 metrics as MobileNetV4 results.
 
-The fresh baseline retains the stride-16/32 FPN, eight prediction heads,
-decoder fields, `1280x384` resolution, and RGB `/255.0` external input
-contract. ImageNet mean/std normalization is embedded in the model so the
-external iPhone preprocessing contract does not change.
+The fresh MobileNetV4 lineage retains the stride-16/32 FPN, `1280x384`
+resolution, and RGB `/255.0` external input contract. v0/v1 preserve the
+original eight-output path. v2 adds an optional projected-center output for
+calibration-aware geometry while preserving the old `loc_xy` fallback. ImageNet
+mean/std normalization is embedded in the model so the external preprocessing
+contract does not change.
 
 ### Canonical training entry point
 
@@ -564,7 +566,7 @@ Run this notebook from top to bottom in a Google Colab GPU runtime:
 notebooks/MobileADAS3D_MobileNetV4_Colab_Baseline.ipynb
 ```
 
-It uses `configs/kitti_mnv4_conv_small_baseline.yaml` and
+It now defaults to `configs/kitti_mnv4_calibrated_geometry_v2.yaml` and
 `requirements-colab.txt`, mounts Drive, optionally stages KITTI on the Colab
 SSD using a fast archive path from `datasets/kitti/zips` when available, then
 falls back to folder `rsync`. The staging cell includes explicit notebook
@@ -588,7 +590,57 @@ v1_long80_no_earlystop:
   run_name: mnv4_v1_long80_no_earlystop
   config: configs/kitti_mnv4_conv_small_ap_v1.yaml
   policy: no early stopping, save checkpoints every 5 epochs
+
+v2_calibrated_geometry_quality:
+  run_name: mnv4_v2_calibrated_geometry_quality
+  config: configs/kitti_mnv4_calibrated_geometry_v2.yaml
+  policy: no early stopping, save checkpoints every 5 epochs
+  status: next fresh Colab run
 ```
+
+### 2026-07-21 modeling handoff: calibrated geometry v2
+
+The v1 long-80 run proved that the MobileNetV4 student is learning useful
+signals but not ranking accurate 3D boxes well enough for KITTI AP_R40. The
+best checkpoint sweep reached only about `0.596` Car BEV moderate AP_R40 and
+about `0.094` Car 3D moderate AP_R40. Matched-object diagnostics were much
+healthier than AP: latest v1 showed roughly `1.83m` all-class depth MAE,
+`0.085` depth relative error, and `0.757` mean 2D IoU, but yaw remained around
+`33.8°` MAE and 3D center/corner errors remained too high. That pattern points
+to geometry/ranking failure rather than a completely broken detector.
+
+The next run is therefore `mnv4_v2_calibrated_geometry_quality`. It keeps the
+MobileNetV4 Conv Small backbone and external RGB `/255.0`, `1280x384` input
+contract, but adds a lightweight `projected_center_offset` head. Training
+builds a target by projecting each KITTI 3D bottom-center through the resized
+`P2` calibration. Evaluation decodes camera-frame X/Y by back-projecting the
+predicted projected center with `P2` and predicted depth. The legacy `loc_xy`
+head remains enabled with a lower auxiliary weight, so old configs and old
+decode behavior are preserved.
+
+Fresh-run checklist:
+
+```text
+notebook:
+  notebooks/MobileADAS3D_MobileNetV4_Colab_Baseline.ipynb
+
+experiment:
+  EXPERIMENT_ID = mnv4_v2_calibrated_geometry_quality
+  CONFIG = configs/kitti_mnv4_calibrated_geometry_v2.yaml
+  RUN_NAME = mnv4_v2_calibrated_geometry_quality
+
+expected artifacts:
+  runs/<timestamp>_mnv4_v2_calibrated_geometry_quality/checkpoints/latest.pt
+  runs/<timestamp>_mnv4_v2_calibrated_geometry_quality/checkpoints/best.pt
+  runs/<timestamp>_mnv4_v2_calibrated_geometry_quality/kitti_r40_val/kitti_r40_summary.json
+  mobile_adas3d_outputs/mnv4_conv_small_baseline/colab_logs/train_mnv4_v2_calibrated_geometry_quality_<timestamp>.log
+```
+
+After training, compare v2 against v1 using the same full validation split,
+same `score-threshold 0.001`, `topk 300`, and `nms-iou-threshold 0.5`. The key
+numbers to report are Car BEV/3D AP_R40 moderate, all-class 3D center/corner
+MAE, Car yaw MAE, Car depth MAE, and whether the best AP checkpoint is different
+from the lowest validation-loss checkpoint.
 
 The Drive dataset may use either canonical KITTI object-folder names
 `training/image_2` and `training/label_2` or raw aliases `training/image_02`
@@ -610,13 +662,15 @@ canonical comparison.
 
 ### Verified locally before Colab
 
-- 7,308,146 trainable parameters;
-- all eight outputs have the expected `24x80` spatial shape;
+- v0/v1 output contracts remain unchanged;
+- v2 emits the extra `projected_center_offset` output with the expected `24x80`
+  spatial shape;
 - real-sample losses are finite;
 - the exact pretrained timm backbone loads;
-- TorchScript tracing preserves the eight-output contract;
+- TorchScript/export checks should be rerun for any selected deployment
+  checkpoint because v2 intentionally changes the training output set;
 - the repository tests cover split integrity, geometry/AP_R40, model output,
-  pretrained loading, and checkpoint resume.
+  projected-center back-projection, and checkpoint resume.
 
 ### Work after the untouched baseline
 

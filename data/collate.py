@@ -69,6 +69,7 @@ def mobile_adas3d_collate_fn(
             class_mean_dims=class_mean_dims,
             center_sampling_radius=center_sampling_radius,
             class_weights=class_weights,
+            P2=sample.get("P2"),
         )
 
         images.append(image)

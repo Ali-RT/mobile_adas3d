@@ -122,6 +122,7 @@ class MobileADAS3D(nn.Module):
         input_width: int = 1280,
         fpn_channels: int = 128,
         head_channels: int = 256,
+        use_projected_center: bool = False,
     ) -> None:
         super().__init__()
 
@@ -147,6 +148,7 @@ class MobileADAS3D(nn.Module):
         self.input_width = input_width
         self.backbone_name = backbone_name
         self.normalize_imagenet = normalize_imagenet
+        self.use_projected_center = use_projected_center
 
         if normalize_imagenet:
             mean = [0.485, 0.456, 0.406]
@@ -195,6 +197,8 @@ class MobileADAS3D(nn.Module):
         self.center_offset_head = ConvHead(head_channels, head_channels, 2)
         self.depth_uncertainty_head = ConvHead(head_channels, head_channels, 1)
         self.loc_xy_head = ConvHead(head_channels, head_channels, 2)
+        if self.use_projected_center:
+            self.projected_center_offset_head = ConvHead(head_channels, head_channels, 2)
 
     def forward(self, images: torch.Tensor) -> Dict[str, torch.Tensor]:
         images = (images - self.input_mean) / self.input_std
@@ -204,7 +208,7 @@ class MobileADAS3D(nn.Module):
         p32 = F.interpolate(p32, size=p16.shape[-2:], mode="bilinear", align_corners=False)
         fused = self.fusion(torch.cat([p16, p32], dim=1))
 
-        return {
+        outputs = {
             "cls_logits": self.cls_head(fused),
             "box2d": F.softplus(self.box2d_head(fused)),
             "log_depth": self.depth_head(fused),
@@ -214,3 +218,8 @@ class MobileADAS3D(nn.Module):
             "depth_uncertainty": self.depth_uncertainty_head(fused),
             "loc_xy": self.loc_xy_head(fused),
         }
+
+        if self.use_projected_center:
+            outputs["projected_center_offset"] = self.projected_center_offset_head(fused)
+
+        return outputs

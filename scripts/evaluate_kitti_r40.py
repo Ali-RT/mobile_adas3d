@@ -17,6 +17,7 @@ import torch
 import torch.nn.functional as F
 
 from data.kitti_dataset import KITTIDataset
+from data.geometry import scale_p2_for_resize
 from data.kitti_parser import parse_kitti_label_file
 from data.kitti_r40 import evaluate_kitti_r40
 from data.split_resolver import get_split_file
@@ -140,6 +141,13 @@ def main() -> None:
                 mode="bilinear",
                 align_corners=False,
             ).to(device)
+            P2_model = scale_p2_for_resize(
+                P2=sample["P2"],
+                orig_w=int(sample["original_size"]["width"]),
+                orig_h=int(sample["original_size"]["height"]),
+                input_w=input_width,
+                input_h=input_height,
+            )
             decoded = decode_mobile_adas3d_outputs(
                 outputs=model(image),
                 classes=dataset_cfg["classes"],
@@ -149,6 +157,8 @@ def main() -> None:
                 score_threshold=args.score_threshold,
                 topk=args.topk,
                 nms_iou_threshold=args.nms_iou_threshold,
+                P2=P2_model,
+                location_source=model_cfg.get("location_source", "loc_xy"),
             )[0]
             sample_id = sample["sample_id"]
             predictions[sample_id] = [
