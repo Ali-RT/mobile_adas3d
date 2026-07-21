@@ -107,6 +107,8 @@ class MobileNetV4BaselineTests(unittest.TestCase):
         self.assertIn("colab_logs", source)
         self.assertIn("mnv4_v1_long80_no_earlystop", source)
         self.assertIn("AUTO_RESUME_MATCH_RUN_NAME", source)
+        self.assertIn("load_checkpoint_summary", source)
+        self.assertIn("already reached epoch", source)
 
     def test_ap_v1_config_has_distinct_run_policy(self):
         config = load_config(str(AP_V1_CONFIG_PATH))
