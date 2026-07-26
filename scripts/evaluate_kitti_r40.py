@@ -42,6 +42,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--topk", type=int, default=300)
     parser.add_argument("--nms-iou-threshold", type=float, default=0.5)
     parser.add_argument("--output-dir", default=None)
+    parser.add_argument(
+        "--skip-predictions",
+        action="store_true",
+        help="Write only metric CSV/JSON artifacts, not per-frame KITTI prediction txt files.",
+    )
     return parser.parse_args()
 
 
@@ -213,11 +218,12 @@ def main() -> None:
     (output_dir / "kitti_r40_summary.json").write_text(
         json.dumps(summary, indent=2) + "\n", encoding="utf-8"
     )
-    _write_kitti_predictions(
-        output_dir=output_dir,
-        sample_ids=[dataset[index]["sample_id"] for index in selected_indices],
-        predictions=predictions,
-    )
+    if not args.skip_predictions:
+        _write_kitti_predictions(
+            output_dir=output_dir,
+            sample_ids=[dataset[index]["sample_id"] for index in selected_indices],
+            predictions=predictions,
+        )
 
     print("\nKITTI AP_R40 (%):")
     for metric in ("bev", "3d"):

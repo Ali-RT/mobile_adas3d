@@ -595,7 +595,8 @@ v2_calibrated_geometry_quality:
   run_name: mnv4_v2_calibrated_geometry_quality
   config: configs/kitti_mnv4_calibrated_geometry_v2.yaml
   policy: no early stopping, save checkpoints every 5 epochs
-  status: next fresh Colab run
+  completed_run_id: 20260721_142002_mnv4_v2_calibrated_geometry_quality
+  current_baseline_checkpoint: latest.pt
 ```
 
 ### 2026-07-21 modeling handoff: calibrated geometry v2
@@ -609,7 +610,7 @@ healthier than AP: latest v1 showed roughly `1.83m` all-class depth MAE,
 `33.8°` MAE and 3D center/corner errors remained too high. That pattern points
 to geometry/ranking failure rather than a completely broken detector.
 
-The next run is therefore `mnv4_v2_calibrated_geometry_quality`. It keeps the
+The follow-up run `mnv4_v2_calibrated_geometry_quality` keeps the
 MobileNetV4 Conv Small backbone and external RGB `/255.0`, `1280x384` input
 contract, but adds a lightweight `projected_center_offset` head. Training
 builds a target by projecting each KITTI 3D bottom-center through the resized
@@ -617,6 +618,31 @@ builds a target by projecting each KITTI 3D bottom-center through the resized
 predicted projected center with `P2` and predicted depth. The legacy `loc_xy`
 head remains enabled with a lower auxiliary weight, so old configs and old
 decode behavior are preserved.
+
+The completed v2 run
+`20260721_142002_mnv4_v2_calibrated_geometry_quality` confirmed the diagnosis.
+`latest.pt` beat `best.pt` by validation loss:
+
+```text
+latest.pt KITTI AP_R40:
+  Car BEV moderate:        6.30
+  Car 3D moderate:         2.87
+  Pedestrian 3D moderate:  1.07
+  Cyclist 3D moderate:     1.04
+
+latest.pt matched 3D diagnostics:
+  ALL depth_mae:       1.799m
+  ALL loc_xyz_mae:     (0.503, 0.145, 1.799)m
+  ALL center3d_mae:    1.958m
+  ALL corner3d_mae:    2.335m
+  ALL yaw_mae:         34.05deg
+  ALL corner2d_mae:    33.2px
+```
+
+Compared with v1 latest, v2 substantially reduced X/Y localization error,
+center/corner error, and projected-corner error. Yaw remains the next major
+geometry bottleneck, and AP checkpoint selection is still misaligned with
+validation loss.
 
 Fresh-run checklist:
 
@@ -632,15 +658,17 @@ experiment:
 expected artifacts:
   runs/<timestamp>_mnv4_v2_calibrated_geometry_quality/checkpoints/latest.pt
   runs/<timestamp>_mnv4_v2_calibrated_geometry_quality/checkpoints/best.pt
-  runs/<timestamp>_mnv4_v2_calibrated_geometry_quality/kitti_r40_val/kitti_r40_summary.json
+  runs/<timestamp>_mnv4_v2_calibrated_geometry_quality/kitti_r40_latest/kitti_r40_summary.json
+  runs/<timestamp>_mnv4_v2_calibrated_geometry_quality/checkpoint_ap_sweep_val/checkpoint_ap_summary.csv
   mobile_adas3d_outputs/mnv4_conv_small_baseline/colab_logs/train_mnv4_v2_calibrated_geometry_quality_<timestamp>.log
 ```
 
-After training, compare v2 against v1 using the same full validation split,
-same `score-threshold 0.001`, `topk 300`, and `nms-iou-threshold 0.5`. The key
-numbers to report are Car BEV/3D AP_R40 moderate, all-class 3D center/corner
-MAE, Car yaw MAE, Car depth MAE, and whether the best AP checkpoint is different
-from the lowest validation-loss checkpoint.
+After training, compare checkpoints using the same full validation split, same
+`score-threshold 0.001`, `topk 300`, and `nms-iou-threshold 0.5`. Use
+`scripts/sweep_kitti_r40_checkpoints.py` to evaluate `epoch_*.pt`, `best.pt`,
+and `latest.pt`; the key selection numbers are Car 3D moderate AP_R40 and mean
+3D moderate AP_R40. Keep reporting all-class 3D center/corner MAE, Car yaw MAE,
+and Car depth MAE for the selected AP checkpoint.
 
 The Drive dataset may use either canonical KITTI object-folder names
 `training/image_2` and `training/label_2` or raw aliases `training/image_02`

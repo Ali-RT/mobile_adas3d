@@ -51,6 +51,26 @@ while keeping the legacy `loc_xy` head as a weak auxiliary/fallback path.
 Only results whose `kitti_r40_summary.json` contains `complete_split: true` are
 reportable.
 
+After a run finishes, sweep AP across saved checkpoints instead of trusting
+`best.pt` by validation loss:
+
+```bash
+python scripts/sweep_kitti_r40_checkpoints.py \
+  --config configs/kitti_mnv4_calibrated_geometry_v2.yaml \
+  --profile colab_drive \
+  --dataset-root /content/kitti \
+  --split-dir /content/drive/MyDrive/mobile_adas3d_splits/kitti_chen \
+  --run-dir /content/drive/MyDrive/mobile_adas3d_outputs/mnv4_conv_small_baseline/runs/<run_id> \
+  --split val \
+  --score-threshold 0.001 \
+  --topk 300 \
+  --nms-iou-threshold 0.5
+```
+
+The sweep writes `checkpoint_ap_summary.csv`,
+`checkpoint_ap_metrics_long.csv`, and `checkpoint_ap_summary.json`, and reuses
+completed per-checkpoint evaluations after interruptions.
+
 The Colab staging cell accepts Drive folders named `training/image_02` and
 `training/label_02`, then stages them into the canonical `image_2` and
 `label_2` names expected by the training loader.

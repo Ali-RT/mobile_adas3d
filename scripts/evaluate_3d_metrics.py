@@ -48,6 +48,20 @@ def parse_args() -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "--dataset-root",
+        type=str,
+        default=None,
+        help="Override the dataset root resolved from the config/profile.",
+    )
+
+    parser.add_argument(
+        "--split-dir",
+        type=str,
+        default=None,
+        help="Override the split directory resolved from the config/profile.",
+    )
+
+    parser.add_argument(
         "--checkpoint",
         type=str,
         required=True,
@@ -838,6 +852,8 @@ def main() -> None:
         config=config,
         profile=args.profile,
         run_name=None,
+        dataset_root=args.dataset_root,
+        split_dir=args.split_dir,
     )
 
     dataset_cfg = config["dataset"]

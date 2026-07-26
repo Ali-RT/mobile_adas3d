@@ -236,7 +236,14 @@ def scale_p2_for_resize(P2, orig_w, orig_h, input_w, input_h):
     sx = float(input_w) / float(orig_w)
     sy = float(input_h) / float(orig_h)
 
-    P2_scaled = P2.copy().astype(np.float32)
+    if torch.is_tensor(P2):
+        P2_scaled = P2.detach().cpu().numpy().copy().astype(np.float32)
+    else:
+        P2_scaled = np.asarray(P2, dtype=np.float32).copy()
+
+    if P2_scaled.shape != (3, 4):
+        raise ValueError(f"Expected P2 shape [3, 4], got {P2_scaled.shape}")
+
     P2_scaled[0, :] *= sx
     P2_scaled[1, :] *= sy
 

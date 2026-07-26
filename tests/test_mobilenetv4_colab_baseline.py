@@ -114,6 +114,9 @@ class MobileNetV4BaselineTests(unittest.TestCase):
         self.assertIn("already reached epoch", source)
         self.assertIn("mnv4_v2_calibrated_geometry_quality", source)
         self.assertIn("configs/kitti_mnv4_calibrated_geometry_v2.yaml", source)
+        self.assertIn("sweep_kitti_r40_checkpoints.py", source)
+        self.assertIn("checkpoint_ap_summary.csv", source)
+        self.assertIn("kitti_r40_latest", source)
 
     def test_ap_v1_config_has_distinct_run_policy(self):
         config = load_config(str(AP_V1_CONFIG_PATH))
