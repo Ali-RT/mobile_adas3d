@@ -22,6 +22,10 @@ def build_model(config: Dict[str, Any]) -> MobileADAS3D:
             model_cfg.get("use_projected_center", False)
             or model_cfg.get("heads", {}).get("projected_center_offset", False)
         ),
+        use_quality=bool(
+            model_cfg.get("use_quality", False)
+            or model_cfg.get("heads", {}).get("quality", False)
+        ),
     )
 
     return model

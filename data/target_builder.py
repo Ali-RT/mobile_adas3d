@@ -145,6 +145,25 @@ def build_center_offset_target(
     return [float(dx), float(dy)]
 
 
+def build_quality_target_from_center_offset(
+    center_offset: Sequence[float],
+    sigma: float = 1.0,
+) -> float:
+    """
+    Soft center-quality target for ranking/objectness.
+
+    Positive cells close to the true object center should rank above neighboring
+    positive cells assigned by center sampling. Background remains 0.
+    """
+    if sigma <= 0.0:
+        return 1.0
+
+    dx = float(center_offset[0])
+    dy = float(center_offset[1])
+    distance_sq = dx * dx + dy * dy
+    return float(torch.exp(torch.tensor(-0.5 * distance_sq / (sigma * sigma))).item())
+
+
 def project_kitti_location_to_image(
     location_3d: Sequence[float],
     P2: Sequence[Sequence[float]],
@@ -189,6 +208,7 @@ def build_targets_for_sample(
     center_sampling_radius: int = 1,
     class_weights: Optional[Dict[str, float]] = None,
     P2: Optional[Sequence[Sequence[float]]] = None,
+    quality_center_sigma: float = 1.0,
 ) -> Dict[str, torch.Tensor]:
     feature_h, feature_w = compute_feature_shape(
         input_height=input_height,
@@ -208,6 +228,7 @@ def build_targets_for_sample(
     offset_target = torch.zeros(2, feature_h, feature_w, dtype=torch.float32)
     projected_center_offset_target = torch.zeros(2, feature_h, feature_w, dtype=torch.float32)
     projected_center_valid_mask = torch.zeros(1, feature_h, feature_w, dtype=torch.float32)
+    quality_target = torch.zeros(1, feature_h, feature_w, dtype=torch.float32)
     valid_mask = torch.zeros(1, feature_h, feature_w, dtype=torch.float32)
 
     # Used to apply class-balanced regression/object losses.
@@ -331,6 +352,9 @@ def build_targets_for_sample(
 
             # If replacing an old assignment, clear all class channels for this cell.
             cls_target[:, cell_y, cell_x] = 0.0
+            projected_center_offset_target[:, cell_y, cell_x] = 0.0
+            projected_center_valid_mask[0, cell_y, cell_x] = 0.0
+            quality_target[0, cell_y, cell_x] = 0.0
 
             cls_target[class_id, cell_y, cell_x] = 1.0
 
@@ -363,15 +387,21 @@ def build_targets_for_sample(
                 dtype=torch.float32,
             )
 
+            center_offset_values = build_center_offset_target(
+                center_x=center_x,
+                center_y=center_y,
+                cell_x=cell_x,
+                cell_y=cell_y,
+                output_stride=output_stride,
+            )
+
             offset_target[:, cell_y, cell_x] = torch.tensor(
-                build_center_offset_target(
-                    center_x=center_x,
-                    center_y=center_y,
-                    cell_x=cell_x,
-                    cell_y=cell_y,
-                    output_stride=output_stride,
-                ),
+                center_offset_values,
                 dtype=torch.float32,
+            )
+            quality_target[0, cell_y, cell_x] = build_quality_target_from_center_offset(
+                center_offset=center_offset_values,
+                sigma=quality_center_sigma,
             )
 
             if projected_center is not None:
@@ -402,6 +432,7 @@ def build_targets_for_sample(
         "offset_target": offset_target,
         "projected_center_offset_target": projected_center_offset_target,
         "projected_center_valid_mask": projected_center_valid_mask,
+        "quality_target": quality_target,
         "valid_mask": valid_mask,
         "loss_weight_target": loss_weight_target,
     }

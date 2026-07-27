@@ -164,6 +164,13 @@ def main() -> None:
                 nms_iou_threshold=args.nms_iou_threshold,
                 P2=P2_model,
                 location_source=model_cfg.get("location_source", "loc_xy"),
+                score_mode=model_cfg.get(
+                    "score_mode",
+                    config.get("inference", {}).get("score_mode", "class"),
+                ),
+                quality_score_power=float(
+                    config.get("inference", {}).get("quality_score_power", 1.0)
+                ),
             )[0]
             sample_id = sample["sample_id"]
             predictions[sample_id] = [

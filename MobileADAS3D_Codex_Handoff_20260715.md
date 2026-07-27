@@ -598,6 +598,12 @@ v2_calibrated_geometry_quality:
   completed_run_id: 20260721_142002_mnv4_v2_calibrated_geometry_quality
   car_focused_checkpoint: epoch_040.pt
   balanced_all_class_checkpoint: latest.pt / epoch_080.pt
+
+v3_quality_scoring:
+  run_name: mnv4_v3_quality_scoring
+  config: configs/kitti_mnv4_quality_scoring_v3.yaml
+  policy: v2 geometry + quality head, no early stopping, save every 5 epochs
+  status: next fresh Colab run
 ```
 
 ### 2026-07-21 modeling handoff: calibrated geometry v2
@@ -683,6 +689,20 @@ center/corner error, and projected-corner error. Yaw remains the next major
 geometry bottleneck, and AP checkpoint selection is still misaligned with
 validation loss.
 
+### 2026-07-27 modeling handoff: quality scoring v3
+
+The v2 AP sweep showed that `epoch_040.pt` and `epoch_080.pt/latest.pt` have
+nearly identical matched 3D geometry but different AP tradeoffs. That means the
+next controlled experiment should improve detection ranking rather than change
+the projected-center geometry again.
+
+`mnv4_v3_quality_scoring` keeps the v2 projected-center location path and adds
+a lightweight one-channel `quality` head. The target is a soft center-quality
+score for positive cells, with background at zero. Decode uses
+`class_prob * quality_prob` when `score_mode: class_quality` is enabled. This
+is intentionally isolated from yaw-bin/residual work so the AP effect of
+quality-aware ranking is measurable.
+
 Fresh-run checklist:
 
 ```text
@@ -690,16 +710,16 @@ notebook:
   notebooks/MobileADAS3D_MobileNetV4_Colab_Baseline.ipynb
 
 experiment:
-  EXPERIMENT_ID = mnv4_v2_calibrated_geometry_quality
-  CONFIG = configs/kitti_mnv4_calibrated_geometry_v2.yaml
-  RUN_NAME = mnv4_v2_calibrated_geometry_quality
+  EXPERIMENT_ID = mnv4_v3_quality_scoring
+  CONFIG = configs/kitti_mnv4_quality_scoring_v3.yaml
+  RUN_NAME = mnv4_v3_quality_scoring
 
 expected artifacts:
-  runs/<timestamp>_mnv4_v2_calibrated_geometry_quality/checkpoints/latest.pt
-  runs/<timestamp>_mnv4_v2_calibrated_geometry_quality/checkpoints/best.pt
-  runs/<timestamp>_mnv4_v2_calibrated_geometry_quality/kitti_r40_latest/kitti_r40_summary.json
-  runs/<timestamp>_mnv4_v2_calibrated_geometry_quality/checkpoint_ap_sweep_val/checkpoint_ap_summary.csv
-  mobile_adas3d_outputs/mnv4_conv_small_baseline/colab_logs/train_mnv4_v2_calibrated_geometry_quality_<timestamp>.log
+  runs/<timestamp>_mnv4_v3_quality_scoring/checkpoints/latest.pt
+  runs/<timestamp>_mnv4_v3_quality_scoring/checkpoints/best.pt
+  runs/<timestamp>_mnv4_v3_quality_scoring/kitti_r40_latest/kitti_r40_summary.json
+  runs/<timestamp>_mnv4_v3_quality_scoring/checkpoint_ap_sweep_val/checkpoint_ap_summary.csv
+  mobile_adas3d_outputs/mnv4_conv_small_baseline/colab_logs/train_mnv4_v3_quality_scoring_<timestamp>.log
 ```
 
 After training, compare checkpoints using the same full validation split, same

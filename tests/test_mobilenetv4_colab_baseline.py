@@ -23,6 +23,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = PROJECT_ROOT / "configs" / "kitti_mnv4_conv_small_baseline.yaml"
 AP_V1_CONFIG_PATH = PROJECT_ROOT / "configs" / "kitti_mnv4_conv_small_ap_v1.yaml"
 V2_CONFIG_PATH = PROJECT_ROOT / "configs" / "kitti_mnv4_calibrated_geometry_v2.yaml"
+V3_CONFIG_PATH = PROJECT_ROOT / "configs" / "kitti_mnv4_quality_scoring_v3.yaml"
 NOTEBOOK_PATH = (
     PROJECT_ROOT
     / "notebooks"
@@ -113,7 +114,8 @@ class MobileNetV4BaselineTests(unittest.TestCase):
         self.assertIn("load_checkpoint_summary", source)
         self.assertIn("already reached epoch", source)
         self.assertIn("mnv4_v2_calibrated_geometry_quality", source)
-        self.assertIn("configs/kitti_mnv4_calibrated_geometry_v2.yaml", source)
+        self.assertIn("mnv4_v3_quality_scoring", source)
+        self.assertIn("configs/kitti_mnv4_quality_scoring_v3.yaml", source)
         self.assertIn("sweep_kitti_r40_checkpoints.py", source)
         self.assertIn("checkpoint_ap_summary.csv", source)
         self.assertIn("kitti_r40_latest", source)
@@ -148,6 +150,26 @@ class MobileNetV4BaselineTests(unittest.TestCase):
         self.assertIn("projected_center_offset", outputs)
         self.assertEqual(tuple(outputs["projected_center_offset"].shape), (1, 2, 24, 80))
 
+    def test_v3_config_enables_quality_head_and_scoring(self):
+        config = load_config(str(V3_CONFIG_PATH))
+        config["model"]["pretrained"] = False
+        config["model"]["fpn_channels"] = 32
+        config["model"]["head_channels"] = 32
+
+        self.assertEqual(config["logging"]["run_name"], "mnv4_v3_quality_scoring")
+        self.assertEqual(config["model"]["location_source"], "projected_center")
+        self.assertEqual(config["model"]["score_mode"], "class_quality")
+        self.assertTrue(config["model"]["heads"]["quality"])
+        self.assertGreater(config["loss"]["quality_weight"], 0.0)
+
+        model = build_model(config).eval()
+        with torch.inference_mode():
+            outputs = model(torch.rand(1, 3, 384, 1280))
+
+        self.assertIn("projected_center_offset", outputs)
+        self.assertIn("quality", outputs)
+        self.assertEqual(tuple(outputs["quality"].shape), (1, 1, 24, 80))
+
     def test_target_builder_adds_projected_center_offset_target(self):
         P2 = [
             [1000.0, 0.0, 0.0, 0.0],
@@ -177,8 +199,10 @@ class MobileNetV4BaselineTests(unittest.TestCase):
 
         self.assertIn("projected_center_offset_target", targets)
         self.assertIn("projected_center_valid_mask", targets)
+        self.assertIn("quality_target", targets)
         self.assertEqual(float(targets["valid_mask"][0, 18, 12]), 1.0)
         self.assertEqual(float(targets["projected_center_valid_mask"][0, 18, 12]), 1.0)
+        self.assertGreater(float(targets["quality_target"][0, 18, 12]), 0.9)
         projected_offset = targets["projected_center_offset_target"][:, 18, 12]
         self.assertAlmostEqual(float(projected_offset[0]), 0.0, places=5)
         self.assertAlmostEqual(float(projected_offset[1]), 0.25, places=5)
@@ -229,6 +253,47 @@ class MobileNetV4BaselineTests(unittest.TestCase):
         self.assertAlmostEqual(predictions[0]["location_3d"][0], 2.0, places=4)
         self.assertAlmostEqual(predictions[0]["location_3d"][1], 3.0, places=4)
         self.assertAlmostEqual(predictions[0]["location_3d"][2], 10.0, places=4)
+
+    def test_decode_quality_score_changes_ranking_when_enabled(self):
+        outputs = {
+            "cls_logits": torch.full((1, 3, 24, 80), -20.0),
+            "box2d": torch.full((1, 4, 24, 80), 0.01),
+            "log_depth": torch.zeros(1, 1, 24, 80),
+            "dim": torch.zeros(1, 3, 24, 80),
+            "yaw": torch.zeros(1, 2, 24, 80),
+            "center_offset": torch.zeros(1, 2, 24, 80),
+            "depth_uncertainty": torch.zeros(1, 1, 24, 80),
+            "loc_xy": torch.zeros(1, 2, 24, 80),
+            "quality": torch.full((1, 1, 24, 80), -6.0),
+        }
+        outputs["cls_logits"][0, 0, 10, 10] = 8.0
+        outputs["cls_logits"][0, 0, 12, 12] = 8.0
+        outputs["quality"][0, 0, 10, 10] = -2.0
+        outputs["quality"][0, 0, 12, 12] = 2.0
+        outputs["yaw"][0, :, 10, 10] = torch.tensor([0.0, 1.0])
+        outputs["yaw"][0, :, 12, 12] = torch.tensor([0.0, 1.0])
+
+        predictions = decode_mobile_adas3d_outputs(
+            outputs=outputs,
+            classes=["Car", "Pedestrian", "Cyclist"],
+            class_mean_dims={
+                "Car": [1.5, 1.6, 3.9],
+                "Pedestrian": [1.7, 0.6, 0.8],
+                "Cyclist": [1.7, 0.6, 1.76],
+            },
+            input_height=384,
+            input_width=1280,
+            score_threshold=0.0,
+            topk=1,
+            nms_iou_threshold=0.5,
+            score_mode="class_quality",
+        )[0]
+
+        self.assertEqual(len(predictions), 1)
+        self.assertEqual(predictions[0]["cell_x"], 12)
+        self.assertEqual(predictions[0]["cell_y"], 12)
+        self.assertEqual(predictions[0]["score_mode"], "class_quality")
+        self.assertGreater(predictions[0]["quality_score"], 0.8)
 
     def test_training_ready_cli_accepts_run_name(self):
         with unittest.mock.patch(

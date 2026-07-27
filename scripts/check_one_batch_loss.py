@@ -51,6 +51,7 @@ def build_criterion(config: Dict[str, Any]) -> MobileADAS3DLoss:
         offset_weight=float(loss_cfg.get("offset_weight", 0.5)),
         loc_xy_weight=float(loss_cfg.get("loc_xy_weight", 1.0)),
         projected_center_weight=float(loss_cfg.get("projected_center_weight", 0.0)),
+        quality_weight=float(loss_cfg.get("quality_weight", 0.0)),
         corner3d_weight=float(loss_cfg.get("corner3d_weight", 0.0)),
         class_mean_dims=config["targets"]["class_mean_dims"],
     )

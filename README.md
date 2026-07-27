@@ -42,12 +42,19 @@ The first AP-oriented follow-up configuration is
 its run name is `mnv4_v1_long80_no_earlystop`, disables early stopping, and
 saves checkpoints every five epochs for later checkpoint/AP comparison.
 
-The active follow-up configuration is
+The calibrated-geometry follow-up configuration is
 [`configs/kitti_mnv4_calibrated_geometry_v2.yaml`](configs/kitti_mnv4_calibrated_geometry_v2.yaml).
 Its run name is `mnv4_v2_calibrated_geometry_quality`. It adds an optional
 `projected_center_offset` head and decodes camera-frame X/Y by back-projecting
 the predicted projected 3D bottom-center with KITTI `P2` plus predicted depth,
 while keeping the legacy `loc_xy` head as a weak auxiliary/fallback path.
+
+The active v3 configuration is
+[`configs/kitti_mnv4_quality_scoring_v3.yaml`](configs/kitti_mnv4_quality_scoring_v3.yaml).
+Its run name is `mnv4_v3_quality_scoring`. It keeps v2 geometry and adds an
+optional `quality` head. At decode time, v3 ranks detections with
+`class_prob * quality_prob` to test whether AP improves when score ranking is
+geometry/center-quality aware.
 Only results whose `kitti_r40_summary.json` contains `complete_split: true` are
 reportable.
 

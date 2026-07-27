@@ -128,6 +128,7 @@ def build_dataloader(
         class_mean_dims=target_cfg["class_mean_dims"],
         center_sampling_radius=center_sampling_radius,
         class_weights=loss_cfg.get("class_weights", {}),
+        quality_center_sigma=float(target_cfg.get("quality_center_sigma", 1.0)),
     )
 
     loader = DataLoader(
@@ -163,6 +164,7 @@ def build_criterion(config: Dict[str, Any]) -> MobileADAS3DLoss:
         offset_weight=loss_cfg.get("offset_weight", 0.5),
         loc_xy_weight=loss_cfg.get("loc_xy_weight", 1.0),
         projected_center_weight=loss_cfg.get("projected_center_weight", 0.0),
+        quality_weight=loss_cfg.get("quality_weight", 0.0),
         corner3d_weight=loss_cfg.get("corner3d_weight", 0.0),
         class_mean_dims=config["targets"]["class_mean_dims"],
     )
@@ -288,6 +290,7 @@ def train_one_epoch(
                 f"offset={losses['offset_loss'].item():.6f} "
                 f"loc_xy={losses['loc_xy_loss'].item():.6f} "
                 f"proj_center={losses.get('projected_center_loss', torch.tensor(0.0)).item():.6f} "
+                f"quality={losses.get('quality_loss', torch.tensor(0.0)).item():.6f} "
                 f"corner3d={losses.get('corner3d_loss', torch.tensor(0.0)).item():.6f}"
             )
 

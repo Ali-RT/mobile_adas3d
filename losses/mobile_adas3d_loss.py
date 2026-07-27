@@ -107,6 +107,7 @@ class MobileADAS3DLoss(nn.Module):
         offset_weight: float = 0.5,
         loc_xy_weight: float = 1.0,
         projected_center_weight: float = 0.0,
+        quality_weight: float = 0.0,
         corner3d_weight: float = 0.0,
         class_mean_dims: Optional[Dict[str, List[float]]] = None,
     ) -> None:
@@ -124,6 +125,7 @@ class MobileADAS3DLoss(nn.Module):
         self.offset_weight = offset_weight
         self.loc_xy_weight = loc_xy_weight
         self.projected_center_weight = projected_center_weight
+        self.quality_weight = quality_weight
         self.corner3d_weight = corner3d_weight
 
         classes = classes or []
@@ -172,6 +174,7 @@ class MobileADAS3DLoss(nn.Module):
         depth_uncertainty_pred = outputs["depth_uncertainty"]
         loc_xy_pred = outputs["loc_xy"]
         projected_center_pred = outputs.get("projected_center_offset")
+        quality_pred = outputs.get("quality")
 
         cls_target = targets["cls_target"]
         box2d_target = targets["box2d_target"]
@@ -181,6 +184,7 @@ class MobileADAS3DLoss(nn.Module):
         offset_target = targets["offset_target"]
         loc_xy_target = targets["loc_xy_target"]
         projected_center_target = targets.get("projected_center_offset_target")
+        quality_target = targets.get("quality_target")
         valid_mask = targets["valid_mask"]
         projected_center_valid_mask = targets.get(
             "projected_center_valid_mask",
@@ -311,6 +315,26 @@ class MobileADAS3DLoss(nn.Module):
                 beta=1.0,
             )
 
+        quality_loss = torch.zeros(
+            (),
+            device=cls_logits.device,
+            dtype=cls_logits.dtype,
+        )
+
+        if (
+            self.quality_weight > 0.0
+            and quality_pred is not None
+            and quality_target is not None
+        ):
+            quality_loss = sigmoid_focal_loss(
+                logits=quality_pred,
+                targets=quality_target,
+                weights=None,
+                alpha=0.25,
+                gamma=2.0,
+                normalizer=valid_mask.sum().clamp(min=1.0),
+            )
+
         # Optional cuboid corner consistency loss.
         # Reconstructs the KITTI cuboid from predicted physical pose
         # (location_xyz + dimensions + yaw) and compares against GT corners.
@@ -333,6 +357,7 @@ class MobileADAS3DLoss(nn.Module):
             + self.offset_weight * offset_loss
             + self.loc_xy_weight * loc_xy_loss
             + self.projected_center_weight * projected_center_loss
+            + self.quality_weight * quality_loss
             + self.corner3d_weight * corner3d_loss
         )
 
@@ -347,6 +372,7 @@ class MobileADAS3DLoss(nn.Module):
             "offset_loss": offset_loss,
             "loc_xy_loss": loc_xy_loss,
             "projected_center_loss": projected_center_loss,
+            "quality_loss": quality_loss,
             "corner3d_loss": corner3d_loss,
         }
 

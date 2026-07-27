@@ -123,6 +123,7 @@ class MobileADAS3D(nn.Module):
         fpn_channels: int = 128,
         head_channels: int = 256,
         use_projected_center: bool = False,
+        use_quality: bool = False,
     ) -> None:
         super().__init__()
 
@@ -149,6 +150,7 @@ class MobileADAS3D(nn.Module):
         self.backbone_name = backbone_name
         self.normalize_imagenet = normalize_imagenet
         self.use_projected_center = use_projected_center
+        self.use_quality = use_quality
 
         if normalize_imagenet:
             mean = [0.485, 0.456, 0.406]
@@ -199,6 +201,8 @@ class MobileADAS3D(nn.Module):
         self.loc_xy_head = ConvHead(head_channels, head_channels, 2)
         if self.use_projected_center:
             self.projected_center_offset_head = ConvHead(head_channels, head_channels, 2)
+        if self.use_quality:
+            self.quality_head = ConvHead(head_channels, head_channels, 1)
 
     def forward(self, images: torch.Tensor) -> Dict[str, torch.Tensor]:
         images = (images - self.input_mean) / self.input_std
@@ -221,5 +225,7 @@ class MobileADAS3D(nn.Module):
 
         if self.use_projected_center:
             outputs["projected_center_offset"] = self.projected_center_offset_head(fused)
+        if self.use_quality:
+            outputs["quality"] = self.quality_head(fused)
 
         return outputs

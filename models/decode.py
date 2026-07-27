@@ -275,6 +275,8 @@ def _decode_single_image_vectorized(
     max_depth: float = 200.0,
     P2: Optional[torch.Tensor] = None,
     location_source: str = "loc_xy",
+    score_mode: str = "class",
+    quality_score_power: float = 1.0,
 ) -> List[Dict[str, Any]]:
     """
     Vectorized decode for one image.
@@ -292,6 +294,12 @@ def _decode_single_image_vectorized(
     dim = outputs["dim"][batch_index]                        # [3, H, W]
     yaw = outputs["yaw"][batch_index]                        # [2, H, W]
     center_offset = outputs["center_offset"][batch_index]    # [2, H, W]
+
+    quality_logits: Optional[torch.Tensor]
+    if "quality" in outputs:
+        quality_logits = outputs["quality"][batch_index]     # [1, H, W]
+    else:
+        quality_logits = None
 
     loc_xy: Optional[torch.Tensor]
     if "loc_xy" in outputs:
@@ -318,7 +326,19 @@ def _decode_single_image_vectorized(
     stride_y = float(input_height) / float(feature_h)
 
     # [C, H, W] -> [C * H * W]
-    scores_flat = torch.sigmoid(cls_logits).reshape(-1)
+    class_scores = torch.sigmoid(cls_logits)
+    quality_scores: Optional[torch.Tensor] = None
+
+    if score_mode == "class_quality" and quality_logits is not None:
+        quality_scores = torch.sigmoid(quality_logits).clamp(min=1e-6, max=1.0)
+        final_scores = class_scores * quality_scores.pow(float(quality_score_power))
+        effective_score_mode = "class_quality"
+    else:
+        final_scores = class_scores
+        effective_score_mode = "class"
+
+    scores_flat = final_scores.reshape(-1)
+    class_scores_flat_all = class_scores.reshape(-1)
 
     k = min(int(topk), int(scores_flat.numel()))
 
@@ -334,6 +354,7 @@ def _decode_single_image_vectorized(
 
     top_scores = top_scores[keep_score_mask]
     top_indices = top_indices[keep_score_mask]
+    top_class_scores = class_scores_flat_all[top_indices]
 
     class_ids = torch.div(top_indices, num_cells, rounding_mode="floor").long()
     spatial_indices = top_indices % num_cells
@@ -354,6 +375,13 @@ def _decode_single_image_vectorized(
     candidate_yaw_vec = yaw_flat[spatial_indices]
     candidate_offset = offset_flat[spatial_indices]
     candidate_log_depth = log_depth_flat[spatial_indices]
+    candidate_class_scores = top_class_scores
+
+    if quality_scores is not None:
+        quality_scores_flat = quality_scores.reshape(-1)
+        candidate_quality_scores = quality_scores_flat[spatial_indices]
+    else:
+        candidate_quality_scores = torch.ones_like(candidate_class_scores)
 
     if loc_xy is not None:
         loc_xy_flat = loc_xy.permute(1, 2, 0).reshape(num_cells, 2)
@@ -414,6 +442,8 @@ def _decode_single_image_vectorized(
 
     boxes = boxes[valid_box_mask]
     top_scores = top_scores[valid_box_mask]
+    candidate_class_scores = candidate_class_scores[valid_box_mask]
+    candidate_quality_scores = candidate_quality_scores[valid_box_mask]
     class_ids = class_ids[valid_box_mask]
     spatial_indices = spatial_indices[valid_box_mask]
     cell_x = cell_x[valid_box_mask]
@@ -440,6 +470,8 @@ def _decode_single_image_vectorized(
 
     boxes = boxes[keep_nms]
     scores = top_scores[keep_nms]
+    class_score_values = candidate_class_scores[keep_nms]
+    quality_score_values = candidate_quality_scores[keep_nms]
     class_ids = class_ids[keep_nms]
     cell_x = cell_x[keep_nms]
     cell_y = cell_y[keep_nms]
@@ -504,6 +536,8 @@ def _decode_single_image_vectorized(
     # Move final compact tensors to CPU once.
     boxes_cpu = boxes.detach().cpu()
     scores_cpu = scores.detach().cpu()
+    class_scores_cpu = class_score_values.detach().cpu()
+    quality_scores_cpu = quality_score_values.detach().cpu()
     class_ids_cpu = class_ids.detach().cpu()
     center_x_cpu = center_x.detach().cpu()
     center_y_cpu = center_y.detach().cpu()
@@ -529,6 +563,9 @@ def _decode_single_image_vectorized(
                 "class_id": class_id,
                 "class_name": class_name,
                 "score": float(scores_cpu[i].item()),
+                "class_score": float(class_scores_cpu[i].item()),
+                "quality_score": float(quality_scores_cpu[i].item()),
+                "score_mode": effective_score_mode,
                 "bbox_2d": [
                     float(bbox[0]),
                     float(bbox[1]),
@@ -572,6 +609,8 @@ def decode_mobile_adas3d_outputs(
     nms_iou_threshold: float = 0.5,
     P2: Optional[Any] = None,
     location_source: str = "loc_xy",
+    score_mode: str = "class",
+    quality_score_power: float = 1.0,
 ) -> List[List[Dict[str, Any]]]:
     """
     Decode MobileADAS3D raw output tensors into per-image prediction dictionaries.
@@ -617,6 +656,11 @@ def decode_mobile_adas3d_outputs(
             "location_source must be 'loc_xy' or 'projected_center', "
             f"got {location_source!r}"
         )
+    if score_mode not in ("class", "class_quality"):
+        raise ValueError(
+            "score_mode must be 'class' or 'class_quality', "
+            f"got {score_mode!r}"
+        )
 
     cls_logits = outputs["cls_logits"]
     batch_size = cls_logits.shape[0]
@@ -652,6 +696,8 @@ def decode_mobile_adas3d_outputs(
             nms_iou_threshold=nms_iou_threshold,
             P2=p2_for_image,
             location_source=location_source,
+            score_mode=score_mode,
+            quality_score_power=quality_score_power,
         )
 
         batch_predictions.append(preds)

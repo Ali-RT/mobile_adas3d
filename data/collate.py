@@ -46,6 +46,7 @@ def mobile_adas3d_collate_fn(
     class_mean_dims: Dict[str, List[float]],
     center_sampling_radius: int = 1,
     class_weights: Optional[Dict[str, float]] = None,
+    quality_center_sigma: float = 1.0,
 ) -> Dict[str, Any]:
     images = []
     targets = []
@@ -70,6 +71,7 @@ def mobile_adas3d_collate_fn(
             center_sampling_radius=center_sampling_radius,
             class_weights=class_weights,
             P2=sample.get("P2"),
+            quality_center_sigma=quality_center_sigma,
         )
 
         images.append(image)
