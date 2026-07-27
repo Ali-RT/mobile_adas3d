@@ -596,7 +596,8 @@ v2_calibrated_geometry_quality:
   config: configs/kitti_mnv4_calibrated_geometry_v2.yaml
   policy: no early stopping, save checkpoints every 5 epochs
   completed_run_id: 20260721_142002_mnv4_v2_calibrated_geometry_quality
-  current_baseline_checkpoint: latest.pt
+  car_focused_checkpoint: epoch_040.pt
+  balanced_all_class_checkpoint: latest.pt / epoch_080.pt
 ```
 
 ### 2026-07-21 modeling handoff: calibrated geometry v2
@@ -638,6 +639,44 @@ latest.pt matched 3D diagnostics:
   ALL yaw_mae:         34.05deg
   ALL corner2d_mae:    33.2px
 ```
+
+The full checkpoint AP sweep then showed that the best checkpoint depends on
+the selection objective:
+
+```text
+checkpoint_ap_sweep_val:
+  best Car 3D moderate:   epoch_040.pt = 3.02
+  best mean 3D moderate:  epoch_080.pt/latest.pt = 1.661
+  best Car BEV moderate:  epoch_045.pt = 6.392
+  best mean BEV moderate: epoch_040.pt = 3.155
+
+epoch_040.pt KITTI AP_R40:
+  Car BEV moderate:        6.33
+  Car 3D moderate:         3.02
+  Pedestrian 3D moderate:  1.26
+  Cyclist 3D moderate:     0.58
+
+epoch_040.pt matched 3D diagnostics:
+  ALL depth_mae:       1.798m
+  ALL loc_xyz_mae:     (0.508, 0.146, 1.798)m
+  ALL center3d_mae:    1.959m
+  ALL corner3d_mae:    2.330m
+  ALL yaw_mae:         34.23deg
+  ALL corner2d_mae:    33.3px
+  Car yaw_mae:         30.72deg
+  Pedestrian yaw_mae:  63.64deg
+  Cyclist yaw_mae:     46.07deg
+
+epoch_080.pt/latest.pt KITTI AP_R40:
+  Car BEV moderate:        6.30
+  Car 3D moderate:         2.87
+  Pedestrian 3D moderate:  1.07
+  Cyclist 3D moderate:     1.04
+```
+
+Use `epoch_040.pt` when optimizing/reporting Car-focused KITTI AP. Use
+`epoch_080.pt`/`latest.pt` when optimizing balanced all-class 3D moderate AP,
+because it preserves much stronger Cyclist AP.
 
 Compared with v1 latest, v2 substantially reduced X/Y localization error,
 center/corner error, and projected-corner error. Yaw remains the next major

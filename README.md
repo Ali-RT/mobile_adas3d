@@ -71,6 +71,10 @@ The sweep writes `checkpoint_ap_summary.csv`,
 `checkpoint_ap_metrics_long.csv`, and `checkpoint_ap_summary.json`, and reuses
 completed per-checkpoint evaluations after interruptions.
 
+For run `20260721_142002_mnv4_v2_calibrated_geometry_quality`, the sweep found
+`epoch_040.pt` best for Car 3D moderate AP_R40 (`3.02`) and
+`epoch_080.pt`/`latest.pt` best for mean all-class 3D moderate AP_R40 (`1.661`).
+
 The Colab staging cell accepts Drive folders named `training/image_02` and
 `training/label_02`, then stages them into the canonical `image_2` and
 `label_2` names expected by the training loader.
