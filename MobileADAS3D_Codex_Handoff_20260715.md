@@ -781,6 +781,50 @@ the checked-in inference default neutralizes it with
 `quality_score_power: 0.0`. Do not select `best.pt` by validation loss for
 deployment; use `epoch_065.pt` for this v3 run.
 
+### 2026-07-28 modeling handoff: angular yaw v4
+
+The v3 selected checkpoint has low median yaw error but a very large tail:
+overall yaw MAE is `32.54` degrees while p50 is only `5.54` degrees and p90 is
+`152.34` degrees. Car shows the same pattern (`29.20` mean, `4.64` p50,
+`149.93` p90). This tail is consistent with front/back orientation flips
+dominating the mean and should be confirmed with the axis-aware yaw diagnostic.
+
+`mnv4_v4_angular_yaw` is a controlled response:
+
+- Preserve the two-channel `[sin(yaw), cos(yaw)]` output, decoder, export
+  contract, and projected-center geometry.
+- Retain the existing normalized smooth-L1 yaw loss.
+- Add `yaw_cosine_weight: 1.0`. Cosine distance is zero for aligned yaw, one
+  at 90 degrees, and two for a 180-degree front/back flip.
+- Remove the quality head from this fresh experiment and use class-only
+  scoring, because every positive quality power reduced Car AP in v3.
+- Keep all other optimization, target, loss, scheduler, and checkpoint
+  settings aligned with v3 so the yaw change remains measurable.
+
+Fresh-run identifiers:
+
+```text
+EXPERIMENT_ID = mnv4_v4_angular_yaw
+CONFIG = configs/kitti_mnv4_angular_yaw_v4.yaml
+RUN_NAME = mnv4_v4_angular_yaw
+```
+
+Evaluate every saved checkpoint with the canonical full Chen validation split.
+In addition to AP_R40, run `evaluate_3d_metrics.py` and
+`evaluate_yaw_diagnostics.py` for the selected checkpoint. The v4 success
+criteria are:
+
+```text
+Car 3D moderate AP_R40 > 3.107
+mean all-class 3D moderate AP_R40 > 1.974
+overall yaw p90 < 152.34 degrees
+Car yaw p90 < 149.93 degrees
+```
+
+Do not resume a v3 checkpoint into v4: the v4 model intentionally removes the
+quality head, and the new loss changes the training objective. Start a fresh
+run with the v4 run name.
+
 The Drive dataset may use either canonical KITTI object-folder names
 `training/image_2` and `training/label_2` or raw aliases `training/image_02`
 and `training/label_02`. The notebook stages either form into canonical

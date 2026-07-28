@@ -91,6 +91,26 @@ def masked_weighted_l1_loss(
     return numerator / denominator
 
 
+def masked_weighted_yaw_cosine_loss(
+    pred: torch.Tensor,
+    target: torch.Tensor,
+    valid_mask: torch.Tensor,
+    loss_weight: Optional[torch.Tensor] = None,
+) -> torch.Tensor:
+    """Angular loss for normalized ``[sin(yaw), cos(yaw)]`` vectors."""
+    pred_norm = F.normalize(pred, dim=1, eps=1e-6)
+    target_norm = F.normalize(target, dim=1, eps=1e-6)
+    loss = 1.0 - (pred_norm * target_norm).sum(dim=1, keepdim=True)
+    mask = valid_mask
+
+    if loss_weight is not None:
+        mask = mask * loss_weight
+
+    numerator = (loss * mask).sum()
+    denominator = torch.clamp(mask.sum(), min=1.0)
+    return numerator / denominator
+
+
 class MobileADAS3DLoss(nn.Module):
     def __init__(
         self,
@@ -104,6 +124,7 @@ class MobileADAS3DLoss(nn.Module):
         depth_uncertainty_weight: float = 0.0,
         dim_weight: float = 1.0,
         yaw_weight: float = 1.0,
+        yaw_cosine_weight: float = 0.0,
         offset_weight: float = 0.5,
         loc_xy_weight: float = 1.0,
         projected_center_weight: float = 0.0,
@@ -122,6 +143,7 @@ class MobileADAS3DLoss(nn.Module):
         self.depth_uncertainty_weight = depth_uncertainty_weight
         self.dim_weight = dim_weight
         self.yaw_weight = yaw_weight
+        self.yaw_cosine_weight = yaw_cosine_weight
         self.offset_weight = offset_weight
         self.loc_xy_weight = loc_xy_weight
         self.projected_center_weight = projected_center_weight
@@ -280,6 +302,13 @@ class MobileADAS3DLoss(nn.Module):
             beta=1.0,
         )
 
+        yaw_cosine_loss = masked_weighted_yaw_cosine_loss(
+            pred=yaw_pred,
+            target=yaw_target,
+            valid_mask=valid_mask,
+            loss_weight=loss_weight_target,
+        )
+
         offset_loss = masked_weighted_smooth_l1_loss(
             pred=offset_pred,
             target=offset_target,
@@ -354,6 +383,7 @@ class MobileADAS3DLoss(nn.Module):
             + self.depth_uncertainty_weight * depth_uncertainty_loss
             + self.dim_weight * dim_loss
             + self.yaw_weight * yaw_loss
+            + self.yaw_cosine_weight * yaw_cosine_loss
             + self.offset_weight * offset_loss
             + self.loc_xy_weight * loc_xy_loss
             + self.projected_center_weight * projected_center_loss
@@ -369,6 +399,7 @@ class MobileADAS3DLoss(nn.Module):
             "depth_uncertainty_loss": depth_uncertainty_loss,
             "dim_loss": dim_loss,
             "yaw_loss": yaw_loss,
+            "yaw_cosine_loss": yaw_cosine_loss,
             "offset_loss": offset_loss,
             "loc_xy_loss": loc_xy_loss,
             "projected_center_loss": projected_center_loss,

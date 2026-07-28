@@ -1,0 +1,146 @@
+project_name: mobile_adas3d
+
+dataset:
+  name: kitti
+  active_profile: colab_drive
+  profiles:
+    local_mac:
+      root_dir: ./datasets/kitti
+    colab_drive:
+      root_dir: /content/drive/MyDrive/datasets/kitti
+  image_dir: training/image_2
+  label_dir: training/label_2
+  calib_dir: training/calib
+  classes: [Car, Pedestrian, Cyclist]
+  splits:
+    protocol: chen_3712_3769
+    split_dir: ./data/splits/kitti_chen
+    profile_split_dirs:
+      colab_drive: /content/drive/MyDrive/mobile_adas3d_splits/kitti_chen
+    train_file: train.txt
+    val_file: val.txt
+    test_file: val.txt
+
+logging:
+  run_name: "mnv4_v4_angular_yaw"
+  use_tensorboard: true
+  save_config_snapshot: true
+
+model:
+  name: "MobileADAS3D"
+  backbone: "mobilenetv4_conv_small.e2400_r224_in1k"
+  pretrained: true
+  normalize_imagenet: true
+  input_height: 384
+  input_width: 1280
+  output_stride: 16
+  neck: "stride16_fpn"
+  box_encoding: "log_ltrb_stride"
+  fpn_channels: 128
+  head_channels: 256
+  use_sparse_depth: false
+  use_projected_center: true
+  use_quality: false
+  location_source: "projected_center"
+  score_mode: "class"
+  heads:
+    cls_logits: true
+    box2d: true
+    log_depth: true
+    dim: true
+    yaw: true
+    center_offset: true
+    depth_uncertainty: true
+    loc_xy: true
+    projected_center_offset: true
+    quality: false
+
+targets:
+  center_sampling:
+    enabled: true
+    radius: 1
+  box_encoding: "log_ltrb_stride"
+  depth_encoding: "log_z"
+  location_encoding: "projected_center_with_depth"
+  dim_encoding: "log_class_ratio"
+  yaw_encoding: "sin_cos"
+  class_mean_dims:
+    Car: [1.50, 1.60, 3.90]
+    Pedestrian: [1.70, 0.60, 0.80]
+    Cyclist: [1.70, 0.60, 1.76]
+
+loss:
+  cls_weight: 1.0
+  box2d_weight: 2.0
+  depth_weight: 1.0
+  loc_xy_weight: 0.2
+  projected_center_weight: 2.0
+  quality_weight: 0.0
+  dim_weight: 1.0
+  yaw_weight: 2.0
+  # Cosine distance operates directly on the angular separation. A 180-degree
+  # front/back flip receives the maximum loss of 2.0.
+  yaw_cosine_weight: 1.0
+  offset_weight: 0.5
+  depth_uncertainty_weight: 0.0
+  corner3d_weight: 0.5
+  class_weights:
+    Car: 1.0
+    Pedestrian: 2.5
+    Cyclist: 3.0
+
+training:
+  seed: 42
+  batch_size: 4
+  gradient_accumulation_steps: 2
+  num_workers: 2
+  learning_rate: 0.0001
+  weight_decay: 0.0001
+  epochs: 80
+  device: "auto"
+  log_interval: 20
+  save_interval: 5
+  use_amp: true
+  gradient_clip_norm: 5.0
+
+scheduler:
+  name: ReduceLROnPlateau
+  enabled: true
+  monitor_metric: val_total_loss
+  mode: min
+  factor: 0.5
+  patience: 4
+  threshold: 0.0005
+  threshold_mode: rel
+  cooldown: 1
+  min_lr: 0.000001
+
+early_stopping:
+  enabled: false
+  monitor_metric: val_total_loss
+  mode: min
+  patience: 999
+  min_delta: 0.0005
+  start_epoch: 999
+
+validation:
+  enabled: true
+  batch_size: 8
+  num_workers: 2
+  interval_epochs: 1
+  monitor_metric: val_total_loss
+  mode: min
+
+outputs:
+  output_dir: ./outputs/mnv4_conv_small_baseline
+  profile_output_dirs:
+    local_mac: ./outputs/mnv4_conv_small_baseline
+    colab_drive: /content/drive/MyDrive/mobile_adas3d_outputs/mnv4_conv_small_baseline
+
+inference:
+  score_threshold: 0.25
+  topk: 50
+  eval_topk: 300
+  nms_iou_threshold: 0.5
+  score_mode: "class"
+  quality_score_power: 0.0

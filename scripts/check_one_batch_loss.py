@@ -48,6 +48,7 @@ def build_criterion(config: Dict[str, Any]) -> MobileADAS3DLoss:
         depth_uncertainty_weight=float(loss_cfg.get("depth_uncertainty_weight", 0.0)),
         dim_weight=float(loss_cfg.get("dim_weight", 1.0)),
         yaw_weight=float(loss_cfg.get("yaw_weight", 1.0)),
+        yaw_cosine_weight=float(loss_cfg.get("yaw_cosine_weight", 0.0)),
         offset_weight=float(loss_cfg.get("offset_weight", 0.5)),
         loc_xy_weight=float(loss_cfg.get("loc_xy_weight", 1.0)),
         projected_center_weight=float(loss_cfg.get("projected_center_weight", 0.0)),

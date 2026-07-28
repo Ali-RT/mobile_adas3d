@@ -59,6 +59,13 @@ and checkpoint for reproducibility.
 Only results whose `kitti_r40_summary.json` contains `complete_split: true` are
 reportable.
 
+The next controlled experiment is
+[`configs/kitti_mnv4_angular_yaw_v4.yaml`](configs/kitti_mnv4_angular_yaw_v4.yaml).
+Its run name is `mnv4_v4_angular_yaw`. It preserves the deployed two-channel
+`[sin(yaw), cos(yaw)]` contract, adds a cosine angular loss to emphasize
+front/back errors, and returns to class-only scoring without the ineffective
+quality head.
+
 After a run finishes, sweep AP across saved checkpoints instead of trusting
 `best.pt` by validation loss:
 

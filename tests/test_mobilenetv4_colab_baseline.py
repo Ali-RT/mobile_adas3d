@@ -6,6 +6,7 @@ from pathlib import Path
 import torch
 
 from data.target_builder import build_targets_for_sample
+from losses.mobile_adas3d_loss import masked_weighted_yaw_cosine_loss
 from models.build import build_model
 from models.decode import decode_mobile_adas3d_outputs
 from scripts.check_training_ready import parse_args as parse_training_ready_args
@@ -24,6 +25,7 @@ CONFIG_PATH = PROJECT_ROOT / "configs" / "kitti_mnv4_conv_small_baseline.yaml"
 AP_V1_CONFIG_PATH = PROJECT_ROOT / "configs" / "kitti_mnv4_conv_small_ap_v1.yaml"
 V2_CONFIG_PATH = PROJECT_ROOT / "configs" / "kitti_mnv4_calibrated_geometry_v2.yaml"
 V3_CONFIG_PATH = PROJECT_ROOT / "configs" / "kitti_mnv4_quality_scoring_v3.yaml"
+V4_CONFIG_PATH = PROJECT_ROOT / "configs" / "kitti_mnv4_angular_yaw_v4.yaml"
 NOTEBOOK_PATH = (
     PROJECT_ROOT
     / "notebooks"
@@ -114,8 +116,8 @@ class MobileNetV4BaselineTests(unittest.TestCase):
         self.assertIn("load_checkpoint_summary", source)
         self.assertIn("already reached epoch", source)
         self.assertIn("mnv4_v2_calibrated_geometry_quality", source)
-        self.assertIn("mnv4_v3_quality_scoring", source)
-        self.assertIn("configs/kitti_mnv4_quality_scoring_v3.yaml", source)
+        self.assertIn("mnv4_v4_angular_yaw", source)
+        self.assertIn("configs/kitti_mnv4_angular_yaw_v4.yaml", source)
         self.assertIn("sweep_kitti_r40_checkpoints.py", source)
         self.assertIn("checkpoint_ap_summary.csv", source)
         self.assertIn("kitti_r40_latest", source)
@@ -170,6 +172,31 @@ class MobileNetV4BaselineTests(unittest.TestCase):
         self.assertIn("projected_center_offset", outputs)
         self.assertIn("quality", outputs)
         self.assertEqual(tuple(outputs["quality"].shape), (1, 1, 24, 80))
+
+    def test_v4_config_uses_angular_yaw_loss_and_class_scoring(self):
+        config = load_config(str(V4_CONFIG_PATH))
+
+        self.assertEqual(config["logging"]["run_name"], "mnv4_v4_angular_yaw")
+        self.assertEqual(config["model"]["location_source"], "projected_center")
+        self.assertFalse(config["model"]["use_quality"])
+        self.assertEqual(config["inference"]["score_mode"], "class")
+        self.assertGreater(config["loss"]["yaw_cosine_weight"], 0.0)
+
+    def test_yaw_cosine_loss_penalizes_front_back_flip(self):
+        target = torch.tensor([[[[0.0]], [[1.0]]]])
+        mask = torch.ones(1, 1, 1, 1)
+
+        aligned = masked_weighted_yaw_cosine_loss(target, target, mask)
+        orthogonal = masked_weighted_yaw_cosine_loss(
+            torch.tensor([[[[1.0]], [[0.0]]]]),
+            target,
+            mask,
+        )
+        flipped = masked_weighted_yaw_cosine_loss(-target, target, mask)
+
+        self.assertAlmostEqual(float(aligned), 0.0, places=6)
+        self.assertAlmostEqual(float(orthogonal), 1.0, places=6)
+        self.assertAlmostEqual(float(flipped), 2.0, places=6)
 
     def test_target_builder_adds_projected_center_offset_target(self):
         P2 = [
