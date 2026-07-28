@@ -142,4 +142,6 @@ inference:
   eval_topk: 300
   nms_iou_threshold: 0.5
   score_mode: "class_quality"
-  quality_score_power: 1.0
+  # The full validation sweep selected class-only ranking. Keep the quality
+  # head for the trained checkpoint, but neutralize it during decoding.
+  quality_score_power: 0.0

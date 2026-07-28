@@ -52,9 +52,10 @@ while keeping the legacy `loc_xy` head as a weak auxiliary/fallback path.
 The active v3 configuration is
 [`configs/kitti_mnv4_quality_scoring_v3.yaml`](configs/kitti_mnv4_quality_scoring_v3.yaml).
 Its run name is `mnv4_v3_quality_scoring`. It keeps v2 geometry and adds an
-optional `quality` head. At decode time, v3 ranks detections with
-`class_prob * quality_prob` to test whether AP improves when score ranking is
-geometry/center-quality aware.
+optional `quality` head. The completed validation sweep found that multiplying
+by the learned quality score reduced Car AP, so the selected inference default
+uses `quality_score_power: 0.0` (class-only ranking) while retaining the head
+and checkpoint for reproducibility.
 Only results whose `kitti_r40_summary.json` contains `complete_split: true` are
 reportable.
 

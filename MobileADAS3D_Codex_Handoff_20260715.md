@@ -729,6 +729,58 @@ and `latest.pt`; the key selection numbers are Car 3D moderate AP_R40 and mean
 3D moderate AP_R40. Keep reporting all-class 3D center/corner MAE, Car yaw MAE,
 and Car depth MAE for the selected AP checkpoint.
 
+#### 2026-07-28 v3 result and selected checkpoint
+
+The completed run is:
+
+```text
+20260727_184204_mnv4_v3_quality_scoring
+```
+
+A full validation sweep compared `quality_score_power` values `0.0`, `0.25`,
+`0.5`, `0.75`, and `1.0` for `epoch_045.pt`, `epoch_065.pt`, and
+`latest.pt`. The selected candidate is:
+
+```text
+checkpoint: epoch_065.pt
+score_mode: class_quality
+quality_score_power: 0.0
+Car 3D AP_R40 easy/moderate/hard: 5.229 / 3.107 / 2.397
+Cyclist 3D AP_R40 easy/moderate/hard: 3.955 / 1.795 / 1.569
+Pedestrian 3D AP_R40 easy/moderate/hard: 1.428 / 1.020 / 0.744
+Car BEV AP_R40 easy/moderate/hard: 9.281 / 5.986 / 5.027
+mean all-class 3D moderate AP_R40: 1.974
+```
+
+The selected checkpoint's matched-object geometry summary is:
+
+```text
+matched: 14566
+2D IoU mean: 0.766
+depth MAE: 1.870 m
+depth relative error: 0.083
+yaw MAE: 32.54 degrees
+dimension MAE: 0.174 m
+projected-corner 2D MAE: 32.81 px
+
+Car:
+  matched: 12780
+  2D IoU mean: 0.778
+  depth MAE: 1.898 m
+  depth relative error: 0.079
+  yaw MAE: 29.20 degrees
+  dimension MAE: 0.180 m
+```
+
+This is a small Car 3D moderate improvement over the v2 `epoch_040.pt`
+candidate (`3.107` versus `3.020`) and improves the balanced moderate 3D
+mean. Geometry remains broadly stable, with better overall and Car yaw than
+the v2 reference. However, every positive quality-score power reduced Car 3D
+AP in this sweep. Therefore the quality head remains in the trained model, but
+the checked-in inference default neutralizes it with
+`quality_score_power: 0.0`. Do not select `best.pt` by validation loss for
+deployment; use `epoch_065.pt` for this v3 run.
+
 The Drive dataset may use either canonical KITTI object-folder names
 `training/image_2` and `training/label_2` or raw aliases `training/image_02`
 and `training/label_02`. The notebook stages either form into canonical

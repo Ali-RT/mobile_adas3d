@@ -159,6 +159,7 @@ class MobileNetV4BaselineTests(unittest.TestCase):
         self.assertEqual(config["logging"]["run_name"], "mnv4_v3_quality_scoring")
         self.assertEqual(config["model"]["location_source"], "projected_center")
         self.assertEqual(config["model"]["score_mode"], "class_quality")
+        self.assertEqual(config["inference"]["quality_score_power"], 0.0)
         self.assertTrue(config["model"]["heads"]["quality"])
         self.assertGreater(config["loss"]["quality_weight"], 0.0)
 
