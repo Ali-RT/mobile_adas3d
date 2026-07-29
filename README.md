@@ -66,6 +66,14 @@ Its run name is `mnv4_v4_angular_yaw`. It preserves the deployed two-channel
 front/back errors, and returns to class-only scoring without the ineffective
 quality head.
 
+The active fresh-run experiment is
+[`configs/kitti_mnv4_axis_direction_v5.yaml`](configs/kitti_mnv4_axis_direction_v5.yaml).
+V4 improved balanced AP and BEV but worsened the yaw tail. Axis-aware
+diagnostics showed that front/back selection is the dominant failure, so v5
+regresses a double-angle orientation axis and separately classifies direction.
+The model still emits the same final two-channel `yaw` tensor used by export
+and the iPhone decoder.
+
 After a run finishes, sweep AP across saved checkpoints instead of trusting
 `best.pt` by validation loss:
 

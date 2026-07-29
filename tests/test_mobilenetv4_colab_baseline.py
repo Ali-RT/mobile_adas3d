@@ -5,10 +5,11 @@ from pathlib import Path
 
 import torch
 
-from data.target_builder import build_targets_for_sample
+from data.target_builder import build_targets_for_sample, encode_yaw_axis_direction
 from losses.mobile_adas3d_loss import masked_weighted_yaw_cosine_loss
 from models.build import build_model
 from models.decode import decode_mobile_adas3d_outputs
+from models.mobile_adas3d import decode_yaw_axis_direction
 from scripts.check_training_ready import parse_args as parse_training_ready_args
 from scripts.stage_colab_kitti import (
     MANIFEST_NAME,
@@ -26,6 +27,7 @@ AP_V1_CONFIG_PATH = PROJECT_ROOT / "configs" / "kitti_mnv4_conv_small_ap_v1.yaml
 V2_CONFIG_PATH = PROJECT_ROOT / "configs" / "kitti_mnv4_calibrated_geometry_v2.yaml"
 V3_CONFIG_PATH = PROJECT_ROOT / "configs" / "kitti_mnv4_quality_scoring_v3.yaml"
 V4_CONFIG_PATH = PROJECT_ROOT / "configs" / "kitti_mnv4_angular_yaw_v4.yaml"
+V5_CONFIG_PATH = PROJECT_ROOT / "configs" / "kitti_mnv4_axis_direction_v5.yaml"
 NOTEBOOK_PATH = (
     PROJECT_ROOT
     / "notebooks"
@@ -116,8 +118,8 @@ class MobileNetV4BaselineTests(unittest.TestCase):
         self.assertIn("load_checkpoint_summary", source)
         self.assertIn("already reached epoch", source)
         self.assertIn("mnv4_v2_calibrated_geometry_quality", source)
-        self.assertIn("mnv4_v4_angular_yaw", source)
-        self.assertIn("configs/kitti_mnv4_angular_yaw_v4.yaml", source)
+        self.assertIn("mnv4_v5_axis_direction", source)
+        self.assertIn("configs/kitti_mnv4_axis_direction_v5.yaml", source)
         self.assertIn("sweep_kitti_r40_checkpoints.py", source)
         self.assertIn("checkpoint_ap_summary.csv", source)
         self.assertIn("kitti_r40_latest", source)
@@ -198,6 +200,43 @@ class MobileNetV4BaselineTests(unittest.TestCase):
         self.assertAlmostEqual(float(orthogonal), 1.0, places=6)
         self.assertAlmostEqual(float(flipped), 2.0, places=6)
 
+    def test_v5_axis_direction_preserves_exported_yaw_contract(self):
+        config = load_config(str(V5_CONFIG_PATH))
+        config["model"]["pretrained"] = False
+        config["model"]["fpn_channels"] = 32
+        config["model"]["head_channels"] = 32
+
+        self.assertEqual(config["logging"]["run_name"], "mnv4_v5_axis_direction")
+        self.assertTrue(config["model"]["use_yaw_axis_direction"])
+        self.assertGreater(config["loss"]["yaw_direction_weight"], 0.0)
+
+        model = build_model(config).eval()
+        with torch.inference_mode():
+            outputs = model(torch.rand(1, 3, 384, 1280))
+
+        self.assertEqual(tuple(outputs["yaw"].shape), (1, 2, 24, 80))
+        self.assertEqual(tuple(outputs["yaw_axis"].shape), (1, 2, 24, 80))
+        self.assertEqual(tuple(outputs["yaw_direction"].shape), (1, 1, 24, 80))
+
+    def test_yaw_axis_direction_separates_front_and_back(self):
+        front_axis, front_direction = encode_yaw_axis_direction(0.0)
+        back_axis, back_direction = encode_yaw_axis_direction(torch.pi)
+
+        self.assertAlmostEqual(front_axis[0], back_axis[0], places=6)
+        self.assertAlmostEqual(front_axis[1], back_axis[1], places=6)
+        self.assertEqual(front_direction, 0.0)
+        self.assertEqual(back_direction, 1.0)
+
+        axis_tensor = torch.tensor([[[[0.0]], [[1.0]]]])
+        reconstructed = decode_yaw_axis_direction(
+            axis_tensor.repeat(2, 1, 1, 1),
+            torch.tensor([[[[-1.0]]], [[[1.0]]]]),
+        )
+        self.assertAlmostEqual(float(reconstructed[0, 0, 0, 0]), 0.0, places=6)
+        self.assertAlmostEqual(float(reconstructed[0, 1, 0, 0]), 1.0, places=6)
+        self.assertAlmostEqual(float(reconstructed[1, 0, 0, 0]), 0.0, places=6)
+        self.assertAlmostEqual(float(reconstructed[1, 1, 0, 0]), -1.0, places=6)
+
     def test_target_builder_adds_projected_center_offset_target(self):
         P2 = [
             [1000.0, 0.0, 0.0, 0.0],
@@ -228,6 +267,8 @@ class MobileNetV4BaselineTests(unittest.TestCase):
         self.assertIn("projected_center_offset_target", targets)
         self.assertIn("projected_center_valid_mask", targets)
         self.assertIn("quality_target", targets)
+        self.assertIn("yaw_axis_target", targets)
+        self.assertIn("yaw_direction_target", targets)
         self.assertEqual(float(targets["valid_mask"][0, 18, 12]), 1.0)
         self.assertEqual(float(targets["projected_center_valid_mask"][0, 18, 12]), 1.0)
         self.assertGreater(float(targets["quality_target"][0, 18, 12]), 0.9)

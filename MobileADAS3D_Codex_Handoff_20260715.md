@@ -825,6 +825,61 @@ Do not resume a v3 checkpoint into v4: the v4 model intentionally removes the
 quality head, and the new loss changes the training objective. Start a fresh
 run with the v4 run name.
 
+### 2026-07-29 modeling handoff: axis plus direction v5
+
+V4 improved balanced and BEV AP but did not improve Car 3D AP or yaw:
+
+```text
+selected balanced checkpoint: epoch_050.pt
+Car 3D moderate AP_R40: 2.885
+mean all-class 3D moderate AP_R40: 2.055
+Car BEV moderate AP_R40: 6.235
+mean all-class BEV moderate AP_R40: 3.497
+
+overall yaw mean/p50/p90: 35.26 / 5.93 / 163.20 degrees
+Car yaw mean/p50/p90: 32.26 / 5.01 / 164.22 degrees
+overall axis-aware yaw mean/p50/p90: 12.70 / 4.78 / 37.95 degrees
+Car axis-aware yaw mean/p50/p90: 10.65 / 4.18 / 28.95 degrees
+```
+
+The large gap between standard and axis-aware yaw error confirms that the
+orientation axis is substantially better than the final front/back choice.
+V5 therefore replaces direct full-yaw supervision with:
+
+1. `yaw_axis`: `[sin(2*yaw), cos(2*yaw)]`, invariant under a 180-degree flip.
+2. `yaw_direction`: a binary logit selecting one of the two directions along
+   that axis.
+3. `yaw`: the reconstructed `[sin(yaw), cos(yaw)]` tensor. This remains the
+   exported output, preserving the existing Core ML/iPhone decoder contract.
+
+The v5 model exposes `yaw_axis` and `yaw_direction` only as auxiliary training
+outputs. The fixed export wrapper continues to select the original output
+list, including the reconstructed two-channel `yaw`.
+
+Fresh-run identifiers:
+
+```text
+EXPERIMENT_ID = mnv4_v5_axis_direction
+CONFIG = configs/kitti_mnv4_axis_direction_v5.yaml
+RUN_NAME = mnv4_v5_axis_direction
+```
+
+Start v5 from pretrained MobileNetV4 weights, not from a v3/v4 detector
+checkpoint. Its yaw heads and objective are structurally different. Training
+logs include `yaw`, `yaw_cos`, and `yaw_dir`. Sweep every five-epoch
+checkpoint, then run both geometry and yaw diagnostics on the best balanced
+and best Car checkpoints.
+
+V5 success criteria:
+
+```text
+Car 3D moderate AP_R40 > 3.107
+mean all-class 3D moderate AP_R40 > 2.055
+overall standard yaw p90 < 152.34 degrees
+Car standard yaw p90 < 149.93 degrees
+axis-aware yaw must not regress materially from v4
+```
+
 The Drive dataset may use either canonical KITTI object-folder names
 `training/image_2` and `training/label_2` or raw aliases `training/image_02`
 and `training/label_02`. The notebook stages either form into canonical

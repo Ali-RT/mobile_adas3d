@@ -26,6 +26,10 @@ def build_model(config: Dict[str, Any]) -> MobileADAS3D:
             model_cfg.get("use_quality", False)
             or model_cfg.get("heads", {}).get("quality", False)
         ),
+        use_yaw_axis_direction=bool(
+            model_cfg.get("use_yaw_axis_direction", False)
+            or model_cfg.get("heads", {}).get("yaw_direction", False)
+        ),
     )
 
     return model

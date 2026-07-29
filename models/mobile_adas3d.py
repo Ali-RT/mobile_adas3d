@@ -27,6 +27,19 @@ class ConvHead(nn.Module):
         return self.net(x)
 
 
+def decode_yaw_axis_direction(
+    yaw_axis: torch.Tensor,
+    yaw_direction: torch.Tensor,
+) -> torch.Tensor:
+    """Reconstruct ``[sin(yaw), cos(yaw)]`` from axis and direction logits."""
+    axis_angle = 0.5 * torch.atan2(yaw_axis[:, 0], yaw_axis[:, 1])
+    direction_offset = (
+        (yaw_direction[:, 0] >= 0.0).to(axis_angle.dtype) * torch.pi
+    )
+    yaw_angle = axis_angle + direction_offset
+    return torch.stack([torch.sin(yaw_angle), torch.cos(yaw_angle)], dim=1)
+
+
 class MobileNetV3SmallPyramid(nn.Module):
     def __init__(self, pretrained: bool, input_height: int, input_width: int) -> None:
         super().__init__()
@@ -124,6 +137,7 @@ class MobileADAS3D(nn.Module):
         head_channels: int = 256,
         use_projected_center: bool = False,
         use_quality: bool = False,
+        use_yaw_axis_direction: bool = False,
     ) -> None:
         super().__init__()
 
@@ -151,6 +165,7 @@ class MobileADAS3D(nn.Module):
         self.normalize_imagenet = normalize_imagenet
         self.use_projected_center = use_projected_center
         self.use_quality = use_quality
+        self.use_yaw_axis_direction = use_yaw_axis_direction
 
         if normalize_imagenet:
             mean = [0.485, 0.456, 0.406]
@@ -195,7 +210,11 @@ class MobileADAS3D(nn.Module):
         self.box2d_head = ConvHead(head_channels, head_channels, 4)
         self.depth_head = ConvHead(head_channels, head_channels, 1)
         self.dim_head = ConvHead(head_channels, head_channels, 3)
-        self.yaw_head = ConvHead(head_channels, head_channels, 2)
+        if self.use_yaw_axis_direction:
+            self.yaw_axis_head = ConvHead(head_channels, head_channels, 2)
+            self.yaw_direction_head = ConvHead(head_channels, head_channels, 1)
+        else:
+            self.yaw_head = ConvHead(head_channels, head_channels, 2)
         self.center_offset_head = ConvHead(head_channels, head_channels, 2)
         self.depth_uncertainty_head = ConvHead(head_channels, head_channels, 1)
         self.loc_xy_head = ConvHead(head_channels, head_channels, 2)
@@ -212,12 +231,19 @@ class MobileADAS3D(nn.Module):
         p32 = F.interpolate(p32, size=p16.shape[-2:], mode="bilinear", align_corners=False)
         fused = self.fusion(torch.cat([p16, p32], dim=1))
 
+        if self.use_yaw_axis_direction:
+            yaw_axis = self.yaw_axis_head(fused)
+            yaw_direction = self.yaw_direction_head(fused)
+            yaw = decode_yaw_axis_direction(yaw_axis, yaw_direction)
+        else:
+            yaw = self.yaw_head(fused)
+
         outputs = {
             "cls_logits": self.cls_head(fused),
             "box2d": F.softplus(self.box2d_head(fused)),
             "log_depth": self.depth_head(fused),
             "dim": self.dim_head(fused),
-            "yaw": self.yaw_head(fused),
+            "yaw": yaw,
             "center_offset": self.center_offset_head(fused),
             "depth_uncertainty": self.depth_uncertainty_head(fused),
             "loc_xy": self.loc_xy_head(fused),
@@ -227,5 +253,8 @@ class MobileADAS3D(nn.Module):
             outputs["projected_center_offset"] = self.projected_center_offset_head(fused)
         if self.use_quality:
             outputs["quality"] = self.quality_head(fused)
+        if self.use_yaw_axis_direction:
+            outputs["yaw_axis"] = yaw_axis
+            outputs["yaw_direction"] = yaw_direction
 
         return outputs

@@ -125,6 +125,7 @@ class MobileADAS3DLoss(nn.Module):
         dim_weight: float = 1.0,
         yaw_weight: float = 1.0,
         yaw_cosine_weight: float = 0.0,
+        yaw_direction_weight: float = 0.0,
         offset_weight: float = 0.5,
         loc_xy_weight: float = 1.0,
         projected_center_weight: float = 0.0,
@@ -144,6 +145,7 @@ class MobileADAS3DLoss(nn.Module):
         self.dim_weight = dim_weight
         self.yaw_weight = yaw_weight
         self.yaw_cosine_weight = yaw_cosine_weight
+        self.yaw_direction_weight = yaw_direction_weight
         self.offset_weight = offset_weight
         self.loc_xy_weight = loc_xy_weight
         self.projected_center_weight = projected_center_weight
@@ -192,6 +194,8 @@ class MobileADAS3DLoss(nn.Module):
         log_depth_pred = outputs["log_depth"]
         dim_pred = outputs["dim"]
         yaw_pred = outputs["yaw"]
+        yaw_axis_pred = outputs.get("yaw_axis")
+        yaw_direction_pred = outputs.get("yaw_direction")
         offset_pred = outputs["center_offset"]
         depth_uncertainty_pred = outputs["depth_uncertainty"]
         loc_xy_pred = outputs["loc_xy"]
@@ -203,6 +207,8 @@ class MobileADAS3DLoss(nn.Module):
         log_depth_target = targets["log_depth_target"]
         dim_target = targets["dim_target"]
         yaw_target = targets["yaw_target"]
+        yaw_axis_target = targets.get("yaw_axis_target")
+        yaw_direction_target = targets.get("yaw_direction_target")
         offset_target = targets["offset_target"]
         loc_xy_target = targets["loc_xy_target"]
         projected_center_target = targets.get("projected_center_offset_target")
@@ -292,22 +298,40 @@ class MobileADAS3DLoss(nn.Module):
             beta=1.0,
         )
 
-        yaw_pred_norm = F.normalize(yaw_pred, dim=1, eps=1e-6)
+        yaw_reg_pred = yaw_axis_pred if yaw_axis_pred is not None else yaw_pred
+        yaw_reg_target = yaw_axis_target if yaw_axis_target is not None and yaw_axis_pred is not None else yaw_target
+        yaw_pred_norm = F.normalize(yaw_reg_pred, dim=1, eps=1e-6)
 
         yaw_loss = masked_weighted_smooth_l1_loss(
             pred=yaw_pred_norm,
-            target=yaw_target,
+            target=yaw_reg_target,
             valid_mask=valid_mask,
             loss_weight=loss_weight_target,
             beta=1.0,
         )
 
         yaw_cosine_loss = masked_weighted_yaw_cosine_loss(
-            pred=yaw_pred,
-            target=yaw_target,
+            pred=yaw_reg_pred,
+            target=yaw_reg_target,
             valid_mask=valid_mask,
             loss_weight=loss_weight_target,
         )
+
+        yaw_direction_loss = torch.zeros(
+            (),
+            device=cls_logits.device,
+            dtype=cls_logits.dtype,
+        )
+        if yaw_direction_pred is not None and yaw_direction_target is not None:
+            direction_raw = F.binary_cross_entropy_with_logits(
+                yaw_direction_pred,
+                yaw_direction_target,
+                reduction="none",
+            )
+            direction_mask = valid_mask * loss_weight_target
+            yaw_direction_loss = (
+                direction_raw * direction_mask
+            ).sum() / direction_mask.sum().clamp(min=1.0)
 
         offset_loss = masked_weighted_smooth_l1_loss(
             pred=offset_pred,
@@ -384,6 +408,7 @@ class MobileADAS3DLoss(nn.Module):
             + self.dim_weight * dim_loss
             + self.yaw_weight * yaw_loss
             + self.yaw_cosine_weight * yaw_cosine_loss
+            + self.yaw_direction_weight * yaw_direction_loss
             + self.offset_weight * offset_loss
             + self.loc_xy_weight * loc_xy_loss
             + self.projected_center_weight * projected_center_loss
@@ -400,6 +425,7 @@ class MobileADAS3DLoss(nn.Module):
             "dim_loss": dim_loss,
             "yaw_loss": yaw_loss,
             "yaw_cosine_loss": yaw_cosine_loss,
+            "yaw_direction_loss": yaw_direction_loss,
             "offset_loss": offset_loss,
             "loc_xy_loss": loc_xy_loss,
             "projected_center_loss": projected_center_loss,

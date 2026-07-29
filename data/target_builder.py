@@ -1,10 +1,19 @@
 from __future__ import annotations
 
+import math
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import torch
 
 from data.geometry import scale_p2_for_resize
+
+
+def encode_yaw_axis_direction(yaw: float) -> Tuple[List[float], float]:
+    """Encode yaw as a 180-degree-invariant double-angle axis plus direction."""
+    axis = [math.sin(2.0 * yaw), math.cos(2.0 * yaw)]
+    canonical_axis_yaw = 0.5 * math.atan2(axis[0], axis[1])
+    direction = 1.0 if math.cos(yaw - canonical_axis_yaw) < 0.0 else 0.0
+    return axis, direction
 
 
 def scale_bbox_2d(
@@ -225,6 +234,8 @@ def build_targets_for_sample(
     location_xyz_target = torch.zeros(3, feature_h, feature_w, dtype=torch.float32)
     dim_target = torch.zeros(3, feature_h, feature_w, dtype=torch.float32)
     yaw_target = torch.zeros(2, feature_h, feature_w, dtype=torch.float32)
+    yaw_axis_target = torch.zeros(2, feature_h, feature_w, dtype=torch.float32)
+    yaw_direction_target = torch.zeros(1, feature_h, feature_w, dtype=torch.float32)
     offset_target = torch.zeros(2, feature_h, feature_w, dtype=torch.float32)
     projected_center_offset_target = torch.zeros(2, feature_h, feature_w, dtype=torch.float32)
     projected_center_valid_mask = torch.zeros(1, feature_h, feature_w, dtype=torch.float32)
@@ -342,6 +353,7 @@ def build_targets_for_sample(
         yaw = float(obj["rotation_y"])
         yaw_sin = torch.sin(torch.tensor(yaw)).item()
         yaw_cos = torch.cos(torch.tensor(yaw)).item()
+        yaw_axis, yaw_direction = encode_yaw_axis_direction(yaw)
 
         sample_class_weight = float(class_weights.get(class_name, 1.0))
 
@@ -386,6 +398,11 @@ def build_targets_for_sample(
                 [yaw_sin, yaw_cos],
                 dtype=torch.float32,
             )
+            yaw_axis_target[:, cell_y, cell_x] = torch.tensor(
+                yaw_axis,
+                dtype=torch.float32,
+            )
+            yaw_direction_target[0, cell_y, cell_x] = yaw_direction
 
             center_offset_values = build_center_offset_target(
                 center_x=center_x,
@@ -429,6 +446,8 @@ def build_targets_for_sample(
         "location_xyz_target": location_xyz_target,
         "dim_target": dim_target,
         "yaw_target": yaw_target,
+        "yaw_axis_target": yaw_axis_target,
+        "yaw_direction_target": yaw_direction_target,
         "offset_target": offset_target,
         "projected_center_offset_target": projected_center_offset_target,
         "projected_center_valid_mask": projected_center_valid_mask,
