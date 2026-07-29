@@ -898,6 +898,50 @@ direction gradients.
 It is safe to resume from the last checkpoint saved before the failed epoch.
 Do not resume from a checkpoint containing non-finite parameters.
 
+### 2026-07-29 transfer-learning pivot: Task 1 teacher gate
+
+V1 through v5 showed that the compact student can learn useful depth,
+projected-center geometry, and orientation axes, but repeatedly training all
+heads from ImageNet initialization is not producing competitive detection AP.
+The next program keeps MobileADAS3D as the deployable student and evaluates a
+pretrained monocular-3D teacher before implementing distillation.
+
+Task 1 is isolated to teacher feasibility:
+
+```text
+notebook: notebooks/MonoDETR_Teacher_Feasibility_Colab.ipynb
+teacher: official MonoDETR
+official source commit: 6994b9f512400b258c6edb75f77423beb9c126f2
+official checkpoint Google Drive ID: 1d8fbAt-CQF-IN8UEHuw3NimmfONhH6iA
+split: Chen val, 3769 images
+evaluated class: Car
+gate: Car 3D moderate AP_R40 >= 15.0
+```
+
+MonoDETR writes standard scored KITTI files. The new
+`scripts/evaluate_kitti_prediction_dir.py` loads those files and uses the same
+local `data.kitti_r40` evaluator as MobileADAS3D. It requires all expected
+split files unless `--allow-missing` is explicitly supplied; incomplete
+results are marked with `complete_split: false`.
+
+The notebook creates a symlinked MonoDETR dataset view rather than copying
+KITTI again, compiles the official deformable-attention CUDA extension,
+downloads the checkpoint once to Drive, runs inference at threshold `0.001`,
+and saves the comparison under:
+
+```text
+/content/drive/MyDrive/mobile_adas3d_outputs/teachers/monodetr/
+  checkpoint_best.pth
+  chen_val_20260729/
+    kitti_r40_metrics.csv
+    kitti_r40_summary.json
+```
+
+Do not implement teacher caching or student distillation unless this gate
+passes. A failure caused by installation, checkpoint loading, split mismatch,
+or incomplete predictions is an infrastructure failure and must be fixed
+before judging the teacher.
+
 The Drive dataset may use either canonical KITTI object-folder names
 `training/image_2` and `training/label_2` or raw aliases `training/image_02`
 and `training/label_02`. The notebook stages either form into canonical

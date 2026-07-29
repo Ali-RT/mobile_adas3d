@@ -74,6 +74,35 @@ regresses a double-angle orientation axis and separately classifies direction.
 The model still emits the same final two-channel `yaw` tensor used by export
 and the iPhone decoder.
 
+## Pretrained teacher feasibility
+
+Before adding distillation to the mobile student, run
+[`notebooks/MonoDETR_Teacher_Feasibility_Colab.ipynb`](notebooks/MonoDETR_Teacher_Feasibility_Colab.ipynb).
+It pins the official MonoDETR source revision, downloads the published
+checkpoint, runs the exact 3,769-image Chen validation split, and evaluates its
+KITTI text predictions with this repository's AP_R40 implementation. The
+transfer-learning gate passes only when `complete_split` is true and Car 3D
+moderate AP_R40 is at least 15%.
+
+External KITTI-format results can also be evaluated directly:
+
+```bash
+python scripts/evaluate_kitti_prediction_dir.py \
+  --config configs/kitti_mnv4_quality_scoring_v3.yaml \
+  --profile colab_drive \
+  --dataset-root /content/kitti \
+  --split-dir /content/drive/MyDrive/mobile_adas3d_splits/kitti_chen \
+  --prediction-dir /path/to/kitti/result/data \
+  --split val \
+  --classes Car \
+  --source-name MonoDETR_official \
+  --output-dir /path/to/evaluation
+```
+
+The evaluator requires one prediction file per split image by default,
+including empty files for frames with no detections. This prevents partial
+teacher inference from being reported as a complete benchmark.
+
 After a run finishes, sweep AP across saved checkpoints instead of trusting
 `best.pt` by validation loss:
 
