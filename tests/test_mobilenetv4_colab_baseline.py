@@ -6,7 +6,10 @@ from pathlib import Path
 import torch
 
 from data.target_builder import build_targets_for_sample, encode_yaw_axis_direction
-from losses.mobile_adas3d_loss import masked_weighted_yaw_cosine_loss
+from losses.mobile_adas3d_loss import (
+    MobileADAS3DLoss,
+    masked_weighted_yaw_cosine_loss,
+)
 from models.build import build_model
 from models.decode import decode_mobile_adas3d_outputs
 from models.mobile_adas3d import decode_yaw_axis_direction
@@ -236,6 +239,61 @@ class MobileNetV4BaselineTests(unittest.TestCase):
         self.assertAlmostEqual(float(reconstructed[0, 1, 0, 0]), 1.0, places=6)
         self.assertAlmostEqual(float(reconstructed[1, 0, 0, 0]), 0.0, places=6)
         self.assertAlmostEqual(float(reconstructed[1, 1, 0, 0]), -1.0, places=6)
+
+    def test_v5_zero_axis_has_finite_corner_loss_backward(self):
+        def leaf(channels, value=0.0):
+            return torch.full(
+                (1, channels, 1, 1),
+                value,
+                dtype=torch.float32,
+                requires_grad=True,
+            )
+
+        yaw_axis = leaf(2)
+        yaw_direction = leaf(1)
+        outputs = {
+            "cls_logits": leaf(1),
+            "box2d": leaf(4, 1.0),
+            "log_depth": leaf(1, 2.0),
+            "dim": leaf(3),
+            "yaw": decode_yaw_axis_direction(yaw_axis, yaw_direction),
+            "yaw_axis": yaw_axis,
+            "yaw_direction": yaw_direction,
+            "center_offset": leaf(2),
+            "depth_uncertainty": leaf(1),
+            "loc_xy": leaf(2),
+        }
+        targets = {
+            "cls_target": torch.ones(1, 1, 1, 1),
+            "box2d_target": torch.ones(1, 4, 1, 1),
+            "log_depth_target": torch.full((1, 1, 1, 1), 2.0),
+            "dim_target": torch.zeros(1, 3, 1, 1),
+            "yaw_target": torch.tensor([[[[0.0]], [[1.0]]]]),
+            "yaw_axis_target": torch.tensor([[[[0.0]], [[1.0]]]]),
+            "yaw_direction_target": torch.zeros(1, 1, 1, 1),
+            "offset_target": torch.zeros(1, 2, 1, 1),
+            "loc_xy_target": torch.zeros(1, 2, 1, 1),
+            "location_xyz_target": torch.tensor([[[[0.0]], [[0.0]], [[7.3891]]]]),
+            "valid_mask": torch.ones(1, 1, 1, 1),
+            "loss_weight_target": torch.ones(1, 1, 1, 1),
+        }
+        criterion = MobileADAS3DLoss(
+            input_height=384,
+            input_width=1280,
+            classes=["Car"],
+            class_mean_dims={"Car": [1.5, 1.6, 3.9]},
+            yaw_weight=2.0,
+            yaw_cosine_weight=1.0,
+            yaw_direction_weight=1.0,
+            corner3d_weight=0.5,
+        )
+
+        losses = criterion(outputs, targets)
+        losses["total_loss"].backward()
+
+        self.assertTrue(torch.isfinite(losses["total_loss"]))
+        self.assertTrue(torch.isfinite(yaw_axis.grad).all())
+        self.assertTrue(torch.isfinite(yaw_direction.grad).all())
 
     def test_target_builder_adds_projected_center_offset_target(self):
         P2 = [

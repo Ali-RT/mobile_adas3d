@@ -880,6 +880,24 @@ Car standard yaw p90 < 149.93 degrees
 axis-aware yaw must not regress materially from v4
 ```
 
+#### V5 early-training NaN fix
+
+The first v5 attempt reached epoch 4 before reporting a non-finite loss. The
+dedicated yaw losses were finite, but the reconstructed yaw also entered the
+cuboid corner loss. Backpropagating through the hard direction decision and
+`atan2` is undefined when the raw axis approaches `[0, 0]`, which can poison a
+later batch with NaN parameters.
+
+For v5 only, the corner loss now treats reconstructed yaw as detached. The
+axis head remains supervised by smooth-L1 plus cosine loss, and the direction
+head remains supervised by binary cross entropy. Corner loss continues to
+train depth, location, and dimensions. A regression test starts with an exact
+zero axis, runs the complete loss backward, and requires finite axis and
+direction gradients.
+
+It is safe to resume from the last checkpoint saved before the failed epoch.
+Do not resume from a checkpoint containing non-finite parameters.
+
 The Drive dataset may use either canonical KITTI object-folder names
 `training/image_2` and `training/label_2` or raw aliases `training/image_02`
 and `training/label_02`. The notebook stages either form into canonical

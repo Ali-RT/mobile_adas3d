@@ -468,7 +468,15 @@ class MobileADAS3DLoss(nn.Module):
         loc_xy = gather(outputs["loc_xy"])            # [N, 2]
         log_depth = gather(outputs["log_depth"])      # [N, 1]
         dim_residual = gather(outputs["dim"])         # [N, 3]
-        yaw_vec = F.normalize(gather(outputs["yaw"]), dim=-1, eps=1e-6)  # [N, 2]
+        # V5 reconstructs final yaw with atan2 plus a hard direction decision.
+        # Its dedicated axis and direction losses supervise the yaw heads.
+        # Do not backpropagate the cuboid loss through that discontinuous
+        # reconstruction: atan2(0, 0) can otherwise produce NaN gradients
+        # early in training when the raw axis head is close to zero.
+        yaw_for_corners = outputs["yaw"]
+        if "yaw_axis" in outputs:
+            yaw_for_corners = yaw_for_corners.detach()
+        yaw_vec = F.normalize(gather(yaw_for_corners), dim=-1, eps=1e-6)  # [N, 2]
 
         pos_class_ids = class_ids[pos]                # [N]
         mean_dims = class_mean_dims[pos_class_ids]    # [N, 3]
