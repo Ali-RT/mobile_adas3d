@@ -88,7 +88,10 @@ The notebook resolves KITTI from
 `/content/drive/MyDrive/datasets/kitti` when `/content/kitti` has not already
 been staged. It accepts both canonical `image_2`/`label_2` names and the Drive
 aliases `image_02`/`label_02`, exposing them to MonoDETR through canonical
-symlinks.
+symlinks. Before compiling the pinned custom CUDA extension, it applies a
+strict two-call compatibility patch for the current PyTorch `ScalarType`
+dispatch API, clears only the generated extension build cache, and requires a
+successful `MultiScaleDeformableAttention` import before inference can begin.
 
 External KITTI-format results can also be evaluated directly:
 

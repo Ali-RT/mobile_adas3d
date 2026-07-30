@@ -25,6 +25,10 @@ class KITTIPredictionParserTests(unittest.TestCase):
         self.assertIn("KITTI_SOURCE_ROOT", source)
         self.assertIn("--dataset-root", source)
         self.assertIn("MONODETR_KITTI", source)
+        self.assertIn("value.scalar_type()", source)
+        self.assertIn("deprecated_count == 2", source)
+        self.assertIn("MultiScaleDeformableAttention", source)
+        self.assertIn("'ninja'", source)
 
     def test_parses_scored_kitti_detection(self):
         with tempfile.TemporaryDirectory() as temp_dir:

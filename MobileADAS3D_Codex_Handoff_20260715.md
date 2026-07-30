@@ -947,6 +947,17 @@ passes. A failure caused by installation, checkpoint loading, split mismatch,
 or incomplete predictions is an infrastructure failure and must be fixed
 before judging the teacher.
 
+#### 2026-07-30 MonoDETR CUDA build compatibility
+
+Current Colab PyTorch rejects the pinned MonoDETR extension's deprecated
+`AT_DISPATCH_FLOATING_TYPES(value.type(), ...)` calls. The teacher notebook
+now checks for exactly two such calls and replaces them with
+`value.scalar_type()` before compilation. It installs Ninja, clears only the
+generated extension `build/` directory so a failed object is not reused, and
+requires a successful `MultiScaleDeformableAttention` import before proceeding
+to checkpoint download or inference. Rerun the existing clone/compile cell;
+the pinned `git checkout` and guarded patch make the cell safe to rerun.
+
 The Drive dataset may use either canonical KITTI object-folder names
 `training/image_2` and `training/label_2` or raw aliases `training/image_02`
 and `training/label_02`. The notebook stages either form into canonical
