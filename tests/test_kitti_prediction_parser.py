@@ -9,7 +9,23 @@ from data.kitti_prediction_parser import (
 from data.kitti_r40 import evaluate_kitti_r40
 
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+TEACHER_NOTEBOOK = (
+    PROJECT_ROOT / "notebooks" / "MonoDETR_Teacher_Feasibility_Colab.ipynb"
+)
+
+
 class KITTIPredictionParserTests(unittest.TestCase):
+    def test_teacher_notebook_resolves_drive_aliases(self):
+        source = TEACHER_NOTEBOOK.read_text(encoding="utf-8")
+
+        self.assertIn("/content/drive/MyDrive/datasets/kitti", source)
+        self.assertIn("training/image_02", source)
+        self.assertIn("training/label_02", source)
+        self.assertIn("KITTI_SOURCE_ROOT", source)
+        self.assertIn("--dataset-root", source)
+        self.assertIn("MONODETR_KITTI", source)
+
     def test_parses_scored_kitti_detection(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             path = Path(temp_dir) / "000001.txt"

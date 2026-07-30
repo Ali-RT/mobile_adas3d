@@ -84,6 +84,12 @@ KITTI text predictions with this repository's AP_R40 implementation. The
 transfer-learning gate passes only when `complete_split` is true and Car 3D
 moderate AP_R40 is at least 15%.
 
+The notebook resolves KITTI from
+`/content/drive/MyDrive/datasets/kitti` when `/content/kitti` has not already
+been staged. It accepts both canonical `image_2`/`label_2` names and the Drive
+aliases `image_02`/`label_02`, exposing them to MonoDETR through canonical
+symlinks.
+
 External KITTI-format results can also be evaluated directly:
 
 ```bash

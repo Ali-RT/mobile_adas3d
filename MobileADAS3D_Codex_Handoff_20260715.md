@@ -925,7 +925,12 @@ split files unless `--allow-missing` is explicitly supplied; incomplete
 results are marked with `complete_split: false`.
 
 The notebook creates a symlinked MonoDETR dataset view rather than copying
-KITTI again, compiles the official deformable-attention CUDA extension,
+KITTI again. It prefers an already complete `/content/kitti` stage, otherwise
+reads `/content/drive/MyDrive/datasets/kitti` directly for this one-pass
+teacher evaluation. Both canonical `training/image_2` and `training/label_2`
+and Drive aliases `training/image_02` and `training/label_02` are resolved
+into canonical MonoDETR symlinks. The notebook compiles the official
+deformable-attention CUDA extension,
 downloads the checkpoint once to Drive, runs inference at threshold `0.001`,
 and saves the comparison under:
 
