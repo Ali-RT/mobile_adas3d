@@ -29,6 +29,9 @@ class KITTIPredictionParserTests(unittest.TestCase):
         self.assertIn("deprecated_count == 2", source)
         self.assertIn("MultiScaleDeformableAttention", source)
         self.assertIn("'ninja'", source)
+        self.assertIn("from torch.nn import Linear as _LinearWithBias", source)
+        self.assertIn("private_linear_count == 1", source)
+        self.assertIn("from lib.models.monodetr import build_monodetr", source)
 
     def test_parses_scored_kitti_detection(self):
         with tempfile.TemporaryDirectory() as temp_dir:
