@@ -955,11 +955,12 @@ now checks for exactly two such calls and replaces them with
 `value.scalar_type()` before compilation. It installs Ninja, clears only the
 generated extension `build/` directory so a failed object is not reused, and
 replaces the removed private PyTorch `_LinearWithBias` import with the
-state-dict-compatible public `torch.nn.Linear`. It requires successful
-`MultiScaleDeformableAttention` and full MonoDETR model imports before
-proceeding to checkpoint download or inference. Rerun the existing
-clone/compile cell; the pinned `git checkout` and guarded patches make the cell
-safe to rerun.
+state-dict-compatible public `torch.nn.Linear`, and replaces the removed
+`torch._overrides` fallback with public `torch.overrides`. It requires
+successful `MultiScaleDeformableAttention` and full MonoDETR model imports
+before proceeding to checkpoint download or inference. Rerun the existing
+clone/compile cell; the pinned `git checkout` and guarded patches make the
+cell safe to rerun.
 
 The Drive dataset may use either canonical KITTI object-folder names
 `training/image_2` and `training/label_2` or raw aliases `training/image_02`

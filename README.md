@@ -91,9 +91,10 @@ aliases `image_02`/`label_02`, exposing them to MonoDETR through canonical
 symlinks. Before compiling the pinned custom CUDA extension, it applies a
 strict two-call compatibility patch for the current PyTorch `ScalarType`
 dispatch API and replaces MonoDETR's removed private `_LinearWithBias` import
-with public `torch.nn.Linear`. It clears only the generated extension build
-cache and requires successful CUDA-extension and full-model imports before
-inference can begin.
+with public `torch.nn.Linear`. It also removes the obsolete
+`torch._overrides` fallback in favor of `torch.overrides`. It clears only the
+generated extension build cache and requires successful CUDA-extension and
+full-model imports before inference can begin.
 
 External KITTI-format results can also be evaluated directly:
 
