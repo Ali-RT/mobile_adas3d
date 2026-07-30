@@ -94,7 +94,10 @@ dispatch API and replaces MonoDETR's removed private `_LinearWithBias` import
 with public `torch.nn.Linear`. It also removes the obsolete
 `torch._overrides` fallback in favor of `torch.overrides`. It clears only the
 generated extension build cache and requires successful CUDA-extension and
-full-model imports before inference can begin.
+full-model imports before inference can begin. For PyTorch 2.6 and newer, the
+notebook scopes `weights_only=False` to the pinned official MonoDETR checkpoint
+loader, records the downloaded file's SHA-256 digest, and validates that it
+contains the expected `model_state` dictionary before the long evaluation.
 
 External KITTI-format results can also be evaluated directly:
 

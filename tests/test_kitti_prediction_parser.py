@@ -33,6 +33,10 @@ class KITTIPredictionParserTests(unittest.TestCase):
         self.assertIn("private_linear_count == 1", source)
         self.assertIn("from torch.overrides import has_torch_function", source)
         self.assertIn("private_overrides_count == 1", source)
+        self.assertIn("weights_only=False", source)
+        self.assertIn("implicit_load_count == 1", source)
+        self.assertIn("checkpoint_best.sha256", source)
+        self.assertIn("checkpoint_probe.get('model_state')", source)
         self.assertIn("from lib.models.monodetr import build_monodetr", source)
 
     def test_parses_scored_kitti_detection(self):

@@ -962,6 +962,14 @@ before proceeding to checkpoint download or inference. Rerun the existing
 clone/compile cell; the pinned `git checkout` and guarded patches make the
 cell safe to rerun.
 
+PyTorch 2.6 also changed `torch.load` to default to `weights_only=True`. The
+official MonoDETR checkpoint includes pickled NumPy training metadata, so the
+notebook explicitly applies `weights_only=False` only inside the pinned
+MonoDETR checkpoint loader. Before inference it records
+`checkpoint_best.sha256` beside the Drive checkpoint, loads it once on CPU,
+and requires the expected `model_state` dictionary. Do not apply this setting
+globally or use it for an untrusted checkpoint.
+
 The Drive dataset may use either canonical KITTI object-folder names
 `training/image_2` and `training/label_2` or raw aliases `training/image_02`
 and `training/label_02`. The notebook stages either form into canonical
