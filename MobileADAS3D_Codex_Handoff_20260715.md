@@ -978,6 +978,29 @@ SHA-256, runtime configuration, split-file digest, image count, and completion
 state. Do not alter student losses or start a new student run until that cache
 is complete and validated.
 
+Teacher Task 2 is implemented in the final section of
+`notebooks/MonoDETR_Teacher_Feasibility_Colab.ipynb`. It uses the isolated
+MonoDETR model/output name `monodetr_train_cache`, leaving the successful
+validation predictions untouched. After inference,
+`scripts/create_teacher_prediction_cache.py` requires exactly the Chen train
+IDs with no missing or extra files, parses all KITTI predictions, copies them
+to Drive, revalidates the copy, and records source/config/split/checkpoint and
+prediction-tree SHA-256 values. The manifest is initially written with
+`complete: false` and is changed to `true` only after the Drive copy passes.
+
+Expected Task 2 artifact:
+
+```text
+/content/drive/MyDrive/mobile_adas3d_outputs/teachers/monodetr/chen_train_20260731/
+  teacher_cache_manifest.json
+  runtime_config.yaml
+  predictions/  # exactly 3712 files
+```
+
+Task 2 remains in progress until Colab prints the complete manifest. On a
+Colab interruption, rerun the train inference cell and then the cache cell;
+an interrupted Drive copy remains explicitly incomplete.
+
 #### 2026-07-30 MonoDETR CUDA build compatibility
 
 Current Colab PyTorch rejects the pinned MonoDETR extension's deprecated
@@ -1042,5 +1065,5 @@ canonical comparison.
 5. Select deployment candidates using AP3D/BEV R40, Core ML parity, model size,
    and physical-iPhone latency together.
 
-Teacher Task 1 is complete. Teacher Task 2 is the next planned unit of work;
-student distillation has not started.
+Teacher Task 1 is complete. Teacher Task 2 is implemented and awaiting its
+Colab cache manifest; student distillation has not started.

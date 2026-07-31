@@ -90,6 +90,21 @@ and Car BEV moderate AP_R40 `27.35%`. The next step is a provenance-tracked
 teacher prediction cache for the 3,712-image Chen training split; student
 distillation should not begin until that cache is complete.
 
+The same notebook now contains a separate **Teacher Task 2** section for that
+cache. It runs MonoDETR with an isolated `monodetr_train_cache` output name and
+uses `scripts/create_teacher_prediction_cache.py` to require an exact split
+match, parse every scored KITTI file, copy predictions to Drive, verify a
+deterministic prediction-tree checksum, and write
+`teacher_cache_manifest.json` with `complete: true` only after validation.
+The intended Drive destination is:
+
+```text
+/content/drive/MyDrive/mobile_adas3d_outputs/teachers/monodetr/chen_train_20260731/
+  teacher_cache_manifest.json
+  runtime_config.yaml
+  predictions/               # exactly 3,712 .txt files, including empty files
+```
+
 The notebook resolves KITTI from
 `/content/drive/MyDrive/datasets/kitti` when `/content/kitti` has not already
 been staged. It accepts both canonical `image_2`/`label_2` names and the Drive

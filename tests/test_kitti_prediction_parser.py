@@ -38,6 +38,10 @@ class KITTIPredictionParserTests(unittest.TestCase):
         self.assertIn("checkpoint_best.sha256", source)
         self.assertIn("checkpoint_probe.get('model_state')", source)
         self.assertIn("from lib.models.monodetr import build_monodetr", source)
+        self.assertIn("Teacher Task 2", source)
+        self.assertIn("monodetr_train_cache", source)
+        self.assertIn("create_teacher_prediction_cache.py", source)
+        self.assertIn("train_manifest['prediction_files'] == 3712", source)
 
     def test_parses_scored_kitti_detection(self):
         with tempfile.TemporaryDirectory() as temp_dir:
