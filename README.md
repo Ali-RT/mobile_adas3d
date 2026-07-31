@@ -84,6 +84,12 @@ KITTI text predictions with this repository's AP_R40 implementation. The
 transfer-learning gate passes only when `complete_split` is true and Car 3D
 moderate AP_R40 is at least 15%.
 
+The canonical 2026-07-31 run passed on all 3,769 Chen validation images with
+Car 3D moderate AP_R40 `20.35%` (`28.27 / 20.35 / 17.11` easy/moderate/hard)
+and Car BEV moderate AP_R40 `27.35%`. The next step is a provenance-tracked
+teacher prediction cache for the 3,712-image Chen training split; student
+distillation should not begin until that cache is complete.
+
 The notebook resolves KITTI from
 `/content/drive/MyDrive/datasets/kitti` when `/content/kitti` has not already
 been staged. It accepts both canonical `image_2`/`label_2` names and the Drive

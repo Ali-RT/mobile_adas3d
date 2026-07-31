@@ -947,6 +947,37 @@ passes. A failure caused by installation, checkpoint loading, split mismatch,
 or incomplete predictions is an infrastructure failure and must be fixed
 before judging the teacher.
 
+#### 2026-07-31 teacher feasibility result: PASS
+
+The official MonoDETR checkpoint completed the exact 3,769-image Chen
+validation split. Both MonoDETR's official evaluator and this repository's
+independent KITTI prediction-directory evaluator produced consistent results.
+
+```text
+prediction files: 3769 / 3769
+complete_split: true
+Car BEV AP_R40 easy/moderate/hard: 38.02 / 27.35 / 23.51
+Car 3D  AP_R40 easy/moderate/hard: 28.27 / 20.35 / 17.11
+required Car 3D moderate AP_R40: >= 15.00
+gate result: PASS
+```
+
+Canonical artifacts:
+
+```text
+/content/drive/MyDrive/mobile_adas3d_outputs/teachers/monodetr/chen_val_20260729/
+  kitti_r40_metrics.csv
+  kitti_r40_summary.json
+```
+
+Teacher Task 1 is complete. The next isolated task is **Teacher Task 2:
+reproducible train-split prediction cache**. It should run the same pinned
+teacher over all 3,712 Chen training images and save one scored KITTI file per
+image plus a manifest containing the teacher source commit, checkpoint
+SHA-256, runtime configuration, split-file digest, image count, and completion
+state. Do not alter student losses or start a new student run until that cache
+is complete and validated.
+
 #### 2026-07-30 MonoDETR CUDA build compatibility
 
 Current Colab PyTorch rejects the pinned MonoDETR extension's deprecated
@@ -1011,5 +1042,5 @@ canonical comparison.
 5. Select deployment candidates using AP3D/BEV R40, Core ML parity, model size,
    and physical-iPhone latency together.
 
-Training Task 1 remains in progress until Colab produces `best.pt` and a
-complete-split `kitti_r40_summary.json`.
+Teacher Task 1 is complete. Teacher Task 2 is the next planned unit of work;
+student distillation has not started.
