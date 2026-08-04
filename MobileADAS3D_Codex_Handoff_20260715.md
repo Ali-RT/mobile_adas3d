@@ -1155,6 +1155,23 @@ The notebook invokes the focused tests through `unittest discover` because
 Colab can resolve an unrelated installed `tests` package when given a dotted
 module name.
 
+Task 5 passed its Colab gate on 2026-08-04:
+
+```text
+focused integration tests: 3/3 passed
+sample: 000003
+device: cuda
+approved teacher cells: 9
+teacher depth/dim/location/yaw losses: all finite and positive
+model gradients: finite
+optimizer steps: 0
+report: chen_train_clean_20260804/teacher_distillation_smoke.json
+```
+
+The smoke model intentionally used `pretrained: false`, so its total loss
+(`144.2423`) is not a quality metric and must not be compared with trained
+validation loss. The gate verifies target/loss/gradient plumbing only.
+
 The next isolated task is **Teacher Task 6: distillation experiment gate**.
 First require the real-data Task 5 smoke report to pass. Then create a distinct
 enabled run configuration and run a short, fixed-seed comparison against the
