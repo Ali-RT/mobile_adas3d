@@ -1006,6 +1006,39 @@ Task 2 remains in progress until Colab prints the complete manifest. On a
 Colab interruption, rerun the train inference cell and then the cache cell;
 an interrupted Drive copy remains explicitly incomplete.
 
+#### 2026-08-04 clean train cache result: COMPLETE
+
+The corrected non-augmented pass completed successfully. The inference view
+used `dataset.test_split: val`, but its split file was an exact byte-equivalent
+copy of the Chen `train.txt`; both SHA-256 values are
+`e85ce0142be11c7e4196fd7b79a8bc8c2cefdd6fe754ac61fef8d421e37aba5c`.
+
+```text
+cache: chen_train_clean_20260804
+prediction files: 3712 / 3712
+detections at score >= 0.001: 109947
+empty prediction files: 0
+inference data augmentation: false
+Car 3D AP_R40 easy/moderate/hard: 94.77 / 78.87 / 74.10
+checkpoint SHA-256: b618f6da895c1aabafb6a155ab22c312de374133044cc80dfe751280de441ea6
+prediction-tree SHA-256: e0d155c8e93bc603cea7824260b4d59e26f96cd4c40bf96040f4785c99529608
+manifest complete: true
+```
+
+The high AP is an in-sample teacher result because the official MonoDETR
+checkpoint was trained on these images. It validates clean deterministic cache
+generation, but it is not an unbiased benchmark and must not be compared to
+the Chen validation AP as a generalization result.
+
+Teacher Task 2 is complete. The next isolated task is **Teacher Task 3:
+teacher/ground-truth matching audit**. The cache contains approximately 29.6
+detections per image because it deliberately used a `0.001` score floor. Before
+changing student losses, audit score thresholds and one-to-one matching against
+Chen train ground truth, reporting precision/recall, unmatched teacher boxes,
+per-distance coverage, and 2D/BEV/3D geometry errors. Teacher predictions must
+not replace KITTI ground truth; the audit will define which soft teacher signals
+are safe as auxiliary supervision.
+
 #### 2026-08-04 rejected augmented train cache
 
 The first train-cache run completed 3,712 files but used
@@ -1092,5 +1125,5 @@ canonical comparison.
 5. Select deployment candidates using AP3D/BEV R40, Core ML parity, model size,
    and physical-iPhone latency together.
 
-Teacher Task 1 is complete. Teacher Task 2 is implemented and awaiting its
-Colab cache manifest; student distillation has not started.
+Teacher Tasks 1 and 2 are complete. Teacher Task 3 is the next planned unit;
+student distillation has not started.

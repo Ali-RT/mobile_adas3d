@@ -117,6 +117,15 @@ random inference augmentation and a collapsed Car 3D moderate AP_R40 of
 `5.78%`. The corrected notebook marks that manifest incomplete and writes a
 `DO_NOT_USE_AUGMENTED_CACHE.txt` warning.
 
+The corrected `chen_train_clean_20260804` cache completed all 3,712 images with
+augmentation disabled. Its prediction-tree SHA-256 is
+`e0d155c8e93bc603cea7824260b4d59e26f96cd4c40bf96040f4785c99529608`,
+and the official clean-train Car 3D AP_R40 was
+`94.77 / 78.87 / 74.10`. This is an in-sample result, not a generalization
+benchmark. Before adding a student distillation loss, the next task is to audit
+teacher-score thresholds and one-to-one teacher/ground-truth matching; the
+cache has 109,947 detections at the intentionally low `0.001` score floor.
+
 The notebook resolves KITTI from
 `/content/drive/MyDrive/datasets/kitti` when `/content/kitti` has not already
 been staged. It accepts both canonical `image_2`/`label_2` names and the Drive
