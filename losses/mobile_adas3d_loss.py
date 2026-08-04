@@ -132,6 +132,11 @@ class MobileADAS3DLoss(nn.Module):
         quality_weight: float = 0.0,
         corner3d_weight: float = 0.0,
         class_mean_dims: Optional[Dict[str, List[float]]] = None,
+        distillation_enabled: bool = False,
+        teacher_depth_weight: float = 0.0,
+        teacher_dim_weight: float = 0.0,
+        teacher_loc_xy_weight: float = 0.0,
+        teacher_yaw_weight: float = 0.0,
     ) -> None:
         super().__init__()
 
@@ -151,6 +156,11 @@ class MobileADAS3DLoss(nn.Module):
         self.projected_center_weight = projected_center_weight
         self.quality_weight = quality_weight
         self.corner3d_weight = corner3d_weight
+        self.distillation_enabled = bool(distillation_enabled)
+        self.teacher_depth_weight = float(teacher_depth_weight)
+        self.teacher_dim_weight = float(teacher_dim_weight)
+        self.teacher_loc_xy_weight = float(teacher_loc_xy_weight)
+        self.teacher_yaw_weight = float(teacher_yaw_weight)
 
         classes = classes or []
         class_weights = class_weights or {}
@@ -416,7 +426,58 @@ class MobileADAS3DLoss(nn.Module):
             + self.corner3d_weight * corner3d_loss
         )
 
-        return {
+        teacher_losses: Dict[str, torch.Tensor] = {}
+        if self.distillation_enabled:
+            teacher_mask = targets.get("teacher_valid_mask")
+            if teacher_mask is None:
+                zero = cls_logits.sum() * 0.0
+                teacher_depth_loss = zero
+                teacher_dim_loss = zero
+                teacher_loc_xy_loss = zero
+                teacher_yaw_loss = zero
+            else:
+                teacher_score = targets.get(
+                    "teacher_score_target", torch.ones_like(teacher_mask)
+                )
+                teacher_depth_loss = masked_weighted_smooth_l1_loss(
+                    log_depth_pred,
+                    targets["teacher_log_depth_target"],
+                    teacher_mask,
+                    teacher_score,
+                )
+                teacher_dim_loss = masked_weighted_smooth_l1_loss(
+                    dim_pred,
+                    targets["teacher_dim_target"],
+                    teacher_mask,
+                    teacher_score,
+                )
+                teacher_loc_xy_loss = masked_weighted_smooth_l1_loss(
+                    loc_xy_pred,
+                    targets["teacher_loc_xy_target"],
+                    teacher_mask,
+                    teacher_score,
+                )
+                teacher_yaw_loss = masked_weighted_yaw_cosine_loss(
+                    yaw_pred,
+                    targets["teacher_yaw_target"],
+                    teacher_mask,
+                    teacher_score,
+                )
+            total_loss = (
+                total_loss
+                + self.teacher_depth_weight * teacher_depth_loss
+                + self.teacher_dim_weight * teacher_dim_loss
+                + self.teacher_loc_xy_weight * teacher_loc_xy_loss
+                + self.teacher_yaw_weight * teacher_yaw_loss
+            )
+            teacher_losses = {
+                "teacher_depth_loss": teacher_depth_loss,
+                "teacher_dim_loss": teacher_dim_loss,
+                "teacher_loc_xy_loss": teacher_loc_xy_loss,
+                "teacher_yaw_loss": teacher_yaw_loss,
+            }
+
+        losses = {
             "total_loss": total_loss,
             "cls_loss": cls_loss,
             "box2d_loss": box2d_loss,
@@ -432,6 +493,8 @@ class MobileADAS3DLoss(nn.Module):
             "quality_loss": quality_loss,
             "corner3d_loss": corner3d_loss,
         }
+        losses.update(teacher_losses)
+        return losses
 
     def _compute_corner3d_loss(
         self,

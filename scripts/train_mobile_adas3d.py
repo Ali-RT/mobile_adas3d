@@ -16,6 +16,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from data.collate import mobile_adas3d_collate_fn
 from data.kitti_dataset import KITTIDataset
+from data.teacher_target_adapter import TeacherTargetAdapter
 from data.split_resolver import get_split_file
 from losses.mobile_adas3d_loss import MobileADAS3DLoss
 from models.build import build_model
@@ -119,6 +120,31 @@ def build_dataloader(
     if center_sampling_cfg.get("enabled", False):
         center_sampling_radius = int(center_sampling_cfg.get("radius", 1))
 
+    teacher_adapter = None
+    distillation_cfg = config.get("distillation", {})
+    if distillation_cfg.get("enabled", False) and split_name == "train":
+        cache_dirs = distillation_cfg.get("profile_cache_dirs", {})
+        cache_dir = cache_dirs.get(active_profile, distillation_cfg.get("cache_dir"))
+        if not cache_dir:
+            raise ValueError(
+                f"No teacher cache configured for active profile {active_profile!r}"
+            )
+        teacher_adapter = TeacherTargetAdapter(
+            cache_dir=cache_dir,
+            split_file=split_file,
+            score_threshold=float(distillation_cfg.get("score_threshold", 0.30)),
+            match_iou_threshold=float(
+                distillation_cfg.get("match_2d_iou_threshold", 0.50)
+            ),
+            max_gt_depth_m=float(distillation_cfg.get("max_gt_depth_m", 60.0)),
+            expected_checkpoint_sha256=distillation_cfg.get(
+                "checkpoint_sha256"
+            ),
+            expected_prediction_tree_sha256=distillation_cfg.get(
+                "prediction_tree_sha256"
+            ),
+        )
+
     collate_fn = partial(
         mobile_adas3d_collate_fn,
         classes=dataset_cfg["classes"],
@@ -129,6 +155,7 @@ def build_dataloader(
         center_sampling_radius=center_sampling_radius,
         class_weights=loss_cfg.get("class_weights", {}),
         quality_center_sigma=float(target_cfg.get("quality_center_sigma", 1.0)),
+        teacher_adapter=teacher_adapter,
     )
 
     loader = DataLoader(
@@ -149,6 +176,8 @@ def build_dataloader(
 
 def build_criterion(config: Dict[str, Any]) -> MobileADAS3DLoss:
     loss_cfg = config.get("loss", {})
+    distillation_cfg = config.get("distillation", {})
+    teacher_loss_cfg = distillation_cfg.get("loss_weights", {})
 
     return MobileADAS3DLoss(
         input_height=config["model"]["input_height"],
@@ -169,6 +198,11 @@ def build_criterion(config: Dict[str, Any]) -> MobileADAS3DLoss:
         quality_weight=loss_cfg.get("quality_weight", 0.0),
         corner3d_weight=loss_cfg.get("corner3d_weight", 0.0),
         class_mean_dims=config["targets"]["class_mean_dims"],
+        distillation_enabled=distillation_cfg.get("enabled", False),
+        teacher_depth_weight=teacher_loss_cfg.get("depth", 0.0),
+        teacher_dim_weight=teacher_loss_cfg.get("dimensions", 0.0),
+        teacher_loc_xy_weight=teacher_loss_cfg.get("location_xy", 0.0),
+        teacher_yaw_weight=teacher_loss_cfg.get("yaw", 0.0),
     )
 
 
@@ -245,6 +279,10 @@ def train_one_epoch(
     for batch_idx, batch in enumerate(dataloader, start=1):
         images = batch["images"].to(device, non_blocking=True)
         targets = move_targets_to_device(batch["targets"], device)
+        if criterion.distillation_enabled and "teacher_valid_mask" not in targets:
+            raise RuntimeError(
+                "Distillation is enabled but the training batch has no teacher targets"
+            )
 
         with torch.cuda.amp.autocast(enabled=(use_amp and device.type == "cuda")):
             outputs = model(images)
@@ -296,6 +334,10 @@ def train_one_epoch(
                 f"proj_center={losses.get('projected_center_loss', torch.tensor(0.0)).item():.6f} "
                 f"quality={losses.get('quality_loss', torch.tensor(0.0)).item():.6f} "
                 f"corner3d={losses.get('corner3d_loss', torch.tensor(0.0)).item():.6f}"
+                f" teacher_depth={losses.get('teacher_depth_loss', torch.tensor(0.0)).item():.6f}"
+                f" teacher_dim={losses.get('teacher_dim_loss', torch.tensor(0.0)).item():.6f}"
+                f" teacher_loc={losses.get('teacher_loc_xy_loss', torch.tensor(0.0)).item():.6f}"
+                f" teacher_yaw={losses.get('teacher_yaw_loss', torch.tensor(0.0)).item():.6f}"
             )
 
             if writer is not None:

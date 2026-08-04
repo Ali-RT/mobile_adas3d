@@ -1128,11 +1128,34 @@ target count. The validation report records all three values explicitly:
 teacher targets. This task does not connect teacher tensors to loss terms and
 does not start training.
 
-The next isolated task is **Teacher Task 5: auxiliary loss integration**. Add
-teacher geometry losses behind an explicit disabled-by-default configuration,
-retain KITTI ground truth as primary supervision, and test that the normal
-supervised path is numerically unchanged when distillation is disabled. Do not
-start a full training run until that integration passes unit and smoke tests.
+#### 2026-08-04 Teacher Task 5: auxiliary loss integration
+
+Teacher Task 5 is implemented without starting training. The integration:
+
+- keeps KITTI classification, 2D boxes, object assignment, and all existing 3D
+  losses unchanged as primary supervision;
+- maps approved object-aligned teacher targets only onto the stride-16 cells
+  already owned by the corresponding KITTI GT object;
+- adds confidence-weighted auxiliary log-depth, dimensions, normalized X/Z and
+  Y/Z location, and yaw-cosine losses;
+- is controlled by `distillation.enabled`, which is explicitly `false` in
+  `configs/kitti_mnv4_quality_scoring_v3.yaml`;
+- verifies cache/split/checkpoint/prediction-tree provenance when enabled;
+- applies teacher targets to training only, leaving validation supervised-only;
+- fails immediately if training is enabled without teacher targets.
+
+`tests/test_teacher_distillation_integration.py` proves exact tensor equality
+between the legacy loss and the explicitly disabled path, checks finite enabled
+losses/gradients, and checks object-to-dense target mapping.
+`scripts/smoke_test_teacher_distillation.py` performs one real cache-backed
+forward/backward pass with zero optimizer steps and writes
+`teacher_distillation_smoke.json`. Run the final teacher-notebook cell before
+creating an enabled experiment configuration or starting a full run.
+
+The next isolated task is **Teacher Task 6: distillation experiment gate**.
+First require the real-data Task 5 smoke report to pass. Then create a distinct
+enabled run configuration and run a short, fixed-seed comparison against the
+same supervised checkpoint before authorizing an 80-epoch experiment.
 
 #### 2026-08-04 rejected augmented train cache
 

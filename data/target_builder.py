@@ -218,6 +218,7 @@ def build_targets_for_sample(
     class_weights: Optional[Dict[str, float]] = None,
     P2: Optional[Sequence[Sequence[float]]] = None,
     quality_center_sigma: float = 1.0,
+    teacher_targets: Optional[Dict[str, torch.Tensor]] = None,
 ) -> Dict[str, torch.Tensor]:
     feature_h, feature_w = compute_feature_shape(
         input_height=input_height,
@@ -242,6 +243,13 @@ def build_targets_for_sample(
     quality_target = torch.zeros(1, feature_h, feature_w, dtype=torch.float32)
     valid_mask = torch.zeros(1, feature_h, feature_w, dtype=torch.float32)
 
+    teacher_valid_mask = torch.zeros(1, feature_h, feature_w, dtype=torch.float32)
+    teacher_score_target = torch.zeros(1, feature_h, feature_w, dtype=torch.float32)
+    teacher_log_depth_target = torch.zeros(1, feature_h, feature_w, dtype=torch.float32)
+    teacher_loc_xy_target = torch.zeros(2, feature_h, feature_w, dtype=torch.float32)
+    teacher_dim_target = torch.zeros(3, feature_h, feature_w, dtype=torch.float32)
+    teacher_yaw_target = torch.zeros(2, feature_h, feature_w, dtype=torch.float32)
+
     # Used to apply class-balanced regression/object losses.
     loss_weight_target = torch.ones(1, feature_h, feature_w, dtype=torch.float32)
 
@@ -264,7 +272,16 @@ def build_targets_for_sample(
             input_h=input_height,
         ).tolist()
 
-    for obj in objects:
+    if teacher_targets is not None:
+        expected_objects = len(objects)
+        for key, value in teacher_targets.items():
+            if int(value.shape[0]) != expected_objects:
+                raise ValueError(
+                    f"Teacher target {key!r} has {value.shape[0]} objects; "
+                    f"expected {expected_objects}"
+                )
+
+    for object_index, obj in enumerate(objects):
         class_name = obj["class_name"]
 
         if class_name not in classes:
@@ -367,6 +384,12 @@ def build_targets_for_sample(
             projected_center_offset_target[:, cell_y, cell_x] = 0.0
             projected_center_valid_mask[0, cell_y, cell_x] = 0.0
             quality_target[0, cell_y, cell_x] = 0.0
+            teacher_valid_mask[0, cell_y, cell_x] = 0.0
+            teacher_score_target[0, cell_y, cell_x] = 0.0
+            teacher_log_depth_target[0, cell_y, cell_x] = 0.0
+            teacher_loc_xy_target[:, cell_y, cell_x] = 0.0
+            teacher_dim_target[:, cell_y, cell_x] = 0.0
+            teacher_yaw_target[:, cell_y, cell_x] = 0.0
 
             cls_target[class_id, cell_y, cell_x] = 1.0
 
@@ -421,6 +444,33 @@ def build_targets_for_sample(
                 sigma=quality_center_sigma,
             )
 
+            if (
+                teacher_targets is not None
+                and bool(teacher_targets["teacher_valid_mask"][object_index])
+            ):
+                teacher_location = teacher_targets["teacher_location_3d"][object_index]
+                teacher_depth = teacher_location[2].clamp(min=1e-3)
+                teacher_dims = teacher_targets["teacher_dimensions_3d"][object_index]
+                teacher_yaw = teacher_targets["teacher_yaw"][object_index]
+                teacher_valid_mask[0, cell_y, cell_x] = 1.0
+                teacher_score_target[0, cell_y, cell_x] = teacher_targets[
+                    "teacher_score"
+                ][object_index]
+                teacher_log_depth_target[0, cell_y, cell_x] = torch.log(teacher_depth)
+                teacher_loc_xy_target[:, cell_y, cell_x] = torch.stack(
+                    [
+                        teacher_location[0] / teacher_depth,
+                        teacher_location[1] / teacher_depth,
+                    ]
+                )
+                teacher_dim_target[:, cell_y, cell_x] = torch.log(
+                    teacher_dims.clamp(min=1e-6)
+                    / torch.tensor(mean_dims, dtype=torch.float32).clamp(min=1e-6)
+                )
+                teacher_yaw_target[:, cell_y, cell_x] = torch.stack(
+                    [torch.sin(teacher_yaw), torch.cos(teacher_yaw)]
+                )
+
             if projected_center is not None:
                 projected_center_offset_target[:, cell_y, cell_x] = torch.tensor(
                     build_center_offset_target(
@@ -438,7 +488,7 @@ def build_targets_for_sample(
             loss_weight_target[0, cell_y, cell_x] = sample_class_weight
             priority_depth[cell_y, cell_x] = depth
 
-    return {
+    targets = {
         "cls_target": cls_target,
         "box2d_target": box2d_target,
         "log_depth_target": log_depth_target,
@@ -455,6 +505,18 @@ def build_targets_for_sample(
         "valid_mask": valid_mask,
         "loss_weight_target": loss_weight_target,
     }
+    if teacher_targets is not None:
+        targets.update(
+            {
+                "teacher_valid_mask": teacher_valid_mask,
+                "teacher_score_target": teacher_score_target,
+                "teacher_log_depth_target": teacher_log_depth_target,
+                "teacher_loc_xy_target": teacher_loc_xy_target,
+                "teacher_dim_target": teacher_dim_target,
+                "teacher_yaw_target": teacher_yaw_target,
+            }
+        )
+    return targets
 
 
 # Backward-compatible alias if older code imports build_targets.

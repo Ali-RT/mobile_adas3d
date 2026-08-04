@@ -6,6 +6,7 @@ import torch
 import torch.nn.functional as F
 
 from data.target_builder import build_targets_for_sample
+from data.teacher_target_adapter import TeacherTargetAdapter
 
 
 def resize_image_tensor(
@@ -47,6 +48,7 @@ def mobile_adas3d_collate_fn(
     center_sampling_radius: int = 1,
     class_weights: Optional[Dict[str, float]] = None,
     quality_center_sigma: float = 1.0,
+    teacher_adapter: Optional[TeacherTargetAdapter] = None,
 ) -> Dict[str, Any]:
     images = []
     targets = []
@@ -58,6 +60,12 @@ def mobile_adas3d_collate_fn(
             input_height=input_height,
             input_width=input_width,
         )
+
+        teacher_targets = None
+        if teacher_adapter is not None:
+            teacher_targets = teacher_adapter.build_for_sample(
+                sample["sample_id"], sample["objects"]
+            )
 
         target = build_targets_for_sample(
             objects=sample["objects"],
@@ -72,6 +80,7 @@ def mobile_adas3d_collate_fn(
             class_weights=class_weights,
             P2=sample.get("P2"),
             quality_center_sigma=quality_center_sigma,
+            teacher_targets=teacher_targets,
         )
 
         images.append(image)

@@ -88,6 +88,24 @@ loss:
     Pedestrian: 2.5
     Cyclist: 3.0
 
+# Teacher integration is intentionally disabled by default. Enabling it is a
+# separate experiment and requires the verified clean Chen-train cache.
+distillation:
+  enabled: false
+  cache_dir: ./outputs/teachers/monodetr/chen_train_clean_20260804
+  profile_cache_dirs:
+    colab_drive: /content/drive/MyDrive/mobile_adas3d_outputs/teachers/monodetr/chen_train_clean_20260804
+  checkpoint_sha256: b618f6da895c1aabafb6a155ab22c312de374133044cc80dfe751280de441ea6
+  prediction_tree_sha256: e0d155c8e93bc603cea7824260b4d59e26f96cd4c40bf96040f4785c99529608
+  score_threshold: 0.30
+  match_2d_iou_threshold: 0.50
+  max_gt_depth_m: 60.0
+  loss_weights:
+    depth: 0.25
+    dimensions: 0.25
+    location_xy: 0.10
+    yaw: 0.25
+
 training:
   seed: 42
   batch_size: 4
