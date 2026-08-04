@@ -1151,6 +1151,9 @@ losses/gradients, and checks object-to-dense target mapping.
 forward/backward pass with zero optimizer steps and writes
 `teacher_distillation_smoke.json`. Run the final teacher-notebook cell before
 creating an enabled experiment configuration or starting a full run.
+The notebook invokes the focused tests through `unittest discover` because
+Colab can resolve an unrelated installed `tests` package when given a dotted
+module name.
 
 The next isolated task is **Teacher Task 6: distillation experiment gate**.
 First require the real-data Task 5 smoke report to pass. Then create a distinct
