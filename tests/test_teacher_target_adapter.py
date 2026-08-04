@@ -67,6 +67,23 @@ class TeacherTargetAdapterTest(unittest.TestCase):
             self.assertTrue(torch.allclose(targets["teacher_score"], torch.tensor([0.0, 0.8, 0.9, 0.0])))
             self.assertTrue(torch.allclose(targets["teacher_location_3d"][1], torch.tensor([2.0, 2.0, 20.0])))
 
+    def test_matches_all_cars_before_applying_distance_mask(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            adapter = self.make_adapter(root)
+            root.joinpath("cache/predictions/000001.txt").write_text(
+                "Car 0 0 0 0 0 10 10 1.5 1.6 4.0 1 2 70 0.2 0.90\n"
+            )
+            adapter = TeacherTargetAdapter(
+                root / "cache", root / "train.txt", verify_prediction_tree=False
+            )
+            objects = [
+                {"class_name": "Car", "bbox_2d": [0, 0, 10, 10], "location_3d": [0, 0, 70]},
+                {"class_name": "Car", "bbox_2d": [0, 0, 9, 9], "location_3d": [0, 0, 30]},
+            ]
+            targets = adapter.build_for_sample("000001", objects)
+            self.assertEqual(targets["teacher_valid_mask"].tolist(), [False, False])
+
     def test_rejects_tampered_prediction_tree(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)

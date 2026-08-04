@@ -139,11 +139,10 @@ class TeacherTargetAdapter:
             key=lambda prediction: float(prediction["score"]),
             reverse=True,
         )
-        eligible_gt = {
+        unmatched_gt = {
             index
             for index, obj in enumerate(objects)
             if obj["class_name"] == self.class_name
-            and float(obj["location_3d"][2]) < self.max_gt_depth_m
         }
 
         count = len(objects)
@@ -160,14 +159,16 @@ class TeacherTargetAdapter:
         for prediction in candidates:
             overlaps = [
                 (bbox_iou(prediction["bbox_2d"], objects[index]["bbox_2d"]), index)
-                for index in eligible_gt
+                for index in unmatched_gt
             ]
             if not overlaps:
                 break
             overlap, gt_index = max(overlaps, key=lambda item: (item[0], -item[1]))
             if overlap < self.match_iou_threshold:
                 continue
-            eligible_gt.remove(gt_index)
+            unmatched_gt.remove(gt_index)
+            if float(objects[gt_index]["location_3d"][2]) >= self.max_gt_depth_m:
+                continue
             targets["teacher_valid_mask"][gt_index] = True
             targets["teacher_score"][gt_index] = float(prediction["score"])
             targets["teacher_match_iou_2d"][gt_index] = overlap
