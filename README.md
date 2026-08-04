@@ -126,6 +126,14 @@ benchmark. Before adding a student distillation loss, the next task is to audit
 teacher-score thresholds and one-to-one teacher/ground-truth matching; the
 cache has 109,947 detections at the intentionally low `0.001` score floor.
 
+Teacher Task 3 is implemented in the final notebook section and by
+`scripts/audit_teacher_prediction_cache.py`. It verifies the clean cache
+digest, sweeps scores `0.001` through `0.9`, and performs deterministic greedy
+one-to-one Car matching by descending teacher score and 2D IoU ≥0.5. It writes
+threshold precision/recall/F1, distance coverage, selected matched geometry,
+and a JSON report containing separate maximum-F1 and ≥95%-recall threshold
+recommendations. It does not modify student training.
+
 The notebook resolves KITTI from
 `/content/drive/MyDrive/datasets/kitti` when `/content/kitti` has not already
 been staged. It accepts both canonical `image_2`/`label_2` names and the Drive

@@ -1039,6 +1039,30 @@ per-distance coverage, and 2D/BEV/3D geometry errors. Teacher predictions must
 not replace KITTI ground truth; the audit will define which soft teacher signals
 are safe as auxiliary supervision.
 
+Teacher Task 3 is implemented by
+`scripts/audit_teacher_prediction_cache.py` and the final section of the
+MonoDETR Colab notebook. The association rule is deliberately independent of
+predicted 3D geometry: process teacher predictions in descending score order
+and greedily claim the unmatched Car ground truth with maximum 2D IoU when it
+is at least 0.5. BEV/3D IoU, depth, yaw, and dimensions are measured only after
+association. The audit sweeps scores `0.001, 0.01, 0.03, 0.05, 0.1, 0.2, 0.3,
+0.5, 0.7, 0.9` and reports both maximum-F1 and highest-threshold ≥95%-recall
+recommendations.
+
+Expected artifacts:
+
+```text
+chen_train_clean_20260804/matching_audit_v1/
+  teacher_matching_audit.json
+  teacher_threshold_sweep.csv
+  teacher_distance_coverage.csv
+  teacher_selected_matches.csv
+```
+
+Task 3 remains in progress until the Colab report is reviewed. Do not select a
+distillation threshold merely from train AP or replace KITTI ground truth with
+teacher boxes.
+
 #### 2026-08-04 rejected augmented train cache
 
 The first train-cache run completed 3,712 files but used

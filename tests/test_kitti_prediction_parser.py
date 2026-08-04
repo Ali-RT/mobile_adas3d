@@ -49,6 +49,10 @@ class KITTIPredictionParserTests(unittest.TestCase):
         self.assertIn("train_runtime_cfg['dataset']['test_split'] = 'val'", source)
         self.assertIn("DO_NOT_USE_AUGMENTED_CACHE.txt", source)
         self.assertIn("inference_data_augmentation'] is False", source)
+        self.assertIn("Teacher Task 3", source)
+        self.assertIn("audit_teacher_prediction_cache.py", source)
+        self.assertIn("teacher_threshold_sweep.csv", source)
+        self.assertIn("--match-2d-iou-threshold", source)
 
     def test_parses_scored_kitti_detection(self):
         with tempfile.TemporaryDirectory() as temp_dir:
