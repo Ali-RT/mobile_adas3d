@@ -18,6 +18,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from data.kitti_parser import parse_kitti_label_file
 from data.kitti_prediction_parser import parse_kitti_prediction_file
 from data.kitti_r40 import bev_iou, iou_3d
+from data.matching import bbox_iou
 from scripts.create_teacher_prediction_cache import (
     load_split_ids,
     prediction_tree_sha256,
@@ -25,22 +26,6 @@ from scripts.create_teacher_prediction_cache import (
 
 
 DEFAULT_THRESHOLDS = (0.001, 0.01, 0.03, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 0.9)
-
-
-def bbox_iou(box_a: Sequence[float], box_b: Sequence[float]) -> float:
-    left = max(float(box_a[0]), float(box_b[0]))
-    top = max(float(box_a[1]), float(box_b[1]))
-    right = min(float(box_a[2]), float(box_b[2]))
-    bottom = min(float(box_a[3]), float(box_b[3]))
-    intersection = max(0.0, right - left) * max(0.0, bottom - top)
-    area_a = max(0.0, float(box_a[2]) - float(box_a[0])) * max(
-        0.0, float(box_a[3]) - float(box_a[1])
-    )
-    area_b = max(0.0, float(box_b[2]) - float(box_b[0])) * max(
-        0.0, float(box_b[3]) - float(box_b[1])
-    )
-    union = area_a + area_b - intersection
-    return intersection / union if union > 0.0 else 0.0
 
 
 def angle_error_degrees(prediction: float, target: float) -> float:

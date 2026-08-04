@@ -1104,11 +1104,31 @@ Teacher Task 3 is complete. The approved initial distillation policy is:
 - keep unmatched Car GT, all Pedestrian/Cyclist GT, and all 60 m+ GT on normal
   supervised losses only.
 
-The next isolated task is **Teacher Task 4: distillation target adapter**. It
-should load and verify the cache manifest, deterministically reproduce the
-approved matching policy, and emit teacher target tensors/masks aligned to the
-existing KITTI ground-truth objects. Do not add loss terms or start training in
-Task 4.
+#### 2026-08-04 Teacher Task 4: distillation target adapter
+
+Teacher Task 4 is implemented. `data/teacher_target_adapter.py` now:
+
+- verifies manifest completion, schema, clean/no-augmentation provenance,
+  split count and SHA-256, checkpoint SHA-256, and prediction-tree SHA-256;
+- reproduces the approved greedy matching policy: Car score >=0.30, 2D IoU
+  >=0.50, and GT depth below 60 m;
+- emits object-aligned tensors for validity, score, match IoU, 2D box, 3D
+  dimensions, 3D location, and yaw while preserving the existing KITTI GT
+  object order;
+- leaves unmatched Car, all Pedestrian/Cyclist, and 60 m+ objects masked out;
+- provides deterministic batch padding without changing the training collate.
+
+`scripts/validate_teacher_target_adapter.py` validates the full Chen train
+split and writes `teacher_target_adapter_validation.json`. The final notebook
+cell pins the approved checkpoint/tree digests and requires exactly `11,324`
+teacher matches. This task does not connect teacher tensors to loss terms and
+does not start training.
+
+The next isolated task is **Teacher Task 5: auxiliary loss integration**. Add
+teacher geometry losses behind an explicit disabled-by-default configuration,
+retain KITTI ground truth as primary supervision, and test that the normal
+supervised path is numerically unchanged when distillation is disabled. Do not
+start a full training run until that integration passes unit and smoke tests.
 
 #### 2026-08-04 rejected augmented train cache
 
