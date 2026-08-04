@@ -42,6 +42,9 @@ class KITTIPredictionParserTests(unittest.TestCase):
         self.assertIn("monodetr_train_cache", source)
         self.assertIn("create_teacher_prediction_cache.py", source)
         self.assertIn("train_manifest['prediction_files'] == 3712", source)
+        self.assertIn("does not depend on the earlier validation config cell", source)
+        self.assertIn("yaml.safe_load((MONODETR_REPO / 'configs/monodetr.yaml')", source)
+        self.assertNotIn("yaml.safe_load(runtime_config_path.read_text())", source)
 
     def test_parses_scored_kitti_detection(self):
         with tempfile.TemporaryDirectory() as temp_dir:

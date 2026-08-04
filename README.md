@@ -92,6 +92,8 @@ distillation should not begin until that cache is complete.
 
 The same notebook now contains a separate **Teacher Task 2** section for that
 cache. It runs MonoDETR with an isolated `monodetr_train_cache` output name and
+constructs its train configuration directly after the common setup cells; it
+does not require running the earlier validation-configuration cell. It then
 uses `scripts/create_teacher_prediction_cache.py` to require an exact split
 match, parse every scored KITTI file, copy predictions to Drive, verify a
 deterministic prediction-tree checksum, and write

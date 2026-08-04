@@ -981,7 +981,9 @@ is complete and validated.
 Teacher Task 2 is implemented in the final section of
 `notebooks/MonoDETR_Teacher_Feasibility_Colab.ipynb`. It uses the isolated
 MonoDETR model/output name `monodetr_train_cache`, leaving the successful
-validation predictions untouched. After inference,
+validation predictions untouched. Its first cell builds the train runtime
+configuration and checkpoint digest directly, without depending on the prior
+validation-configuration cell. After inference,
 `scripts/create_teacher_prediction_cache.py` requires exactly the Chen train
 IDs with no missing or extra files, parses all KITTI predictions, copies them
 to Drive, revalidates the copy, and records source/config/split/checkpoint and
