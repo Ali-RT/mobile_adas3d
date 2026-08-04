@@ -980,10 +980,13 @@ is complete and validated.
 
 Teacher Task 2 is implemented in the final section of
 `notebooks/MonoDETR_Teacher_Feasibility_Colab.ipynb`. It uses the isolated
-MonoDETR model/output name `monodetr_train_cache`, leaving the successful
+MonoDETR model/output name `monodetr_train_cache_clean`, leaving the successful
 validation predictions untouched. Its first cell builds the train runtime
 configuration and checkpoint digest directly, without depending on the prior
-validation-configuration cell. After inference,
+validation-configuration cell. It exposes the 3,712 Chen train IDs through an
+isolated dataset view whose inference split is named `val`; MonoDETR enables
+random data augmentation whenever the split is literally `train` or
+`trainval`. After inference,
 `scripts/create_teacher_prediction_cache.py` requires exactly the Chen train
 IDs with no missing or extra files, parses all KITTI predictions, copies them
 to Drive, revalidates the copy, and records source/config/split/checkpoint and
@@ -993,7 +996,7 @@ prediction-tree SHA-256 values. The manifest is initially written with
 Expected Task 2 artifact:
 
 ```text
-/content/drive/MyDrive/mobile_adas3d_outputs/teachers/monodetr/chen_train_20260731/
+/content/drive/MyDrive/mobile_adas3d_outputs/teachers/monodetr/chen_train_clean_20260804/
   teacher_cache_manifest.json
   runtime_config.yaml
   predictions/  # exactly 3712 files
@@ -1002,6 +1005,28 @@ Expected Task 2 artifact:
 Task 2 remains in progress until Colab prints the complete manifest. On a
 Colab interruption, rerun the train inference cell and then the cache cell;
 an interrupted Drive copy remains explicitly incomplete.
+
+#### 2026-08-04 rejected augmented train cache
+
+The first train-cache run completed 3,712 files but used
+`dataset.test_split: train`. MonoDETR's `KITTI_Dataset` sets
+`data_augmentation=True` for `train` and `trainval`, so those were predictions
+from randomly augmented inputs rather than a deterministic clean-image teacher
+pass. The unusually low official metrics exposed the problem:
+
+```text
+invalid cache: chen_train_20260731
+Car 3D AP_R40 easy/moderate/hard: 6.80 / 5.78 / 5.47
+prediction files: 3712
+manifest complete: true at file level, semantically invalid
+```
+
+Do not use prediction-tree SHA-256
+`da4bdb184a1eda3b948913307d2f8d00885fed0b0191db35b5ec3a569cf5e51d`.
+The corrected notebook invalidates that manifest when it sees the saved
+`test_split: train` configuration. The cache script now rejects augmented
+inference splits and verifies that the runtime inference-view IDs exactly equal
+the requested Chen train IDs. A fresh clean inference run is required.
 
 #### 2026-07-30 MonoDETR CUDA build compatibility
 

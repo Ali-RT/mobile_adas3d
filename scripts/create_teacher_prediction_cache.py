@@ -9,6 +9,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List
 
+import yaml
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -88,6 +90,42 @@ def validate_prediction_directory(
     }
 
 
+def validate_inference_contract(
+    runtime_config: Path,
+    expected_sample_ids: List[str],
+) -> Dict[str, Any]:
+    config = yaml.safe_load(runtime_config.read_text(encoding="utf-8"))
+    dataset_config = config.get("dataset", {})
+    inference_split = dataset_config.get("test_split")
+    if inference_split in {"train", "trainval"}:
+        raise RuntimeError(
+            "Teacher cache inference used a MonoDETR training split, which enables "
+            f"random data augmentation: test_split={inference_split!r}"
+        )
+    if inference_split not in {"val", "test"}:
+        raise RuntimeError(
+            f"Unsupported teacher-cache inference split: {inference_split!r}"
+        )
+
+    inference_root = Path(dataset_config.get("root_dir", ""))
+    inference_split_file = inference_root / "ImageSets" / f"{inference_split}.txt"
+    if not inference_split_file.is_file():
+        raise FileNotFoundError(
+            f"Inference-view split file not found: {inference_split_file}"
+        )
+    inference_ids = load_split_ids(inference_split_file)
+    if inference_ids != expected_sample_ids:
+        raise RuntimeError(
+            "Inference-view IDs do not exactly match the requested cache split"
+        )
+    return {
+        "inference_dataset_root": str(inference_root),
+        "inference_dataset_split": inference_split,
+        "inference_split_file_sha256": sha256_file(inference_split_file),
+        "inference_data_augmentation": False,
+    }
+
+
 def create_cache(
     *,
     prediction_dir: Path,
@@ -105,6 +143,11 @@ def create_cache(
         raise RuntimeError(
             f"Expected {expected_count} split IDs, found {len(sample_ids)} in {split_file}"
         )
+
+    inference_contract = validate_inference_contract(
+        runtime_config,
+        sample_ids,
+    )
 
     validation = validate_prediction_directory(
         prediction_dir,
@@ -156,6 +199,7 @@ def create_cache(
         "split_file_sha256": sha256_file(split_file),
         "split_images": len(sample_ids),
         "allowed_classes": list(allowed_classes or []),
+        **inference_contract,
         **cached_validation,
     }
     manifest_path.write_text(

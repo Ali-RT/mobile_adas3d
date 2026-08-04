@@ -39,12 +39,16 @@ class KITTIPredictionParserTests(unittest.TestCase):
         self.assertIn("checkpoint_probe.get('model_state')", source)
         self.assertIn("from lib.models.monodetr import build_monodetr", source)
         self.assertIn("Teacher Task 2", source)
-        self.assertIn("monodetr_train_cache", source)
+        self.assertIn("monodetr_train_cache_clean", source)
         self.assertIn("create_teacher_prediction_cache.py", source)
         self.assertIn("train_manifest['prediction_files'] == 3712", source)
         self.assertIn("does not depend on the earlier validation config cell", source)
         self.assertIn("yaml.safe_load((MONODETR_REPO / 'configs/monodetr.yaml')", source)
         self.assertNotIn("yaml.safe_load(runtime_config_path.read_text())", source)
+        self.assertIn("TRAIN_INFERENCE_KITTI", source)
+        self.assertIn("train_runtime_cfg['dataset']['test_split'] = 'val'", source)
+        self.assertIn("DO_NOT_USE_AUGMENTED_CACHE.txt", source)
+        self.assertIn("inference_data_augmentation'] is False", source)
 
     def test_parses_scored_kitti_detection(self):
         with tempfile.TemporaryDirectory() as temp_dir:

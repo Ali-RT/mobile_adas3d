@@ -91,7 +91,11 @@ teacher prediction cache for the 3,712-image Chen training split; student
 distillation should not begin until that cache is complete.
 
 The same notebook now contains a separate **Teacher Task 2** section for that
-cache. It runs MonoDETR with an isolated `monodetr_train_cache` output name and
+cache. It runs MonoDETR with an isolated `monodetr_train_cache_clean` output
+name and exposes the Chen train IDs through a `val`-named inference view. This
+is required because MonoDETR automatically enables random augmentation for a
+split literally named `train`. The cache validator rejects `train` or
+`trainval` inference configurations. The notebook
 constructs its train configuration directly after the common setup cells; it
 does not require running the earlier validation-configuration cell. It then
 uses `scripts/create_teacher_prediction_cache.py` to require an exact split
@@ -101,11 +105,17 @@ deterministic prediction-tree checksum, and write
 The intended Drive destination is:
 
 ```text
-/content/drive/MyDrive/mobile_adas3d_outputs/teachers/monodetr/chen_train_20260731/
+/content/drive/MyDrive/mobile_adas3d_outputs/teachers/monodetr/chen_train_clean_20260804/
   teacher_cache_manifest.json
   runtime_config.yaml
   predictions/               # exactly 3,712 .txt files, including empty files
 ```
+
+The earlier `chen_train_20260731` cache must not be used. Although it contains
+3,712 files, its runtime configuration used `test_split: train`, causing
+random inference augmentation and a collapsed Car 3D moderate AP_R40 of
+`5.78%`. The corrected notebook marks that manifest incomplete and writes a
+`DO_NOT_USE_AUGMENTED_CACHE.txt` warning.
 
 The notebook resolves KITTI from
 `/content/drive/MyDrive/datasets/kitti` when `/content/kitti` has not already
