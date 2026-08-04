@@ -147,6 +147,7 @@ class TeacherTargetAdapter:
 
         count = len(objects)
         targets = {
+            "teacher_association_mask": torch.zeros(count, dtype=torch.bool),
             "teacher_valid_mask": torch.zeros(count, dtype=torch.bool),
             "teacher_score": torch.zeros(count, dtype=torch.float32),
             "teacher_match_iou_2d": torch.zeros(count, dtype=torch.float32),
@@ -167,6 +168,7 @@ class TeacherTargetAdapter:
             if overlap < self.match_iou_threshold:
                 continue
             unmatched_gt.remove(gt_index)
+            targets["teacher_association_mask"][gt_index] = True
             if float(objects[gt_index]["location_3d"][2]) >= self.max_gt_depth_m:
                 continue
             targets["teacher_valid_mask"][gt_index] = True

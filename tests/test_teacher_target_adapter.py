@@ -63,6 +63,7 @@ class TeacherTargetAdapterTest(unittest.TestCase):
                 {"class_name": "Car", "bbox_2d": [40, 40, 50, 50], "location_3d": [0, 0, 70]},
             ]
             targets = adapter.build_for_sample("000001", objects)
+            self.assertEqual(targets["teacher_association_mask"].tolist(), [False, True, True, False])
             self.assertEqual(targets["teacher_valid_mask"].tolist(), [False, True, True, False])
             self.assertTrue(torch.allclose(targets["teacher_score"], torch.tensor([0.0, 0.8, 0.9, 0.0])))
             self.assertTrue(torch.allclose(targets["teacher_location_3d"][1], torch.tensor([2.0, 2.0, 20.0])))
@@ -82,6 +83,7 @@ class TeacherTargetAdapterTest(unittest.TestCase):
                 {"class_name": "Car", "bbox_2d": [0, 0, 9, 9], "location_3d": [0, 0, 30]},
             ]
             targets = adapter.build_for_sample("000001", objects)
+            self.assertEqual(targets["teacher_association_mask"].tolist(), [True, False])
             self.assertEqual(targets["teacher_valid_mask"].tolist(), [False, False])
 
     def test_rejects_tampered_prediction_tree(self):
@@ -95,10 +97,12 @@ class TeacherTargetAdapterTest(unittest.TestCase):
 
     def test_pads_variable_object_counts(self):
         first = {
+            "teacher_association_mask": torch.tensor([True, False]),
             "teacher_valid_mask": torch.tensor([True, False]),
             "teacher_score": torch.tensor([0.8, 0.0]),
         }
         second = {
+            "teacher_association_mask": torch.tensor([True]),
             "teacher_valid_mask": torch.tensor([True]),
             "teacher_score": torch.tensor([0.9]),
         }

@@ -1120,10 +1120,12 @@ Teacher Task 4 is implemented. `data/teacher_target_adapter.py` now:
 
 `scripts/validate_teacher_target_adapter.py` validates the full Chen train
 split and writes `teacher_target_adapter_validation.json`. The final notebook
-cell pins the approved checkpoint/tree digests and requires exactly `11,322`
+cell pins the approved checkpoint/tree digests and requires exactly `11,317`
 approved teacher matches after the below-60 m mask. The Task 3 audit's `11,324`
-count includes two matched 60 m+ Cars and is therefore not the distillation
-target count. This task does not connect teacher tensors to loss terms and
+count includes seven matched 60 m+ Cars and is therefore not the distillation
+target count. The validation report records all three values explicitly:
+`11,324` associations, `7` distance-masked associations, and `11,317` approved
+teacher targets. This task does not connect teacher tensors to loss terms and
 does not start training.
 
 The next isolated task is **Teacher Task 5: auxiliary loss integration**. Add

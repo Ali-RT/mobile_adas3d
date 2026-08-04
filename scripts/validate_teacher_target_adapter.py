@@ -45,6 +45,7 @@ def main() -> None:
     label_dir = resolve_label_dir(args.dataset_root)
     object_count = 0
     class_counts = {"Car": 0, "Pedestrian": 0, "Cyclist": 0}
+    teacher_association_count = 0
     teacher_match_count = 0
     for index, sample_id in enumerate(adapter.sample_ids, start=1):
         objects = [
@@ -56,6 +57,9 @@ def main() -> None:
         ]
         targets = adapter.build_for_sample(sample_id, objects)
         object_count += len(objects)
+        teacher_association_count += int(
+            targets["teacher_association_mask"].sum().item()
+        )
         teacher_match_count += int(targets["teacher_valid_mask"].sum().item())
         for obj in objects:
             class_counts[obj["class_name"]] += 1
@@ -72,7 +76,11 @@ def main() -> None:
         "samples": len(adapter.sample_ids),
         "ground_truth_objects": object_count,
         "ground_truth_by_class": class_counts,
+        "teacher_associations_before_distance_mask": teacher_association_count,
         "approved_teacher_matches": teacher_match_count,
+        "teacher_associations_masked_by_distance": (
+            teacher_association_count - teacher_match_count
+        ),
         "policy": {
             "class_name": adapter.class_name,
             "score_threshold": adapter.score_threshold,
