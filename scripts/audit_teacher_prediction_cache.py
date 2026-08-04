@@ -272,18 +272,29 @@ def write_csv(path: Path, rows: Sequence[Mapping[str, Any]]) -> None:
 
 def select_recommendations(rows: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
     best_f1 = max(rows, key=lambda row: (row["f1"], row["score_threshold"]))
+    recall_target = 0.95
     high_recall_candidates = [row for row in rows if row["recall"] >= 0.95]
-    high_recall = (
-        max(
+    if high_recall_candidates:
+        recall_selection = max(
             high_recall_candidates,
             key=lambda row: (row["score_threshold"], row["precision"]),
         )
-        if high_recall_candidates
-        else max(rows, key=lambda row: (row["recall"], row["precision"]))
-    )
+        target_met = True
+        reason = "highest threshold meeting recall target"
+    else:
+        recall_selection = max(
+            rows, key=lambda row: (row["recall"], row["precision"])
+        )
+        target_met = False
+        reason = "fallback to maximum observed recall; target was not met"
     return {
         "max_f1": dict(best_f1),
-        "high_recall_95": dict(high_recall),
+        "recall_target_95": {
+            "target_recall": recall_target,
+            "target_met": target_met,
+            "selection_reason": reason,
+            "metrics": dict(recall_selection),
+        },
     }
 
 
@@ -328,7 +339,7 @@ def run_audit(
         matched_by_threshold[threshold] = matched_rows
 
     recommendations = select_recommendations(threshold_rows)
-    selected_threshold = float(recommendations["high_recall_95"]["score_threshold"])
+    selected_threshold = float(recommendations["max_f1"]["score_threshold"])
     selected_matches = matched_by_threshold[selected_threshold]
     output_dir.mkdir(parents=True, exist_ok=True)
     write_csv(output_dir / "teacher_threshold_sweep.csv", threshold_rows)
@@ -351,6 +362,8 @@ def run_audit(
         },
         "thresholds": list(sorted(set(float(value) for value in thresholds))),
         "recommendations": recommendations,
+        "selected_matches_policy": "max_f1",
+        "selected_score_threshold": selected_threshold,
         "selected_match_rows": len(selected_matches),
     }
     (output_dir / "teacher_matching_audit.json").write_text(

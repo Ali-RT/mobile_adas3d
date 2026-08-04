@@ -62,7 +62,19 @@ class TeacherMatchingAuditTests(unittest.TestCase):
         ]
         selected = select_recommendations(rows)
         self.assertEqual(selected["max_f1"]["score_threshold"], 0.3)
-        self.assertEqual(selected["high_recall_95"]["score_threshold"], 0.3)
+        recall_target = selected["recall_target_95"]
+        self.assertTrue(recall_target["target_met"])
+        self.assertEqual(recall_target["metrics"]["score_threshold"], 0.3)
+
+    def test_recall_recommendation_marks_unmet_target(self):
+        rows = [
+            {"score_threshold": 0.1, "precision": 0.5, "recall": 0.87, "f1": 0.63},
+            {"score_threshold": 0.3, "precision": 0.9, "recall": 0.79, "f1": 0.84},
+        ]
+        selected = select_recommendations(rows)["recall_target_95"]
+        self.assertFalse(selected["target_met"])
+        self.assertEqual(selected["metrics"]["score_threshold"], 0.1)
+        self.assertIn("not met", selected["selection_reason"])
 
 
 if __name__ == "__main__":

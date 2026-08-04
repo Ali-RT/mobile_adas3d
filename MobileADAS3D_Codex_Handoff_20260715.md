@@ -1046,8 +1046,9 @@ predicted 3D geometry: process teacher predictions in descending score order
 and greedily claim the unmatched Car ground truth with maximum 2D IoU when it
 is at least 0.5. BEV/3D IoU, depth, yaw, and dimensions are measured only after
 association. The audit sweeps scores `0.001, 0.01, 0.03, 0.05, 0.1, 0.2, 0.3,
-0.5, 0.7, 0.9` and reports both maximum-F1 and highest-threshold ≥95%-recall
-recommendations.
+0.5, 0.7, 0.9` and reports both maximum-F1 and a 95%-recall target result. The
+target result explicitly records whether 95% was achieved; otherwise it labels
+the maximum-recall row as a fallback. The selected-match CSV uses maximum F1.
 
 Expected artifacts:
 
@@ -1062,6 +1063,52 @@ chen_train_clean_20260804/matching_audit_v1/
 Task 3 remains in progress until the Colab report is reviewed. Do not select a
 distillation threshold merely from train AP or replace KITTI ground truth with
 teacher boxes.
+
+#### 2026-08-04 teacher matching audit result
+
+Task 3 completed against the clean cache and verified both the checkpoint and
+prediction-tree digests. Score `0.30` maximized F1 and is the selected policy:
+
+```text
+association: greedy one-to-one Car match, 2D IoU >= 0.50
+score threshold: 0.30
+GT Cars: 14357
+teacher predictions: 11958
+matched: 11324
+precision / recall / F1: 0.9470 / 0.7887 / 0.8606
+mean 2D / BEV / 3D IoU: 0.9165 / 0.7950 / 0.7666
+depth MAE / relative error: 0.252 m / 0.0092
+yaw MAE: 1.279 degrees
+dimension MAE: 0.045 m
+```
+
+No score reached the requested 95% recall. The maximum observed recall was
+`0.8718` at score `0.001`, but precision fell to `0.3508`; this row is a
+fallback diagnostic, not the distillation policy.
+
+Distance coverage at score `0.30`:
+
+```text
+00-20 m: 81.44% recall, 0.849 mean 3D IoU, 0.098 m depth MAE
+20-40 m: 97.25% recall, 0.765 mean 3D IoU, 0.246 m depth MAE
+40-60 m: 55.24% recall, 0.572 mean 3D IoU, 0.653 m depth MAE
+60 m+:    0.92% recall, 0.232 mean 3D IoU, 2.191 m depth MAE
+```
+
+Teacher Task 3 is complete. The approved initial distillation policy is:
+
+- retain KITTI ground truth as the primary target for every object;
+- add auxiliary teacher geometry only for one-to-one matched Car predictions
+  with score >=0.30, 2D IoU >=0.50, and GT depth below 60 m;
+- ignore unmatched teacher predictions rather than creating pseudo-labels;
+- keep unmatched Car GT, all Pedestrian/Cyclist GT, and all 60 m+ GT on normal
+  supervised losses only.
+
+The next isolated task is **Teacher Task 4: distillation target adapter**. It
+should load and verify the cache manifest, deterministically reproduce the
+approved matching policy, and emit teacher target tensors/masks aligned to the
+existing KITTI ground-truth objects. Do not add loss terms or start training in
+Task 4.
 
 #### 2026-08-04 rejected augmented train cache
 
@@ -1149,5 +1196,5 @@ canonical comparison.
 5. Select deployment candidates using AP3D/BEV R40, Core ML parity, model size,
    and physical-iPhone latency together.
 
-Teacher Tasks 1 and 2 are complete. Teacher Task 3 is the next planned unit;
-student distillation has not started.
+Teacher Tasks 1 through 3 are complete. Teacher Task 4 is the next planned
+unit; student distillation training has not started.

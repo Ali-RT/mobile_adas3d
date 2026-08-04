@@ -131,8 +131,11 @@ Teacher Task 3 is implemented in the final notebook section and by
 digest, sweeps scores `0.001` through `0.9`, and performs deterministic greedy
 one-to-one Car matching by descending teacher score and 2D IoU ≥0.5. It writes
 threshold precision/recall/F1, distance coverage, selected matched geometry,
-and a JSON report containing separate maximum-F1 and ≥95%-recall threshold
-recommendations. It does not modify student training.
+and a JSON report containing a maximum-F1 recommendation plus an explicit 95%
+recall target result. If no threshold reaches 95%, the report marks
+`target_met: false` instead of mislabeling the maximum-recall fallback. The
+selected-match CSV uses the maximum-F1 threshold. It does not modify student
+training.
 
 The notebook resolves KITTI from
 `/content/drive/MyDrive/datasets/kitti` when `/content/kitti` has not already

@@ -53,6 +53,8 @@ class KITTIPredictionParserTests(unittest.TestCase):
         self.assertIn("audit_teacher_prediction_cache.py", source)
         self.assertIn("teacher_threshold_sweep.csv", source)
         self.assertIn("--match-2d-iou-threshold", source)
+        self.assertIn("recall_target_95", source)
+        self.assertNotIn("high_recall_95", source)
 
     def test_parses_scored_kitti_detection(self):
         with tempfile.TemporaryDirectory() as temp_dir:
