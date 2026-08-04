@@ -1,0 +1,13 @@
+base_config: kitti_mnv4_quality_scoring_v3.yaml
+
+logging:
+  run_name: "mnv4_v6_monodetr_distillation_gate"
+
+distillation:
+  enabled: true
+
+training:
+  # Conservative fine-tuning settings for the bounded Task 6 gate.
+  learning_rate: 0.00001
+  weight_decay: 0.0001
+  use_amp: false

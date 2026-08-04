@@ -27,8 +27,26 @@ def resolve_config_path(config_path: str) -> Path:
     raise FileNotFoundError(f"Config file not found: {path}")
 
 
-def load_config(config_path: str) -> Dict[str, Any]:
+def _deep_merge(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
+    merged = dict(base)
+    for key, value in override.items():
+        if isinstance(value, dict) and isinstance(merged.get(key), dict):
+            merged[key] = _deep_merge(merged[key], value)
+        else:
+            merged[key] = value
+    return merged
+
+
+def load_config(
+    config_path: str,
+    _stack: Optional[tuple[Path, ...]] = None,
+) -> Dict[str, Any]:
     path = resolve_config_path(config_path)
+    path = path.resolve()
+    stack = _stack or ()
+    if path in stack:
+        chain = " -> ".join(str(item) for item in (*stack, path))
+        raise ValueError(f"Config inheritance cycle: {chain}")
 
     with path.open("r") as f:
         config = yaml.safe_load(f)
@@ -36,7 +54,14 @@ def load_config(config_path: str) -> Dict[str, Any]:
     if config is None:
         raise ValueError(f"Config file is empty: {path}")
 
-    return config
+    base_config = config.pop("base_config", None)
+    if base_config is None:
+        return config
+    base_path = Path(base_config)
+    if not base_path.is_absolute():
+        base_path = path.parent / base_path
+    base = load_config(str(base_path), _stack=(*stack, path))
+    return _deep_merge(base, config)
 
 
 def apply_runtime_overrides(

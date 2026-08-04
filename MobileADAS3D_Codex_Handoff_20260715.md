@@ -1177,6 +1177,28 @@ First require the real-data Task 5 smoke report to pass. Then create a distinct
 enabled run configuration and run a short, fixed-seed comparison against the
 same supervised checkpoint before authorizing an 80-epoch experiment.
 
+Teacher Task 6 is implemented and awaiting its Colab result. The distinct
+`configs/kitti_mnv4_teacher_distillation_v6.yaml` inherits V3, explicitly
+enables distillation, and lowers fine-tuning LR to `1e-5`. Config inheritance is
+deep-merged and cycle-checked by `tools/config.py`.
+
+`scripts/run_distillation_experiment_gate.py` creates two branches from the
+same V3 epoch-80 state dict:
+
+```text
+control:       100 normal supervised updates
+distillation:  100 supervised + teacher auxiliary updates
+batch size:    2
+sample order:  identical, fixed Chen-train order
+evaluation:    same first 64 val batches (512 images), supervised losses only
+optimizer:     fresh AdamW for each branch, LR 1e-5
+```
+
+It writes `distillation_experiment_gate.json` plus two compatible checkpoints.
+This loss comparison is a bounded health gate, not evidence of AP improvement.
+Do not authorize 80 epochs until both short-run checkpoints have also been
+compared with the same KITTI AP_R40 command.
+
 #### 2026-08-04 rejected augmented train cache
 
 The first train-cache run completed 3,712 files but used

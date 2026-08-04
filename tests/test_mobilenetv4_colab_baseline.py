@@ -31,6 +31,7 @@ V2_CONFIG_PATH = PROJECT_ROOT / "configs" / "kitti_mnv4_calibrated_geometry_v2.y
 V3_CONFIG_PATH = PROJECT_ROOT / "configs" / "kitti_mnv4_quality_scoring_v3.yaml"
 V4_CONFIG_PATH = PROJECT_ROOT / "configs" / "kitti_mnv4_angular_yaw_v4.yaml"
 V5_CONFIG_PATH = PROJECT_ROOT / "configs" / "kitti_mnv4_axis_direction_v5.yaml"
+V6_CONFIG_PATH = PROJECT_ROOT / "configs" / "kitti_mnv4_teacher_distillation_v6.yaml"
 NOTEBOOK_PATH = (
     PROJECT_ROOT
     / "notebooks"
@@ -177,6 +178,31 @@ class MobileNetV4BaselineTests(unittest.TestCase):
         self.assertIn("projected_center_offset", outputs)
         self.assertIn("quality", outputs)
         self.assertEqual(tuple(outputs["quality"].shape), (1, 1, 24, 80))
+
+    def test_v6_config_inherits_v3_and_enables_distillation(self):
+        config = load_config(str(V6_CONFIG_PATH))
+        self.assertEqual(
+            config["model"]["backbone"],
+            "mobilenetv4_conv_small.e2400_r224_in1k",
+        )
+        self.assertTrue(config["model"]["use_quality"])
+        self.assertTrue(config["distillation"]["enabled"])
+        self.assertEqual(config["training"]["learning_rate"], 0.00001)
+        self.assertEqual(config["inference"]["quality_score_power"], 0.0)
+
+    def test_config_inheritance_deep_merges_and_rejects_cycles(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            base = root / "base.yaml"
+            child = root / "child.yaml"
+            base.write_text("model:\n  width: 128\n  depth: 4\n")
+            child.write_text("base_config: base.yaml\nmodel:\n  depth: 6\n")
+            config = load_config(str(child))
+            self.assertEqual(config["model"], {"width": 128, "depth": 6})
+
+            base.write_text("base_config: child.yaml\n")
+            with self.assertRaisesRegex(ValueError, "inheritance cycle"):
+                load_config(str(child))
 
     def test_v4_config_uses_angular_yaw_loss_and_class_scoring(self):
         config = load_config(str(V4_CONFIG_PATH))
