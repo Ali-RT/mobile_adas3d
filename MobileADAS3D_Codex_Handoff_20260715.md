@@ -1217,6 +1217,33 @@ distillation checkpoints on all 3,769 Chen-val images with identical threshold,
 TopK, NMS, config, and AP_R40 implementation. It writes
 `kitti_ap_r40_comparison.csv`; that table is the long-run authorization gate.
 
+#### 2026-08-05 Teacher Task 6 result: stable but no long-run authorization
+
+All three checkpoints were evaluated on the complete 3,769-image Chen val split
+with score threshold `0.001`, TopK `300`, NMS IoU `0.5`, and the same V3 config.
+Moderate AP_R40 results:
+
+```text
+                         3D Car  3D Ped  3D Cyc  BEV Car  BEV Ped  BEV Cyc
+source V3 epoch 80        2.763   1.107   1.550    5.890    1.577    2.391
+control after 100 steps   2.706   1.003   1.712    5.775    1.787    2.147
+distill after 100 steps   2.718   1.001   1.710    5.744    1.786    2.171
+```
+
+Distillation versus the matched control changed Car moderate AP by only
+`+0.0118` 3D and `-0.0308` BEV. Both 100-step branches remained below the
+source checkpoint on the primary Car metrics. Therefore the current V6 recipe
+is stable but **does not pass the gate for an 80-epoch run**.
+
+The likely limitation is experimental placement rather than a plumbing bug:
+the epoch-80 student is already converged and its teacher losses were tiny
+(`0.00028` depth, `0.00154` dimensions, `0.00007` location, `0.00223` yaw).
+Teacher supervision has little residual signal at that point. Do not simply
+increase weights and launch 80 epochs. The next isolated experiment should test
+learning acceleration from an early V3 checkpoint (preferably epoch 5) with a
+bounded paired run and identical AP evaluation. Only that result can determine
+whether teacher guidance is useful during early optimization.
+
 The Task 6 notebook cell is self-contained: `STUDENT_OUTPUT_ROOT` resolves to
 `/content/drive/MyDrive/mobile_adas3d_outputs/mnv4_conv_small_baseline`. It
 prefers the known V3 run `20260727_184204_mnv4_v3_quality_scoring`, then searches
