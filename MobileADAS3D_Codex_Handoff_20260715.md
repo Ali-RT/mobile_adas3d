@@ -1199,6 +1199,24 @@ This loss comparison is a bounded health gate, not evidence of AP improvement.
 Do not authorize 80 epochs until both short-run checkpoints have also been
 compared with the same KITTI AP_R40 command.
 
+The 100-step paired loss gate completed on 2026-08-05:
+
+```text
+teacher-positive cells: 5009
+control supervised val loss:       2.05702383
+distillation supervised val loss:  2.05698905
+relative distillation change:     -0.00169%
+finite run: yes
+full training started: no
+```
+
+This is a stability pass but a quality-neutral result: the loss difference is
+too small to support an improvement claim. The final Task 6 notebook cell now
+evaluates the original V3 epoch-80 checkpoint, 100-step control, and 100-step
+distillation checkpoints on all 3,769 Chen-val images with identical threshold,
+TopK, NMS, config, and AP_R40 implementation. It writes
+`kitti_ap_r40_comparison.csv`; that table is the long-run authorization gate.
+
 The Task 6 notebook cell is self-contained: `STUDENT_OUTPUT_ROOT` resolves to
 `/content/drive/MyDrive/mobile_adas3d_outputs/mnv4_conv_small_baseline`. It
 prefers the known V3 run `20260727_184204_mnv4_v3_quality_scoring`, then searches
