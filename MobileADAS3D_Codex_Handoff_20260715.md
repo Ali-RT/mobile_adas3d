@@ -1199,6 +1199,11 @@ This loss comparison is a bounded health gate, not evidence of AP improvement.
 Do not authorize 80 epochs until both short-run checkpoints have also been
 compared with the same KITTI AP_R40 command.
 
+The Task 6 notebook cell is self-contained: `STUDENT_OUTPUT_ROOT` resolves to
+`/content/drive/MyDrive/mobile_adas3d_outputs/mnv4_conv_small_baseline`. It
+prefers the known V3 run `20260727_184204_mnv4_v3_quality_scoring`, then searches
+other matching V3 runs for `epoch_080.pt` if that exact path is absent.
+
 #### 2026-08-04 rejected augmented train cache
 
 The first train-cache run completed 3,712 files but used
