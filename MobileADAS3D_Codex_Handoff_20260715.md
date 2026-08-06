@@ -1380,3 +1380,25 @@ Do not replace the depth predictor or transformer yet. First compare official
 KITTI Car AP_R40, total/trainable parameters, peak memory, and inference
 latency with the unmodified teacher. Only proceed to a full schedule if the
 20-epoch curve is stable and the accuracy/efficiency tradeoff is credible.
+
+#### 2026-08-06 MobileNetV4 epoch-20 gate result and continuation
+
+The gate completed all 3,769 Chen-val predictions. Epoch 20 was best:
+
+```text
+epoch   Car 3D moderate AP_R40   Car BEV moderate AP_R40
+5       6.618                    11.565
+10      9.602                    16.008
+15      10.893                   16.823
+20      12.399                   18.871
+teacher 20.328                   27.097
+```
+
+The curve improved at every checkpoint, so the same architecture is authorized
+to continue to epoch 50. The notebook now applies
+`scripts/patch_monodetr_verbose_resume.py`, resumes explicitly from
+`checkpoint_epoch_20.pth`, and restores optimizer, epoch, best-result, and
+scheduler position. It logs every 20 batches with current/average loss, LR,
+elapsed time, and CUDA allocated/reserved memory, plus an average loss and
+duration for every epoch. Do not use the initialization checkpoint for this
+continuation because that would reset optimizer and schedule state.

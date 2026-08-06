@@ -195,6 +195,15 @@ Compare its official KITTI Car AP_R40, parameter count, memory, and inference
 latency against the unmodified teacher before changing the depth predictor or
 transformer.
 
+After a successful epoch-20 gate, the notebook provides a stateful continuation
+to epoch 50. `scripts/patch_monodetr_verbose_resume.py` lets MonoDETR resume
+from an explicit checkpoint path and adds durable progress lines every 20
+batches with current/average loss, learning rate, elapsed time, and CUDA memory.
+It also logs epoch start, epoch-average loss, training duration, and validation
+boundaries. The continuation restores model and optimizer state, epoch, best
+AP, and scheduler position from `checkpoint_epoch_20.pth`; it does not reset
+the run as pretrained fine-tuning.
+
 After a run finishes, sweep AP across saved checkpoints instead of trusting
 `best.pt` by validation loss:
 
