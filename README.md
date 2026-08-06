@@ -171,6 +171,30 @@ The evaluator requires one prediction file per split image by default,
 including empty files for frames with no detections. This prevents partial
 teacher inference from being reported as a complete benchmark.
 
+## MonoDETR MobileNetV4 backbone ablation
+
+[`notebooks/MonoDETR_MobileNetV4_Backbone_Ablation_Colab.ipynb`](notebooks/MonoDETR_MobileNetV4_Backbone_Ablation_Colab.ipynb)
+is the next model-compression experiment. It pins the same validated MonoDETR
+revision and changes only its ResNet50 backbone to timm MobileNetV4 Conv Small.
+The replacement preserves the three downstream feature strides (8, 16, 32);
+the feature channels become 64, 96, and 960, and MonoDETR's existing 1x1 input
+projections adapt them to the unchanged 256-dimensional transformer.
+
+The notebook applies two audited, idempotent patch scripts:
+
+- `scripts/patch_monodetr_colab_compat.py` for current PyTorch/Colab APIs.
+- `scripts/patch_monodetr_mobilenetv4.py` for the backbone option only.
+
+`scripts/prepare_monodetr_mnv4_backbone_experiment.py` creates a strict-load
+initialization checkpoint. MobileNetV4 starts from ImageNet weights; every
+shape-compatible MonoDETR tensor outside the backbone and input projections is
+copied from the validated official checkpoint. Unexpected downstream missing
+or mismatched tensors stop the run. The first authorized run is a 20-epoch
+gate with checkpoints every five epochs, not a full replacement training run.
+Compare its official KITTI Car AP_R40, parameter count, memory, and inference
+latency against the unmodified teacher before changing the depth predictor or
+transformer.
+
 After a run finishes, sweep AP across saved checkpoints instead of trusting
 `best.pt` by validation loss:
 

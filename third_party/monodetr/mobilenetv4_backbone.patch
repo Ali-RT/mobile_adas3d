@@ -1,0 +1,71 @@
+diff --git a/lib/models/monodetr/backbone.py b/lib/models/monodetr/backbone.py
+index 06fde3f..918deb9 100644
+--- a/lib/models/monodetr/backbone.py
++++ b/lib/models/monodetr/backbone.py
+@@ -15,6 +15,7 @@ from collections import OrderedDict
+ import torch
+ import torch.nn.functional as F
+ import torchvision
++import timm
+ from torch import nn
+ from torchvision.models._utils import IntermediateLayerGetter
+ from typing import Dict, List
+@@ -106,6 +107,45 @@ class Backbone(BackboneBase):
+             self.strides[-1] = self.strides[-1] // 2
+ 
+ 
++class TimmMobileNetV4Backbone(nn.Module):
++    """MobileNetV4 multi-scale feature extractor for MonoDETR."""
++
++    def __init__(self, cfg, train_backbone: bool, return_interm_layers: bool):
++        super().__init__()
++        if cfg.get('dilation', False):
++            raise ValueError('MobileNetV4 backbone does not support dilation')
++        out_indices = tuple(cfg.get('backbone_out_indices', [2, 3, 4]))
++        if not return_interm_layers:
++            out_indices = (out_indices[-1],)
++        self.body = timm.create_model(
++            cfg['backbone'],
++            pretrained=bool(cfg.get('backbone_pretrained', True)) and is_main_process(),
++            features_only=True,
++            out_indices=out_indices,
++        )
++        self.strides = list(self.body.feature_info.reduction())
++        self.num_channels = list(self.body.feature_info.channels())
++        expected_strides = [8, 16, 32] if return_interm_layers else [32]
++        if self.strides != expected_strides:
++            raise RuntimeError(
++                f'Expected MobileNetV4 strides {expected_strides}, got {self.strides}'
++            )
++        for name, parameter in self.body.named_parameters():
++            trainable_stage = name.startswith(('blocks.2.', 'blocks.3.', 'blocks.4.'))
++            parameter.requires_grad_(bool(train_backbone and trainable_stage))
++
++    def forward(self, images):
++        features = self.body(images)
++        out = OrderedDict()
++        for index, feature in enumerate(features):
++            mask = torch.zeros(
++                feature.shape[0], feature.shape[2], feature.shape[3],
++                dtype=torch.bool, device=feature.device,
++            )
++            out[str(index)] = NestedTensor(feature, mask)
++        return out
++
++
+ class Joiner(nn.Sequential):
+     def __init__(self, backbone, position_embedding):
+         super().__init__(backbone, position_embedding)
+@@ -130,6 +170,11 @@ def build_backbone(cfg):
+     
+     position_embedding = build_position_encoding(cfg)
+     return_interm_layers = cfg['masks'] or cfg['num_feature_levels'] > 1
+-    backbone = Backbone(cfg['backbone'], cfg['train_backbone'], return_interm_layers, cfg['dilation'])
++    if cfg.get('backbone_source', 'torchvision') == 'timm':
++        backbone = TimmMobileNetV4Backbone(
++            cfg, cfg['train_backbone'], return_interm_layers
++        )
++    else:
++        backbone = Backbone(cfg['backbone'], cfg['train_backbone'], return_interm_layers, cfg['dilation'])
+     model = Joiner(backbone, position_embedding)
+     return model

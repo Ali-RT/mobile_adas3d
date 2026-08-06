@@ -1335,5 +1335,48 @@ canonical comparison.
 5. Select deployment candidates using AP3D/BEV R40, Core ML parity, model size,
    and physical-iPhone latency together.
 
-Teacher Tasks 1 through 3 are complete. Teacher Task 4 is the next planned
-unit; student distillation training has not started.
+Teacher Tasks 1 through 6 are complete. The 100-step paired distillation gate
+was stable but did not improve AP enough to authorize a long student run.
+
+#### 2026-08-06 MonoDETR MobileNetV4 backbone-only ablation
+
+The next controlled experiment is direct transfer learning inside MonoDETR,
+not another custom-student distillation run. The first ablation replaces only
+the official ResNet50 backbone with
+`mobilenetv4_conv_small.e2400_r224_in1k`. It preserves feature strides
+8/16/32, the depth predictor, deformable transformer, queries, prediction
+heads, losses, Chen split, and official KITTI evaluation. Backbone feature
+channels change from 512/1024/2048 to 64/96/960; MonoDETR's existing 1x1 input
+projections absorb that interface change.
+
+Implementation artifacts:
+
+```text
+notebooks/MonoDETR_MobileNetV4_Backbone_Ablation_Colab.ipynb
+scripts/patch_monodetr_colab_compat.py
+scripts/patch_monodetr_mobilenetv4.py
+scripts/prepare_monodetr_mnv4_backbone_experiment.py
+third_party/monodetr/mobilenetv4_backbone.patch
+```
+
+The MonoDETR source revision remains pinned to
+`6994b9f512400b258c6edb75f77423beb9c126f2`. The backbone patch checks the
+exact original and patched source SHA-256 values and is idempotent. The
+experiment initializer uses ImageNet MobileNetV4 weights and copies every
+compatible downstream tensor from the validated official MonoDETR checkpoint;
+unexpected downstream missing keys or shape mismatches are fatal. Backbone
+and input-projection tensors are intentionally initialized for the new
+interface.
+
+Run the dedicated notebook with `BATCH_SIZE=16`, `GATE_EPOCHS=20`, and
+`LEARNING_RATE=1e-4`. If batch 16 OOMs, restart and use 8, documenting the
+change. The gate checkpoints every five epochs to:
+
+```text
+/content/drive/MyDrive/mobile_adas3d_outputs/monodetr_backbone_ablation/mnv4_conv_small_gate20/
+```
+
+Do not replace the depth predictor or transformer yet. First compare official
+KITTI Car AP_R40, total/trainable parameters, peak memory, and inference
+latency with the unmodified teacher. Only proceed to a full schedule if the
+20-epoch curve is stable and the accuracy/efficiency tradeoff is credible.
