@@ -1634,3 +1634,27 @@ Both native S1 output and external KITTI-format R0 predictions pass through the
 same mapping. This metric is not represented as an official KITTI leaderboard
 claim. The next isolated task is to prepare and run the R0 Colab training job;
 GT-only S1 training must wait until the denominator exists.
+
+#### 2026-08-11 R0 Colab preparation complete
+
+`notebooks/MonoDETR_R0_Two_Class_Reference_Colab.ipynb` is the self-contained
+GPU workflow for the R0 reference run. It resolves either staged or Drive KITTI
+aliases, pins MonoDETR commit `6994b9f512400b258c6edb75f77423beb9c126f2`,
+applies the current-PyTorch compatibility and verbose checkpoint patches, and
+prepares a hash-tracked 195-epoch ResNet50 run at batch size 16 with checkpoints
+every five epochs.
+
+`scripts/patch_monodetr_product_taxonomy.py` maps source labels before filtering
+and target encoding while retaining MonoDETR's native three-logit head. This
+allows the published checkpoint to load exactly: Car/Van/Truck/Tram train the
+native Car logit and Pedestrian/Person_sitting train the native Pedestrian
+logit; Cyclist receives no target. `scripts/prepare_monodetr_r0_reference.py`
+writes the resolved upstream config, clean initialization checkpoint, and
+experiment manifest under the durable Drive run directory.
+
+The preparation task is complete but R0 training has not run. The user should
+open the R0 notebook, choose a GPU runtime, retain the frozen parameters, and
+run through the real training cell. Upstream `checkpoint_best.pth` is not the
+final selection because MonoDETR selects it using Car AP only. After training,
+the next implementation task is the product-taxonomy checkpoint sweep and R0
+selection using mean Vehicle/Pedestrian moderate 3D AP_R40.

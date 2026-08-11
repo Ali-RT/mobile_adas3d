@@ -182,6 +182,25 @@ The evaluator requires one prediction file per split image by default,
 including empty files for frames with no detections. This prevents partial
 teacher inference from being reported as a complete benchmark.
 
+## Two-class R0 reference training
+
+Run
+[`notebooks/MonoDETR_R0_Two_Class_Reference_Colab.ipynb`](notebooks/MonoDETR_R0_Two_Class_Reference_Colab.ipynb)
+from top to bottom in a GPU Colab runtime. Its frozen defaults are ResNet50
+MonoDETR, 195 epochs, batch size 16, checkpointing every 5 epochs, the Chen
+3,712/3,769 split, and the published MonoDETR checkpoint initialization. The
+upstream adapter maps Car/Van/Truck/Tram to MonoDETR's native Car ID and maps
+Pedestrian/Person_sitting to its native Pedestrian ID before filtering and
+target encoding. The three-logit checkpoint-compatible classification head is
+retained; Cyclist receives no training targets.
+
+The durable output root is
+`/content/drive/MyDrive/mobile_adas3d_outputs/references/monodetr_r0`. Do not
+adopt upstream `checkpoint_best.pth` as the final R0 automatically because that
+selection is Car-only. The next gate sweeps saved checkpoints with the frozen
+Vehicle/Pedestrian product evaluator and selects mean moderate 3D AP_R40 as
+defined in [`TWO_CLASS_REFERENCE_PROTOCOL.md`](TWO_CLASS_REFERENCE_PROTOCOL.md).
+
 ## MonoDETR MobileNetV4 backbone ablation
 
 [`notebooks/MonoDETR_MobileNetV4_Backbone_Ablation_Colab.ipynb`](notebooks/MonoDETR_MobileNetV4_Backbone_Ablation_Colab.ipynb)
