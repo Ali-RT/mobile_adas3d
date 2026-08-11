@@ -1587,3 +1587,33 @@ The local repository contains only one KITTI sample, so the reportable 3,712
 train / 3,769 val count manifest must be generated where the full dataset lives
 in Google Drive. Until that command passes and its counts/dimensions are
 reviewed, training remains unauthorized.
+
+#### 2026-08-11 full production-taxonomy Drive audit complete
+
+The Colab audit completed all 3,712 train and 3,769 validation samples, with no
+duplicate IDs and no frame lacking a mapped production object. The mapping and
+both split/label-tree hashes passed, so the taxonomy gate is complete.
+
+```text
+train: Vehicle 16,366; Pedestrian 2,263; total 18,629
+val:   Vehicle 16,895; Pedestrian 2,446; total 19,341
+
+train Vehicle sources: Car 14,357; Van 1,297; Truck 488; Tram 224
+train Pedestrian sources: Pedestrian 2,207; Person_sitting 56
+```
+
+Vehicle is 7.23x more frequent than Pedestrian in train. The initial
+Pedestrian loss weight remains 2.5 rather than adding another uncontrolled
+change; per-class nearby recall will decide whether a later weighting ablation
+is justified. Only train statistics were used to replace the provisional class
+mean dimensions:
+
+```text
+Vehicle H/W/L:    1.663947 / 1.681781 / 4.309594 m
+Pedestrian H/W/L: 1.755652 / 0.625749 / 0.824048 m
+```
+
+Validation dimensions were recorded for drift analysis but were not copied
+into training configuration. The audit summary is preserved at
+`reports/data/kitti_s1_taxonomy_manifest_summary.json`. Next establish the
+two-class teacher/reference evaluation protocol before starting S1 training.

@@ -1,6 +1,6 @@
 # MobileADAS3D product model contract
 
-Status: MobileADAS3D-S1 pre-training device gate passed; taxonomy mapping next
+Status: S1 device and production-taxonomy gates passed; reference protocol next
 Decision date: 2026-08-11
 
 ## 1. Product objective and priority order
@@ -217,10 +217,11 @@ velocity fields.
 6. **Completed 2026-08-11:** implement S1 and pass its random-weight complexity,
    conversion, parity, and physical-iPhone 5-warmup/100-prediction gate. Device
    p95 was 3.788 ms against the 35 ms pre-training limit.
-7. **Implementation completed 2026-08-11; full-data audit pending:** map
+7. **Completed 2026-08-11:** map
    Car/Van/Truck/Tram to Vehicle and Pedestrian/Person_sitting to Pedestrian,
-   preserve source labels, and reject stale split/label-tree manifests. Generate
-   and review the full Chen manifest in Colab before training.
+   preserve source labels, and reject stale split/label-tree manifests. The
+   full Drive audit passed on 3,712/3,769 samples with 16,366/16,895 Vehicle and
+   2,263/2,446 Pedestrian objects in train/validation respectively.
 8. Establish the same-protocol ResNet50 Vehicle + Pedestrian reference.
 9. Train a fresh Vehicle + Pedestrian student. Evaluate at epochs 20, 40, 50,
    75, and 100; continue farther only while moderate 3D AP improves.

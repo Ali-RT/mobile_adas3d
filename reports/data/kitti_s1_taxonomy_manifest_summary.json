@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "complete": true,
+  "protocol": "chen_3712_3769",
+  "taxonomy_sha256": "bd4ababba6eb1bc9b9867dcad70d826919e0ba44032398c32fc64cd743b77458",
+  "class_mapping": {
+    "Car": "Vehicle",
+    "Van": "Vehicle",
+    "Truck": "Vehicle",
+    "Tram": "Vehicle",
+    "Pedestrian": "Pedestrian",
+    "Person_sitting": "Pedestrian"
+  },
+  "train": {
+    "samples": 3712,
+    "samples_with_mapped_objects": 3712,
+    "split_file_sha256": "e85ce0142be11c7e4196fd7b79a8bc8c2cefdd6fe754ac61fef8d421e37aba5c",
+    "label_tree_sha256": "11e9d68f83360a606861410c9ab1aaaf6e095496c9fb357e79111a7e158222b5",
+    "mapped_counts": {"Vehicle": 16366, "Pedestrian": 2263},
+    "mapped_source_counts": {
+      "Vehicle": {"Car": 14357, "Van": 1297, "Truck": 488, "Tram": 224},
+      "Pedestrian": {"Pedestrian": 2207, "Person_sitting": 56}
+    },
+    "excluded_counts": {"Cyclist": 734, "DontCare": 5399, "Misc": 337},
+    "mean_dimensions_hwl": {
+      "Vehicle": [1.66394659660275, 1.6817811316143063, 4.309594280826094],
+      "Pedestrian": [1.7556517896597472, 0.6257490057445887, 0.8240477242598291]
+    }
+  },
+  "val": {
+    "samples": 3769,
+    "samples_with_mapped_objects": 3769,
+    "split_file_sha256": "6e2394d97c866c3af1ffb049f828abdf3d5b707d9575d16885fd0de87b72b0c8",
+    "label_tree_sha256": "adf36ff179f3cc66a6b9432cd135a6afa4bf52588b7742584b1870e76f3f9dc7",
+    "mapped_counts": {"Vehicle": 16895, "Pedestrian": 2446},
+    "mapped_source_counts": {
+      "Vehicle": {"Car": 14385, "Van": 1617, "Truck": 606, "Tram": 287},
+      "Pedestrian": {"Pedestrian": 2280, "Person_sitting": 166}
+    },
+    "excluded_counts": {"Cyclist": 893, "DontCare": 5896, "Misc": 636},
+    "mean_dimensions_hwl": {
+      "Vehicle": [1.6822255105060373, 1.7138502515536718, 4.450053862089313],
+      "Pedestrian": [1.7212959934587089, 0.6861283728536411, 0.8555028618152132]
+    }
+  }
+}

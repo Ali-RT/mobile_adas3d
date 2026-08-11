@@ -47,8 +47,9 @@ model:
 
 targets:
   class_mean_dims:
-    Vehicle: [1.55, 1.75, 4.20]
-    Pedestrian: [1.70, 0.60, 0.80]
+    # Train-split-only means from the audited Chen taxonomy manifest.
+    Vehicle: [1.663947, 1.681781, 4.309594]
+    Pedestrian: [1.755652, 0.625749, 0.824048]
 
 loss:
   class_weights:

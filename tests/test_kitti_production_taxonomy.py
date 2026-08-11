@@ -12,9 +12,25 @@ from data.class_taxonomy import (
     split_label_tree_sha256,
 )
 from data.kitti_dataset import KITTIDataset
+from tools.config import load_config
 
 
 class KittiProductionTaxonomyTests(unittest.TestCase):
+    def test_s1_config_uses_audited_train_only_dimensions(self):
+        root = Path(__file__).resolve().parents[1]
+        config = load_config(str(root / "configs/kitti_mobileadas3d_s1.yaml"))
+        self.assertEqual(
+            config["dataset"]["class_mapping"], KITTI_PRODUCTION_CLASS_MAPPING
+        )
+        self.assertEqual(
+            config["targets"]["class_mean_dims"]["Vehicle"],
+            [1.663947, 1.681781, 4.309594],
+        )
+        self.assertEqual(
+            config["targets"]["class_mean_dims"]["Pedestrian"],
+            [1.755652, 0.625749, 0.824048],
+        )
+
     def test_real_sample_dataset_maps_and_assigns_production_ids(self):
         root = Path(__file__).resolve().parents[1] / "datasets" / "kitti"
         dataset = KITTIDataset(
