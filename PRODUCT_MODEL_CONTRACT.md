@@ -80,9 +80,9 @@ ego, and calibrated-camera coordinates, then through the exact 10:3 crop and
 Only crop-visible objects are eligible for the primary model-input score. The
 all-visible score quantifies objects removed by the fixed KITTI crop.
 
-## 4. Locked architecture candidate
+## 4. Architecture decision
 
-The production candidate is **MobileMonoDETR-VP1**:
+The rejected edge candidate was **MobileMonoDETR-VP1**:
 
 ```text
 RGB Float32 /255 input [1, 3, 384, 1280]
@@ -96,9 +96,8 @@ RGB Float32 /255 input [1, 3, 384, 1280]
   -> 2D box, projected 3D center, depth, dimensions, yaw, 3D location
 ```
 
-The backbone replacement is the only approved structural change from the
-validated MonoDETR teacher. Do not change the depth predictor, transformer,
-query count, heads, or loss definitions in the same experiment.
+This graph remains the accuracy teacher/reference. Its backbone replacement was
+the only structural change in that controlled experiment.
 
 The Car-only backbone ablation reached its best KITTI Car 3D moderate AP_R40 at
 epoch 40:
@@ -113,20 +112,28 @@ This validates the research candidate, not the two-class product model. A new
 Vehicle + Pedestrian training run is required because the current checkpoint
 does not establish pedestrian performance.
 
-### Deployment condition
+### MobileMonoDETR deployment-gate result
 
 MonoDETR uses multi-scale deformable attention implemented by a custom CUDA
-extension. MobileMonoDETR-VP1 is not deployment-final until the exact graph:
+extension. The MobileMonoDETR-VP1 experiment required the exact graph to:
 
 1. exports without unsupported or host-fallback operations;
 2. passes PyTorch-to-Core-ML numerical and decoded-detection parity;
 3. meets the physical-iPhone latency, memory, and stability gates below.
 
-The gate has now failed on physical hardware: the complete random-weight graph
+The gate failed on physical hardware: the complete random-weight graph
 ran at 161-177 ms per steady prediction on an iPhone 16 Pro Max, versus the
 locked 50 ms limit. Retain MonoDETR as the accuracy teacher/reference and build
 a Core-ML-native student. Do not weaken the runtime gate or describe the
 teacher as the deployed architecture.
+
+The locked production student candidate is **MobileADAS3D-S1**, defined in
+`STUDENT_ARCHITECTURE_CONTRACT.md`. It uses a MobileNetV4 Conv Small backbone,
+96-channel stride-8/16/32 Lite-FPN, one shared depthwise-separable prediction
+tower, and 1x1 dense output heads. It deliberately contains no transformer,
+deformable attention, query decoder, or custom Core ML operation. S1 must pass
+its random-weight 35 ms p95 pre-training gate before dataset or training work
+continues.
 
 ## 5. Metrics and acceptance gates
 
@@ -203,18 +210,21 @@ velocity fields.
 4. **Completed 2026-08-11:** native Xcode compile plus physical-iPhone
    load/predict passed, but all three steady predictions (161-177 ms) failed the
    50 ms runtime gate. MobileMonoDETR-VP1 is therefore teacher/reference only.
-5. Define the Core-ML-native student contract, preserving the locked input,
-   output semantics, two-class taxonomy, and teacher-distillation path.
-6. Implement the two-class KITTI mapping with unit-tested counts and manifests.
-7. Establish the same-protocol ResNet50 Vehicle + Pedestrian reference.
-8. Train a fresh Vehicle + Pedestrian student. Evaluate at epochs 20, 40, 50,
+5. **Completed 2026-08-11:** lock MobileADAS3D-S1 as the Core-ML-native student,
+   preserving the input, dense output semantics, two-class taxonomy, and
+   validated teacher-target adapter. See `STUDENT_ARCHITECTURE_CONTRACT.md`.
+6. Implement S1 and pass its random-weight complexity, conversion, parity, and
+   physical-iPhone 5-warmup/100-prediction gate.
+7. Implement the two-class KITTI mapping with unit-tested counts and manifests.
+8. Establish the same-protocol ResNet50 Vehicle + Pedestrian reference.
+9. Train a fresh Vehicle + Pedestrian student. Evaluate at epochs 20, 40, 50,
    75, and 100; continue farther only while moderate 3D AP improves.
-9. Select the checkpoint using per-class moderate 3D AP plus the nearby recall
+10. Select the checkpoint using per-class moderate 3D AP plus the nearby recall
    gate, not a single aggregate loss.
-10. Freeze the checkpoint and all inference parameters.
-11. Validate the nuScenes adapter on mini, then run the locked zero-shot test.
-12. Export the trained checkpoint to Core ML, verify parity, and run physical-iPhone benchmarks.
-13. Approve deployment only if model quality, external generalization, parity,
+11. Freeze the checkpoint and all inference parameters.
+12. Validate the nuScenes adapter on mini, then run the locked zero-shot test.
+13. Export the trained checkpoint to Core ML, verify parity, and run physical-iPhone benchmarks.
+14. Approve deployment only if model quality, external generalization, parity,
    and edge-runtime gates all pass.
 
 Any architecture, taxonomy, dataset-role, or threshold change requires a new

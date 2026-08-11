@@ -1525,3 +1525,22 @@ accuracy teacher/reference; the next task is to lock a Core-ML-native student
 architecture before implementing the two-class dataset mapping and training.
 Raw evidence is in
 `reports/coreml/mobilemonodetr_vp1_random_iphone16promax.json`.
+
+#### 2026-08-11 Core-ML-native student contract complete
+
+`STUDENT_ARCHITECTURE_CONTRACT.md` locks MobileADAS3D-S1 for the next graph
+implementation. S1 retains the proven fixed 1280x384 RGB `/255.0` input and
+dense Swift-decode approach, but uses MobileNetV4 Conv Small stride-8/16/32
+features, a 96-channel Lite-FPN, one shared depthwise-separable prediction
+tower, and inexpensive 1x1 output projections. It has exactly two classes,
+Vehicle and Pedestrian, plus quality, 2D box, projected-center, depth,
+uncertainty, dimensions, axis/direction yaw, and auxiliary location heads.
+
+S1 explicitly excludes transformers, deformable attention, dynamic shapes,
+custom Core ML operations, and in-model NMS. Before training, its random graph
+must be <=10M parameters, <=15 GMAC, <=25 MB FP16, pass raw Core ML parity, and
+achieve <=35 ms p95 across 100 predictions after five warmups on the iPhone 16
+Pro Max. The tighter pre-training target reserves margin beneath the 50 ms
+product gate. Next implement this graph under a new architecture name and run
+the random-weight compile/parity/device gate; do not modify old checkpoint
+semantics.
