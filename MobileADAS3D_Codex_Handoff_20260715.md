@@ -1402,3 +1402,47 @@ scheduler position. It logs every 20 batches with current/average loss, LR,
 elapsed time, and CUDA allocated/reserved memory, plus an average loss and
 duration for every epoch. Do not use the initialization checkpoint for this
 continuation because that would reset optimizer and schedule state.
+
+#### 2026-08-11 hardened product contract and architecture decision
+
+`PRODUCT_MODEL_CONTRACT.md` is now the authoritative product decision. Priority
+order is nearby Vehicle/Pedestrian detection, distance/location, edge runtime,
+2D/3D localization, then dimensions/yaw. The first product taxonomy contains
+exactly `Vehicle` and `Pedestrian`; official KITTI labels remain separately
+reportable for benchmark compliance.
+
+The epoch-50 continuation completed. Epoch 40 remains the Car-only backbone
+ablation winner:
+
+```text
+epoch 40 Car 3D moderate AP_R40: 14.065
+epoch 40 Car BEV moderate AP_R40: 19.656
+teacher Car 3D moderate AP_R40:   20.328
+retained 3D performance:         69.2%
+```
+
+Epochs 45 and 50 regressed slightly, so the Car-only checkpoint is a research
+candidate, not a product acceptance result. A fresh two-class run is required.
+The contract fixes dataset roles: KITTI Chen train for optimization, Chen val
+for model selection, nuScenes mini for adapter smoke tests, locked nuScenes
+`CAM_FRONT` validation for one zero-shot LiDAR-ground-truth evaluation, and a
+future locked Waymo subset for independent confirmation.
+
+The locked architecture candidate is MobileMonoDETR-VP1: 1280x384 RGB input,
+MobileNetV4 Conv Small stride-8/16/32 features, 256-channel projections,
+unchanged MonoDETR LID depth predictor and 3+3-layer depth-aware deformable
+transformer, 50 queries, and Vehicle/Pedestrian heads. This is conditional,
+not deployment-final: MonoDETR's custom multi-scale deformable-attention path
+must first export to Core ML without unsupported/host fallback, pass numerical
+and decoded parity, and meet the physical-iPhone latency/stability gates. If it
+fails, retain MonoDETR as teacher and return to a Core-ML-native student rather
+than weakening deployment requirements.
+
+Next work order:
+
+1. fix post-validation resumable-checkpoint metadata ordering;
+2. run the MobileMonoDETR-VP1 Core ML feasibility gate;
+3. implement and test the two-class KITTI mapping;
+4. train the fresh Vehicle + Pedestrian model;
+5. freeze it, run locked nuScenes zero-shot evaluation, then physical-iPhone
+   parity and runtime acceptance.

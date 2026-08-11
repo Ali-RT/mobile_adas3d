@@ -1,6 +1,10 @@
 # MobileADAS3D
 
-Mobile monocular-3D detector for Car, Pedestrian, and Cyclist objects. The
+Mobile monocular-3D detector for safety-relevant road objects. The locked
+product target, class taxonomy, dataset isolation rules, candidate architecture,
+and go/no-go metrics are defined in
+[`PRODUCT_MODEL_CONTRACT.md`](PRODUCT_MODEL_CONTRACT.md). The legacy custom
+model supports Car, Pedestrian, and Cyclist objects. The
 model consumes a `1x3x384x1280` RGB `/255.0` tensor and predicts class, 2D box,
 depth, camera-space location, 3D dimensions, yaw, center offset, and depth
 uncertainty on a stride-16 feature map.
@@ -9,9 +13,12 @@ uncertainty on a stride-16 feature map.
 
 - **Deployed reference:** v7 with MobileNetV3-Small. This is the model already
   validated in the iPhone benchmark app and its decode contract remains frozen.
-- **Active training baseline:** a fresh MobileNetV4 Conv Small model. It keeps
-  the external input contract, preserves the v0/v1 eight-output path, and adds
-  an optional v2 projected-center output for calibration-aware geometry.
+- **Legacy custom student:** MobileNetV4 Conv Small with convolutional heads.
+  It remains Core-ML-exportable but did not meet the 3D-accuracy target.
+- **Locked product candidate:** MobileMonoDETR-VP1, using MobileNetV4 Conv Small
+  with the unchanged MonoDETR depth-aware transformer and two production
+  classes. Deployment approval is conditional on Core ML feasibility, parity,
+  and physical-iPhone runtime gates.
 
 Historical v6/v7 F1 and device results in the supporting documents describe
 the deployed lineage; they are not claimed as MobileNetV4 results.
