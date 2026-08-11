@@ -1544,3 +1544,24 @@ Pro Max. The tighter pre-training target reserves margin beneath the 50 ms
 product gate. Next implement this graph under a new architecture name and run
 the random-weight compile/parity/device gate; do not modify old checkpoint
 semantics.
+
+#### 2026-08-11 MobileADAS3D-S1 implementation and device gate complete
+
+S1 is implemented as a separate `MobileADAS3D-S1` build target in
+`models/mobile_adas3d_s1.py`; legacy `MobileADAS3D` dispatch and checkpoints are
+unchanged. The graph exposes ten learned stride-8 heads. PyTorch also derives
+`yaw` for existing training/decode code, while Core ML exports only axis and
+direction so an FP16 value near the direction threshold cannot create a
+spurious pi-flip inside the graph.
+
+The random graph has 1.403M parameters, 2.155 GMAC, and a 2.73 MB FP16 Core ML
+package. TorchScript delta was zero; maximum learned-head Core ML delta was
+0.001506; conversion produced 64 convolutions, two bilinear upsample operations,
+and no custom operation. Four focused forward/export tests passed.
+
+The signed model then passed the iPhone 16 Pro Max 5-warmup/100-prediction gate
+with `MLComputeUnits.all`: 1.878 ms p50, 2.903 ms p90, 3.788 ms p95, 4.570 ms
+p99, 2.204 ms mean, and 13.560 ms max. The 35 ms pre-training gate therefore
+passes with substantial margin. Temporary probe code/model were removed from
+the app repository after capture. Next implement and audit the two-class KITTI
+Vehicle/Pedestrian mapping before any training run.

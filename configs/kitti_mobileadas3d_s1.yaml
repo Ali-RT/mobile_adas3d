@@ -1,0 +1,48 @@
+base_config: kitti_mnv4_axis_direction_v5.yaml
+
+dataset:
+  classes: [Vehicle, Pedestrian]
+
+logging:
+  run_name: "mobileadas3d_s1_pretraining_gate"
+
+model:
+  name: "MobileADAS3D-S1"
+  backbone: "mobilenetv4_conv_small.e2400_r224_in1k"
+  pretrained: true
+  normalize_imagenet: true
+  input_height: 384
+  input_width: 1280
+  output_stride: 8
+  neck: "stride8_lite_fpn"
+  fpn_channels: 96
+  head_channels: 96
+  use_projected_center: true
+  use_quality: true
+  use_yaw_axis_direction: true
+  location_source: "projected_center"
+  score_mode: "class_quality"
+  heads:
+    cls_logits: true
+    quality: true
+    box2d: true
+    projected_center_offset: true
+    log_depth: true
+    depth_uncertainty: true
+    dim: true
+    yaw_axis: true
+    yaw_direction: true
+    loc_xy: true
+
+targets:
+  class_mean_dims:
+    Vehicle: [1.55, 1.75, 4.20]
+    Pedestrian: [1.70, 0.60, 0.80]
+
+loss:
+  class_weights:
+    Vehicle: 1.0
+    Pedestrian: 2.5
+
+distillation:
+  enabled: false

@@ -3,11 +3,22 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from models.mobile_adas3d import MobileADAS3D
+from models.mobile_adas3d_s1 import MobileADAS3DS1
 
 
-def build_model(config: Dict[str, Any]) -> MobileADAS3D:
+def build_model(config: Dict[str, Any]) -> MobileADAS3D | MobileADAS3DS1:
     dataset_cfg = config["dataset"]
     model_cfg = config["model"]
+
+    if model_cfg.get("name") == "MobileADAS3D-S1":
+        return MobileADAS3DS1(
+            num_classes=len(dataset_cfg["classes"]),
+            backbone_name=model_cfg.get(
+                "backbone", "mobilenetv4_conv_small.e2400_r224_in1k"
+            ),
+            pretrained=bool(model_cfg.get("pretrained", True)),
+            fpn_channels=int(model_cfg.get("fpn_channels", 96)),
+        )
 
     model = MobileADAS3D(
         num_classes=len(dataset_cfg["classes"]),

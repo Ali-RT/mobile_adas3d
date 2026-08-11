@@ -1,6 +1,6 @@
 # MobileADAS3D-S1 student architecture contract
 
-Status: locked for graph implementation and pre-training device gate
+Status: random-weight graph and physical-iPhone pre-training gates passed
 Decision date: 2026-08-11
 
 ## Decision
@@ -52,6 +52,11 @@ All heads use the same stride-8 feature and only a final 1x1 convolution. There
 is no per-head 3x3 tower. Decoding, TopK, calibration back-projection, NMS, and
 artifact writing remain outside the model so the existing Swift pipeline can
 be adapted without embedding dynamic control flow in Core ML.
+
+The training forward path also reconstructs a derived `yaw` tensor for the
+existing loss/decoder API. Core ML exports only the ten learned heads above;
+the Swift decoder reconstructs yaw from `yaw_axis` and `yaw_direction`. This
+avoids placing the discontinuous front/back threshold inside the FP16 graph.
 
 Every S1 depthwise-separable block is locked to depthwise 3x3 convolution,
 BatchNorm, ReLU, pointwise 1x1 convolution, BatchNorm, and ReLU. The top-down
@@ -125,13 +130,39 @@ S1 must still pass every quality, parity, external-generalization, and sustained
 runtime gate in `PRODUCT_MODEL_CONTRACT.md`. The random graph gate proves only
 deployability and speed; it does not prove detection quality.
 
+## 2026-08-11 pre-training gate result
+
+The implemented random-weight 96-channel S1 graph passed every pre-training
+gate:
+
+| Gate | Limit | Result | Status |
+|---|---:|---:|---|
+| Parameters | <= 10.0M | 1.403M | Pass |
+| Compute | <= 15.0 GMAC | 2.155 GMAC | Pass |
+| FP16 package | <= 25 MB | 2.73 MB | Pass |
+| Custom/host operations | none | none | Pass |
+| Raw FP16 maximum delta | <= 0.002 | 0.001506 | Pass |
+| iPhone inference p95 | <= 35 ms | 3.788 ms | Pass |
+
+The physical-device test used an iPhone 16 Pro Max, iOS 26.6,
+`MLComputeUnits.all`, five warmups, and 100 timed predictions. It measured
+1.878 ms p50, 2.903 ms p90, 3.788 ms p95, 4.570 ms p99, 2.204 ms mean, and
+13.560 ms maximum. This authorizes dataset-mapping and training work; it does
+not waive any post-training quality or sustained-pipeline gate.
+
+Evidence is recorded in
+`reports/coreml/mobileadas3d_s1_random_iphone16promax_summary.json` and the
+reproducible conversion probe is `scripts/probe_coreml_s1.py`.
+
 ## Controlled implementation order
 
-1. Implement S1 alongside the existing models under a distinct architecture
+1. **Completed:** implement S1 alongside the existing models under a distinct architecture
    name; do not replace or silently reinterpret old checkpoints.
-2. Add output-shape, parameter-count, target/decode round-trip, TorchScript, and
-   Core ML conversion tests.
-3. Run the random-weight native iPhone 5-warmup/100-prediction gate.
+2. **Partially completed:** output-shape, parameter-count, TorchScript, and Core
+   ML conversion/parity tests pass. Target/decode round-trip follows the class
+   mapping because the new production labels do not exist in the loader yet.
+3. **Completed:** run the random-weight native iPhone
+   5-warmup/100-prediction gate.
 4. Implement and audit the two-class KITTI mapping.
 5. Establish the two-class teacher/reference protocol.
 6. Train the GT-only S1 baseline.

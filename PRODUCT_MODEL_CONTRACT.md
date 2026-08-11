@@ -1,6 +1,6 @@
 # MobileADAS3D product model contract
 
-Status: MobileMonoDETR-VP1 runtime rejected; Core-ML-native student required
+Status: MobileADAS3D-S1 pre-training device gate passed; taxonomy mapping next
 Decision date: 2026-08-11
 
 ## 1. Product objective and priority order
@@ -131,9 +131,10 @@ The locked production student candidate is **MobileADAS3D-S1**, defined in
 `STUDENT_ARCHITECTURE_CONTRACT.md`. It uses a MobileNetV4 Conv Small backbone,
 96-channel stride-8/16/32 Lite-FPN, one shared depthwise-separable prediction
 tower, and 1x1 dense output heads. It deliberately contains no transformer,
-deformable attention, query decoder, or custom Core ML operation. S1 must pass
-its random-weight 35 ms p95 pre-training gate before dataset or training work
-continues.
+deformable attention, query decoder, or custom Core ML operation. S1 passed its
+random-weight pre-training gate at 3.788 ms p95 over 100 physical-iPhone
+predictions, with 1.403M parameters, 2.155 GMAC, and a 2.73 MB FP16 package.
+Dataset and training work may now continue.
 
 ## 5. Metrics and acceptance gates
 
@@ -213,8 +214,9 @@ velocity fields.
 5. **Completed 2026-08-11:** lock MobileADAS3D-S1 as the Core-ML-native student,
    preserving the input, dense output semantics, two-class taxonomy, and
    validated teacher-target adapter. See `STUDENT_ARCHITECTURE_CONTRACT.md`.
-6. Implement S1 and pass its random-weight complexity, conversion, parity, and
-   physical-iPhone 5-warmup/100-prediction gate.
+6. **Completed 2026-08-11:** implement S1 and pass its random-weight complexity,
+   conversion, parity, and physical-iPhone 5-warmup/100-prediction gate. Device
+   p95 was 3.788 ms against the 35 ms pre-training limit.
 7. Implement the two-class KITTI mapping with unit-tested counts and manifests.
 8. Establish the same-protocol ResNet50 Vehicle + Pedestrian reference.
 9. Train a fresh Vehicle + Pedestrian student. Evaluate at epochs 20, 40, 50,
