@@ -1,0 +1,42 @@
+diff --git a/lib/helpers/trainer_helper.py b/lib/helpers/trainer_helper.py
+--- a/lib/helpers/trainer_helper.py
++++ b/lib/helpers/trainer_helper.py
+@@ -103,7 +103,10 @@ class Trainer(object):
+                     ckpt_name = os.path.join(self.output_dir, 'checkpoint_epoch_%d' % self.epoch)
+                 else:
+                     ckpt_name = os.path.join(self.output_dir, 'checkpoint')
+-               
++
++                # Preserve crash recovery before a potentially long validation.
++                # A successful validation overwrites this checkpoint below with
++                # the best metric and epoch from the current evaluation.
+                 save_checkpoint(
+                     get_checkpoint_state(self.model, self.optimizer, self.epoch, best_result, best_epoch),
+                     ckpt_name)
+@@ -115,12 +118,19 @@ class Trainer(object):
+                     if cur_result > best_result:
+                         best_result = cur_result
+                         best_epoch = self.epoch
+-                        ckpt_name = os.path.join(self.output_dir, 'checkpoint_best')
++                        best_ckpt_name = os.path.join(self.output_dir, 'checkpoint_best')
+                         save_checkpoint(
+                             get_checkpoint_state(self.model, self.optimizer, self.epoch, best_result, best_epoch),
+-                            ckpt_name)
++                            best_ckpt_name)
+                     self.logger.info("Best Result:{}, epoch:{}".format(best_result, best_epoch))
+ 
++                    save_checkpoint(
++                        get_checkpoint_state(self.model, self.optimizer, self.epoch, best_result, best_epoch),
++                        ckpt_name)
++                    self.logger.info(
++                        "Finalized resumable checkpoint for epoch %d with best_result=%s best_epoch=%s",
++                        self.epoch, best_result, best_epoch)
++
+             progress_bar.update()
+ 
+         self.logger.info("Best Result:{}, epoch:{}".format(best_result, best_epoch))
+@@ -221,4 +231,3 @@ class Trainer(object):
+                     target_dict[key] = val[bz][mask[bz]]
+             targets_list.append(target_dict)
+         return targets_list
+-

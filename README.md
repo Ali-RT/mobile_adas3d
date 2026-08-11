@@ -211,6 +211,13 @@ boundaries. The continuation restores model and optimizer state, epoch, best
 AP, and scheduler position from `checkpoint_epoch_20.pth`; it does not reset
 the run as pretrained fine-tuning.
 
+`scripts/patch_monodetr_checkpoint_metadata.py` fixes the upstream save order
+for future runs. It first writes a provisional resumable checkpoint for crash
+recovery, runs validation, updates `best_result`/`best_epoch`, writes
+`checkpoint_best.pth` when appropriate, and then overwrites the resumable epoch
+checkpoint with finalized post-validation metadata. Existing epoch checkpoints
+are not rewritten retroactively.
+
 After a run finishes, sweep AP across saved checkpoints instead of trusting
 `best.pt` by validation loss:
 

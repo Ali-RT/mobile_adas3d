@@ -1446,3 +1446,23 @@ Next work order:
 4. train the fresh Vehicle + Pedestrian model;
 5. freeze it, run locked nuScenes zero-shot evaluation, then physical-iPhone
    parity and runtime acceptance.
+
+#### 2026-08-11 checkpoint metadata ordering complete
+
+The first hardened-contract task is complete for future runs. The pinned
+MonoDETR trainer now receives an exact-SHA, idempotent
+`scripts/patch_monodetr_checkpoint_metadata.py` patch after the existing
+verbose/resume patch. At every validation checkpoint it:
+
+1. writes the model/optimizer state before validation for crash recovery;
+2. evaluates and updates `best_result` and `best_epoch`;
+3. writes `checkpoint_best.pth` through a distinct variable when improved;
+4. overwrites the resumable epoch checkpoint with finalized post-validation
+   metadata.
+
+This prevents the observed epoch-20 mismatch where the model/optimizer were at
+epoch 20 but resumable metadata still named epoch 15 as best. Existing saved
+checkpoints are intentionally not rewritten. The dedicated MobileMonoDETR
+notebook applies the new patch during setup, and focused tests enforce save
+ordering and distinct best/resume checkpoint paths. The next contract task is
+the MobileMonoDETR-VP1 Core ML graph feasibility gate.

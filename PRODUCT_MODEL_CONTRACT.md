@@ -188,8 +188,9 @@ velocity fields.
 
 ## 6. Training and decision sequence
 
-1. Repair resumable-checkpoint ordering so best-result metadata is written
-   after validation.
+1. **Completed 2026-08-11:** repair resumable-checkpoint ordering so finalized
+   best-result metadata is written after validation while retaining a
+   provisional pre-validation crash-recovery save.
 2. Prove MobileMonoDETR-VP1 Core ML graph feasibility before another long run.
 3. Implement the two-class KITTI mapping with unit-tested counts and manifests.
 4. Establish the same-protocol ResNet50 Vehicle + Pedestrian reference.
