@@ -13,8 +13,13 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from data.kitti_parser import parse_kitti_label_file
+from data.class_taxonomy import map_objects
 from data.kitti_prediction_parser import load_kitti_prediction_directory
-from data.kitti_r40 import evaluate_kitti_r40
+from data.kitti_r40 import (
+    PRODUCT_IOU_THRESHOLDS,
+    PRODUCT_NEIGHBOR_CLASSES,
+    evaluate_kitti_r40,
+)
 from data.split_resolver import get_split_file
 from tools.config import apply_runtime_overrides, load_config
 
@@ -82,25 +87,41 @@ def main() -> None:
         for sample_id in sample_ids
         if not (prediction_dir / f"{sample_id}.txt").is_file()
     ]
+    class_mapping = dataset_cfg.get("class_mapping")
+    prediction_input_classes = (
+        list(class_mapping) if class_mapping else classes
+    )
     predictions = load_kitti_prediction_directory(
         prediction_dir=prediction_dir,
         sample_ids=sample_ids,
-        allowed_classes=classes,
+        allowed_classes=prediction_input_classes,
         require_all_files=not args.allow_missing,
     )
+    if class_mapping:
+        predictions = {
+            sample_id: map_objects(items, class_mapping)
+            for sample_id, items in predictions.items()
+        }
 
     label_dir = dataset_root / dataset_cfg["label_dir"]
-    ground_truth = {
-        sample_id: [
+    ground_truth = {}
+    for sample_id in sample_ids:
+        raw_objects = [
             asdict(obj)
             for obj in parse_kitti_label_file(label_dir / f"{sample_id}.txt")
         ]
-        for sample_id in sample_ids
-    }
+        ground_truth[sample_id] = (
+            map_objects(raw_objects, class_mapping)
+            if class_mapping
+            else raw_objects
+        )
+    product_taxonomy = bool(class_mapping)
     results = evaluate_kitti_r40(
         ground_truth=ground_truth,
         predictions=predictions,
         classes=classes,
+        iou_thresholds=PRODUCT_IOU_THRESHOLDS if product_taxonomy else None,
+        neighbor_classes=PRODUCT_NEIGHBOR_CLASSES if product_taxonomy else None,
     )
     rows = [result.to_dict() for result in results]
 
@@ -110,7 +131,12 @@ def main() -> None:
 
     complete_split = len(missing_ids) == 0
     summary = {
-        "protocol": "KITTI AP_R40 external prediction directory",
+        "protocol": (
+            "KITTI-difficulty product-taxonomy AP_R40 external predictions"
+            if product_taxonomy
+            else "KITTI AP_R40 external prediction directory"
+        ),
+        "official_kitti_leaderboard_metric": not product_taxonomy,
         "split_protocol": dataset_cfg["splits"].get("protocol", "unknown"),
         "split": args.split,
         "source_name": args.source_name,

@@ -17,9 +17,14 @@ import torch
 import torch.nn.functional as F
 
 from data.kitti_dataset import KITTIDataset
+from data.class_taxonomy import map_objects
 from data.geometry import scale_p2_for_resize
 from data.kitti_parser import parse_kitti_label_file
-from data.kitti_r40 import evaluate_kitti_r40
+from data.kitti_r40 import (
+    PRODUCT_IOU_THRESHOLDS,
+    PRODUCT_NEIGHBOR_CLASSES,
+    evaluate_kitti_r40,
+)
 from data.split_resolver import get_split_file
 from models.build import build_model
 from models.decode import decode_mobile_adas3d_outputs
@@ -187,16 +192,23 @@ def main() -> None:
             label_path = (
                 Path(root_dir) / dataset_cfg["label_dir"] / f"{sample_id}.txt"
             )
-            ground_truth[sample_id] = [
-                asdict(obj) for obj in parse_kitti_label_file(label_path)
-            ]
+            raw_objects = [asdict(obj) for obj in parse_kitti_label_file(label_path)]
+            class_mapping = dataset_cfg.get("class_mapping")
+            ground_truth[sample_id] = (
+                map_objects(raw_objects, class_mapping)
+                if class_mapping
+                else raw_objects
+            )
             if output_index % 100 == 0 or output_index == limit:
                 print(f"  {output_index}/{limit}")
 
+    product_taxonomy = bool(dataset_cfg.get("class_mapping"))
     results = evaluate_kitti_r40(
         ground_truth=ground_truth,
         predictions=predictions,
         classes=dataset_cfg["classes"],
+        iou_thresholds=PRODUCT_IOU_THRESHOLDS if product_taxonomy else None,
+        neighbor_classes=PRODUCT_NEIGHBOR_CLASSES if product_taxonomy else None,
     )
     rows = [result.to_dict() for result in results]
     checkpoint_path = Path(args.checkpoint)
@@ -211,7 +223,12 @@ def main() -> None:
         writer.writerows(rows)
 
     summary = {
-        "protocol": "KITTI AP_R40 local validation",
+        "protocol": (
+            "KITTI-difficulty product-taxonomy AP_R40"
+            if product_taxonomy
+            else "KITTI AP_R40 local validation"
+        ),
+        "official_kitti_leaderboard_metric": not product_taxonomy,
         "split_protocol": dataset_cfg["splits"].get("protocol", "unknown"),
         "split": args.split,
         "checkpoint": str(checkpoint_path),

@@ -1617,3 +1617,20 @@ Validation dimensions were recorded for drift analysis but were not copied
 into training configuration. The audit summary is preserved at
 `reports/data/kitti_s1_taxonomy_manifest_summary.json`. Next establish the
 two-class teacher/reference evaluation protocol before starting S1 training.
+
+#### 2026-08-11 two-class reference protocol complete
+
+`TWO_CLASS_REFERENCE_PROTOCOL.md` freezes R0 as the original ResNet50 MonoDETR
+at upstream commit `6994b9f512400b258c6edb75f77423beb9c126f2`, initialized
+from the published checkpoint and fine-tuned on the exact production object
+mapping. The existing Car-only checkpoint is explicitly rejected as a
+Pedestrian denominator.
+
+The evaluator now keeps official KITTI semantics unchanged while supporting a
+separate, explicitly named KITTI-difficulty product-taxonomy AP_R40 protocol.
+Vehicle uses IoU 0.70, Pedestrian uses 0.50, and mapped Van/Truck/Tram and
+Person_sitting objects are positives rather than official neighboring ignores.
+Both native S1 output and external KITTI-format R0 predictions pass through the
+same mapping. This metric is not represented as an official KITTI leaderboard
+claim. The next isolated task is to prepare and run the R0 Colab training job;
+GT-only S1 training must wait until the denominator exists.

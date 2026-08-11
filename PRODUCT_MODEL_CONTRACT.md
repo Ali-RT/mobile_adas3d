@@ -1,6 +1,6 @@
 # MobileADAS3D product model contract
 
-Status: S1 device and production-taxonomy gates passed; reference protocol next
+Status: S1 device, taxonomy, and two-class reference protocols locked
 Decision date: 2026-08-11
 
 ## 1. Product objective and priority order
@@ -222,7 +222,9 @@ velocity fields.
    preserve source labels, and reject stale split/label-tree manifests. The
    full Drive audit passed on 3,712/3,769 samples with 16,366/16,895 Vehicle and
    2,263/2,446 Pedestrian objects in train/validation respectively.
-8. Establish the same-protocol ResNet50 Vehicle + Pedestrian reference.
+8. **Completed 2026-08-11:** freeze the same-protocol ResNet50 MonoDETR R0
+   Vehicle + Pedestrian reference and product-taxonomy evaluator. See
+   `TWO_CLASS_REFERENCE_PROTOCOL.md`.
 9. Train a fresh Vehicle + Pedestrian student. Evaluate at epochs 20, 40, 50,
    75, and 100; continue farther only while moderate 3D AP improves.
 10. Select the checkpoint using per-class moderate 3D AP plus the nearby recall

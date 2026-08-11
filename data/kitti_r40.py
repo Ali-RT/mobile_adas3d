@@ -13,6 +13,8 @@ MAX_OCCLUSION = {"easy": 0, "moderate": 1, "hard": 2}
 MAX_TRUNCATION = {"easy": 0.15, "moderate": 0.30, "hard": 0.50}
 IOU_THRESHOLDS = {"Car": 0.70, "Pedestrian": 0.50, "Cyclist": 0.50}
 NEIGHBOR_CLASSES = {"Car": {"Van"}, "Pedestrian": {"Person_sitting"}, "Cyclist": set()}
+PRODUCT_IOU_THRESHOLDS = {"Vehicle": 0.70, "Pedestrian": 0.50}
+PRODUCT_NEIGHBOR_CLASSES = {"Vehicle": set(), "Pedestrian": set()}
 
 
 @dataclass(frozen=True)
@@ -176,10 +178,15 @@ def _bbox_height(box: Mapping[str, Any]) -> float:
     return max(0.0, float(bbox[3]) - float(bbox[1]))
 
 
-def _gt_status(gt: Mapping[str, Any], class_name: str, difficulty: str) -> int:
+def _gt_status(
+    gt: Mapping[str, Any],
+    class_name: str,
+    difficulty: str,
+    neighbor_classes: Mapping[str, set[str]],
+) -> int:
     """Return 0 for valid, 1 for ignored, and -1 for irrelevant GT."""
     gt_class = str(gt["class_name"])
-    if gt_class in NEIGHBOR_CLASSES[class_name]:
+    if gt_class in neighbor_classes.get(class_name, set()):
         return 1
     if gt_class != class_name:
         return -1
@@ -226,6 +233,7 @@ def _evaluate_one(
     difficulty: str,
     metric: str,
     iou_threshold: float,
+    neighbor_classes: Mapping[str, set[str]],
 ) -> EvalResult:
     overlap_fn: Callable[[Mapping[str, Any], Mapping[str, Any]], float]
     overlap_fn = bev_iou if metric == "bev" else iou_3d
@@ -233,7 +241,10 @@ def _evaluate_one(
     gt_status_by_sample: Dict[str, List[int]] = {}
     num_valid_gt = 0
     for sample_id, sample_gt in ground_truth.items():
-        statuses = [_gt_status(gt, class_name, difficulty) for gt in sample_gt]
+        statuses = [
+            _gt_status(gt, class_name, difficulty, neighbor_classes)
+            for gt in sample_gt
+        ]
         gt_status_by_sample[sample_id] = statuses
         num_valid_gt += sum(status == 0 for status in statuses)
 
@@ -295,11 +306,17 @@ def evaluate_kitti_r40(
     ground_truth: Mapping[str, Sequence[Mapping[str, Any]]],
     predictions: Mapping[str, Sequence[Mapping[str, Any]]],
     classes: Iterable[str] = ("Car", "Pedestrian", "Cyclist"),
+    iou_thresholds: Mapping[str, float] | None = None,
+    neighbor_classes: Mapping[str, set[str]] | None = None,
 ) -> List[EvalResult]:
+    iou_thresholds = IOU_THRESHOLDS if iou_thresholds is None else iou_thresholds
+    neighbor_classes = (
+        NEIGHBOR_CLASSES if neighbor_classes is None else neighbor_classes
+    )
     results = []
     for class_name in classes:
-        if class_name not in IOU_THRESHOLDS:
-            raise ValueError(f"No KITTI IoU threshold configured for {class_name}")
+        if class_name not in iou_thresholds:
+            raise ValueError(f"No IoU threshold configured for {class_name}")
         for metric in ("bev", "3d"):
             for difficulty in DIFFICULTIES:
                 results.append(
@@ -309,7 +326,8 @@ def evaluate_kitti_r40(
                         class_name=class_name,
                         difficulty=difficulty,
                         metric=metric,
-                        iou_threshold=IOU_THRESHOLDS[class_name],
+                        iou_threshold=float(iou_thresholds[class_name]),
+                        neighbor_classes=neighbor_classes,
                     )
                 )
     return results

@@ -9,6 +9,8 @@ from data.kitti_r40 import (
     interpolated_ap_r40,
     iou_3d,
     polygon_area,
+    PRODUCT_IOU_THRESHOLDS,
+    PRODUCT_NEIGHBOR_CLASSES,
 )
 
 
@@ -120,6 +122,44 @@ class APTests(unittest.TestCase):
         self.assertEqual(easy_3d.num_valid_gt, 0)
         self.assertEqual(moderate_3d.num_valid_gt, 1)
         self.assertAlmostEqual(moderate_3d.ap_r40, 100.0)
+
+    def test_product_vehicle_evaluation_accepts_merged_sources(self):
+        vehicle_gt = []
+        vehicle_predictions = []
+        for index, source_name in enumerate(("Car", "Van", "Truck", "Tram")):
+            gt = make_gt(location=(index * 10.0, 1.5, 20.0))
+            gt["source_class_name"] = source_name
+            gt["class_name"] = "Vehicle"
+            prediction = make_prediction(location=(index * 10.0, 1.5, 20.0))
+            prediction["class_name"] = "Vehicle"
+            vehicle_gt.append(gt)
+            vehicle_predictions.append(prediction)
+        results = evaluate_kitti_r40(
+            ground_truth={"000001": vehicle_gt},
+            predictions={"000001": vehicle_predictions},
+            classes=("Vehicle",),
+            iou_thresholds=PRODUCT_IOU_THRESHOLDS,
+            neighbor_classes=PRODUCT_NEIGHBOR_CLASSES,
+        )
+        for result in results:
+            self.assertEqual(result.num_valid_gt, 4)
+            self.assertAlmostEqual(result.ap_r40, 100.0)
+
+    def test_product_pedestrian_includes_person_sitting(self):
+        pedestrian = make_gt()
+        pedestrian["source_class_name"] = "Person_sitting"
+        pedestrian["class_name"] = "Pedestrian"
+        prediction = make_prediction()
+        prediction["class_name"] = "Pedestrian"
+        results = evaluate_kitti_r40(
+            ground_truth={"000001": [pedestrian]},
+            predictions={"000001": [prediction]},
+            classes=("Pedestrian",),
+            iou_thresholds=PRODUCT_IOU_THRESHOLDS,
+            neighbor_classes=PRODUCT_NEIGHBOR_CLASSES,
+        )
+        for result in results:
+            self.assertAlmostEqual(result.ap_r40, 100.0)
 
 
 if __name__ == "__main__":
