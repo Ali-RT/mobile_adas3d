@@ -1,6 +1,6 @@
 # MobileADAS3D product model contract
 
-Status: architecture candidate locked; Core ML microkernel passed, full deployment gate pending
+Status: full ML Program graph passed; native Core ML and deployment gates pending
 Decision date: 2026-08-11
 
 ## 1. Product objective and priority order
@@ -195,17 +195,21 @@ velocity fields.
    microkernel at decoder Q=50 and encoder Q=10,200 scale. Both converted to
    native ML Program `resample` operations without custom ops and passed FP32
    parity. See `COREML_FEASIBILITY_REPORT.md`. Full-model export remains step 3.
-3. Add the rank-five export branch and convert the complete fixed-shape graph.
-4. Implement the two-class KITTI mapping with unit-tested counts and manifests.
-5. Establish the same-protocol ResNet50 Vehicle + Pedestrian reference.
-6. Train a fresh Vehicle + Pedestrian mobile model. Evaluate at epochs 20, 40, 50,
+3. **Completed 2026-08-11:** add guarded export-only attention/in-place-update
+   rewrites and convert the complete random-weight fixed-shape graph to a
+   55.8 MB ML Program with no custom ops and exact TorchScript parity.
+4. Compile/load the random package through the target Xcode/iOS runtime; the
+   development-Mac coremltools load attempt exceeded ten minutes.
+5. Implement the two-class KITTI mapping with unit-tested counts and manifests.
+6. Establish the same-protocol ResNet50 Vehicle + Pedestrian reference.
+7. Train a fresh Vehicle + Pedestrian mobile model. Evaluate at epochs 20, 40, 50,
    75, and 100; continue farther only while moderate 3D AP improves.
-7. Select the checkpoint using per-class moderate 3D AP plus the nearby recall
+8. Select the checkpoint using per-class moderate 3D AP plus the nearby recall
    gate, not a single aggregate loss.
-8. Freeze the checkpoint and all inference parameters.
-9. Validate the nuScenes adapter on mini, then run the locked zero-shot test.
-10. Export the trained checkpoint to Core ML, verify parity, and run physical-iPhone benchmarks.
-11. Approve deployment only if model quality, external generalization, parity,
+9. Freeze the checkpoint and all inference parameters.
+10. Validate the nuScenes adapter on mini, then run the locked zero-shot test.
+11. Export the trained checkpoint to Core ML, verify parity, and run physical-iPhone benchmarks.
+12. Approve deployment only if model quality, external generalization, parity,
    and edge-runtime gates all pass.
 
 Any architecture, taxonomy, dataset-role, or threshold change requires a new

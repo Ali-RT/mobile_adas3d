@@ -18,8 +18,10 @@ uncertainty on a stride-16 feature map.
 - **Locked product candidate:** MobileMonoDETR-VP1, using MobileNetV4 Conv Small
   with the unchanged MonoDETR depth-aware transformer and two production
   classes. Its highest-risk deformable-attention microkernel now passes native
-  Core ML conversion at decoder and encoder scale. Deployment approval remains
-  conditional on full-model conversion, parity, and physical-iPhone gates. See
+  Core ML conversion at decoder and encoder scale, and the complete fixed-shape
+  random-weight graph converts to a custom-op-free ML Program. Native package
+  compilation/loading remains unresolved, so deployment approval is still
+  conditional on that gate, trained-model parity, and physical-iPhone tests. See
   [`COREML_FEASIBILITY_REPORT.md`](COREML_FEASIBILITY_REPORT.md).
 
 Historical v6/v7 F1 and device results in the supporting documents describe

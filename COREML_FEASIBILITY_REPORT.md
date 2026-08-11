@@ -1,6 +1,6 @@
 # MobileMonoDETR-VP1 Core ML feasibility report
 
-Status: microkernel gate passed; full-model and physical-iPhone gates pending
+Status: microkernel and full ML Program graph passed; native compile/load and physical-iPhone gates pending
 Date: 2026-08-11
 
 ## Decision
@@ -10,9 +10,9 @@ be represented by native Core ML ML Program operations at both decoder and
 encoder scale. No custom Core ML operation or host callback is required for
 this kernel.
 
-This result does not approve deployment. It proves the highest-risk operator,
-not the complete model. Full graph conversion, checkpoint parity, decoded KITTI
-parity, and physical-iPhone latency remain mandatory.
+This result does not approve deployment. Full graph conversion is now proven
+with random weights, but native compilation/loading, trained-checkpoint parity,
+decoded KITTI parity, and physical-iPhone latency remain mandatory.
 
 ## Required export rewrite
 
@@ -74,15 +74,54 @@ summary. Generated model packages are intentionally not committed.
 
 ## Remaining gate sequence
 
-1. Add the rank-five export branch to the pinned MonoDETR source patch while
-   keeping CUDA training unchanged.
-2. Trace and convert the complete randomly initialized fixed-shape graph.
-3. Export the selected trained Vehicle + Pedestrian checkpoint.
-4. Compare PyTorch and Core ML raw tensors and decoded detections on fixed KITTI
+1. **Completed 2026-08-11:** add the rank-five export branch while preserving
+   the original CUDA training paths.
+2. **Completed 2026-08-11:** trace and convert the complete randomly initialized
+   fixed-shape graph to an ML Program.
+3. Compile and load the random-weight package with the target Xcode/iOS runtime.
+4. Export the selected trained Vehicle + Pedestrian checkpoint.
+5. Compare PyTorch and Core ML raw tensors and decoded detections on fixed KITTI
    images.
-5. Require the parity thresholds in `PRODUCT_MODEL_CONTRACT.md`.
-6. Install on the target iPhone and measure model-only and end-to-end latency,
+6. Require the parity thresholds in `PRODUCT_MODEL_CONTRACT.md`.
+7. Install on the target iPhone and measure model-only and end-to-end latency,
    memory, thermals, and 30-minute stability.
 
 If the complete graph fails despite this microkernel result, MonoDETR remains
 the accuracy teacher and the fallback is a Core-ML-native student.
+
+## Complete random-weight graph result
+
+The exact pinned MonoDETR source plus MobileNetV4 patch now receives
+[`third_party/monodetr/coreml_export.patch`](third_party/monodetr/coreml_export.patch).
+All export changes are guarded by `coreml_export`; normal CUDA training and
+checkpoint parameters remain unchanged. Besides deformable attention, the
+export path replaces PyTorch multi-head-attention internals and in-place box
+updates with mathematically equivalent native tensor operations.
+
+[`scripts/probe_coreml_full_monodetr.py`](scripts/probe_coreml_full_monodetr.py)
+successfully traced and converted the complete two-class random-weight model:
+
+```text
+input:                    [1, 3, 384, 1280]
+outputs:                  logits [1,50,2], boxes [1,50,6]
+                          dimensions [1,50,3], depth [1,50,2]
+                          angle [1,50,24]
+export-enabled modules:   12
+TorchScript max delta:    0.0
+native MHA max delta:     7.15e-7
+Torch frontend ops:       2,322
+ML Program custom ops:    0
+ML Program resample ops:  27
+ML Program matmul ops:    14
+TorchScript size:         50.4 MB
+ML package size:          55.8 MB
+conversion time:          4.60 s
+```
+
+The reproducible default uses `skip_model_load=True`, which validates and saves
+the complete ML Program without asking macOS to compile it. A native compile
+attempt completed every Core ML conversion/backend pass but did not return
+within ten minutes and was stopped. This environment also lacks the Xcode
+`coremlcompiler`/`coremlc` command-line utility. Therefore native compile/load
+is the next gate and package-generation success must not be presented as an
+iPhone runtime pass.

@@ -1486,3 +1486,25 @@ The reproducible probe is `scripts/probe_coreml_ms_deform_attn.py`; the complete
 decision record is `COREML_FEASIBILITY_REPORT.md`. Status is a microkernel pass,
 not deployment approval. Next implement the rank-five export branch in the
 pinned MonoDETR patch and convert the complete fixed-shape random-weight graph.
+
+#### 2026-08-11 complete Core ML graph conversion
+
+The pinned MonoDETR source now has a guarded export-only patch covering all
+whole-graph blockers: optional CUDA-extension import, rank-five deformable
+attention, native fixed-batch multi-head attention, and functional replacements
+for in-place box updates. Every `coreml_export` flag defaults to false, so the
+training path and checkpoint parameter contract are unchanged.
+
+The complete two-class MobileMonoDETR-VP1 random-weight graph traced with zero
+delta and converted all 2,322 frontend operations to a 55.8 MB Float32 iOS 17
+ML Program. The graph has 27 `resample`, 14 `matmul`, and zero custom
+operations. Outputs are logits `[1,50,2]`, boxes `[1,50,6]`, dimensions
+`[1,50,3]`, depth `[1,50,2]`, and angle `[1,50,24]`.
+
+Core ML package generation is a pass, but native compile/load is not. A load
+attempt completed all conversion/backend passes but did not return within ten
+minutes and was stopped; the selected developer tools also lack standalone
+`coremlcompiler`/`coremlc`. Before taxonomy/training, compile and load this
+random-weight package with the target Xcode/iOS runtime. Reproduce generation
+with `scripts/probe_coreml_full_monodetr.py`; do not commit generated model
+packages.
