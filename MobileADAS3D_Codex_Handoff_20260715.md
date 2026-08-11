@@ -1466,3 +1466,23 @@ checkpoints are intentionally not rewritten. The dedicated MobileMonoDETR
 notebook applies the new patch during setup, and focused tests enforce save
 ordering and distinct best/resume checkpoint paths. The next contract task is
 the MobileMonoDETR-VP1 Core ML graph feasibility gate.
+
+#### 2026-08-11 Core ML deformable-attention microkernel gate complete
+
+The highest-risk Core ML operator gate passed. A fixed-geometry probe models
+the locked 1280x384 feature maps (`48x160`, `24x80`, `12x40`, `6x20`), eight
+heads, 32 channels per head, and four points per level. It passed for both the
+50-query decoder and the 10,200-query encoder case using coremltools 9.0 ML
+Program conversion with no custom MIL operations.
+
+MonoDETR's rank-six `[N,Q,H,L,P,2]` sampling layout exceeded Core ML's rank
+limit. Flattening `L*P` into a rank-five export layout is mathematically
+equivalent and lowered the four levels to native `resample` operations. The
+decoder and encoder maximum FP32 deltas were `2.22e-6` and `1.11e-5`, below the
+probe's `2e-5` tolerance. Development-Mac CPU microkernel time was 24.7 ms for
+Q=50 and 170.7 ms for Q=10,200; these are not iPhone or full-model timings.
+
+The reproducible probe is `scripts/probe_coreml_ms_deform_attn.py`; the complete
+decision record is `COREML_FEASIBILITY_REPORT.md`. Status is a microkernel pass,
+not deployment approval. Next implement the rank-five export branch in the
+pinned MonoDETR patch and convert the complete fixed-shape random-weight graph.

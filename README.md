@@ -17,8 +17,10 @@ uncertainty on a stride-16 feature map.
   It remains Core-ML-exportable but did not meet the 3D-accuracy target.
 - **Locked product candidate:** MobileMonoDETR-VP1, using MobileNetV4 Conv Small
   with the unchanged MonoDETR depth-aware transformer and two production
-  classes. Deployment approval is conditional on Core ML feasibility, parity,
-  and physical-iPhone runtime gates.
+  classes. Its highest-risk deformable-attention microkernel now passes native
+  Core ML conversion at decoder and encoder scale. Deployment approval remains
+  conditional on full-model conversion, parity, and physical-iPhone gates. See
+  [`COREML_FEASIBILITY_REPORT.md`](COREML_FEASIBILITY_REPORT.md).
 
 Historical v6/v7 F1 and device results in the supporting documents describe
 the deployed lineage; they are not claimed as MobileNetV4 results.
