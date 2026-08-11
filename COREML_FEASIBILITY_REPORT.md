@@ -1,18 +1,22 @@
 # MobileMonoDETR-VP1 Core ML feasibility report
 
-Status: microkernel and full ML Program graph passed; native compile/load and physical-iPhone gates pending
+Status: native compile/load/predict passed; physical-iPhone latency gate failed
 Date: 2026-08-11
 
 ## Decision
 
-Continue with MobileMonoDETR-VP1. Its multi-scale deformable-attention math can
-be represented by native Core ML ML Program operations at both decoder and
-encoder scale. No custom Core ML operation or host callback is required for
-this kernel.
+MobileMonoDETR-VP1 is Core ML compatible, but it is not the production iPhone
+architecture at the locked 1280x384 geometry. Its complete graph compiles,
+loads, and predicts on an iPhone 16 Pro Max without a custom operation or host
+callback, but steady model-only predictions take 161-177 ms. This is more than
+three times the 50 ms physical-iPhone inference gate.
 
-This result does not approve deployment. Full graph conversion is now proven
-with random weights, but native compilation/loading, trained-checkpoint parity,
-decoded KITTI parity, and physical-iPhone latency remain mandatory.
+This result does not approve deployment. Random weights are sufficient for this
+compute-feasibility measurement because parameter values do not change graph
+cost. Retain MobileMonoDETR as the accuracy/reference model and proceed with a
+Core-ML-native student unless a separately versioned architecture ablation can
+meet the same quality and runtime contract. Trained-checkpoint parity and
+decoded KITTI parity are still required for any future deployment candidate.
 
 ## Required export rewrite
 
@@ -78,7 +82,8 @@ summary. Generated model packages are intentionally not committed.
    the original CUDA training paths.
 2. **Completed 2026-08-11:** trace and convert the complete randomly initialized
    fixed-shape graph to an ML Program.
-3. Compile and load the random-weight package with the target Xcode/iOS runtime.
+3. **Completed 2026-08-11:** compile, load, and predict with the random-weight
+   package on the target Xcode/iOS runtime and iPhone 16 Pro Max.
 4. Export the selected trained Vehicle + Pedestrian checkpoint.
 5. Compare PyTorch and Core ML raw tensors and decoded detections on fixed KITTI
    images.
@@ -119,9 +124,32 @@ conversion time:          4.60 s
 ```
 
 The reproducible default uses `skip_model_load=True`, which validates and saves
-the complete ML Program without asking macOS to compile it. A native compile
-attempt completed every Core ML conversion/backend pass but did not return
-within ten minutes and was stopped. This environment also lacks the Xcode
-`coremlcompiler`/`coremlc` command-line utility. Therefore native compile/load
-is the next gate and package-generation success must not be presented as an
-iPhone runtime pass.
+the complete ML Program without asking macOS to compile it. An initial native
+load attempt completed every Core ML conversion/backend pass but did not return
+within ten minutes and was stopped. The active command-line-tools selection did
+not expose `coremlcompiler`/`coremlc`; native compile/load was subsequently
+completed by selecting full Xcode and using a physical iPhone, as recorded
+below.
+
+## Native Xcode and physical-iPhone result
+
+The generated package compiled successfully with Xcode's iOS Core ML compiler,
+was embedded in a signed app, loaded with `MLComputeUnits.all`, and completed a
+warmup plus three predictions on an iPhone 16 Pro Max running iOS 26.6.
+
+| Measurement | Result |
+|---|---:|
+| Native Xcode compile | Pass |
+| Model load | 566.0 ms |
+| First warmup prediction | 5,422.2 ms |
+| Timed prediction 1 | 176.6 ms |
+| Timed prediction 2 | 161.3 ms |
+| Timed prediction 3 | 161.2 ms |
+| Output tensors returned | 5/5 |
+| Runtime compatibility | Pass |
+| `<= 50 ms` inference gate | **Fail** |
+
+The three-sample probe is a feasibility measurement, not a statistically valid
+p95 benchmark. It is already decisive for architecture selection because every
+steady sample exceeds the 50 ms limit by more than 3x. The raw device report is
+[`reports/coreml/mobilemonodetr_vp1_random_iphone16promax.json`](reports/coreml/mobilemonodetr_vp1_random_iphone16promax.json).

@@ -1,6 +1,6 @@
 # MobileADAS3D product model contract
 
-Status: full ML Program graph passed; native Core ML and deployment gates pending
+Status: MobileMonoDETR-VP1 runtime rejected; Core-ML-native student required
 Decision date: 2026-08-11
 
 ## 1. Product objective and priority order
@@ -122,9 +122,11 @@ extension. MobileMonoDETR-VP1 is not deployment-final until the exact graph:
 2. passes PyTorch-to-Core-ML numerical and decoded-detection parity;
 3. meets the physical-iPhone latency, memory, and stability gates below.
 
-If that gate fails, retain MonoDETR as the accuracy teacher and build a
-Core-ML-native student. Do not weaken the runtime gate or describe a Python/CUDA
-model as the deployed architecture.
+The gate has now failed on physical hardware: the complete random-weight graph
+ran at 161-177 ms per steady prediction on an iPhone 16 Pro Max, versus the
+locked 50 ms limit. Retain MonoDETR as the accuracy teacher/reference and build
+a Core-ML-native student. Do not weaken the runtime gate or describe the
+teacher as the deployed architecture.
 
 ## 5. Metrics and acceptance gates
 
@@ -198,18 +200,21 @@ velocity fields.
 3. **Completed 2026-08-11:** add guarded export-only attention/in-place-update
    rewrites and convert the complete random-weight fixed-shape graph to a
    55.8 MB ML Program with no custom ops and exact TorchScript parity.
-4. Compile/load the random package through the target Xcode/iOS runtime; the
-   development-Mac coremltools load attempt exceeded ten minutes.
-5. Implement the two-class KITTI mapping with unit-tested counts and manifests.
-6. Establish the same-protocol ResNet50 Vehicle + Pedestrian reference.
-7. Train a fresh Vehicle + Pedestrian mobile model. Evaluate at epochs 20, 40, 50,
+4. **Completed 2026-08-11:** native Xcode compile plus physical-iPhone
+   load/predict passed, but all three steady predictions (161-177 ms) failed the
+   50 ms runtime gate. MobileMonoDETR-VP1 is therefore teacher/reference only.
+5. Define the Core-ML-native student contract, preserving the locked input,
+   output semantics, two-class taxonomy, and teacher-distillation path.
+6. Implement the two-class KITTI mapping with unit-tested counts and manifests.
+7. Establish the same-protocol ResNet50 Vehicle + Pedestrian reference.
+8. Train a fresh Vehicle + Pedestrian student. Evaluate at epochs 20, 40, 50,
    75, and 100; continue farther only while moderate 3D AP improves.
-8. Select the checkpoint using per-class moderate 3D AP plus the nearby recall
+9. Select the checkpoint using per-class moderate 3D AP plus the nearby recall
    gate, not a single aggregate loss.
-9. Freeze the checkpoint and all inference parameters.
-10. Validate the nuScenes adapter on mini, then run the locked zero-shot test.
-11. Export the trained checkpoint to Core ML, verify parity, and run physical-iPhone benchmarks.
-12. Approve deployment only if model quality, external generalization, parity,
+10. Freeze the checkpoint and all inference parameters.
+11. Validate the nuScenes adapter on mini, then run the locked zero-shot test.
+12. Export the trained checkpoint to Core ML, verify parity, and run physical-iPhone benchmarks.
+13. Approve deployment only if model quality, external generalization, parity,
    and edge-runtime gates all pass.
 
 Any architecture, taxonomy, dataset-role, or threshold change requires a new

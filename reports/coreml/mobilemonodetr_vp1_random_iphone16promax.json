@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "date": "2026-08-11",
+  "scope": "random-weight native iPhone compile/load/predict feasibility",
+  "model": "MobileMonoDETRVP1_random",
+  "device": "iPhone 16 Pro Max",
+  "os": "iOS 26.6",
+  "compute_units": "all",
+  "native_xcode_compile": true,
+  "success": true,
+  "load_ms": 565.9980773925781,
+  "warmup_ms": 5422.216057777405,
+  "prediction_ms": [
+    176.61499977111816,
+    161.33296489715576,
+    161.20994091033936
+  ],
+  "output_names": [
+    "angle",
+    "boxes",
+    "depth",
+    "dimensions",
+    "logits"
+  ],
+  "inference_gate_ms": 50.0,
+  "inference_gate_pass": false,
+  "decision": "Core ML compatible but rejected for production latency; retain as teacher/reference and build a Core-ML-native student."
+}

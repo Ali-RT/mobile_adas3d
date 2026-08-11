@@ -1501,10 +1501,27 @@ ML Program. The graph has 27 `resample`, 14 `matmul`, and zero custom
 operations. Outputs are logits `[1,50,2]`, boxes `[1,50,6]`, dimensions
 `[1,50,3]`, depth `[1,50,2]`, and angle `[1,50,24]`.
 
-Core ML package generation is a pass, but native compile/load is not. A load
-attempt completed all conversion/backend passes but did not return within ten
-minutes and was stopped; the selected developer tools also lack standalone
-`coremlcompiler`/`coremlc`. Before taxonomy/training, compile and load this
-random-weight package with the target Xcode/iOS runtime. Reproduce generation
-with `scripts/probe_coreml_full_monodetr.py`; do not commit generated model
-packages.
+At this stage, Core ML package generation had passed while native compile/load
+was still unresolved. A development-Mac coremltools load attempt did not return
+within ten minutes, and the active command-line-tools selection did not expose
+`coremlcompiler`/`coremlc`. The next gate below resolved this using full Xcode
+and a physical iPhone. Reproduce package generation with
+`scripts/probe_coreml_full_monodetr.py`; do not commit generated model packages.
+
+#### 2026-08-11 native iPhone graph gate complete: compatibility pass, latency fail
+
+The 55.8 MB random-weight MobileMonoDETR-VP1 ML Program compiled with full
+Xcode, embedded in a signed app, loaded with `MLComputeUnits.all`, and returned
+all five outputs on an iPhone 16 Pro Max running iOS 26.6. Model load took
+566.0 ms; the first warmup took 5,422.2 ms; three steady predictions took
+176.6, 161.3, and 161.2 ms.
+
+This proves the complete export graph is natively executable, but rejects it as
+the production architecture under the locked `Core ML inference p95 <= 50 ms`
+contract. The probe is too small to estimate p95, yet every steady sample is
+more than 3x over budget. Random weights are valid for this compute decision
+because weights do not change the graph cost. MobileMonoDETR remains the
+accuracy teacher/reference; the next task is to lock a Core-ML-native student
+architecture before implementing the two-class dataset mapping and training.
+Raw evidence is in
+`reports/coreml/mobilemonodetr_vp1_random_iphone16promax.json`.
