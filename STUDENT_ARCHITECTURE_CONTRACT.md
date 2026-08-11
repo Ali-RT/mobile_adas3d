@@ -163,7 +163,9 @@ reproducible conversion probe is `scripts/probe_coreml_s1.py`.
    mapping because the new production labels do not exist in the loader yet.
 3. **Completed:** run the random-weight native iPhone
    5-warmup/100-prediction gate.
-4. Implement and audit the two-class KITTI mapping.
+4. **Implementation complete; full-data audit pending:** the fail-closed mapping
+   and manifest generator are tested. Generate the 3,712/3,769 count manifest
+   against the Drive dataset before training.
 5. Establish the two-class teacher/reference protocol.
 6. Train the GT-only S1 baseline.
 7. Run a paired teacher-distillation experiment from the same initialization;

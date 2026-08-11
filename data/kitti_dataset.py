@@ -6,6 +6,7 @@ import torch
 from torch.utils.data import Dataset
 
 from data.kitti_parser import load_kitti_sample
+from data.class_taxonomy import map_objects, normalize_class_mapping
 
 
 def normalize_kitti_sample_id(sample_id: str) -> str:
@@ -41,10 +42,12 @@ class KITTIDataset(Dataset):
         calib_dir: str = "training/calib",
         sample_ids: Optional[List[str]] = None,
         split_file: Optional[str] = None,
+        class_mapping: Optional[Dict[str, str]] = None,
     ) -> None:
         self.root_dir = Path(root_dir)
         self.classes = classes
         self.class_to_id = {name: idx for idx, name in enumerate(classes)}
+        self.class_mapping = normalize_class_mapping(class_mapping, classes)
 
         self.image_dir_name = image_dir
         self.label_dir_name = label_dir
@@ -124,10 +127,13 @@ class KITTIDataset(Dataset):
     def __getitem__(self, index: int) -> Dict[str, Any]:
         sample_id = self.sample_ids[index]
 
+        allowed_source_classes = (
+            list(self.class_mapping) if self.class_mapping else self.classes
+        )
         sample = load_kitti_sample(
             root_dir=self.root_dir,
             sample_id=sample_id,
-            allowed_classes=self.classes,
+            allowed_classes=allowed_source_classes,
             image_dir=self.image_dir_name,
             label_dir=self.label_dir_name,
             calib_dir=self.calib_dir_name,
@@ -144,6 +150,8 @@ class KITTIDataset(Dataset):
         image_tensor = torch.from_numpy(image_rgb).permute(2, 0, 1).float() / 255.0
 
         objects = sample["objects"]
+        if self.class_mapping:
+            objects = map_objects(objects, self.class_mapping)
 
         # Add class_id for each object.
         for obj in objects:

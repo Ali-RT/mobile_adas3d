@@ -1565,3 +1565,25 @@ p99, 2.204 ms mean, and 13.560 ms max. The 35 ms pre-training gate therefore
 passes with substantial margin. Temporary probe code/model were removed from
 the app repository after capture. Next implement and audit the two-class KITTI
 Vehicle/Pedestrian mapping before any training run.
+
+#### 2026-08-11 production taxonomy implementation complete; Drive audit pending
+
+The dataset boundary now applies an explicit source-to-production map:
+Car/Van/Truck/Tram become Vehicle; Pedestrian/Person_sitting become Pedestrian;
+Cyclist, Misc, DontCare, and all unlisted labels are excluded. Every retained
+object stores both `class_name` and `source_class_name`, so subtype composition
+remains auditable. Legacy configs without `class_mapping` retain their original
+behavior.
+
+`scripts/create_kitti_taxonomy_manifest.py` scans the exact Chen train and val
+split files, reports raw source counts, mapped counts, excluded counts,
+source-within-production counts, samples containing mapped objects, and mean
+H/W/L dimensions. The manifest binds the policy, split files, and every label
+file with SHA-256. Training and preflight fail closed when the manifest is
+missing, incomplete, or stale. Four taxonomy tests pass, including mapping the
+repository's real sample to Vehicle/Pedestrian IDs while excluding DontCare.
+
+The local repository contains only one KITTI sample, so the reportable 3,712
+train / 3,769 val count manifest must be generated where the full dataset lives
+in Google Drive. Until that command passes and its counts/dimensions are
+reviewed, training remains unauthorized.

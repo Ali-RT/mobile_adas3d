@@ -2,6 +2,17 @@ base_config: kitti_mnv4_axis_direction_v5.yaml
 
 dataset:
   classes: [Vehicle, Pedestrian]
+  class_mapping:
+    Car: Vehicle
+    Van: Vehicle
+    Truck: Vehicle
+    Tram: Vehicle
+    Pedestrian: Pedestrian
+    Person_sitting: Pedestrian
+  require_taxonomy_manifest: true
+  taxonomy_manifest: ./outputs/manifests/kitti_s1_taxonomy_manifest.json
+  taxonomy_manifest_paths:
+    colab_drive: /content/drive/MyDrive/mobile_adas3d_manifests/kitti_s1_taxonomy_manifest.json
 
 logging:
   run_name: "mobileadas3d_s1_pretraining_gate"

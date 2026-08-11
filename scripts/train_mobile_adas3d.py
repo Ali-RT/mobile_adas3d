@@ -17,6 +17,7 @@ from torch.utils.tensorboard import SummaryWriter
 from data.collate import mobile_adas3d_collate_fn
 from data.kitti_dataset import KITTIDataset
 from data.teacher_target_adapter import TeacherTargetAdapter
+from data.class_taxonomy import normalize_class_mapping, validate_taxonomy_manifest
 from data.split_resolver import get_split_file
 from losses.mobile_adas3d_loss import MobileADAS3DLoss
 from models.build import build_model
@@ -104,6 +105,29 @@ def build_dataloader(
         split_file = get_split_file(config, split_name)
         print(f"Using {split_name} split file: {split_file}")
 
+    class_mapping = normalize_class_mapping(
+        dataset_cfg.get("class_mapping"), dataset_cfg["classes"]
+    )
+    if class_mapping and dataset_cfg.get("require_taxonomy_manifest", False):
+        manifest_paths = dataset_cfg.get("taxonomy_manifest_paths", {})
+        manifest_path = manifest_paths.get(
+            active_profile, dataset_cfg.get("taxonomy_manifest")
+        )
+        if not manifest_path:
+            raise ValueError(
+                f"No taxonomy manifest configured for profile {active_profile!r}"
+            )
+        validate_taxonomy_manifest(
+            manifest_path=manifest_path,
+            classes=dataset_cfg["classes"],
+            mapping=class_mapping,
+            split_files={
+                "train": get_split_file(config, "train"),
+                "val": get_split_file(config, "val"),
+            },
+            label_dir=Path(root_dir) / dataset_cfg["label_dir"],
+        )
+
     dataset = KITTIDataset(
         root_dir=root_dir,
         classes=dataset_cfg["classes"],
@@ -111,6 +135,7 @@ def build_dataloader(
         label_dir=dataset_cfg["label_dir"],
         calib_dir=dataset_cfg["calib_dir"],
         split_file=split_file,
+        class_mapping=class_mapping,
     )
 
     loss_cfg = config.get("loss", {})

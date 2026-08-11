@@ -28,6 +28,7 @@ def main() -> None:
         image_dir=dataset_cfg["image_dir"],
         label_dir=dataset_cfg["label_dir"],
         calib_dir=dataset_cfg["calib_dir"],
+        class_mapping=dataset_cfg.get("class_mapping"),
     )
 
     sample = dataset[0]

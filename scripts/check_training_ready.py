@@ -14,6 +14,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from data.collate import mobile_adas3d_collate_fn
+from data.class_taxonomy import normalize_class_mapping, validate_taxonomy_manifest
 from data.kitti_dataset import KITTIDataset
 from data.splits import read_split_file
 from data.split_resolver import get_split_file
@@ -79,6 +80,27 @@ def main() -> None:
     if set(train_ids) & set(val_ids) or len(set(train_ids) | set(val_ids)) != 7481:
         raise RuntimeError("Canonical KITTI split overlap/union validation failed")
 
+    class_mapping = normalize_class_mapping(
+        dataset_cfg.get("class_mapping"), dataset_cfg["classes"]
+    )
+    taxonomy_manifest = None
+    if class_mapping and dataset_cfg.get("require_taxonomy_manifest", False):
+        active_profile = dataset_cfg["active_profile"]
+        taxonomy_manifest = dataset_cfg.get("taxonomy_manifest_paths", {}).get(
+            active_profile, dataset_cfg.get("taxonomy_manifest")
+        )
+        if not taxonomy_manifest:
+            raise ValueError(
+                f"No taxonomy manifest configured for profile {active_profile!r}"
+            )
+        validate_taxonomy_manifest(
+            taxonomy_manifest,
+            dataset_cfg["classes"],
+            class_mapping,
+            {"train": train_file, "val": val_file},
+            root / dataset_cfg["label_dir"],
+        )
+
     device = get_device(config["training"].get("device", "auto"))
     if args.require_cuda and device.type != "cuda":
         raise RuntimeError(
@@ -92,6 +114,7 @@ def main() -> None:
         label_dir=dataset_cfg["label_dir"],
         calib_dir=dataset_cfg["calib_dir"],
         split_file=str(train_file),
+        class_mapping=class_mapping,
     )
     collate = partial(
         mobile_adas3d_collate_fn,
@@ -112,7 +135,12 @@ def main() -> None:
         raise RuntimeError(f"Non-finite preflight loss: {losses['total_loss'].item()}")
 
     output_shape = list(outputs["cls_logits"].shape)
-    expected_shape = [1, len(dataset_cfg["classes"]), 24, 80]
+    expected_shape = [
+        1,
+        len(dataset_cfg["classes"]),
+        int(model_cfg["input_height"]) // int(model_cfg["output_stride"]),
+        int(model_cfg["input_width"]) // int(model_cfg["output_stride"]),
+    ]
     if output_shape != expected_shape:
         raise RuntimeError(f"Expected cls output {expected_shape}; got {output_shape}")
 
@@ -129,6 +157,7 @@ def main() -> None:
         "normalize_imagenet": bool(model_cfg.get("normalize_imagenet", False)),
         "parameters": sum(parameter.numel() for parameter in model.parameters()),
         "cls_output_shape": output_shape,
+        "taxonomy_manifest": taxonomy_manifest,
         "total_loss": float(losses["total_loss"].detach().cpu()),
         "output_dir": config["outputs"]["output_dir"],
     }

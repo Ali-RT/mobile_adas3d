@@ -117,6 +117,7 @@ def main() -> None:
         label_dir=dataset_cfg["label_dir"],
         calib_dir=dataset_cfg["calib_dir"],
         split_file=split_file,
+        class_mapping=dataset_cfg.get("class_mapping"),
     )
     limit = len(dataset) if args.max_images < 0 else min(args.max_images, len(dataset))
     selected_indices = list(range(limit))
