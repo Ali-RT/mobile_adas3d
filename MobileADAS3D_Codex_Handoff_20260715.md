@@ -1658,3 +1658,11 @@ run through the real training cell. Upstream `checkpoint_best.pth` is not the
 final selection because MonoDETR selects it using Car AP only. After training,
 the next implementation task is the product-taxonomy checkpoint sweep and R0
 selection using mean Vehicle/Pedestrian moderate 3D AP_R40.
+
+The R0 notebook is interruption-safe. Immediately before the training cell it
+scans the durable Drive run directory for `checkpoint_epoch_*.pth`, loads each
+candidate on CPU, verifies that filename and payload epochs agree, and requires
+both model and optimizer state. It skips corrupt/partial files, resumes from the
+highest valid epoch through MonoDETR's patched explicit `resume_model` path, and
+does not restart a run that already reached epoch 195. With five-epoch saves,
+an interruption loses at most the current checkpoint interval.

@@ -200,6 +200,11 @@ adopt upstream `checkpoint_best.pth` as the final R0 automatically because that
 selection is Car-only. The next gate sweeps saved checkpoints with the frozen
 Vehicle/Pedestrian product evaluator and selects mean moderate 3D AP_R40 as
 defined in [`TWO_CLASS_REFERENCE_PROTOCOL.md`](TWO_CLASS_REFERENCE_PROTOCOL.md).
+Before training, the notebook scans Drive for `checkpoint_epoch_*.pth`, rejects
+partial or inconsistent files, and resumes the highest epoch containing both
+model and optimizer state. Re-run the setup, resume-detection, and training
+cells after an interruption; at most the work since the previous five-epoch
+checkpoint is lost.
 
 ## MonoDETR MobileNetV4 backbone ablation
 
