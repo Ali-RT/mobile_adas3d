@@ -1666,3 +1666,10 @@ both model and optimizer state. It skips corrupt/partial files, resumes from the
 highest valid epoch through MonoDETR's patched explicit `resume_model` path, and
 does not restart a run that already reached epoch 195. With five-epoch saves,
 an interruption loses at most the current checkpoint interval.
+
+After an initial training attempt returned only `Exit 1` without an apparent
+child traceback, the notebook training wrapper was hardened to merge and stream
+stdout/stderr while writing a timestamped Drive log under
+`references/monodetr_r0/colab_logs`. A failure now prints the last 120 captured
+lines, subprocess return code, GPU and disk state, and recent upstream log paths
+before reporting the durable log location.

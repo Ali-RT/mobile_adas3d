@@ -205,6 +205,11 @@ partial or inconsistent files, and resumes the highest epoch containing both
 model and optimizer state. Re-run the setup, resume-detection, and training
 cells after an interruption; at most the work since the previous five-epoch
 checkpoint is lost.
+The training subprocess streams combined stdout/stderr to the cell and to a
+timestamped durable file under `references/monodetr_r0/colab_logs`. On failure,
+the cell prints its last 120 captured lines, return code, GPU state, disk state,
+and discovered MonoDETR logs before raising an error that includes the Drive
+log path.
 
 ## MonoDETR MobileNetV4 backbone ablation
 

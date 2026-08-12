@@ -36,6 +36,14 @@ class MonoDETRR0NotebookTests(unittest.TestCase):
     def test_completed_run_does_not_restart(self):
         self.assertIn("if START_EPOCH >= MAX_EPOCHS", self.code)
 
+    def test_training_failure_preserves_output_and_diagnostics(self):
+        self.assertIn("stderr=subprocess.STDOUT", self.code)
+        self.assertIn("PYTHONUNBUFFERED", self.code)
+        self.assertIn("Durable combined log:", self.code)
+        self.assertIn("Last captured lines:", self.code)
+        self.assertIn("subprocess.run(['nvidia-smi'])", self.code)
+        self.assertIn("subprocess.run(['df', '-h'", self.code)
+
 
 if __name__ == "__main__":
     unittest.main()
