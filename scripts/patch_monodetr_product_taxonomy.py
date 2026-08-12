@@ -58,6 +58,12 @@ def patch_dataset(repo: Path) -> None:
         "            cls_id = self.cls2id[mapped_class]",
         "mapped target encoding",
     )
+    replace_once(
+        target,
+        "            mean_size = self.cls_mean_size[self.cls2id[objects[i].cls_type]]",
+        "            mean_size = self.cls_mean_size[self.cls2id[mapped_class]]",
+        "mapped mean-size lookup",
+    )
 
 
 def main() -> None:

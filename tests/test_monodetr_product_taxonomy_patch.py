@@ -27,7 +27,8 @@ class MonoDETRProductTaxonomyPatchTests(unittest.TestCase):
                 "            # filter objects by writelist\n"
                 "            if objects[i].cls_type not in self.writelist:\n"
                 "                continue\n"
-                "            cls_id = self.cls2id[objects[i].cls_type]\n",
+                "            cls_id = self.cls2id[objects[i].cls_type]\n"
+                "            mean_size = self.cls_mean_size[self.cls2id[objects[i].cls_type]]\n",
                 encoding="utf-8",
             )
             MODULE.patch_dataset(repo)
@@ -35,6 +36,11 @@ class MonoDETRProductTaxonomyPatchTests(unittest.TestCase):
             self.assertIn("mapped_class = self.class_mapping.get", patched)
             self.assertIn("if mapped_class not in self.writelist", patched)
             self.assertIn("cls_id = self.cls2id[mapped_class]", patched)
+            self.assertIn(
+                "mean_size = self.cls_mean_size[self.cls2id[mapped_class]]",
+                patched,
+            )
+            self.assertNotIn("self.cls2id[objects[i].cls_type]", patched)
             self.assertLess(
                 patched.index("mapped_class ="),
                 patched.index("if mapped_class not in self.writelist"),

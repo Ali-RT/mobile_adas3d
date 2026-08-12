@@ -1673,3 +1673,10 @@ stdout/stderr while writing a timestamped Drive log under
 `references/monodetr_r0/colab_logs`. A failure now prints the last 120 captured
 lines, subprocess return code, GPU and disk state, and recent upstream log paths
 before reporting the durable log location.
+
+The first captured R0 failure was a deterministic adapter defect at epoch 1,
+batch 0: the target class used `mapped_class`, but the later mean-dimension
+lookup still indexed `cls2id` with source label `Van`. The taxonomy patch now
+uses `mapped_class` for both class target and mean-size lookup and its regression
+test rejects any remaining `self.cls2id[objects[i].cls_type]` expression. No
+checkpoint was produced, so the corrected run should restart cleanly at epoch 0.
