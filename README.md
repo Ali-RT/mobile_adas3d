@@ -211,6 +211,13 @@ the cell prints its last 120 captured lines, return code, GPU state, disk state,
 and discovered MonoDETR logs before raising an error that includes the Drive
 log path.
 
+After epoch 195, run the notebook's **Product-taxonomy checkpoint sweep** cell.
+It evaluates all saved five-epoch checkpoints, caches each completed 3,769-image
+result, and ranks checkpoints by mean Vehicle/Pedestrian moderate 3D AP_R40,
+with Vehicle moderate 3D and mean moderate BEV as tie-breakers. Durable outputs
+are `product_checkpoint_sweep/r0_product_checkpoint_sweep.csv` and
+`r0_product_selection.json`; only the selected checkpoint is SHA-256 hashed.
+
 ## MonoDETR MobileNetV4 backbone ablation
 
 [`notebooks/MonoDETR_MobileNetV4_Backbone_Ablation_Colab.ipynb`](notebooks/MonoDETR_MobileNetV4_Backbone_Ablation_Colab.ipynb)

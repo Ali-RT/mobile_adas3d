@@ -44,6 +44,11 @@ class MonoDETRR0NotebookTests(unittest.TestCase):
         self.assertIn("subprocess.run(['nvidia-smi'])", self.code)
         self.assertIn("subprocess.run(['df', '-h'", self.code)
 
+    def test_product_checkpoint_sweep_is_wired(self):
+        self.assertIn("sweep_monodetr_r0_product_checkpoints.py", self.code)
+        self.assertIn("r0_product_selection.json", self.code)
+        self.assertIn("r0_product_checkpoint_sweep.csv", self.code)
+
 
 if __name__ == "__main__":
     unittest.main()

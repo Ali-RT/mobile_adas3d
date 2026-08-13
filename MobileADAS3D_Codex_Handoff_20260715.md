@@ -1680,3 +1680,20 @@ lookup still indexed `cls2id` with source label `Van`. The taxonomy patch now
 uses `mapped_class` for both class target and mean-size lookup and its regression
 test rejects any remaining `self.cls2id[objects[i].cls_type]` expression. No
 checkpoint was produced, so the corrected run should restart cleanly at epoch 0.
+
+#### 2026-08-13 R0 training complete; product sweep prepared
+
+The corrected R0 run completed 195/195 epochs in 5h23m and finalized durable
+Drive checkpoints. Epoch 195 official AP_R40 moderate was Car 3D 19.79 / BEV
+26.70 and Pedestrian 3D 6.24 / BEV 6.77. Upstream recorded its Car-only best at
+epoch 175 (`20.6309`), but that is not the frozen product selection rule.
+
+`scripts/sweep_monodetr_r0_product_checkpoints.py` and the final R0 notebook
+cells now perform the required restartable product sweep. Each five-epoch
+checkpoint is loaded by pinned MonoDETR, all 3,769 validation predictions are
+required, native Car output is mapped to Vehicle, and the shared product AP_R40
+evaluator scores Vehicle/Pedestrian. Completed checkpoint evaluations are
+cached. Selection maximizes mean Vehicle/Pedestrian moderate 3D AP_R40, then
+Vehicle moderate 3D, then mean moderate BEV. The selected checkpoint receives a
+SHA-256 and the complete ranking is written to Drive as CSV/JSON. No retraining
+is required for this task.
