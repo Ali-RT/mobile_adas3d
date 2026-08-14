@@ -1697,3 +1697,15 @@ cached. Selection maximizes mean Vehicle/Pedestrian moderate 3D AP_R40, then
 Vehicle moderate 3D, then mean moderate BEV. The selected checkpoint receives a
 SHA-256 and the complete ranking is written to Drive as CSV/JSON. No retraining
 is required for this task.
+
+#### 2026-08-13 canonical tracker and frozen R0 result
+
+`PROJECT_TRACKER.md` is now the canonical concise status page and must be
+updated after every completed task or gate. The completed product sweep selected
+R0 epoch 185 from all 39 checkpoints. Its SHA-256 is
+`fc0eba200e44b88921af76b0a5c94279872fd5c4838ab4d8936838447debfa59`;
+Vehicle/Pedestrian moderate 3D AP_R40 is 17.6348/5.7214 and moderate BEV is
+23.6816/6.5961. This freezes S1's 75%-retention minimums at 13.2261 Vehicle and
+4.2910 Pedestrian moderate 3D AP_R40. The active task is the fresh GT-only S1
+baseline; knowledge distillation remains intentionally pending until that
+baseline is selected and frozen.

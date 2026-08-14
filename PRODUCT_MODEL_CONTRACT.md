@@ -224,7 +224,9 @@ velocity fields.
    2,263/2,446 Pedestrian objects in train/validation respectively.
 8. **Completed 2026-08-11:** freeze the same-protocol ResNet50 MonoDETR R0
    Vehicle + Pedestrian reference and product-taxonomy evaluator. See
-   `TWO_CLASS_REFERENCE_PROTOCOL.md`.
+   `TWO_CLASS_REFERENCE_PROTOCOL.md`. The completed 39-checkpoint sweep selected
+   epoch 185 (SHA-256 `fc0eba200e44b88921af76b0a5c94279872fd5c4838ab4d8936838447debfa59`)
+   with Vehicle/Pedestrian moderate 3D AP_R40 17.6348/5.7214.
 9. Train a fresh Vehicle + Pedestrian student. Evaluate at epochs 20, 40, 50,
    75, and 100; continue farther only while moderate 3D AP improves.
 10. Select the checkpoint using per-class moderate 3D AP plus the nearby recall

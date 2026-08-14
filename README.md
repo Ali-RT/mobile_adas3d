@@ -1,5 +1,8 @@
 # MobileADAS3D
 
+Current progress, frozen results, and next actions are maintained in
+[`PROJECT_TRACKER.md`](PROJECT_TRACKER.md).
+
 Mobile monocular-3D detector for safety-relevant road objects. The locked
 product target, class taxonomy, dataset isolation rules, candidate architecture,
 and go/no-go metrics are defined in

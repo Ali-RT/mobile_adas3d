@@ -168,7 +168,9 @@ reproducible conversion probe is `scripts/probe_coreml_s1.py`.
    16,366 Vehicle and 2,263 Pedestrian; train-only mean dimensions are locked in
    `configs/kitti_mobileadas3d_s1.yaml`.
 5. **Completed:** establish the frozen two-class R0 teacher/reference protocol
-   and the distinct product-taxonomy AP_R40 evaluator.
+   and the distinct product-taxonomy AP_R40 evaluator. R0 epoch 185 is selected
+   and hashed; its Vehicle/Pedestrian moderate 3D denominators are
+   17.6348/5.7214.
 6. Train the GT-only S1 baseline.
 7. Run a paired teacher-distillation experiment from the same initialization;
    continue distillation only if it improves frozen-protocol AP/nearby recall.
