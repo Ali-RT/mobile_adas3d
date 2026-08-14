@@ -227,8 +227,9 @@ velocity fields.
    `TWO_CLASS_REFERENCE_PROTOCOL.md`. The completed 39-checkpoint sweep selected
    epoch 185 (SHA-256 `fc0eba200e44b88921af76b0a5c94279872fd5c4838ab4d8936838447debfa59`)
    with Vehicle/Pedestrian moderate 3D AP_R40 17.6348/5.7214.
-9. Train a fresh Vehicle + Pedestrian student. Evaluate at epochs 20, 40, 50,
-   75, and 100; continue farther only while moderate 3D AP improves.
+9. **In progress:** train a fresh Vehicle + Pedestrian S1 student. The
+   fail-closed GT-only notebook/config is prepared; run and review the
+   20-epoch health gate before continuing to epochs 40, 50, 75, and 100.
 10. Select the checkpoint using per-class moderate 3D AP plus the nearby recall
    gate, not a single aggregate loss.
 11. Freeze the checkpoint and all inference parameters.

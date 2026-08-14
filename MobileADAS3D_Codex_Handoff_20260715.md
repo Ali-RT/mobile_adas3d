@@ -1709,3 +1709,22 @@ Vehicle/Pedestrian moderate 3D AP_R40 is 17.6348/5.7214 and moderate BEV is
 4.2910 Pedestrian moderate 3D AP_R40. The active task is the fresh GT-only S1
 baseline; knowledge distillation remains intentionally pending until that
 baseline is selected and frozen.
+
+#### 2026-08-14 GT-only S1 baseline preparation complete
+
+`notebooks/MobileADAS3D_S1_GT_Baseline_Colab.ipynb` is the dedicated supervised
+student workflow. `configs/kitti_mobileadas3d_s1_gt_baseline.yaml` locks the
+MobileADAS3D-S1 MobileNetV4 graph, Vehicle/Pedestrian taxonomy, 100-epoch upper
+schedule, dedicated Drive output, and `distillation.enabled: false`.
+
+`scripts/prepare_s1_gt_baseline.py` fails closed unless the complete 39-model R0
+sweep selects epoch 185 with the frozen metrics and SHA-256. In Colab it also
+hashes the referenced R0 checkpoint bytes, writes separate epoch-20 gate and
+epoch-100 continuation configs, and records the denominators in
+`s1_gt_baseline_manifest.json`. The notebook uses a complete local KITTI stage
+when present or a canonical zero-copy Drive alias view, validates split and
+taxonomy hashes, requires CUDA, and runs one real finite S1 loss before
+training. `latest.pt` is atomic and saved every epoch; rerunning selects only a
+matching S1 run. The continuation cell defaults to
+`AUTHORIZE_CONTINUATION = False` until the complete 3,769-image epoch-20 product
+AP table is reviewed. Knowledge distillation remains inactive.

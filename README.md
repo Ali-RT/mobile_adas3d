@@ -3,6 +3,13 @@
 Current progress, frozen results, and next actions are maintained in
 [`PROJECT_TRACKER.md`](PROJECT_TRACKER.md).
 
+The active supervised-student workflow is
+[`notebooks/MobileADAS3D_S1_GT_Baseline_Colab.ipynb`](notebooks/MobileADAS3D_S1_GT_Baseline_Colab.ipynb).
+It verifies the frozen R0 epoch-185 selection and hash, keeps distillation
+disabled, preflights the audited Vehicle/Pedestrian data and one real CUDA
+loss, runs a resumable 20-epoch health gate, and blocks continuation to epoch
+100 until the complete product-taxonomy gate result is reviewed.
+
 Mobile monocular-3D detector for safety-relevant road objects. The locked
 product target, class taxonomy, dataset isolation rules, candidate architecture,
 and go/no-go metrics are defined in

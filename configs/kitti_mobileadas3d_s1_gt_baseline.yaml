@@ -1,0 +1,27 @@
+base_config: kitti_mobileadas3d_s1.yaml
+
+logging:
+  run_name: "mobileadas3d_s1_gt_baseline"
+
+training:
+  epochs: 100
+  save_interval: 5
+
+outputs:
+  output_dir: ./outputs/mobileadas3d_s1_gt_baseline
+  profile_output_dirs:
+    local_mac: ./outputs/mobileadas3d_s1_gt_baseline
+    colab_drive: /content/drive/MyDrive/mobile_adas3d_outputs/mobileadas3d_s1_gt_baseline
+
+distillation:
+  enabled: false
+
+reference:
+  name: "MonoDETR-R0"
+  selected_epoch: 185
+  checkpoint_sha256: "fc0eba200e44b88921af76b0a5c94279872fd5c4838ab4d8936838447debfa59"
+  vehicle_3d_moderate: 17.634769196266316
+  pedestrian_3d_moderate: 5.721371354710236
+  vehicle_75pct_minimum: 13.226076897199737
+  pedestrian_75pct_minimum: 4.291028516032677
+  vehicle_bev_moderate_minimum: 20.0

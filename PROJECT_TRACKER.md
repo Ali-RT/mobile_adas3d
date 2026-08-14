@@ -1,6 +1,6 @@
 # MobileADAS3D project tracker
 
-Last updated: 2026-08-13
+Last updated: 2026-08-14
 
 This is the canonical status page. Update it whenever a task changes state,
 an experiment finishes, a gate passes/fails, or the next action changes.
@@ -15,9 +15,9 @@ generalization testing, and complete recording/export artifacts.
 
 ## Current position
 
-- Current phase: **S1 supervised baseline preparation**
-- Active task: freeze the R0 selection in training inputs and build the
-  resumable GT-only MobileADAS3D-S1 Colab run.
+- Current phase: **S1 supervised health gate**
+- Active task: run and review the resumable 20-epoch GT-only
+  MobileADAS3D-S1 health gate.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Deployment candidate: **MobileADAS3D-S1 with MobileNetV4 Conv Small**
 - Knowledge distillation: **not active yet**; it follows the GT-only S1
@@ -41,7 +41,7 @@ generalization testing, and complete recording/export artifacts.
 | M11 | Two-class R0 protocol and evaluator | Complete | Separate KITTI-difficulty product-taxonomy AP_R40 implemented without changing official KITTI behavior. |
 | M12 | R0 supervised training | Complete | 195 epochs completed in 5h23m with 39 durable Drive checkpoints. |
 | M13 | R0 product checkpoint sweep | Complete | All 39 checkpoints evaluated on 3,769 Chen-val images; epoch 185 selected by balanced moderate 3D AP_R40. |
-| M14 | GT-only S1 supervised baseline | Next | Prepare, health-gate, train, sweep, and freeze a MobileNetV4 S1 checkpoint using ground truth only. |
+| M14 | GT-only S1 supervised baseline | In progress | Dedicated fail-closed Colab workflow is prepared; run the 20-epoch GT-only health gate next. |
 | M15 | Paired S1 knowledge-distillation experiment | Pending | Start from the same S1 initialization and change only the approved R0 auxiliary teacher losses. |
 | M16 | nuScenes zero-shot evaluation | Pending | Validate adapter on mini, then run the frozen LiDAR-supported external protocol. |
 | M17 | Trained S1 Core ML parity | Pending | Export the selected trained checkpoint and enforce ≤1% relative AP degradation and depth parity. |

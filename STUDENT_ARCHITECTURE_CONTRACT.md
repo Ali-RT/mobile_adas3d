@@ -171,6 +171,7 @@ reproducible conversion probe is `scripts/probe_coreml_s1.py`.
    and the distinct product-taxonomy AP_R40 evaluator. R0 epoch 185 is selected
    and hashed; its Vehicle/Pedestrian moderate 3D denominators are
    17.6348/5.7214.
-6. Train the GT-only S1 baseline.
+6. **In progress:** the GT-only S1 gate/full configs and resumable Colab
+   workflow are prepared; run and review the epoch-20 health gate next.
 7. Run a paired teacher-distillation experiment from the same initialization;
    continue distillation only if it improves frozen-protocol AP/nearby recall.
