@@ -36,12 +36,12 @@ generalization testing, and complete recording/export artifacts.
 | M6 | Early legacy-student distillation gate | Complete—no authorization | Stable 100-step paired gate showed no meaningful AP benefit, so long training was rejected. |
 | M7 | MonoDETR MobileNetV4 backbone-only ablation | Complete | Faster/smaller direction explored; accuracy loss ruled it out as the high-accuracy reference. |
 | M8 | Product target and architecture contracts | Complete | Two-class taxonomy, dataset roles, S1 architecture, metrics, and runtime gates frozen in `PRODUCT_MODEL_CONTRACT.md` and `STUDENT_ARCHITECTURE_CONTRACT.md`. |
-| M9 | S1 graph and random-weight edge gate | Complete | 1.403M parameters, 2.155 GMAC, 2.73 MB FP16; iPhone p50 1.878 ms and p95 3.788 ms. |
+| M9 | S1 graph and random-weight edge gate | Recheck required | The original 10-head graph passed at 1.403M parameters, 2.155 GMAC, 2.73 MB FP16, iPhone p50 1.878 ms/p95 3.788 ms. Preflight exposed a missing 2D center-offset head; the corrected 11-head graph uses the same supported operators but requires refreshed parity/size/latency evidence before deployment. |
 | M10 | Production taxonomy audit | Complete | Car/Van/Truck/Tram → Vehicle; Pedestrian/Person_sitting → Pedestrian. Chen train/val counts and hashes locked. |
 | M11 | Two-class R0 protocol and evaluator | Complete | Separate KITTI-difficulty product-taxonomy AP_R40 implemented without changing official KITTI behavior. |
 | M12 | R0 supervised training | Complete | 195 epochs completed in 5h23m with 39 durable Drive checkpoints. |
 | M13 | R0 product checkpoint sweep | Complete | All 39 checkpoints evaluated on 3,769 Chen-val images; epoch 185 selected by balanced moderate 3D AP_R40. |
-| M14 | GT-only S1 supervised baseline | In progress | Dedicated fail-closed Colab workflow is prepared. Preflight now refreshes the exact Chen taxonomy manifest and saves complete taxonomy/preflight logs; rerun through the 20-epoch GT-only health gate next. |
+| M14 | GT-only S1 supervised baseline | In progress | Preflight exposed and fixed a missing 2D `center_offset` head required by the frozen target/loss/decoder geometry. The corrected 11-head graph must pass preflight before the 20-epoch GT-only health gate. |
 | M15 | Paired S1 knowledge-distillation experiment | Pending | Start from the same S1 initialization and change only the approved R0 auxiliary teacher losses. |
 | M16 | nuScenes zero-shot evaluation | Pending | Validate adapter on mini, then run the frozen LiDAR-supported external protocol. |
 | M17 | Trained S1 Core ML parity | Pending | Export the selected trained checkpoint and enforce ≤1% relative AP degradation and depth parity. |

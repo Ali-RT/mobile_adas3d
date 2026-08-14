@@ -119,6 +119,7 @@ class MobileADAS3DS1(nn.Module):
         self.cls_head = nn.Conv2d(fpn_channels, num_classes, kernel_size=1)
         self.quality_head = nn.Conv2d(fpn_channels, 1, kernel_size=1)
         self.box2d_head = nn.Conv2d(fpn_channels, 4, kernel_size=1)
+        self.center_offset_head = nn.Conv2d(fpn_channels, 2, kernel_size=1)
         self.projected_center_offset_head = nn.Conv2d(
             fpn_channels, 2, kernel_size=1
         )
@@ -155,6 +156,7 @@ class MobileADAS3DS1(nn.Module):
             "cls_logits": self.cls_head(feature),
             "quality": self.quality_head(feature),
             "box2d": F.softplus(self.box2d_head(feature)),
+            "center_offset": self.center_offset_head(feature),
             "projected_center_offset": self.projected_center_offset_head(feature),
             "log_depth": self.depth_head(feature),
             "depth_uncertainty": self.depth_uncertainty_head(feature),
@@ -170,6 +172,7 @@ S1_OUTPUT_NAMES = (
     "cls_logits",
     "quality",
     "box2d",
+    "center_offset",
     "projected_center_offset",
     "log_depth",
     "depth_uncertainty",
@@ -181,7 +184,7 @@ S1_OUTPUT_NAMES = (
 
 
 class MobileADAS3DS1TupleWrapper(nn.Module):
-    """Export the ten learned heads; yaw is reconstructed by the decoder."""
+    """Export the eleven learned heads; yaw is reconstructed by the decoder."""
 
     def __init__(self, model: MobileADAS3DS1) -> None:
         super().__init__()

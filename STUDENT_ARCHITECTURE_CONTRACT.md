@@ -39,7 +39,8 @@ The output heads are:
 |---|---:|---|
 | `cls_logits` | 2 | Vehicle and Pedestrian logits |
 | `quality` | 1 | learned 3D/localization quality for score ranking |
-| `box2d` | 4 | positive LTRB distances from the owned cell |
+| `box2d` | 4 | positive LTRB distances from the 2D box center |
+| `center_offset` | 2 | 2D box-center offset from the owned cell |
 | `projected_center_offset` | 2 | projected 3D bottom-center offset |
 | `log_depth` | 1 | longitudinal camera-space depth |
 | `depth_uncertainty` | 1 | heteroscedastic depth uncertainty |
@@ -54,7 +55,7 @@ artifact writing remain outside the model so the existing Swift pipeline can
 be adapted without embedding dynamic control flow in Core ML.
 
 The training forward path also reconstructs a derived `yaw` tensor for the
-existing loss/decoder API. Core ML exports only the ten learned heads above;
+existing loss/decoder API. Core ML exports only the eleven learned heads above;
 the Swift decoder reconstructs yaw from `yaw_axis` and `yaw_direction`. This
 avoids placing the discontinuous front/back threshold inside the FP16 graph.
 

@@ -37,6 +37,7 @@ model:
     cls_logits: true
     quality: true
     box2d: true
+    center_offset: true
     projected_center_offset: true
     log_depth: true
     depth_uncertainty: true

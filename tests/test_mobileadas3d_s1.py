@@ -32,6 +32,7 @@ class MobileADAS3DS1Tests(unittest.TestCase):
             "cls_logits": 2,
             "quality": 1,
             "box2d": 4,
+            "center_offset": 2,
             "projected_center_offset": 2,
             "log_depth": 1,
             "depth_uncertainty": 1,

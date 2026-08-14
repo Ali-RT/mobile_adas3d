@@ -1549,12 +1549,16 @@ semantics.
 
 S1 is implemented as a separate `MobileADAS3D-S1` build target in
 `models/mobile_adas3d_s1.py`; legacy `MobileADAS3D` dispatch and checkpoints are
-unchanged. The graph exposes ten learned stride-8 heads. PyTorch also derives
+unchanged. The original graph probe exposed ten learned stride-8 heads. S1
+preflight later found that this omitted the distinct 2D `center_offset` head
+required by the frozen target, loss, and decoder geometry; the corrected graph
+therefore exposes eleven learned heads. PyTorch also derives
 `yaw` for existing training/decode code, while Core ML exports only axis and
 direction so an FP16 value near the direction threshold cannot create a
 spurious pi-flip inside the graph.
 
-The random graph has 1.403M parameters, 2.155 GMAC, and a 2.73 MB FP16 Core ML
+The original ten-head random graph has 1.403M parameters, 2.155 GMAC, and a
+2.73 MB FP16 Core ML
 package. TorchScript delta was zero; maximum learned-head Core ML delta was
 0.001506; conversion produced 64 convolutions, two bilinear upsample operations,
 and no custom operation. Four focused forward/export tests passed.
