@@ -1732,3 +1732,15 @@ training. `latest.pt` is atomic and saved every epoch; rerunning selects only a
 matching S1 run. The continuation cell defaults to
 `AUTHORIZE_CONTINUATION = False` until the complete 3,769-image epoch-20 product
 AP table is reviewed. Knowledge distillation remains inactive.
+
+#### 2026-08-14 S1 GT-only epoch-20 health gate failed accuracy
+
+The corrected eleven-head MobileADAS3D-S1 completed 20 epochs without NaNs or
+resume failures. Epoch-20 train/validation total loss was `1.250115/3.689127`
+and the best validation loss was `3.552878`. Full Chen validation completed,
+but moderate 3D AP_R40 was only `0.024` Vehicle and `0.519` Pedestrian;
+Vehicle moderate BEV AP_R40 was `0.246`. Continuation to epoch 100 is not
+authorized. The next diagnostic is a fixed-protocol sweep of epochs
+5/10/15/20 followed by geometry-error inspection. The inherited
+`quality_score_power: 0.0` makes current ranking class-only in effect, so the
+dormant quality loss does not explain this failure.

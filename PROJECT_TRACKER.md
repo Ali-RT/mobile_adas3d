@@ -16,8 +16,8 @@ generalization testing, and complete recording/export artifacts.
 ## Current position
 
 - Current phase: **S1 supervised health gate**
-- Active task: run and review the resumable 20-epoch GT-only
-  MobileADAS3D-S1 health gate.
+- Active task: sweep epochs 5/10/15/20 from the failed GT-only S1 health gate
+  and diagnose whether localization AP improved, peaked early, or collapsed.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Deployment candidate: **MobileADAS3D-S1 with MobileNetV4 Conv Small**
 - Knowledge distillation: **not active yet**; it follows the GT-only S1
@@ -41,7 +41,7 @@ generalization testing, and complete recording/export artifacts.
 | M11 | Two-class R0 protocol and evaluator | Complete | Separate KITTI-difficulty product-taxonomy AP_R40 implemented without changing official KITTI behavior. |
 | M12 | R0 supervised training | Complete | 195 epochs completed in 5h23m with 39 durable Drive checkpoints. |
 | M13 | R0 product checkpoint sweep | Complete | All 39 checkpoints evaluated on 3,769 Chen-val images; epoch 185 selected by balanced moderate 3D AP_R40. |
-| M14 | GT-only S1 supervised baseline | In progress | Preflight exposed and fixed a missing 2D `center_offset` head required by the frozen target/loss/decoder geometry. The corrected 11-head graph must pass preflight before the 20-epoch GT-only health gate. |
+| M14 | GT-only S1 supervised baseline | Gate failed—diagnosis in progress | Corrected 11-head S1 trained stably through epoch 20, but latest moderate 3D AP_R40 was Vehicle 0.024 and Pedestrian 0.519; Vehicle moderate BEV was 0.246. Do not continue to epoch 100. Sweep saved epochs next. |
 | M15 | Paired S1 knowledge-distillation experiment | Pending | Start from the same S1 initialization and change only the approved R0 auxiliary teacher losses. |
 | M16 | nuScenes zero-shot evaluation | Pending | Validate adapter on mini, then run the frozen LiDAR-supported external protocol. |
 | M17 | Trained S1 Core ML parity | Pending | Export the selected trained checkpoint and enforce ≤1% relative AP degradation and depth parity. |
@@ -89,8 +89,11 @@ passing these three AP values alone does not authorize deployment.
 2. Prepare a fresh GT-only S1 Colab notebook/config with Drive checkpoints,
    visible logs, automatic resume, and no teacher cache/losses.
 3. Run a 20-epoch health gate and review losses, finite gradients, both classes,
-   prediction completeness, and product AP.
-4. Continue the same run only if healthy; save checkpoints at fixed epochs.
+   prediction completeness, and product AP. **Completed but failed accuracy:**
+   stable epoch-20 train/val loss 1.2501/3.6891; moderate 3D AP_R40
+   Vehicle/Pedestrian 0.024/0.519.
+4. Sweep epochs 5/10/15/20 and inspect geometry metrics. Continue the same run
+   only if this evidence supports recovery; current continuation is denied.
 5. Sweep S1 checkpoints using the frozen R0 product evaluator and select using
    per-class moderate 3D AP plus nearby recall—not validation loss alone.
 6. Freeze the GT-only S1 checkpoint and results.
