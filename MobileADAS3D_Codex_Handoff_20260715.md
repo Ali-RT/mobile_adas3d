@@ -1744,3 +1744,11 @@ authorized. The next diagnostic is a fixed-protocol sweep of epochs
 5/10/15/20 followed by geometry-error inspection. The inherited
 `quality_score_power: 0.0` makes current ranking class-only in effect, so the
 dormant quality loss does not explain this failure.
+
+The subsequent full-validation sweep of epochs 5/10/15/20 showed no hidden
+early peak. Epoch 20 was best with mean moderate 3D/BEV AP_R40 `0.281/0.645`.
+Pedestrian moderate 3D improved from `0.06` at epoch 5 to `0.54` at epoch 20,
+while Vehicle remained effectively collapsed (`0.00` through epoch 15 and
+`0.02` at epoch 20). The next no-retraining task is an epoch-20 class-aware
+2D-match/3D-geometry diagnostic; the notebook now contains a durable cell for
+that evaluation before the locked continuation section.
