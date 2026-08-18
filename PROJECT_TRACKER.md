@@ -16,8 +16,8 @@ generalization testing, and complete recording/export artifacts.
 ## Current position
 
 - Current phase: **S1 supervised health gate**
-- Active task: run the epoch-20 matched-geometry diagnostic to separate S1
-  classification/2D recall from depth, dimensions, yaw, and 3D placement.
+- Active task: run the CPU-only yaw-axis diagnostic on epoch-20 matched
+  detections to separate orientation-axis error from 180-degree flips.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Deployment candidate: **MobileADAS3D-S1 with MobileNetV4 Conv Small**
 - Knowledge distillation: **not active yet**; it follows the GT-only S1
@@ -41,7 +41,7 @@ generalization testing, and complete recording/export artifacts.
 | M11 | Two-class R0 protocol and evaluator | Complete | Separate KITTI-difficulty product-taxonomy AP_R40 implemented without changing official KITTI behavior. |
 | M12 | R0 supervised training | Complete | 195 epochs completed in 5h23m with 39 durable Drive checkpoints. |
 | M13 | R0 product checkpoint sweep | Complete | All 39 checkpoints evaluated on 3,769 Chen-val images; epoch 185 selected by balanced moderate 3D AP_R40. |
-| M14 | GT-only S1 supervised baseline | Gate failed—diagnosis in progress | Epoch 5/10/15/20 sweep completed on all 3,769 images. Epoch 20 was best, but mean moderate 3D/BEV AP_R40 reached only 0.281/0.645 and Vehicle remained near zero. Continuation denied; matched-geometry diagnosis next. |
+| M14 | GT-only S1 supervised baseline | Gate failed—diagnosis in progress | Geometry diagnosis found 12,105 Vehicle matches at mean 2D IoU 0.675, but yaw MAE 72.3°, dimension MAE 0.405 m, and center MAE 2.96 m. Continuation denied; yaw axis/flip diagnosis next. |
 | M15 | Paired S1 knowledge-distillation experiment | Pending | Start from the same S1 initialization and change only the approved R0 auxiliary teacher losses. |
 | M16 | nuScenes zero-shot evaluation | Pending | Validate adapter on mini, then run the frozen LiDAR-supported external protocol. |
 | M17 | Trained S1 Core ML parity | Pending | Export the selected trained checkpoint and enforce ≤1% relative AP degradation and depth parity. |
@@ -96,11 +96,14 @@ passing these three AP values alone does not authorize deployment.
    moderate 3D/BEV was only 0.024/0.246; current continuation is denied.
 5. Run the epoch-20 matched-geometry diagnostic and identify whether the first
    failure is 2D recall/localization, depth, dimensions, yaw, or 3D placement.
-6. Sweep a future healthy S1 run using the frozen R0 product evaluator and
+   **Completed:** 2D matches exist; yaw/shape/3D placement are the main errors.
+6. Measure axis-aware yaw error and front/back flip rate from the saved matched
+   CSV before changing yaw encoding or loss weights.
+7. Sweep a future healthy S1 run using the frozen R0 product evaluator and
    select using per-class moderate 3D AP plus nearby recall—not validation
    loss alone.
-7. Freeze the GT-only S1 checkpoint and results.
-8. Run one paired distillation experiment from the identical S1 initialization.
+8. Freeze the GT-only S1 checkpoint and results.
+9. Run one paired distillation experiment from the identical S1 initialization.
    Keep distillation only if it improves the frozen comparison without harming
    Pedestrian or nearby safety metrics.
 

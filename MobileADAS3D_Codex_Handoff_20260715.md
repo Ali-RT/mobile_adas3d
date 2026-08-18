@@ -1752,3 +1752,12 @@ while Vehicle remained effectively collapsed (`0.00` through epoch 15 and
 `0.02` at epoch 20). The next no-retraining task is an epoch-20 class-aware
 2D-match/3D-geometry diagnostic; the notebook now contains a durable cell for
 that evaluation before the locked continuation section.
+
+The epoch-20 matched-geometry diagnostic found `12,105` Vehicle and `744`
+Pedestrian class-aware matches at 2D IoU >=0.5. Vehicle mean 2D IoU was
+`0.675`, showing that the first failure is not absence of 2D detections.
+Vehicle depth relative error was `0.111`, but yaw MAE was `72.284` degrees,
+dimension MAE `0.405 m`, center MAE `2.958 m`, and corner MAE `3.849 m`.
+Pedestrian yaw was similarly poor at `68.188` degrees. Before changing the
+model or schedule, the next CPU-only diagnostic measures the 180-degree-axis
+error and front/back flip rate from the already saved matched CSV.
