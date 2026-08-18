@@ -16,8 +16,9 @@ generalization testing, and complete recording/export artifacts.
 ## Current position
 
 - Current phase: **S1 supervised health gate**
-- Active task: run the CPU-only yaw-axis diagnostic on epoch-20 matched
-  detections to separate orientation-axis error from 180-degree flips.
+- Active task: prepare a controlled S1-V2 yaw-only experiment that replaces
+  axis+hard-direction decoding with continuous `[sin(yaw), cos(yaw)]` while
+  holding the backbone, neck, taxonomy, remaining heads, data, and schedule.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Deployment candidate: **MobileADAS3D-S1 with MobileNetV4 Conv Small**
 - Knowledge distillation: **not active yet**; it follows the GT-only S1
@@ -41,7 +42,8 @@ generalization testing, and complete recording/export artifacts.
 | M11 | Two-class R0 protocol and evaluator | Complete | Separate KITTI-difficulty product-taxonomy AP_R40 implemented without changing official KITTI behavior. |
 | M12 | R0 supervised training | Complete | 195 epochs completed in 5h23m with 39 durable Drive checkpoints. |
 | M13 | R0 product checkpoint sweep | Complete | All 39 checkpoints evaluated on 3,769 Chen-val images; epoch 185 selected by balanced moderate 3D AP_R40. |
-| M14 | GT-only S1 supervised baseline | Gate failed—diagnosis in progress | Geometry diagnosis found 12,105 Vehicle matches at mean 2D IoU 0.675, but yaw MAE 72.3°, dimension MAE 0.405 m, and center MAE 2.96 m. Continuation denied; yaw axis/flip diagnosis next. |
+| M14 | GT-only S1 supervised baseline | Failed—root cause isolated | Vehicle orientation axis was good (9.63° mean/4.71° p50), but the independent direction bit produced a 35.8% flip-candidate rate and 72.3° final yaw MAE. Do not resume this run. |
+| M14b | S1-V2 continuous-yaw experiment | Pending | Change only yaw representation to direct normalized sine/cosine; rerun the same 20-epoch health gate before any full schedule or distillation. |
 | M15 | Paired S1 knowledge-distillation experiment | Pending | Start from the same S1 initialization and change only the approved R0 auxiliary teacher losses. |
 | M16 | nuScenes zero-shot evaluation | Pending | Validate adapter on mini, then run the frozen LiDAR-supported external protocol. |
 | M17 | Trained S1 Core ML parity | Pending | Export the selected trained checkpoint and enforce ≤1% relative AP degradation and depth parity. |
@@ -98,12 +100,16 @@ passing these three AP values alone does not authorize deployment.
    failure is 2D recall/localization, depth, dimensions, yaw, or 3D placement.
    **Completed:** 2D matches exist; yaw/shape/3D placement are the main errors.
 6. Measure axis-aware yaw error and front/back flip rate from the saved matched
-   CSV before changing yaw encoding or loss weights.
-7. Sweep a future healthy S1 run using the frozen R0 product evaluator and
+   CSV. **Completed:** Vehicle axis mean/p50 was 9.63°/4.71°, but flip rate was
+   35.8%; reject the independent hard direction-bit representation.
+7. Prepare S1-V2 by changing only yaw to continuous normalized sine/cosine;
+   run the same preflight and 20-epoch GT-only health gate from a fresh seed-42
+   initialization. Do not resume the failed S1 checkpoint.
+8. Sweep a future healthy S1 run using the frozen R0 product evaluator and
    select using per-class moderate 3D AP plus nearby recall—not validation
    loss alone.
-8. Freeze the GT-only S1 checkpoint and results.
-9. Run one paired distillation experiment from the identical S1 initialization.
+9. Freeze the GT-only S1 checkpoint and results.
+10. Run one paired distillation experiment from the identical S1 initialization.
    Keep distillation only if it improves the frozen comparison without harming
    Pedestrian or nearby safety metrics.
 

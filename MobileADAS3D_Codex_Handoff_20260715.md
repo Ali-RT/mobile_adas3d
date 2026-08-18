@@ -1761,3 +1761,14 @@ dimension MAE `0.405 m`, center MAE `2.958 m`, and corner MAE `3.849 m`.
 Pedestrian yaw was similarly poor at `68.188` degrees. Before changing the
 model or schedule, the next CPU-only diagnostic measures the 180-degree-axis
 error and front/back flip rate from the already saved matched CSV.
+
+The yaw diagnostic isolated the representation failure. Vehicle standard yaw
+mean/p50/p90 was `72.284/13.608/178.142` degrees, while its 180-degree-invariant
+axis mean/p50/p90 was only `9.632/4.705/23.361` degrees. Vehicle front/back
+flip-candidate rate was `0.358`, and `0.391` of matched predictions exceeded
+90 degrees standard error. Pedestrian axis mean was weaker at `27.649` degrees
+and its flip-candidate rate was `0.179`. The axis feature is therefore learned
+for Vehicle, but the separately classified direction bit and hard branch make
+final yaw unreliable. This run must not continue. The next controlled S1-V2
+experiment holds every other variable fixed and replaces only axis+direction
+with a continuous normalized `[sin(yaw), cos(yaw)]` head/loss.
