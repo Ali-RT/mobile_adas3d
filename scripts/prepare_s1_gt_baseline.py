@@ -81,6 +81,27 @@ def main() -> None:
     config = load_config(str(args.base_config.resolve()))
     if config["model"]["name"] != "MobileADAS3D-S1":
         raise RuntimeError("GT baseline config must build MobileADAS3D-S1")
+    yaw_encoding = str(config["model"].get("yaw_encoding", "axis_direction"))
+    if yaw_encoding not in ("axis_direction", "continuous_sincos"):
+        raise RuntimeError(f"Unsupported S1 yaw encoding: {yaw_encoding!r}")
+    if yaw_encoding == "continuous_sincos":
+        heads = config["model"].get("heads", {})
+        if heads.get("yaw") is not True:
+            raise RuntimeError("Continuous-yaw S1 requires heads.yaw=true")
+        if heads.get("yaw_axis") is not False or heads.get("yaw_direction") is not False:
+            raise RuntimeError(
+                "Continuous-yaw S1 must disable yaw_axis and yaw_direction heads"
+            )
+        if float(config["loss"].get("yaw_direction_weight", 0.0)) != 0.0:
+            raise RuntimeError("Continuous-yaw S1 requires yaw_direction_weight=0")
+        if not bool(config["loss"].get("detach_yaw_in_corner3d", False)):
+            raise RuntimeError(
+                "Continuous-yaw S1 requires detach_yaw_in_corner3d=true"
+            )
+        if not bool(config["loss"].get("yaw_pred_is_direct_sincos", False)):
+            raise RuntimeError(
+                "Continuous-yaw S1 requires yaw_pred_is_direct_sincos=true"
+            )
     if config.get("distillation", {}).get("enabled") is not False:
         raise RuntimeError("GT baseline must keep distillation.enabled=false")
     if config["dataset"]["classes"] != ["Vehicle", "Pedestrian"]:
@@ -125,10 +146,15 @@ def main() -> None:
         "schema_version": 1,
         "complete": True,
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
-        "experiment": "MobileADAS3D-S1 GT-only baseline",
+        "experiment": (
+            "MobileADAS3D-S1-V2 continuous-yaw GT-only baseline"
+            if yaw_encoding == "continuous_sincos"
+            else "MobileADAS3D-S1 GT-only baseline"
+        ),
         "run_name": args.run_name,
         "architecture": config["model"]["name"],
         "backbone": config["model"]["backbone"],
+        "yaw_encoding": yaw_encoding,
         "classes": config["dataset"]["classes"],
         "distillation_enabled": False,
         "seed": config["training"]["seed"],

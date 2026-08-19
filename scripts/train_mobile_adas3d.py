@@ -222,6 +222,10 @@ def build_criterion(config: Dict[str, Any]) -> MobileADAS3DLoss:
         projected_center_weight=loss_cfg.get("projected_center_weight", 0.0),
         quality_weight=loss_cfg.get("quality_weight", 0.0),
         corner3d_weight=loss_cfg.get("corner3d_weight", 0.0),
+        detach_yaw_in_corner3d=loss_cfg.get("detach_yaw_in_corner3d", False),
+        yaw_pred_is_direct_sincos=loss_cfg.get(
+            "yaw_pred_is_direct_sincos", False
+        ),
         class_mean_dims=config["targets"]["class_mean_dims"],
         distillation_enabled=distillation_cfg.get("enabled", False),
         teacher_depth_weight=teacher_loss_cfg.get("depth", 0.0),

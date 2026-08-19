@@ -120,8 +120,10 @@ The corrected S1 learned heads are:
 
 The first S1 version implemented yaw as a double-angle axis plus a separate
 front/back direction bit. Its axis was learned, but the discontinuous direction
-decision caused frequent 180-degree flips. S1-V2 will replace only this yaw
-representation with continuous normalized `[sin(yaw), cos(yaw)]`.
+decision caused frequent 180-degree flips. S1-V2 now replaces only this yaw
+representation with continuous `[sin(yaw), cos(yaw)]` regression and decoder
+normalization; its dedicated
+config and resumable 20-epoch Colab workflow are ready to run.
 
 Dynamic TopK, calibration back-projection, non-maximum suppression, tracking,
 and artifact writing remain outside the neural network. The graph intentionally
@@ -168,9 +170,10 @@ preprocessing removed the original 540-570 ms bottleneck and measured around
 - **Distillation:** intentionally pending until a healthy GT-only student is
   frozen.
 
-The next controlled task is **S1-V2 continuous yaw**:
+The next execution task is the prepared **S1-V2 continuous-yaw health gate**:
 
-1. Change only yaw from axis plus hard direction to normalized sine/cosine.
+1. Use `configs/kitti_mobileadas3d_s1_v2_continuous_yaw.yaml` and
+   `notebooks/MobileADAS3D_S1_V2_Continuous_Yaw_Colab.ipynb`.
 2. Keep MobileNetV4, feature pyramid, input, taxonomy, other heads, seed, data,
    optimizer, and 20-epoch gate unchanged.
 3. Start from a fresh seed-42 initialization; do not resume S1-V1.

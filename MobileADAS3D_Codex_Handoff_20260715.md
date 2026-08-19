@@ -1771,7 +1771,8 @@ and its flip-candidate rate was `0.179`. The axis feature is therefore learned
 for Vehicle, but the separately classified direction bit and hard branch make
 final yaw unreliable. This run must not continue. The next controlled S1-V2
 experiment holds every other variable fixed and replaces only axis+direction
-with a continuous normalized `[sin(yaw), cos(yaw)]` head/loss.
+with direct continuous `[sin(yaw), cos(yaw)]` regression and decoder
+normalization.
 
 #### 2026-08-19 reporting summary added
 
@@ -1781,3 +1782,30 @@ MonoDETR reproduction versus frozen R0 results, AP_R40 interpretation, S1
 architecture, Core ML/iPhone evidence, teacher/student status, and the S1-V2
 next step. Keep it synchronized with `PROJECT_TRACKER.md` when a model gate or
 deployment milestone changes.
+
+#### 2026-08-19 S1-V2 continuous-yaw gate prepared
+
+S1-V2 is implemented as a controlled yaw-only change: the separate
+double-angle axis and hard direction heads are replaced by one head regressed
+directly against unit `[sin(yaw), cos(yaw)]` targets. Normalization occurs in
+the decoder rather than the FP16 graph. The remaining MobileNetV4/Lite-FPN graph, two-class
+taxonomy, input, targets, seed, schedule, and evaluation protocol are held
+constant. `configs/kitti_mobileadas3d_s1_v2_continuous_yaw.yaml` isolates the
+run and disables distillation. A numerical guard detaches yaw from the cuboid
+corner loss so a near-zero raw vector cannot create extreme `atan2` gradients;
+direct yaw regression and cosine losses remain active.
+
+`notebooks/MobileADAS3D_S1_V2_Continuous_Yaw_Colab.ipynb` provides CUDA
+preflight, fresh-run/resume validation, durable Drive checkpoints, the
+20-epoch gate, complete 3,769-image product AP evaluation, geometry diagnostics,
+and a fail-closed continuation cell. Focused V1/V2 graph, export-contract,
+configuration, notebook, resume, and finite bounded-gradient tests pass. The
+next user action is to run that notebook on a Colab GPU through diagnostics and
+return the AP/geometry summaries; full continuation and distillation remain
+unauthorized.
+
+The final random-weight S1-V2 Core ML probe also passed: 1.403M parameters,
+2.155 GMAC, 2.73 MB, no custom operations, and maximum raw-output delta
+`0.001508` versus the `0.002` gate. An initial in-graph L2-normalized yaw export
+failed parity at `0.009114`; moving scale-invariant normalization to the
+decoder removed the reduction/tile operations and restored parity.

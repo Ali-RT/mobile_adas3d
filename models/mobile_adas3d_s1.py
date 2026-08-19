@@ -83,6 +83,7 @@ class MobileADAS3DS1(nn.Module):
         backbone_name: str = "mobilenetv4_conv_small.e2400_r224_in1k",
         pretrained: bool = True,
         fpn_channels: int = 96,
+        yaw_encoding: str = "axis_direction",
     ) -> None:
         super().__init__()
         if num_classes != 2:
@@ -95,10 +96,21 @@ class MobileADAS3DS1(nn.Module):
             )
         if fpn_channels not in (64, 96):
             raise ValueError("MobileADAS3D-S1 fpn_channels must be 96 or fallback 64")
+        if yaw_encoding not in ("axis_direction", "continuous_sincos"):
+            raise ValueError(
+                "MobileADAS3D-S1 yaw_encoding must be 'axis_direction' or "
+                f"'continuous_sincos', got {yaw_encoding!r}"
+            )
 
         self.num_classes = num_classes
         self.backbone_name = backbone_name
         self.fpn_channels = fpn_channels
+        self.yaw_encoding = yaw_encoding
+        self.architecture_name = (
+            "MobileADAS3D-S1-V2"
+            if yaw_encoding == "continuous_sincos"
+            else "MobileADAS3D-S1"
+        )
         self.normalize_imagenet = True
         self.output_stride = 8
         self.backbone = MobileNetV4S1Pyramid(backbone_name, pretrained)
@@ -126,8 +138,13 @@ class MobileADAS3DS1(nn.Module):
         self.depth_head = nn.Conv2d(fpn_channels, 1, kernel_size=1)
         self.depth_uncertainty_head = nn.Conv2d(fpn_channels, 1, kernel_size=1)
         self.dim_head = nn.Conv2d(fpn_channels, 3, kernel_size=1)
-        self.yaw_axis_head = nn.Conv2d(fpn_channels, 2, kernel_size=1)
-        self.yaw_direction_head = nn.Conv2d(fpn_channels, 1, kernel_size=1)
+        if yaw_encoding == "axis_direction":
+            self.yaw_axis_head = nn.Conv2d(fpn_channels, 2, kernel_size=1)
+            self.yaw_direction_head = nn.Conv2d(fpn_channels, 1, kernel_size=1)
+            self.export_output_names = S1_OUTPUT_NAMES
+        else:
+            self.yaw_head = nn.Conv2d(fpn_channels, 2, kernel_size=1)
+            self.export_output_names = S1_V2_OUTPUT_NAMES
         self.loc_xy_head = nn.Conv2d(fpn_channels, 2, kernel_size=1)
 
     @staticmethod
@@ -149,10 +166,7 @@ class MobileADAS3DS1(nn.Module):
         p8 = self.refine8(lateral8 + self._resize_like(p16, lateral8))
         feature = self.prediction_tower(p8)
 
-        yaw_axis = self.yaw_axis_head(feature)
-        yaw_direction = self.yaw_direction_head(feature)
-        yaw = decode_yaw_axis_direction(yaw_axis, yaw_direction)
-        return {
+        outputs = {
             "cls_logits": self.cls_head(feature),
             "quality": self.quality_head(feature),
             "box2d": F.softplus(self.box2d_head(feature)),
@@ -161,11 +175,21 @@ class MobileADAS3DS1(nn.Module):
             "log_depth": self.depth_head(feature),
             "depth_uncertainty": self.depth_uncertainty_head(feature),
             "dim": self.dim_head(feature),
-            "yaw": yaw,
-            "yaw_axis": yaw_axis,
-            "yaw_direction": yaw_direction,
             "loc_xy": self.loc_xy_head(feature),
         }
+        if self.yaw_encoding == "axis_direction":
+            yaw_axis = self.yaw_axis_head(feature)
+            yaw_direction = self.yaw_direction_head(feature)
+            outputs.update(
+                {
+                    "yaw": decode_yaw_axis_direction(yaw_axis, yaw_direction),
+                    "yaw_axis": yaw_axis,
+                    "yaw_direction": yaw_direction,
+                }
+            )
+        else:
+            outputs["yaw"] = self.yaw_head(feature)
+        return outputs
 
 
 S1_OUTPUT_NAMES = (
@@ -182,9 +206,22 @@ S1_OUTPUT_NAMES = (
     "loc_xy",
 )
 
+S1_V2_OUTPUT_NAMES = (
+    "cls_logits",
+    "quality",
+    "box2d",
+    "center_offset",
+    "projected_center_offset",
+    "log_depth",
+    "depth_uncertainty",
+    "dim",
+    "yaw",
+    "loc_xy",
+)
+
 
 class MobileADAS3DS1TupleWrapper(nn.Module):
-    """Export the eleven learned heads; yaw is reconstructed by the decoder."""
+    """Export the learned heads for the selected S1 yaw representation."""
 
     def __init__(self, model: MobileADAS3DS1) -> None:
         super().__init__()
@@ -192,4 +229,4 @@ class MobileADAS3DS1TupleWrapper(nn.Module):
 
     def forward(self, images: torch.Tensor) -> Tuple[torch.Tensor, ...]:
         outputs = self.model(images)
-        return tuple(outputs[name] for name in S1_OUTPUT_NAMES)
+        return tuple(outputs[name] for name in self.model.export_output_names)

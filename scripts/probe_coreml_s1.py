@@ -16,7 +16,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from models.build import build_model
-from models.mobile_adas3d_s1 import S1_OUTPUT_NAMES, MobileADAS3DS1TupleWrapper
+from models.mobile_adas3d_s1 import MobileADAS3DS1TupleWrapper
 from tools.config import load_config
 
 
@@ -72,6 +72,7 @@ def main() -> None:
     config = load_config(args.config)
     config["model"]["pretrained"] = False
     model = build_model(config).eval()
+    output_names = model.export_output_names
     wrapper = MobileADAS3DS1TupleWrapper(model).eval()
     image = torch.rand(1, 3, 384, 1280)
 
@@ -99,7 +100,7 @@ def main() -> None:
         compute_units=ct.ComputeUnit.ALL,
         skip_model_load=not args.predict,
         inputs=[ct.TensorType(name="image", shape=image.shape, dtype=np.float32)],
-        outputs=[ct.TensorType(name=name) for name in S1_OUTPUT_NAMES],
+        outputs=[ct.TensorType(name=name) for name in output_names],
     )
     conversion_seconds = time.perf_counter() - conversion_start
     mlmodel.save(str(package_path))
@@ -120,7 +121,7 @@ def main() -> None:
                     )
                 )
             )
-            for name, expected in zip(S1_OUTPUT_NAMES, reference)
+            for name, expected in zip(output_names, reference)
         )
 
     parameters = sum(parameter.numel() for parameter in model.parameters())
@@ -138,13 +139,13 @@ def main() -> None:
     report = {
         "schema_version": 1,
         "complete": complete,
-        "scope": "random-weight MobileADAS3D-S1 pre-training graph gate",
+        "scope": f"random-weight {model.architecture_name} pre-training graph gate",
         "torch_version": torch.__version__,
         "coremltools_version": ct.__version__,
         "input_shape": list(image.shape),
         "output_shapes": {
             name: list(value.shape)
-            for name, value in zip(S1_OUTPUT_NAMES, reference)
+            for name, value in zip(output_names, reference)
         },
         "parameters": parameters,
         "parameter_gate": parameters <= 10_000_000,

@@ -1,6 +1,6 @@
 # MobileADAS3D-S1 student architecture contract
 
-Status: random-weight graph and physical-iPhone pre-training gates passed
+Status: S1-V1 device gate passed; S1-V2 continuous-yaw gate prepared
 Decision date: 2026-08-11
 
 ## Decision
@@ -58,6 +58,28 @@ The training forward path also reconstructs a derived `yaw` tensor for the
 existing loss/decoder API. Core ML exports only the eleven learned heads above;
 the Swift decoder reconstructs yaw from `yaw_axis` and `yaw_direction`. This
 avoids placing the discontinuous front/back threshold inside the FP16 graph.
+
+### S1-V2 controlled yaw variant
+
+S1-V2 changes only the orientation representation. It removes `yaw_axis` and
+`yaw_direction` and exports one two-channel `yaw` head regressed directly
+against unit `[sin(yaw), cos(yaw)]` targets. The decoder normalizes this vector
+before `atan2`, avoiding an FP16-sensitive L2 reduction inside Core ML. The
+other nine learned outputs, MobileNetV4 backbone,
+Lite-FPN, stride, taxonomy, data, seed, optimizer, and epoch-20 gate are
+unchanged. The export contract therefore has ten learned tensors.
+
+The direct yaw regression and cosine losses supervise orientation. Cuboid
+corner loss is detached from yaw for this variant because `atan2` near a zero
+raw vector can create extreme gradients; corner loss still trains depth,
+dimensions, and position. This is a numerical safeguard, not an extra target
+or a change to decoding.
+
+The S1-V2 random-weight Core ML probe passed locally: 1.403M parameters,
+2.155 GMAC, 2.73 MB FP16 package, no custom operations, and 0.001508 maximum
+PyTorch-to-Core-ML raw-output delta. In-graph L2 normalization was explicitly
+rejected after it produced 0.009114 FP16 drift; decoder normalization restored
+the native convolution-only output graph and the 0.002 parity gate.
 
 Every S1 depthwise-separable block is locked to depthwise 3x3 convolution,
 BatchNorm, ReLU, pointwise 1x1 convolution, BatchNorm, and ReLU. The top-down
@@ -172,7 +194,9 @@ reproducible conversion probe is `scripts/probe_coreml_s1.py`.
    and the distinct product-taxonomy AP_R40 evaluator. R0 epoch 185 is selected
    and hashed; its Vehicle/Pedestrian moderate 3D denominators are
    17.6348/5.7214.
-6. **In progress:** the GT-only S1 gate/full configs and resumable Colab
-   workflow are prepared; run and review the epoch-20 health gate next.
-7. Run a paired teacher-distillation experiment from the same initialization;
+6. **Completed, rejected:** S1-V1 completed its epoch-20 gate, but its separate
+   direction bit caused frequent 180-degree flips and collapsed Vehicle 3D AP.
+7. **Prepared:** run S1-V2's fresh 20-epoch GT-only gate with direct continuous
+   yaw using `notebooks/MobileADAS3D_S1_V2_Continuous_Yaw_Colab.ipynb`.
+8. Run a paired teacher-distillation experiment from the same initialization;
    continue distillation only if it improves frozen-protocol AP/nearby recall.

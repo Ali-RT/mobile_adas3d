@@ -18,6 +18,7 @@ def build_model(config: Dict[str, Any]) -> MobileADAS3D | MobileADAS3DS1:
             ),
             pretrained=bool(model_cfg.get("pretrained", True)),
             fpn_channels=int(model_cfg.get("fpn_channels", 96)),
+            yaw_encoding=str(model_cfg.get("yaw_encoding", "axis_direction")),
         )
 
     model = MobileADAS3D(

@@ -1,0 +1,30 @@
+base_config: kitti_mobileadas3d_s1_gt_baseline.yaml
+
+logging:
+  run_name: "mobileadas3d_s1_v2_continuous_yaw"
+
+model:
+  # The only model change from rejected S1-V1 is yaw representation.
+  yaw_encoding: "continuous_sincos"
+  use_yaw_axis_direction: false
+  heads:
+    yaw: true
+    yaw_axis: false
+    yaw_direction: false
+
+loss:
+  # Direct normalized sine/cosine uses the existing regression + cosine terms.
+  yaw_direction_weight: 0.0
+  # Avoid the undefined/large atan2 gradient near a zero raw yaw vector. Yaw
+  # remains supervised by its direct regression and cosine losses.
+  detach_yaw_in_corner3d: true
+  yaw_pred_is_direct_sincos: true
+
+outputs:
+  output_dir: ./outputs/mobileadas3d_s1_v2_continuous_yaw
+  profile_output_dirs:
+    local_mac: ./outputs/mobileadas3d_s1_v2_continuous_yaw
+    colab_drive: /content/drive/MyDrive/mobile_adas3d_outputs/mobileadas3d_s1_v2_continuous_yaw
+
+distillation:
+  enabled: false

@@ -1,6 +1,6 @@
 # MobileADAS3D project tracker
 
-Last updated: 2026-08-14
+Last updated: 2026-08-19
 
 This is the canonical status page. Update it whenever a task changes state,
 an experiment finishes, a gate passes/fails, or the next action changes.
@@ -16,9 +16,8 @@ generalization testing, and complete recording/export artifacts.
 ## Current position
 
 - Current phase: **S1 supervised health gate**
-- Active task: prepare a controlled S1-V2 yaw-only experiment that replaces
-  axis+hard-direction decoding with continuous `[sin(yaw), cos(yaw)]` while
-  holding the backbone, neck, taxonomy, remaining heads, data, and schedule.
+- Active task: run the prepared S1-V2 continuous-yaw 20-epoch GT-only health
+  gate, then review complete product AP and geometry diagnostics.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Deployment candidate: **MobileADAS3D-S1 with MobileNetV4 Conv Small**
 - Knowledge distillation: **not active yet**; it follows the GT-only S1
@@ -43,7 +42,7 @@ generalization testing, and complete recording/export artifacts.
 | M12 | R0 supervised training | Complete | 195 epochs completed in 5h23m with 39 durable Drive checkpoints. |
 | M13 | R0 product checkpoint sweep | Complete | All 39 checkpoints evaluated on 3,769 Chen-val images; epoch 185 selected by balanced moderate 3D AP_R40. |
 | M14 | GT-only S1 supervised baseline | Failed—root cause isolated | Vehicle orientation axis was good (9.63° mean/4.71° p50), but the independent direction bit produced a 35.8% flip-candidate rate and 72.3° final yaw MAE. Do not resume this run. |
-| M14b | S1-V2 continuous-yaw experiment | Pending | Change only yaw representation to direct normalized sine/cosine; rerun the same 20-epoch health gate before any full schedule or distillation. |
+| M14b | S1-V2 continuous-yaw experiment | Prepared—Colab run required | Direct sine/cosine regression with decoder normalization, bounded yaw gradients, isolated config/output, fresh-run resume guard, full AP/geometry evaluation, and locked continuation are implemented. Random graph: 1.403M parameters, 2.155 GMAC, 2.73 MB, no custom ops, Core ML max delta 0.001508 (pass). Run `MobileADAS3D_S1_V2_Continuous_Yaw_Colab.ipynb` on a GPU. |
 | M15 | Paired S1 knowledge-distillation experiment | Pending | Start from the same S1 initialization and change only the approved R0 auxiliary teacher losses. |
 | M16 | nuScenes zero-shot evaluation | Pending | Validate adapter on mini, then run the frozen LiDAR-supported external protocol. |
 | M17 | Trained S1 Core ML parity | Pending | Export the selected trained checkpoint and enforce ≤1% relative AP degradation and depth parity. |
@@ -102,9 +101,10 @@ passing these three AP values alone does not authorize deployment.
 6. Measure axis-aware yaw error and front/back flip rate from the saved matched
    CSV. **Completed:** Vehicle axis mean/p50 was 9.63°/4.71°, but flip rate was
    35.8%; reject the independent hard direction-bit representation.
-7. Prepare S1-V2 by changing only yaw to continuous normalized sine/cosine;
-   run the same preflight and 20-epoch GT-only health gate from a fresh seed-42
-   initialization. Do not resume the failed S1 checkpoint.
+7. S1-V2 direct sine/cosine preparation is complete. Run
+   `notebooks/MobileADAS3D_S1_V2_Continuous_Yaw_Colab.ipynb` top-to-bottom on a
+   GPU through the 20-epoch AP and geometry cells. Keep
+   `AUTHORIZE_CONTINUATION = False`; do not resume the failed S1-V1 checkpoint.
 8. Sweep a future healthy S1 run using the frozen R0 product evaluator and
    select using per-class moderate 3D AP plus nearby recall—not validation
    loss alone.
