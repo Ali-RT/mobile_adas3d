@@ -1809,3 +1809,28 @@ The final random-weight S1-V2 Core ML probe also passed: 1.403M parameters,
 `0.001508` versus the `0.002` gate. An initial in-graph L2-normalized yaw export
 failed parity at `0.009114`; moving scale-invariant normalization to the
 decoder removed the reduction/tile operations and restored parity.
+
+#### 2026-08-19 S1-V2 gate rejected due to unbounded yaw objective
+
+Run `20260819_174023_mobileadas3d_s1_v2_continuous_yaw` completed the full
+3,769-image epoch-20 product evaluation. Moderate 3D AP_R40 was `0.133`
+Vehicle and `0.256` Pedestrian; moderate BEV was `0.801/0.652`. Relative to
+S1-V1, Vehicle improved from `0.024` 3D AP and its matched yaw mean/flip rate
+improved from `72.28°/35.8%` to `37.77°/17.45%`, but Pedestrian regressed from
+`0.519` 3D AP and retained `74.25°` mean yaw error. The run remained far below
+the frozen R0-retention gates (`13.226/4.291` moderate 3D and `20.0` Vehicle
+BEV).
+
+The training log exposed a correctness defect: treating the raw direct yaw
+vector as already normalized made cosine loss `1 - dot(pred,target)` unbounded
+with respect to vector magnitude. The yaw cosine term fell to roughly `-1.29`,
+and total training loss became negative after continued training. Although the
+run proceeded through epoch 100, only the epoch-20 checkpoint was product
+evaluated and no checkpoint from this run is valid for selection, deployment,
+or distillation.
+
+Next task: create S1-V2b with scale-invariant normalization inside the yaw loss
+and a norm floor that bounds gradients near zero, while retaining raw yaw
+export plus decoder normalization for Core ML parity. Add explicit zero, small,
+unit, and large-vector loss/gradient tests, isolate the output directory, and
+rerun a fresh 20-epoch gate without resuming S1-V1 or S1-V2.

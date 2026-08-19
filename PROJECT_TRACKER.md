@@ -15,9 +15,9 @@ generalization testing, and complete recording/export artifacts.
 
 ## Current position
 
-- Current phase: **S1 supervised health gate**
-- Active task: run the prepared S1-V2 continuous-yaw 20-epoch GT-only health
-  gate, then review complete product AP and geometry diagnostics.
+- Current phase: **S1 yaw-loss correction**
+- Active task: prepare S1-V2b with bounded, scale-invariant continuous-yaw
+  normalization; do not resume or select the invalid S1-V2 run.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Deployment candidate: **MobileADAS3D-S1 with MobileNetV4 Conv Small**
 - Knowledge distillation: **not active yet**; it follows the GT-only S1
@@ -42,7 +42,8 @@ generalization testing, and complete recording/export artifacts.
 | M12 | R0 supervised training | Complete | 195 epochs completed in 5h23m with 39 durable Drive checkpoints. |
 | M13 | R0 product checkpoint sweep | Complete | All 39 checkpoints evaluated on 3,769 Chen-val images; epoch 185 selected by balanced moderate 3D AP_R40. |
 | M14 | GT-only S1 supervised baseline | Failed—root cause isolated | Vehicle orientation axis was good (9.63° mean/4.71° p50), but the independent direction bit produced a 35.8% flip-candidate rate and 72.3° final yaw MAE. Do not resume this run. |
-| M14b | S1-V2 continuous-yaw experiment | Prepared—Colab run required | Direct sine/cosine regression with decoder normalization, bounded yaw gradients, isolated config/output, fresh-run resume guard, full AP/geometry evaluation, and locked continuation are implemented. Random graph: 1.403M parameters, 2.155 GMAC, 2.73 MB, no custom ops, Core ML max delta 0.001508 (pass). Run `MobileADAS3D_S1_V2_Continuous_Yaw_Colab.ipynb` on a GPU. |
+| M14b | S1-V2 continuous-yaw experiment | Failed—invalid loss | Epoch-20 Vehicle/Pedestrian moderate 3D AP_R40 was 0.133/0.256 and BEV 0.801/0.652. Direct dot-product cosine loss was not scale-invariant: yaw cosine loss fell to about -1.29 and total train loss became negative. Epochs 21–100 were run but not product-evaluated. Do not use any S1-V2 checkpoint. |
+| M14c | S1-V2b bounded continuous-yaw experiment | Pending | Normalize raw yaw only inside the training loss with a bounded norm floor, retain decoder normalization and the Core ML-native raw head, add zero/small/large-vector gradient tests, then repeat a fresh 20-epoch gate. |
 | M15 | Paired S1 knowledge-distillation experiment | Pending | Start from the same S1 initialization and change only the approved R0 auxiliary teacher losses. |
 | M16 | nuScenes zero-shot evaluation | Pending | Validate adapter on mini, then run the frozen LiDAR-supported external protocol. |
 | M17 | Trained S1 Core ML parity | Pending | Export the selected trained checkpoint and enforce ≤1% relative AP degradation and depth parity. |
@@ -101,15 +102,18 @@ passing these three AP values alone does not authorize deployment.
 6. Measure axis-aware yaw error and front/back flip rate from the saved matched
    CSV. **Completed:** Vehicle axis mean/p50 was 9.63°/4.71°, but flip rate was
    35.8%; reject the independent hard direction-bit representation.
-7. S1-V2 direct sine/cosine preparation is complete. Run
-   `notebooks/MobileADAS3D_S1_V2_Continuous_Yaw_Colab.ipynb` top-to-bottom on a
-   GPU through the 20-epoch AP and geometry cells. Keep
-   `AUTHORIZE_CONTINUATION = False`; do not resume the failed S1-V1 checkpoint.
-8. Sweep a future healthy S1 run using the frozen R0 product evaluator and
+7. S1-V2 completed epoch 20 and then continued to epoch 100, but reject the
+   whole run: its unnormalized dot-product cosine objective was unbounded and
+   drove yaw and total training loss negative. The epoch-20 AP/geometry result
+   is diagnostic only, not a valid candidate.
+8. Prepare S1-V2b with bounded scale-invariant yaw loss, test gradient behavior
+   at zero/small/large vector magnitudes, and rerun from a fresh seed-42
+   initialization. Do not resume either S1-V1 or S1-V2.
+9. Sweep a future healthy S1 run using the frozen R0 product evaluator and
    select using per-class moderate 3D AP plus nearby recall—not validation
    loss alone.
-9. Freeze the GT-only S1 checkpoint and results.
-10. Run one paired distillation experiment from the identical S1 initialization.
+10. Freeze the GT-only S1 checkpoint and results.
+11. Run one paired distillation experiment from the identical S1 initialization.
    Keep distillation only if it improves the frozen comparison without harming
    Pedestrian or nearby safety metrics.
 

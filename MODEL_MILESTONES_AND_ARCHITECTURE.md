@@ -170,13 +170,22 @@ preprocessing removed the original 540-570 ms bottleneck and measured around
 - **Distillation:** intentionally pending until a healthy GT-only student is
   frozen.
 
-The next execution task is the prepared **S1-V2 continuous-yaw health gate**:
+S1-V2's epoch-20 health gate was rejected. Vehicle/Pedestrian moderate 3D
+AP_R40 was `0.133/0.256`, versus S1-V1's `0.024/0.519`, and moderate BEV was
+`0.801/0.652`. Vehicle yaw improved to `37.77°` mean with a `17.45%` >90° flip
+rate, but Pedestrian yaw remained `74.25°`. More importantly, the direct
+dot-product cosine objective was not scale-invariant: yaw cosine loss reached
+approximately `-1.29` and total train loss became negative. This invalidates
+all S1-V2 checkpoints, including the unevaluated continuation through epoch
+100.
 
-1. Use `configs/kitti_mobileadas3d_s1_v2_continuous_yaw.yaml` and
-   `notebooks/MobileADAS3D_S1_V2_Continuous_Yaw_Colab.ipynb`.
+The next controlled task is **S1-V2b bounded continuous yaw**:
+
+1. Replace the unbounded direct dot product with scale-invariant yaw
+   normalization using a gradient-bounding norm floor inside training loss.
 2. Keep MobileNetV4, feature pyramid, input, taxonomy, other heads, seed, data,
    optimizer, and 20-epoch gate unchanged.
-3. Start from a fresh seed-42 initialization; do not resume S1-V1.
+3. Start from a fresh seed-42 initialization; do not resume S1-V1 or S1-V2.
 4. Run preflight, the 20-epoch GT-only gate, complete product AP evaluation,
    checkpoint sweep, and geometry/yaw diagnostics.
 5. Continue toward a full schedule only if Vehicle and Pedestrian improve
