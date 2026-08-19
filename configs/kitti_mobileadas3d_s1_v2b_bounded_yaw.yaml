@@ -1,0 +1,18 @@
+base_config: kitti_mobileadas3d_s1_v2_continuous_yaw.yaml
+
+logging:
+  run_name: "mobileadas3d_s1_v2b_bounded_yaw"
+
+loss:
+  # Normalize only for supervision. This bounds the local Jacobian by 10 near
+  # zero while preserving exact unit normalization above the floor.
+  yaw_norm_floor: 0.1
+
+outputs:
+  output_dir: ./outputs/mobileadas3d_s1_v2b_bounded_yaw
+  profile_output_dirs:
+    local_mac: ./outputs/mobileadas3d_s1_v2b_bounded_yaw
+    colab_drive: /content/drive/MyDrive/mobile_adas3d_outputs/mobileadas3d_s1_v2b_bounded_yaw
+
+distillation:
+  enabled: false

@@ -226,6 +226,7 @@ def build_criterion(config: Dict[str, Any]) -> MobileADAS3DLoss:
         yaw_pred_is_direct_sincos=loss_cfg.get(
             "yaw_pred_is_direct_sincos", False
         ),
+        yaw_norm_floor=loss_cfg.get("yaw_norm_floor", 0.1),
         class_mean_dims=config["targets"]["class_mean_dims"],
         distillation_enabled=distillation_cfg.get("enabled", False),
         teacher_depth_weight=teacher_loss_cfg.get("depth", 0.0),

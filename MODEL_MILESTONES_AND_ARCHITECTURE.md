@@ -181,11 +181,12 @@ all S1-V2 checkpoints, including the unevaluated continuation through epoch
 
 The next controlled task is **S1-V2b bounded continuous yaw**:
 
-1. Replace the unbounded direct dot product with scale-invariant yaw
-   normalization using a gradient-bounding norm floor inside training loss.
+1. **Prepared:** scale-invariant yaw normalization uses a `0.1` norm floor
+   inside training loss, bounding its local Jacobian by 10.
 2. Keep MobileNetV4, feature pyramid, input, taxonomy, other heads, seed, data,
    optimizer, and 20-epoch gate unchanged.
-3. Start from a fresh seed-42 initialization; do not resume S1-V1 or S1-V2.
+3. Run `notebooks/MobileADAS3D_S1_V2b_Bounded_Yaw_Colab.ipynb` from a fresh
+   seed-42 initialization; do not resume S1-V1 or S1-V2.
 4. Run preflight, the 20-epoch GT-only gate, complete product AP evaluation,
    checkpoint sweep, and geometry/yaw diagnostics.
 5. Continue toward a full schedule only if Vehicle and Pedestrian improve

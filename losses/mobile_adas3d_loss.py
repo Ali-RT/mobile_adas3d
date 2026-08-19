@@ -112,6 +112,17 @@ def masked_weighted_yaw_cosine_loss(
     return numerator / denominator
 
 
+def normalize_yaw_with_floor(
+    yaw: torch.Tensor,
+    norm_floor: float,
+) -> torch.Tensor:
+    """Normalize yaw vectors while bounding gradients near the origin."""
+    if not 0.0 < norm_floor <= 1.0:
+        raise ValueError("yaw norm floor must be in (0, 1]")
+    norm = torch.linalg.vector_norm(yaw, dim=1, keepdim=True)
+    return yaw / norm.clamp_min(norm_floor)
+
+
 class MobileADAS3DLoss(nn.Module):
     def __init__(
         self,
@@ -134,6 +145,7 @@ class MobileADAS3DLoss(nn.Module):
         corner3d_weight: float = 0.0,
         detach_yaw_in_corner3d: bool = False,
         yaw_pred_is_direct_sincos: bool = False,
+        yaw_norm_floor: float = 0.1,
         class_mean_dims: Optional[Dict[str, List[float]]] = None,
         distillation_enabled: bool = False,
         teacher_depth_weight: float = 0.0,
@@ -161,6 +173,9 @@ class MobileADAS3DLoss(nn.Module):
         self.corner3d_weight = corner3d_weight
         self.detach_yaw_in_corner3d = bool(detach_yaw_in_corner3d)
         self.yaw_pred_is_direct_sincos = bool(yaw_pred_is_direct_sincos)
+        self.yaw_norm_floor = float(yaw_norm_floor)
+        if self.yaw_pred_is_direct_sincos and not 0.0 < self.yaw_norm_floor <= 1.0:
+            raise ValueError("direct sine/cosine yaw requires yaw_norm_floor in (0, 1]")
         self.distillation_enabled = bool(distillation_enabled)
         self.teacher_depth_weight = float(teacher_depth_weight)
         self.teacher_dim_weight = float(teacher_dim_weight)
@@ -315,9 +330,10 @@ class MobileADAS3DLoss(nn.Module):
 
         yaw_reg_pred = yaw_axis_pred if yaw_axis_pred is not None else yaw_pred
         yaw_reg_target = yaw_axis_target if yaw_axis_target is not None and yaw_axis_pred is not None else yaw_target
+        direct_yaw = self.yaw_pred_is_direct_sincos and yaw_axis_pred is None
         yaw_pred_norm = (
-            yaw_reg_pred
-            if self.yaw_pred_is_direct_sincos and yaw_axis_pred is None
+            normalize_yaw_with_floor(yaw_reg_pred, self.yaw_norm_floor)
+            if direct_yaw
             else F.normalize(yaw_reg_pred, dim=1, eps=1e-6)
         )
 
@@ -330,13 +346,11 @@ class MobileADAS3DLoss(nn.Module):
         )
 
         yaw_cosine_loss = masked_weighted_yaw_cosine_loss(
-            pred=yaw_reg_pred,
+            pred=yaw_pred_norm,
             target=yaw_reg_target,
             valid_mask=valid_mask,
             loss_weight=loss_weight_target,
-            pred_is_normalized=(
-                self.yaw_pred_is_direct_sincos and yaw_axis_pred is None
-            ),
+            pred_is_normalized=True,
         )
 
         yaw_direction_loss = torch.zeros(
@@ -456,7 +470,6 @@ class MobileADAS3DLoss(nn.Module):
                     targets["teacher_log_depth_target"],
                     teacher_mask,
                     teacher_score,
-                    pred_is_normalized=self.yaw_pred_is_direct_sincos,
                 )
                 teacher_dim_loss = masked_weighted_smooth_l1_loss(
                     dim_pred,
@@ -471,10 +484,11 @@ class MobileADAS3DLoss(nn.Module):
                     teacher_score,
                 )
                 teacher_yaw_loss = masked_weighted_yaw_cosine_loss(
-                    yaw_pred,
+                    yaw_pred_norm,
                     targets["teacher_yaw_target"],
                     teacher_mask,
                     teacher_score,
+                    pred_is_normalized=True,
                 )
             total_loss = (
                 total_loss

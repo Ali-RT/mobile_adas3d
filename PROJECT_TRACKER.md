@@ -43,7 +43,7 @@ generalization testing, and complete recording/export artifacts.
 | M13 | R0 product checkpoint sweep | Complete | All 39 checkpoints evaluated on 3,769 Chen-val images; epoch 185 selected by balanced moderate 3D AP_R40. |
 | M14 | GT-only S1 supervised baseline | Failed—root cause isolated | Vehicle orientation axis was good (9.63° mean/4.71° p50), but the independent direction bit produced a 35.8% flip-candidate rate and 72.3° final yaw MAE. Do not resume this run. |
 | M14b | S1-V2 continuous-yaw experiment | Failed—invalid loss | Epoch-20 Vehicle/Pedestrian moderate 3D AP_R40 was 0.133/0.256 and BEV 0.801/0.652. Direct dot-product cosine loss was not scale-invariant: yaw cosine loss fell to about -1.29 and total train loss became negative. Epochs 21–100 were run but not product-evaluated. Do not use any S1-V2 checkpoint. |
-| M14c | S1-V2b bounded continuous-yaw experiment | Pending | Normalize raw yaw only inside the training loss with a bounded norm floor, retain decoder normalization and the Core ML-native raw head, add zero/small/large-vector gradient tests, then repeat a fresh 20-epoch gate. |
+| M14c | S1-V2b bounded continuous-yaw experiment | Prepared—Colab run required | A 0.1 norm floor bounds the yaw-loss Jacobian by 10 while restoring scale invariance and loss range [0,2]. Zero/small/unit/large-vector, legacy, distillation, notebook, and Core ML parity tests pass. Dedicated notebook ends after epoch-20 diagnostics with no continuation cell. |
 | M15 | Paired S1 knowledge-distillation experiment | Pending | Start from the same S1 initialization and change only the approved R0 auxiliary teacher losses. |
 | M16 | nuScenes zero-shot evaluation | Pending | Validate adapter on mini, then run the frozen LiDAR-supported external protocol. |
 | M17 | Trained S1 Core ML parity | Pending | Export the selected trained checkpoint and enforce ≤1% relative AP degradation and depth parity. |
@@ -106,9 +106,10 @@ passing these three AP values alone does not authorize deployment.
    whole run: its unnormalized dot-product cosine objective was unbounded and
    drove yaw and total training loss negative. The epoch-20 AP/geometry result
    is diagnostic only, not a valid candidate.
-8. Prepare S1-V2b with bounded scale-invariant yaw loss, test gradient behavior
-   at zero/small/large vector magnitudes, and rerun from a fresh seed-42
-   initialization. Do not resume either S1-V1 or S1-V2.
+8. **Prepared:** run
+   `notebooks/MobileADAS3D_S1_V2b_Bounded_Yaw_Colab.ipynb` top-to-bottom on a
+   GPU. It uses a fresh isolated seed-42 run and physically ends after complete
+   epoch-20 AP/geometry diagnostics. Do not resume S1-V1 or S1-V2.
 9. Sweep a future healthy S1 run using the frozen R0 product evaluator and
    select using per-class moderate 3D AP plus nearby recall—not validation
    loss alone.

@@ -1834,3 +1834,26 @@ and a norm floor that bounds gradients near zero, while retaining raw yaw
 export plus decoder normalization for Core ML parity. Add explicit zero, small,
 unit, and large-vector loss/gradient tests, isolate the output directory, and
 rerun a fresh 20-epoch gate without resuming S1-V1 or S1-V2.
+
+#### 2026-08-19 S1-V2b bounded-yaw gate prepared
+
+S1-V2b implements the correction without changing the exported model graph.
+For direct sine/cosine supervision, raw yaw is divided by
+`max(L2_norm, 0.1)`. The angular loss is therefore bounded to `[0,2]`, the
+near-zero normalization Jacobian is capped at 10, and vectors at or above the
+floor are scale-invariant. Yaw remains detached from corner loss; raw Core ML
+output is normalized by the decoder.
+
+Tests cover zero, `1e-6`, `0.1`, unit, and magnitude-100 yaw vectors, finite
+bounded gradients, legacy S1/V5 behavior, teacher-distillation integration,
+notebook parsing, isolated resume policy, and the absence of any continuation
+cell. All 43 focused tests pass. The unchanged random graph also passes Core ML
+again at 1.403M parameters, 2.155 GMAC, 2.73 MB, no custom ops, and `0.001508`
+maximum output delta.
+
+Run only `notebooks/MobileADAS3D_S1_V2b_Bounded_Yaw_Colab.ipynb` on a Colab
+GPU, top-to-bottom. It writes to the dedicated
+`mobileadas3d_s1_v2b_bounded_yaw` Drive directory and stops after complete
+epoch-20 AP and geometry diagnostics. The previous S1-V2 notebook is marked
+retired. Return the AP table, final training summary, and per-class geometry
+table before any continuation or distillation decision.

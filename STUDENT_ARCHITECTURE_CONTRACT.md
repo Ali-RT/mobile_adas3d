@@ -81,6 +81,20 @@ PyTorch-to-Core-ML raw-output delta. In-graph L2 normalization was explicitly
 rejected after it produced 0.009114 FP16 drift; decoder normalization restored
 the native convolution-only output graph and the 0.002 parity gate.
 
+S1-V2 training was later rejected because bypassing normalization inside its
+cosine objective made `1 - dot(pred,target)` unbounded as raw-vector magnitude
+grew. S1-V2b corrects only the loss: raw yaw is divided by
+`max(L2_norm, 0.1)` for direct regression and cosine supervision. This keeps
+angular loss in `[0,2]`, bounds the normalization Jacobian by 10 near zero,
+and is exactly scale-invariant once vector norm reaches 0.1. Corner loss remains
+detached from yaw. The exported graph is unchanged, so decoder normalization
+and Core ML behavior remain identical.
+
+The S1-V2b random graph reconfirmed 1.403M parameters, 2.155 GMAC, 2.73 MB,
+no custom operations, and maximum Core ML delta `0.001508`. Local macOS timing
+from this one-shot conversion probe is diagnostic only; physical-iPhone timing
+remains the deployment gate.
+
 Every S1 depthwise-separable block is locked to depthwise 3x3 convolution,
 BatchNorm, ReLU, pointwise 1x1 convolution, BatchNorm, and ReLU. The top-down
 path computes `P16 = refine(lateral16 + resize(lateral32))`, followed by

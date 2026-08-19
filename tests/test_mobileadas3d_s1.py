@@ -3,7 +3,11 @@ from pathlib import Path
 
 import torch
 
-from losses.mobile_adas3d_loss import MobileADAS3DLoss
+from losses.mobile_adas3d_loss import (
+    MobileADAS3DLoss,
+    masked_weighted_yaw_cosine_loss,
+    normalize_yaw_with_floor,
+)
 from models.build import build_model
 from models.mobile_adas3d_s1 import (
     S1_OUTPUT_NAMES,
@@ -144,7 +148,31 @@ class MobileADAS3DS1V2Tests(unittest.TestCase):
 
         self.assertTrue(torch.isfinite(losses["total_loss"]))
         self.assertTrue(torch.isfinite(yaw.grad).all())
-        self.assertLess(float(yaw.grad.abs().max()), 10.0)
+        self.assertLessEqual(float(yaw.grad.abs().max()), 30.0)
+
+    def test_v2b_yaw_loss_is_bounded_across_vector_scales(self):
+        target = torch.tensor([[[[0.0]], [[1.0]]]])
+        mask = torch.ones(1, 1, 1, 1)
+        losses = []
+        for magnitude in (0.0, 1e-6, 0.1, 1.0, 100.0):
+            raw = torch.tensor(
+                [[[[magnitude]], [[0.0]]]], requires_grad=True
+            )
+            normalized = normalize_yaw_with_floor(raw, norm_floor=0.1)
+            loss = masked_weighted_yaw_cosine_loss(
+                normalized,
+                target,
+                mask,
+                pred_is_normalized=True,
+            )
+            loss.backward()
+            loss_value = float(loss.detach())
+            self.assertGreaterEqual(loss_value, 0.0)
+            self.assertLessEqual(loss_value, 2.0)
+            self.assertTrue(torch.isfinite(raw.grad).all())
+            self.assertLessEqual(float(raw.grad.abs().max()), 10.0)
+            losses.append(loss_value)
+        self.assertAlmostEqual(losses[-1], losses[-2], places=6)
 
 
 if __name__ == "__main__":

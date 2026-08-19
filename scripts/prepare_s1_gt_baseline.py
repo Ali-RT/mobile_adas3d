@@ -102,6 +102,11 @@ def main() -> None:
             raise RuntimeError(
                 "Continuous-yaw S1 requires yaw_pred_is_direct_sincos=true"
             )
+        yaw_norm_floor = float(config["loss"].get("yaw_norm_floor", 0.0))
+        if not 0.0 < yaw_norm_floor <= 1.0:
+            raise RuntimeError(
+                "Continuous-yaw S1 requires yaw_norm_floor in (0, 1]"
+            )
     if config.get("distillation", {}).get("enabled") is not False:
         raise RuntimeError("GT baseline must keep distillation.enabled=false")
     if config["dataset"]["classes"] != ["Vehicle", "Pedestrian"]:
@@ -147,7 +152,9 @@ def main() -> None:
         "complete": True,
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "experiment": (
-            "MobileADAS3D-S1-V2 continuous-yaw GT-only baseline"
+            "MobileADAS3D-S1-V2b bounded-yaw GT-only baseline"
+            if yaw_encoding == "continuous_sincos" and yaw_norm_floor == 0.1
+            else "MobileADAS3D-S1-V2 continuous-yaw GT-only baseline"
             if yaw_encoding == "continuous_sincos"
             else "MobileADAS3D-S1 GT-only baseline"
         ),
@@ -155,6 +162,9 @@ def main() -> None:
         "architecture": config["model"]["name"],
         "backbone": config["model"]["backbone"],
         "yaw_encoding": yaw_encoding,
+        "yaw_norm_floor": (
+            yaw_norm_floor if yaw_encoding == "continuous_sincos" else None
+        ),
         "classes": config["dataset"]["classes"],
         "distillation_enabled": False,
         "seed": config["training"]["seed"],
