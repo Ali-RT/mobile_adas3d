@@ -1772,3 +1772,12 @@ for Vehicle, but the separately classified direction bit and hard branch make
 final yaw unreliable. This run must not continue. The next controlled S1-V2
 experiment holds every other variable fixed and replaces only axis+direction
 with a continuous normalized `[sin(yaw), cos(yaw)]` head/loss.
+
+#### 2026-08-19 reporting summary added
+
+`MODEL_MILESTONES_AND_ARCHITECTURE.md` is the concise reporting document for
+the product targets, class mapping, model-selection milestones, published
+MonoDETR reproduction versus frozen R0 results, AP_R40 interpretation, S1
+architecture, Core ML/iPhone evidence, teacher/student status, and the S1-V2
+next step. Keep it synchronized with `PROJECT_TRACKER.md` when a model gate or
+deployment milestone changes.

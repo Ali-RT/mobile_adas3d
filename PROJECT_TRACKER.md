@@ -127,6 +127,7 @@ passing these three AP values alone does not authorize deployment.
 
 ## Canonical documents
 
+- Reporting summary: `MODEL_MILESTONES_AND_ARCHITECTURE.md`
 - Product gates and priorities: `PRODUCT_MODEL_CONTRACT.md`
 - S1 graph: `STUDENT_ARCHITECTURE_CONTRACT.md`
 - R0 protocol: `TWO_CLASS_REFERENCE_PROTOCOL.md`
