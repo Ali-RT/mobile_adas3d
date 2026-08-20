@@ -1,6 +1,6 @@
 # MobileADAS3D project tracker
 
-Last updated: 2026-08-19
+Last updated: 2026-08-20
 
 This is the canonical status page. Update it whenever a task changes state,
 an experiment finishes, a gate passes/fails, or the next action changes.
@@ -16,8 +16,8 @@ generalization testing, and complete recording/export artifacts.
 ## Current position
 
 - Current phase: **MobileADAS3D-H1 architecture and edge preflight**
-- Active task: implement the frozen H1 random graph and run parameter, compute,
-  Torch/Core ML parity, package, and operator checks before any training.
+- Active task: resolve H1 FP16 Core ML parity, then run the physical-iPhone
+  random-weight model-only gate before any training.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Deployment candidate: **MobileADAS3D-H1 teacher-shaped hybrid student**
 - Knowledge distillation: **not active yet**; it follows the GT-only H1
@@ -51,7 +51,7 @@ generalization testing, and complete recording/export artifacts.
 | M18 | Final physical-iPhone qualification | Pending | Runtime, sustained thermal, no-saving/full-recording, and artifact gates. |
 | M19 | Deployment decision | Pending | Approve only if accuracy, generalization, parity, runtime, stability, and artifact gates all pass. |
 | M20 | H1 teacher-shaped hybrid contract | Complete | MobileNetV4 + Lite-FPN + fixed standard depth-aware encoder/query decoder is frozen in `HYBRID_STUDENT_ARCHITECTURE_CONTRACT.md`. |
-| M21 | H1 random graph and edge preflight | In progress | Implement fixed shapes, query heads, tests, Core ML conversion/parity, and physical-iPhone timing before training. |
+| M21 | H1 random graph and edge preflight | In progress—FP16 parity blocker | Graph, query heads, finite forward/backward, trace, conversion, parameter, compute, package, and operator checks are complete. Results: 3.619M parameters, 4.907 GMAC, 10.35 MB FP16, no custom ops. FP16 raw delta 0.07133 fails the 0.002 gate; FP32 control delta 0.0000361 proves graph fidelity. Physical-iPhone timing remains pending. |
 
 ## Frozen R0 reference
 
@@ -115,8 +115,10 @@ passing these three AP values alone does not authorize deployment.
 9. **Waived by move-on decision:** do not spend more evaluation time sweeping
    S1-V2b. Freeze the complete dense S1 family as rejected.
 10. **Completed:** freeze MobileADAS3D-H1's teacher-shaped hybrid architecture.
-11. Implement H1 one component at a time and pass the random graph/Core ML
-   preflight before creating any training notebook.
+11. **Implemented; preflight still blocked:** H1 passes unit, trace, parameter,
+   compute, package, and operator checks. Resolve the isolated FP16 parity
+   failure (`0.07133` versus `0.002`) and then run the physical-iPhone timing
+   gate before creating any training notebook.
 12. Sweep a future healthy H1 run using the frozen R0 product evaluator and
    select using per-class moderate 3D AP plus nearby recall—not validation
    loss alone.

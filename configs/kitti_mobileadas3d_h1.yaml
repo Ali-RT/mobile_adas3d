@@ -1,0 +1,29 @@
+base_config: kitti_mobileadas3d_s1.yaml
+
+logging:
+  run_name: "mobileadas3d_h1_random_gate"
+
+model:
+  name: "MobileADAS3D-H1"
+  backbone: "mobilenetv4_conv_small.e2400_r224_in1k"
+  pretrained: true
+  input_height: 384
+  input_width: 1280
+  fpn_channels: 128
+  transformer_width: 192
+  attention_heads: 6
+  encoder_layers: 2
+  decoder_layers: 2
+  feedforward_width: 768
+  num_queries: 50
+  depth_bins: 40
+  dropout: 0.0
+
+outputs:
+  output_dir: ./outputs/mobileadas3d_h1
+  profile_output_dirs:
+    local_mac: ./outputs/mobileadas3d_h1
+    colab_drive: /content/drive/MyDrive/mobile_adas3d_outputs/mobileadas3d_h1
+
+distillation:
+  enabled: false

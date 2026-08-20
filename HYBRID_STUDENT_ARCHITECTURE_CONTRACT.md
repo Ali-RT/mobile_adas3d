@@ -1,6 +1,6 @@
 # MobileADAS3D-H1 hybrid student architecture contract
 
-Status: architecture frozen for implementation and random-weight edge gating
+Status: random graph implemented; FP16 parity and physical-device gates pending
 Decision date: 2026-08-20
 
 ## Decision
@@ -140,6 +140,33 @@ The random-weight H1 graph must pass:
 If H1 misses compute, package, or device latency, reduce transformer width from
 192 to 128 before reducing query count, input resolution, or stride-8 memory.
 Only one fallback change is permitted per versioned experiment.
+
+## Random-graph implementation evidence
+
+The locked H1 graph is implemented in `models/mobile_adas3d_h1.py` with an
+explicit fixed-shape attention implementation. It does not depend on PyTorch's
+dynamic multi-head-attention export path. Forward, tuple-export, finite-value,
+and full-graph backward tests pass.
+
+Measured on the random-weight graph at 1280x384:
+
+| Check | Result | Gate |
+| --- | ---: | --- |
+| Parameters | 3,619,457 | Pass (<=10M) |
+| Compute | 4.9068 GMAC | Pass (<=15) |
+| FP16 package | 10.35 MB | Pass (<=25 MB) |
+| Core ML custom operations | none | Pass |
+| Trace maximum absolute delta | 0.0 | Pass |
+| FP16 Core ML maximum raw delta | 0.07133 | **Fail** (<=0.002) |
+| FP32 Core ML control delta | 0.0000361 | Pass as diagnosis only |
+| FP32 package | 20.56 MB | Size passes; not the required FP16 artifact |
+
+The FP32 control proves that the fixed graph converts faithfully. The remaining
+local blocker is accumulated FP16 numerical error, not an unsupported operator
+or an incorrect trace. No H1 training is authorized yet. The next task is to
+resolve the FP16 policy/graph numerics and then run the physical iPhone
+5-warmup/100-prediction gate. Mac prediction time is diagnostic only and must
+not be substituted for the device result.
 
 ## Training order
 

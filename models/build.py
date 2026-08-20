@@ -4,11 +4,31 @@ from typing import Any, Dict
 
 from models.mobile_adas3d import MobileADAS3D
 from models.mobile_adas3d_s1 import MobileADAS3DS1
+from models.mobile_adas3d_h1 import MobileADAS3DH1
 
 
-def build_model(config: Dict[str, Any]) -> MobileADAS3D | MobileADAS3DS1:
+def build_model(config: Dict[str, Any]) -> MobileADAS3D | MobileADAS3DS1 | MobileADAS3DH1:
     dataset_cfg = config["dataset"]
     model_cfg = config["model"]
+
+    if model_cfg.get("name") == "MobileADAS3D-H1":
+        return MobileADAS3DH1(
+            num_classes=len(dataset_cfg["classes"]),
+            backbone_name=model_cfg.get(
+                "backbone", "mobilenetv4_conv_small.e2400_r224_in1k"
+            ),
+            pretrained=bool(model_cfg.get("pretrained", True)),
+            input_height=int(model_cfg["input_height"]),
+            input_width=int(model_cfg["input_width"]),
+            fpn_channels=int(model_cfg.get("fpn_channels", 128)),
+            transformer_width=int(model_cfg.get("transformer_width", 192)),
+            attention_heads=int(model_cfg.get("attention_heads", 6)),
+            encoder_layers=int(model_cfg.get("encoder_layers", 2)),
+            decoder_layers=int(model_cfg.get("decoder_layers", 2)),
+            feedforward_width=int(model_cfg.get("feedforward_width", 768)),
+            num_queries=int(model_cfg.get("num_queries", 50)),
+            depth_bins=int(model_cfg.get("depth_bins", 40)),
+        )
 
     if model_cfg.get("name") == "MobileADAS3D-S1":
         return MobileADAS3DS1(

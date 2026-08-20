@@ -181,13 +181,18 @@ map, exclusions, and gates are frozen in
 
 ## Next step
 
-Implement only the H1 random graph. Before dataset or training work, require:
+The H1 random graph is now implemented and passes forward/backward, shape,
+trace, parameter, compute, package-size, and supported-operator checks. It has
+3.619M parameters, costs 4.907 GMAC, and produces a 10.35 MB FP16 package with
+no custom Core ML operation. A full-FP32 conversion matches PyTorch within
+0.0000361, but the required FP16 conversion currently differs by 0.07133 and
+therefore fails the frozen 0.002 parity gate.
 
-1. output-shape and finite-forward/backward tests;
-2. <=10M parameters and <=15 GMAC;
-3. FP16 Core ML package <=25 MB with no custom/fallback operations;
-4. raw PyTorch/Core ML maximum delta <=0.002;
-5. physical-iPhone 5-warmup/100-run p95 <=35 ms.
+Before dataset or training work:
+
+1. resolve and re-run FP16 raw-output parity;
+2. run the physical-iPhone 5-warmup/100-run p95 <=35 ms gate;
+3. freeze the passing random graph and only then build the GT-only notebook.
 
 If H1 misses the edge gate, reduce transformer width from 192 to 128 as the
 single controlled fallback. Do not reduce resolution, remove stride-8 memory,

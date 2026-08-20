@@ -1910,3 +1910,27 @@ NMS. The next task is random-graph implementation and edge preflight only:
 <=10M parameters, <=15 GMAC, <=25 MB FP16, no custom/fallback ops, <=0.002 raw
 Core ML delta, and physical-iPhone p95 <=35 ms. Training and distillation remain
 unauthorized until these gates pass.
+
+#### 2026-08-20 H1 random graph implemented; FP16 parity remains blocked
+
+The frozen H1 architecture is implemented in `models/mobile_adas3d_h1.py` and
+wired through the standard model builder and a dedicated configuration. Its
+fixed attention uses explicit projections, reshapes, matrix multiplication,
+softmax, and layer normalization rather than PyTorch's dynamic multi-head
+attention export path. The nine teacher-compatible query outputs have the
+locked shapes, and all focused H1/S1 forward, export-wrapper, finite-value, and
+backward tests pass (12 tests).
+
+Local edge evidence at 1280x384 is 3,619,457 parameters, 4.9068 GMAC, a
+10.35 MB FP16 Core ML package, zero trace delta, and no custom Core ML
+operation. The strict FP16 raw-output parity gate does not yet pass: maximum
+absolute delta is `0.0713265` versus the frozen `0.002` limit, with the largest
+differences in class and depth logits. A full-FP32 diagnostic conversion gives
+`0.0000361` maximum delta and a 20.56 MB package. This demonstrates faithful
+graph conversion and isolates the blocker to reduced-precision accumulation;
+the FP32 artifact is not being substituted for the required FP16 artifact.
+
+Do not start H1 training. Next resolve/version the FP16 numerical policy, rerun
+the local gate, and then run 5 warmups plus 100 timed predictions on the
+physical iPhone. Mac prediction timing is diagnostic only. Distillation stays
+disabled until a healthy GT-only H1 checkpoint is trained and frozen.
