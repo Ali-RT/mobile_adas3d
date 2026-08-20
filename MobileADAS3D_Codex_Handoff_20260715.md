@@ -1857,3 +1857,30 @@ GPU, top-to-bottom. It writes to the dedicated
 epoch-20 AP and geometry diagnostics. The previous S1-V2 notebook is marked
 retired. Return the AP table, final training summary, and per-class geometry
 table before any continuation or distillation decision.
+
+#### 2026-08-20 S1-V2b epoch-20 gate failed accuracy
+
+Run `20260820_174415_mobileadas3d_s1_v2b_bounded_yaw` used the correct isolated
+configuration (`yaw_norm_floor: 0.1`, 20 epochs, distillation disabled), stopped
+at epoch 20, produced all 3,769 validation files, and completed product AP plus
+geometry diagnostics. The corrected objective remained healthy: epoch-20
+train/validation total loss was `0.852646/3.246247`, train yaw regression and
+cosine losses were `0.016036/0.034656`, and no negative/unbounded loss recurred.
+
+Accuracy still failed decisively. Moderate 3D AP_R40 was `0.103` Vehicle and
+`0.178` Pedestrian; moderate BEV was `0.581/0.454`. These miss the frozen gates
+of `13.226/4.291` moderate 3D and `20.0` Vehicle BEV by orders of magnitude.
+The matched diagnostic contained 13,511 Vehicle and 900 Pedestrian matches.
+Vehicle mean/p50/p90 yaw error was `40.20°/10.59°/161.10°`, axis mean `16.72°`,
+and >90° flip rate `18.73%`. Pedestrian mean yaw remained `72.76°` with a
+`39.22%` flip rate. Vehicle/Pedestrian depth relative error was approximately
+`0.107/0.157`, so yaw and full 3D scoring remain much weaker than basic matched
+depth/2D geometry.
+
+Do not continue S1-V2b and do not start distillation. The final no-retraining
+audit is to sweep its saved epochs 5/10/15/20 with the frozen product evaluator.
+If no hidden AP peak exists, close the dense MobileADAS3D-S1 family as a
+speed-qualified but accuracy-inadequate baseline and move to Plan B: a
+fixed-shape MobileNetV4 student with a small depth-aware attention encoder and
+query decoder, closer to MonoDETR for weight/feature transfer while still
+targeting Core ML and iPhone limits.

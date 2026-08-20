@@ -187,6 +187,20 @@ The next controlled task is **S1-V2b bounded continuous yaw**:
    optimizer, and 20-epoch gate unchanged.
 3. Run `notebooks/MobileADAS3D_S1_V2b_Bounded_Yaw_Colab.ipynb` from a fresh
    seed-42 initialization; do not resume S1-V1 or S1-V2.
+
+S1-V2b subsequently completed its epoch-20 gate with a healthy bounded loss,
+but failed accuracy. Vehicle/Pedestrian moderate 3D AP_R40 was `0.103/0.178`
+and moderate BEV was `0.581/0.454`, versus required 3D retention
+`13.226/4.291` and Vehicle BEV `20.0`. Mean matched yaw error was
+`40.20°/72.76°`; Vehicle flip rate was `18.73%`. Training total loss stayed
+positive (`0.853` at epoch 20), confirming the prior numerical defect is fixed.
+
+The immediate next step is a no-retraining sweep of saved epochs 5/10/15/20.
+If there is no hidden product-AP peak, the dense convolutional S1 family is
+closed as a fast but inadequate baseline. Plan B becomes a fixed-shape
+MobileNetV4 student with a small depth-aware attention encoder/query decoder,
+structurally closer to MonoDETR while remaining far smaller than the R0
+ResNet-50 teacher.
 4. Run preflight, the 20-epoch GT-only gate, complete product AP evaluation,
    checkpoint sweep, and geometry/yaw diagnostics.
 5. Continue toward a full schedule only if Vehicle and Pedestrian improve
