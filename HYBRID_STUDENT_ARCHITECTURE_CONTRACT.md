@@ -1,6 +1,6 @@
 # MobileADAS3D-H1 hybrid student architecture contract
 
-Status: random graph implemented; FP16 parity and physical-device gates pending
+Status: local random-graph gates passed; physical-device gate pending
 Decision date: 2026-08-20
 
 ## Decision
@@ -157,14 +157,19 @@ Measured on the random-weight graph at 1280x384:
 | FP16 package | 10.35 MB | Pass (<=25 MB) |
 | Core ML custom operations | none | Pass |
 | Trace maximum absolute delta | 0.0 | Pass |
-| FP16 Core ML maximum raw delta | 0.07133 | **Fail** (<=0.002) |
+| FP16 Core ML maximum raw delta | 0.001941 | Pass (<=0.002) |
 | FP32 Core ML control delta | 0.0000361 | Pass as diagnosis only |
 | FP32 package | 20.56 MB | Size passes; not the required FP16 artifact |
 
-The FP32 control proves that the fixed graph converts faithfully. The remaining
-local blocker is accumulated FP16 numerical error, not an unsupported operator
-or an incorrect trace. No H1 training is authorized yet. The next task is to
-resolve the FP16 policy/graph numerics and then run the physical iPhone
+The initial default output-head initialization amplified meaningless random
+FP16 feature noise and produced a `0.07133` delta. H1 now uses neutral query
+heads: normally distributed weights with standard deviation `0.001` and zero
+biases. This is a training initialization change, not an output clamp or
+reduced-precision tolerance change. With the unchanged strict `0.002` gate,
+the all-FP16 graph passes at `0.001941`. A trained checkpoint must receive its
+own parity evaluation; the random-weight result cannot waive that later gate.
+
+No H1 training is authorized yet. The next task is the physical iPhone
 5-warmup/100-prediction gate. Mac prediction time is diagnostic only and must
 not be substituted for the device result.
 

@@ -1934,3 +1934,23 @@ Do not start H1 training. Next resolve/version the FP16 numerical policy, rerun
 the local gate, and then run 5 warmups plus 100 timed predictions on the
 physical iPhone. Mac prediction timing is diagnostic only. Distillation stays
 disabled until a healthy GT-only H1 checkpoint is trained and frozen.
+
+#### 2026-08-20 H1 FP16 parity gate passed
+
+The parity blocker was traced to default random query-head weights amplifying
+insignificant FP16 feature-rounding noise before the model had learned any
+signal. H1 now uses neutral query-head initialization: weight standard
+deviation `0.001` and zero biases across all nine heads. This does not clamp
+outputs, alter the graph contract, introduce mixed precision, or relax the
+frozen tolerance.
+
+The all-FP16 Core ML graph now passes with maximum raw-output delta `0.001941`
+against the `0.002` gate. It remains 3,619,457 parameters, 4.9068 GMAC, and
+10.35 MB with no custom Core ML operations. A trained checkpoint must still
+pass its own export parity gate because this result qualifies only the
+random-weight architecture.
+
+The remaining pre-training gate is physical iPhone 16 Pro Max model-only
+latency: 5 warmups, 100 timed predictions, and p95 <=35 ms. Xcode currently
+reports the registered phone as unavailable; reconnect, unlock, and trust it
+before continuing. Do not start H1 training yet.

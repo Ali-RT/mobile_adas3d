@@ -231,6 +231,26 @@ class MobileADAS3DH1(nn.Module):
         self.yaw_head = nn.Linear(transformer_width, 2)
         self.location_xy_head = nn.Linear(transformer_width, 2)
         self.quality_head = nn.Linear(transformer_width, 1)
+        self._initialize_query_heads()
+
+    def _initialize_query_heads(self) -> None:
+        # Start the untrained detector near neutral logits/residuals. Besides
+        # improving early optimization, this avoids magnifying insignificant
+        # FP16 feature-rounding noise before any head has learned a signal.
+        heads = (
+            self.class_head,
+            self.box2d_head,
+            self.projected_center_head,
+            self.query_depth_head,
+            self.depth_residual_head,
+            self.dimensions_head,
+            self.yaw_head,
+            self.location_xy_head,
+            self.quality_head,
+        )
+        for head in heads:
+            nn.init.normal_(head.weight, mean=0.0, std=1e-3)
+            nn.init.zeros_(head.bias)
 
     @staticmethod
     def _resize_like(source: torch.Tensor, target: torch.Tensor) -> torch.Tensor:

@@ -59,7 +59,7 @@ def main() -> None:
         "--compute-precision",
         choices=("fp16", "mixed", "fp32"),
         default="fp16",
-        help="Core ML compute precision; mixed keeps attention numerics in FP32.",
+        help="Core ML precision; mixed keeps depth/query reasoning and heads in FP32.",
     )
     args = parser.parse_args()
 
@@ -89,15 +89,22 @@ def main() -> None:
     package_path = output_dir / "MobileADAS3D_H1_random.mlpackage"
     traced.save(str(trace_path))
 
+    fp32_selected_operations = []
     if args.compute_precision == "fp16":
         compute_precision = ct.precision.FLOAT16
     elif args.compute_precision == "fp32":
         compute_precision = ct.precision.FLOAT32
     else:
-        fp32_attention_ops = {"layer_norm", "matmul", "softmax"}
-        compute_precision = ct.transform.FP16ComputePrecision(
-            op_selector=lambda operation: operation.op_type not in fp32_attention_ops
-        )
+        fp16_feature_ops = {"conv", "relu", "upsample_bilinear"}
+        def select_fp16(operation):
+            use_fp16 = operation.op_type in fp16_feature_ops
+            if not use_fp16 and operation.op_type != "const":
+                fp32_selected_operations.append(
+                    {"type": operation.op_type, "name": operation.name}
+                )
+            return use_fp16
+
+        compute_precision = ct.transform.FP16ComputePrecision(op_selector=select_fp16)
 
     conversion_start = time.perf_counter()
     mlmodel = ct.convert(
@@ -132,8 +139,8 @@ def main() -> None:
     parameters = sum(parameter.numel() for parameter in model.parameters())
     macs = profiler_macs(wrapper, image)
     size_bytes = package_size(package_path)
-    parity_pass = coreml_delta is None or coreml_delta <= 2e-3
-    fp16_artifact_gate = args.compute_precision != "fp32"
+    parity_pass = coreml_delta is not None and coreml_delta <= 2e-3
+    fp16_artifact_gate = args.compute_precision == "fp16"
     complete = (
         parameters <= 10_000_000
         and macs <= 15_000_000_000
@@ -151,6 +158,7 @@ def main() -> None:
         "coremltools_version": ct.__version__,
         "compute_precision": args.compute_precision,
         "fp16_artifact_gate": fp16_artifact_gate,
+        "fp32_selected_operations": fp32_selected_operations,
         "input_shape": list(image.shape),
         "output_shapes": {
             name: list(value.shape)

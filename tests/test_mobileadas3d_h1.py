@@ -49,6 +49,21 @@ class MobileADAS3DH1Tests(unittest.TestCase):
         self.assertTrue(torch.all((outputs["box2d_cxcywh"] >= 0.0) & (outputs["box2d_cxcywh"] <= 1.0)))
         self.assertTrue(torch.all((outputs["projected_center"] >= 0.0) & (outputs["projected_center"] <= 1.0)))
 
+    def test_query_heads_use_neutral_initialization(self):
+        for name in H1_OUTPUT_NAMES:
+            head_name = {
+                "class_logits": "class_head",
+                "box2d_cxcywh": "box2d_head",
+                "projected_center": "projected_center_head",
+                "depth_logits": "query_depth_head",
+                "depth_residual": "depth_residual_head",
+                "dimensions": "dimensions_head",
+                "location_xy": "location_xy_head",
+            }.get(name, f"{name}_head")
+            head = getattr(self.model, head_name)
+            self.assertTrue(torch.equal(head.bias, torch.zeros_like(head.bias)))
+            self.assertLess(float(head.weight.detach().std()), 0.0012)
+
     def test_tuple_wrapper_matches_named_outputs(self):
         wrapper = MobileADAS3DH1TupleWrapper(self.model).eval()
         with torch.inference_mode():
