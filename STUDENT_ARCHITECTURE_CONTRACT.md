@@ -1,6 +1,6 @@
 # MobileADAS3D-S1 student architecture contract
 
-Status: S1-V1 device gate passed; S1-V2 continuous-yaw gate prepared
+Status: retired speed baseline; superseded by MobileADAS3D-H1
 Decision date: 2026-08-11
 
 ## Decision
@@ -9,6 +9,11 @@ The first production student candidate is **MobileADAS3D-S1**, a fully
 convolutional, anchor-free monocular 3D detector designed around native Core ML
 operations. MonoDETR remains the accuracy teacher/reference and is not embedded
 in the iPhone app.
+
+This contract is retained as historical evidence. S1-V1, S1-V2, and corrected
+S1-V2b all failed product accuracy. No S1 checkpoint is authorized for further
+training, distillation, conversion, or deployment. The active contract is
+`HYBRID_STUDENT_ARCHITECTURE_CONTRACT.md`.
 
 S1 is the smallest controlled change that addresses both observed limits:
 

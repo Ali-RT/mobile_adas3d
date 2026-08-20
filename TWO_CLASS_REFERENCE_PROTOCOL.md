@@ -4,8 +4,8 @@ Status: frozen for the R0 reference run
 
 ## Purpose
 
-R0 is the accuracy denominator for MobileADAS3D-S1. It is not an iPhone
-deployment candidate. The published MonoDETR checkpoint remains useful evidence
+R0 is the accuracy denominator for MobileADAS3D-H1 and future students. It is
+not an iPhone deployment candidate. The published MonoDETR checkpoint remains useful evidence
 for Car, but it is Car-only and therefore cannot supply the Pedestrian
 denominator required by the product gate.
 
@@ -86,7 +86,7 @@ selection rule and evaluation thresholds are fixed before training.
 
 ## Student comparison rule
 
-S1 and R0 must be evaluated by the same product evaluator, split, mapping, IoU
-thresholds, score threshold, top-k, and NMS settings. Per class, S1 must retain
+H1 and R0 must be evaluated by the same product evaluator, split, mapping, IoU
+thresholds, score threshold, top-k, and NMS settings. Per class, H1 must retain
 at least 75% of R0 moderate 3D AP_R40. A result is not comparable if either run
 is partial or if its manifest hashes differ.

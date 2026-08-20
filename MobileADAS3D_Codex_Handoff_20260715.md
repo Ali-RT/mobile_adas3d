@@ -1884,3 +1884,29 @@ speed-qualified but accuracy-inadequate baseline and move to Plan B: a
 fixed-shape MobileNetV4 student with a small depth-aware attention encoder and
 query decoder, closer to MonoDETR for weight/feature transfer while still
 targeting Core ML and iPhone limits.
+
+#### 2026-08-20 dense S1 closed and H1 structure frozen
+
+The user elected to move on without spending another evaluation cycle on the
+optional S1-V2b epoch 5/10/15/20 sweep. This closes MobileADAS3D-S1 as a
+speed-qualified but accuracy-inadequate baseline. S1-V1, invalid S1-V2, and
+corrected S1-V2b are not eligible for continuation, distillation, conversion,
+or deployment.
+
+`HYBRID_STUDENT_ARCHITECTURE_CONTRACT.md` is now the active student contract
+and provides the requested side-by-side teacher/student structure. The frozen
+teacher remains ResNet-50 MonoDETR R0 with an 80-bin depth branch, three-layer
+depth-aware deformable encoder, three-layer decoder, and epoch-185 weights.
+The new MobileADAS3D-H1 student uses MobileNetV4 Conv Small, a 128-channel
+stride-8/16/32 Lite-FPN, a 40-bin stride-16 depth context, a standard two-layer
+encoder over 480 stride-32 tokens, and a standard two-layer decoder with 50
+queries at width 192. The decoder cross-attends to fixed multi-scale memory so
+stride-8 pedestrian evidence is retained.
+
+H1 is closer to the teacher for future query/output/feature distillation but
+does not copy the teacher's expensive deformable-attention graph. It excludes
+custom ops, dynamic shapes, ROI/grid sampling, recurrent state, and in-model
+NMS. The next task is random-graph implementation and edge preflight only:
+<=10M parameters, <=15 GMAC, <=25 MB FP16, no custom/fallback ops, <=0.002 raw
+Core ML delta, and physical-iPhone p95 <=35 ms. Training and distillation remain
+unauthorized until these gates pass.

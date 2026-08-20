@@ -162,53 +162,33 @@ required artifacts, clean ZIP layout, and iOS share-sheet export. Optimized
 preprocessing removed the original 540-570 ms bottleneck and measured around
 1 ms in the validated device run.
 
-## Current status and next step
+## Current teacher and student structure
 
-- **Teacher:** available, validated, frozen, and ready for later distillation.
-- **Student architecture:** available, Core-ML-native, and fast.
-- **Qualified student weights:** not yet available; S1-V1 was rejected.
-- **Distillation:** intentionally pending until a healthy GT-only student is
-  frozen.
+- **Teacher R0:** frozen ResNet-50 MonoDETR, 80-bin depth predictor, three-layer
+  depth-aware deformable encoder, three-layer query decoder, epoch 185.
+- **Retired student S1:** MobileNetV4 + Lite-FPN + dense stride-8 heads. It is
+  exceptionally fast but failed Vehicle/Pedestrian 3D AP in every supervised
+  variant. The optional checkpoint sweep was waived by the decision to move on.
+- **Active student H1:** MobileNetV4 + 128-channel Lite-FPN + 40-bin depth
+  context + two-layer standard stride-32 encoder + two-layer 50-query decoder,
+  width 192. It restores teacher-shaped reasoning without deformable attention.
+- **Qualified student weights:** none yet.
+- **Distillation:** disabled until a healthy GT-only H1 baseline is frozen.
 
-S1-V2's epoch-20 health gate was rejected. Vehicle/Pedestrian moderate 3D
-AP_R40 was `0.133/0.256`, versus S1-V1's `0.024/0.519`, and moderate BEV was
-`0.801/0.652`. Vehicle yaw improved to `37.77°` mean with a `17.45%` >90° flip
-rate, but Pedestrian yaw remained `74.25°`. More importantly, the direct
-dot-product cosine objective was not scale-invariant: yaw cosine loss reached
-approximately `-1.29` and total train loss became negative. This invalidates
-all S1-V2 checkpoints, including the unevaluated continuation through epoch
-100.
+The complete side-by-side structure, tensor widths, output contract, transfer
+map, exclusions, and gates are frozen in
+`HYBRID_STUDENT_ARCHITECTURE_CONTRACT.md`.
 
-The next controlled task is **S1-V2b bounded continuous yaw**:
+## Next step
 
-1. **Prepared:** scale-invariant yaw normalization uses a `0.1` norm floor
-   inside training loss, bounding its local Jacobian by 10.
-2. Keep MobileNetV4, feature pyramid, input, taxonomy, other heads, seed, data,
-   optimizer, and 20-epoch gate unchanged.
-3. Run `notebooks/MobileADAS3D_S1_V2b_Bounded_Yaw_Colab.ipynb` from a fresh
-   seed-42 initialization; do not resume S1-V1 or S1-V2.
+Implement only the H1 random graph. Before dataset or training work, require:
 
-S1-V2b subsequently completed its epoch-20 gate with a healthy bounded loss,
-but failed accuracy. Vehicle/Pedestrian moderate 3D AP_R40 was `0.103/0.178`
-and moderate BEV was `0.581/0.454`, versus required 3D retention
-`13.226/4.291` and Vehicle BEV `20.0`. Mean matched yaw error was
-`40.20°/72.76°`; Vehicle flip rate was `18.73%`. Training total loss stayed
-positive (`0.853` at epoch 20), confirming the prior numerical defect is fixed.
+1. output-shape and finite-forward/backward tests;
+2. <=10M parameters and <=15 GMAC;
+3. FP16 Core ML package <=25 MB with no custom/fallback operations;
+4. raw PyTorch/Core ML maximum delta <=0.002;
+5. physical-iPhone 5-warmup/100-run p95 <=35 ms.
 
-The immediate next step is a no-retraining sweep of saved epochs 5/10/15/20.
-If there is no hidden product-AP peak, the dense convolutional S1 family is
-closed as a fast but inadequate baseline. Plan B becomes a fixed-shape
-MobileNetV4 student with a small depth-aware attention encoder/query decoder,
-structurally closer to MonoDETR while remaining far smaller than the R0
-ResNet-50 teacher.
-4. Run preflight, the 20-epoch GT-only gate, complete product AP evaluation,
-   checkpoint sweep, and geometry/yaw diagnostics.
-5. Continue toward a full schedule only if Vehicle and Pedestrian improve
-   materially without numerical or generalization failure.
-6. After freezing a healthy GT-only student, run the paired MonoDETR
-   distillation experiment from the identical initialization.
-
-If the convolutional student cannot meet accuracy retention, Plan B is a small
-fixed-shape Core-ML-native hybrid attention module without deformable attention.
-Plan C is separate optimized 2D detection and monocular depth models with
-deterministic geometry and temporal tracking.
+If H1 misses the edge gate, reduce transformer width from 192 to 128 as the
+single controlled fallback. Do not reduce resolution, remove stride-8 memory,
+or start training before that decision.

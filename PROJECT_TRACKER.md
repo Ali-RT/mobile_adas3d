@@ -15,12 +15,12 @@ generalization testing, and complete recording/export artifacts.
 
 ## Current position
 
-- Current phase: **S1-V2b checkpoint audit before architecture decision**
-- Active task: sweep the existing S1-V2b epochs 5/10/15/20 with the frozen
-  product evaluator. Do not continue training or begin distillation.
+- Current phase: **MobileADAS3D-H1 architecture and edge preflight**
+- Active task: implement the frozen H1 random graph and run parameter, compute,
+  Torch/Core ML parity, package, and operator checks before any training.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
-- Deployment candidate: **MobileADAS3D-S1 with MobileNetV4 Conv Small**
-- Knowledge distillation: **not active yet**; it follows the GT-only S1
+- Deployment candidate: **MobileADAS3D-H1 teacher-shaped hybrid student**
+- Knowledge distillation: **not active yet**; it follows the GT-only H1
   baseline as a paired experiment.
 - iPhone street recording: **not needed in the current phase**.
 
@@ -43,12 +43,15 @@ generalization testing, and complete recording/export artifacts.
 | M13 | R0 product checkpoint sweep | Complete | All 39 checkpoints evaluated on 3,769 Chen-val images; epoch 185 selected by balanced moderate 3D AP_R40. |
 | M14 | GT-only S1 supervised baseline | Failed—root cause isolated | Vehicle orientation axis was good (9.63° mean/4.71° p50), but the independent direction bit produced a 35.8% flip-candidate rate and 72.3° final yaw MAE. Do not resume this run. |
 | M14b | S1-V2 continuous-yaw experiment | Failed—invalid loss | Epoch-20 Vehicle/Pedestrian moderate 3D AP_R40 was 0.133/0.256 and BEV 0.801/0.652. Direct dot-product cosine loss was not scale-invariant: yaw cosine loss fell to about -1.29 and total train loss became negative. Epochs 21–100 were run but not product-evaluated. Do not use any S1-V2 checkpoint. |
-| M14c | S1-V2b bounded continuous-yaw experiment | Epoch-20 gate failed accuracy | Training was numerically healthy and stopped at 20. Vehicle/Pedestrian moderate 3D AP_R40 was 0.103/0.178 and BEV 0.581/0.454. Vehicle/Pedestrian mean yaw error was 40.20°/72.76°. This is far below R0 retention; continuation and distillation are denied pending the existing-checkpoint sweep. |
-| M15 | Paired S1 knowledge-distillation experiment | Pending | Start from the same S1 initialization and change only the approved R0 auxiliary teacher losses. |
+| M14c | S1-V2b bounded continuous-yaw experiment | Epoch-20 gate failed accuracy | Training was numerically healthy and stopped at 20. Vehicle/Pedestrian moderate 3D AP_R40 was 0.103/0.178 and BEV 0.581/0.454. Vehicle/Pedestrian mean yaw error was 40.20°/72.76°. This is far below R0 retention; continuation and distillation were denied. |
+| M14d | Dense S1 family closure | Complete—rejected | User elected to move on without the optional 5/10/15/20 sweep. S1 is frozen as a speed-qualified but accuracy-inadequate baseline; no checkpoint is eligible for distillation or deployment. |
+| M15 | Paired S1 knowledge-distillation experiment | Cancelled | S1 never produced a healthy accuracy baseline, so distillation was not authorized. |
 | M16 | nuScenes zero-shot evaluation | Pending | Validate adapter on mini, then run the frozen LiDAR-supported external protocol. |
-| M17 | Trained S1 Core ML parity | Pending | Export the selected trained checkpoint and enforce ≤1% relative AP degradation and depth parity. |
+| M17 | Trained student Core ML parity | Pending | Export the selected H1 checkpoint and enforce ≤1% relative AP degradation and depth parity. |
 | M18 | Final physical-iPhone qualification | Pending | Runtime, sustained thermal, no-saving/full-recording, and artifact gates. |
 | M19 | Deployment decision | Pending | Approve only if accuracy, generalization, parity, runtime, stability, and artifact gates all pass. |
+| M20 | H1 teacher-shaped hybrid contract | Complete | MobileNetV4 + Lite-FPN + fixed standard depth-aware encoder/query decoder is frozen in `HYBRID_STUDENT_ARCHITECTURE_CONTRACT.md`. |
+| M21 | H1 random graph and edge preflight | In progress | Implement fixed shapes, query heads, tests, Core ML conversion/parity, and physical-iPhone timing before training. |
 
 ## Frozen R0 reference
 
@@ -109,16 +112,16 @@ passing these three AP values alone does not authorize deployment.
 8. **Completed but failed accuracy:** S1-V2b trained cleanly for 20 epochs and
    completed all 3,769 predictions, but moderate 3D AP_R40 was only
    `0.103/0.178` Vehicle/Pedestrian. Do not continue this run.
-9. Sweep the already saved S1-V2b epochs 5/10/15/20 using the frozen product
-   evaluator. This is the final no-retraining audit for the dense S1 family.
-10. If no checkpoint materially changes the conclusion, freeze S1 as a failed
-   edge-CNN baseline and design the fixed-shape MobileNetV4 + small
-   depth-aware-attention/query hybrid (Plan B).
-11. Sweep a future healthy student using the frozen R0 product evaluator and
+9. **Waived by move-on decision:** do not spend more evaluation time sweeping
+   S1-V2b. Freeze the complete dense S1 family as rejected.
+10. **Completed:** freeze MobileADAS3D-H1's teacher-shaped hybrid architecture.
+11. Implement H1 one component at a time and pass the random graph/Core ML
+   preflight before creating any training notebook.
+12. Sweep a future healthy H1 run using the frozen R0 product evaluator and
    select using per-class moderate 3D AP plus nearby recall—not validation
    loss alone.
-12. Freeze the GT-only student checkpoint and results.
-13. Run one paired distillation experiment from the identical initialization.
+13. Freeze the GT-only H1 checkpoint and results.
+14. Run one paired distillation experiment from the identical initialization.
    Keep distillation only if it improves the frozen comparison without harming
    Pedestrian or nearby safety metrics.
 
@@ -139,6 +142,7 @@ passing these three AP values alone does not authorize deployment.
 - Reporting summary: `MODEL_MILESTONES_AND_ARCHITECTURE.md`
 - Product gates and priorities: `PRODUCT_MODEL_CONTRACT.md`
 - S1 graph: `STUDENT_ARCHITECTURE_CONTRACT.md`
+- H1 active graph: `HYBRID_STUDENT_ARCHITECTURE_CONTRACT.md`
 - R0 protocol: `TWO_CLASS_REFERENCE_PROTOCOL.md`
 - Full chronological evidence: `MobileADAS3D_Codex_Handoff_20260715.md`
 - Current status and next task: this file

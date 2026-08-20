@@ -127,14 +127,15 @@ locked 50 ms limit. Retain MonoDETR as the accuracy teacher/reference and build
 a Core-ML-native student. Do not weaken the runtime gate or describe the
 teacher as the deployed architecture.
 
-The locked production student candidate is **MobileADAS3D-S1**, defined in
-`STUDENT_ARCHITECTURE_CONTRACT.md`. It uses a MobileNetV4 Conv Small backbone,
-96-channel stride-8/16/32 Lite-FPN, one shared depthwise-separable prediction
-tower, and 1x1 dense output heads. It deliberately contains no transformer,
-deformable attention, query decoder, or custom Core ML operation. S1 passed its
-random-weight pre-training gate at 3.788 ms p95 over 100 physical-iPhone
-predictions, with 1.403M parameters, 2.155 GMAC, and a 2.73 MB FP16 package.
-Dataset and training work may now continue.
+The dense production candidate **MobileADAS3D-S1** passed its speed gate but
+failed all supervised product-accuracy experiments. It is retired and retained
+only as a speed baseline in `STUDENT_ARCHITECTURE_CONTRACT.md`.
+
+The active candidate is **MobileADAS3D-H1**, defined in
+`HYBRID_STUDENT_ARCHITECTURE_CONTRACT.md`. H1 retains MobileNetV4 and fixed
+Core ML shapes but restores a small standard depth-aware encoder and 50-query
+decoder. It contains no deformable attention or custom operation. H1 must pass
+the complete random-graph Core ML and physical-iPhone gates before training.
 
 ## 5. Metrics and acceptance gates
 
