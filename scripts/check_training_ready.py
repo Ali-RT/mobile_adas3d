@@ -134,7 +134,8 @@ def main() -> None:
     model = build_model(config).to(device).train()
     targets = move_targets_to_device(batch["targets"], device)
     outputs = model(batch["images"].to(device))
-    losses = build_criterion(config)(outputs, targets)
+    criterion = build_criterion(config).to(device)
+    losses = criterion(outputs, targets)
     if not torch.isfinite(losses["total_loss"]):
         raise RuntimeError(f"Non-finite preflight loss: {losses['total_loss'].item()}")
 

@@ -518,7 +518,7 @@ def main() -> None:
     model = build_model(config)
     model.to(device)
 
-    criterion = build_criterion(config)
+    criterion = build_criterion(config).to(device)
 
     optimizer = torch.optim.AdamW(
         model.parameters(),

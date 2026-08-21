@@ -139,7 +139,7 @@ def main() -> None:
     model.to(device)
     model.train()
 
-    criterion = build_criterion(config)
+    criterion = build_criterion(config).to(device)
 
     outputs = model(images)
     losses = criterion(outputs, targets)

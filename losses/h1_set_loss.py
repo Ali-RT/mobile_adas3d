@@ -165,9 +165,12 @@ class H1SetCriterion(nn.Module):
         )
         pt = probability * class_target + (1.0 - probability) * (1.0 - class_target)
         alpha = self.focal_alpha * class_target + (1.0 - self.focal_alpha) * (1.0 - class_target)
+        class_weights = self.class_weights.to(
+            device=class_target.device, dtype=class_target.dtype
+        )
         class_balance = torch.where(
             class_target > 0,
-            self.class_weights.view(1, 1, -1),
+            class_weights.view(1, 1, -1),
             torch.ones_like(class_target),
         )
         cls_loss = (alpha * (1.0 - pt).pow(self.focal_gamma) * bce * class_balance).mean()

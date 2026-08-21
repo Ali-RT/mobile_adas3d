@@ -85,6 +85,37 @@ class H1SetTrainingTests(unittest.TestCase):
         self.assertTrue(all(value.grad is not None for value in outputs.values()))
         self.assertTrue(all(torch.isfinite(value.grad).all() for value in outputs.values()))
 
+    @unittest.skipUnless(torch.cuda.is_available(), "CUDA regression runs in GPU CI/Colab")
+    def test_cpu_constructed_criterion_accepts_cuda_tensors(self):
+        device = torch.device("cuda")
+        outputs = {
+            "class_logits": torch.randn(1, 2, 2, device=device, requires_grad=True),
+            "box2d_cxcywh": torch.rand(1, 2, 4, device=device, requires_grad=True),
+            "projected_center": torch.rand(1, 2, 2, device=device, requires_grad=True),
+            "depth_logits": torch.randn(1, 2, 40, device=device, requires_grad=True),
+            "depth_residual": torch.randn(1, 2, 1, device=device, requires_grad=True),
+            "dimensions": torch.randn(1, 2, 3, device=device, requires_grad=True),
+            "yaw": torch.randn(1, 2, 2, device=device, requires_grad=True),
+            "location_xy": torch.randn(1, 2, 2, device=device, requires_grad=True),
+            "quality": torch.randn(1, 2, 1, device=device, requires_grad=True),
+        }
+        targets = {
+            "object_mask": torch.tensor([[False]], device=device),
+            "class_ids": torch.zeros(1, 1, dtype=torch.long, device=device),
+            "box2d": torch.zeros(1, 1, 4, device=device),
+            "projected_center": torch.zeros(1, 1, 2, device=device),
+            "projected_center_valid": torch.tensor([[False]], device=device),
+            "depth_bin": torch.zeros(1, 1, dtype=torch.long, device=device),
+            "depth_residual": torch.zeros(1, 1, device=device),
+            "dimensions": torch.zeros(1, 1, 3, device=device),
+            "yaw": torch.zeros(1, 1, 2, device=device),
+            "location_xy": torch.zeros(1, 1, 2, device=device),
+        }
+        criterion = H1SetCriterion(2, [1.0, 2.5])
+        loss = criterion(outputs, targets)["total_loss"]
+        self.assertEqual(loss.device.type, "cuda")
+        self.assertTrue(torch.isfinite(loss))
+
     def test_gate_config_selects_gt_only_h1_criterion(self):
         config = load_config(str(CONFIG))
         self.assertEqual(config["model"]["name"], "MobileADAS3D-H1")
