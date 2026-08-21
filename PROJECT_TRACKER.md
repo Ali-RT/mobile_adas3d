@@ -52,7 +52,7 @@ generalization testing, and complete recording/export artifacts.
 | M19 | Deployment decision | Pending | Approve only if accuracy, generalization, parity, runtime, stability, and artifact gates all pass. |
 | M20 | H1 teacher-shaped hybrid contract | Complete | MobileNetV4 + Lite-FPN + fixed standard depth-aware encoder/query decoder is frozen in `HYBRID_STUDENT_ARCHITECTURE_CONTRACT.md`. |
 | M21 | H1 random graph and edge preflight | Complete | 3.619M parameters, 4.907 GMAC, 10.35 MB FP16, no custom ops, FP16 raw delta 0.001941. iPhone 16 Pro Max CPU+NE, 5 warmups/100 runs: mean 5.042 ms, median 4.924 ms, p95 5.804 ms, max 7.137 ms. See `artifacts/h1_edge_preflight_20260821.json`. |
-| M22 | H1 GT-only health-gate workflow | GPU preflight rerun pending | Query-native KITTI targets, Hungarian matching/set loss, H1 KITTI decoder, fail-closed provenance preparation, Drive checkpoints/logging, automatic resume, and complete product AP_R40 evaluation are implemented in `MobileADAS3D_H1_GT_Gate_Colab.ipynb`. Distillation is false. The first Colab CUDA preflight exposed and fixed CPU/CUDA placement of the H1 criterion and class weights; rerun the preflight before training. |
+| M22 | H1 GT-only health-gate workflow | Training rerun pending | Query-native KITTI targets, Hungarian matching/set loss, H1 KITTI decoder, fail-closed provenance preparation, Drive checkpoints/logging, automatic resume, and complete product AP_R40 evaluation are implemented in `MobileADAS3D_H1_GT_Gate_Colab.ipynb`. Distillation is false. Real Colab execution exposed and fixed criterion device placement plus FP16/FP32 quality-target and Hungarian-cost handling. Resume the Drive-backed training run. |
 
 ## Frozen R0 reference
 

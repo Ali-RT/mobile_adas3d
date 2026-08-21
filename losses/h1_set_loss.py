@@ -90,18 +90,19 @@ class H1SetCriterion(nn.Module):
                 matches.append((empty, empty))
                 continue
             target_classes = targets["class_ids"][batch_index, mask]
-            target_boxes = targets["box2d"][batch_index, mask]
-            target_centers = targets["projected_center"][batch_index, mask]
+            target_boxes = targets["box2d"][batch_index, mask].float()
+            target_centers = targets["projected_center"][batch_index, mask].float()
             target_center_valid = targets["projected_center_valid"][batch_index, mask]
-            class_probability = outputs["class_logits"][batch_index].sigmoid()
+            class_probability = outputs["class_logits"][batch_index].float().sigmoid()
             class_cost = -class_probability[:, target_classes]
-            box_cost = torch.cdist(outputs["box2d_cxcywh"][batch_index], target_boxes, p=1)
+            predicted_boxes = outputs["box2d_cxcywh"][batch_index].float()
+            box_cost = torch.cdist(predicted_boxes, target_boxes, p=1)
             giou_cost = -generalized_box_iou(
-                box_cxcywh_to_xyxy(outputs["box2d_cxcywh"][batch_index]),
+                box_cxcywh_to_xyxy(predicted_boxes),
                 box_cxcywh_to_xyxy(target_boxes),
             )
             center_cost = torch.cdist(
-                outputs["projected_center"][batch_index], target_centers, p=1
+                outputs["projected_center"][batch_index].float(), target_centers, p=1
             )
             center_cost = center_cost * target_center_valid.to(center_cost.dtype).unsqueeze(0)
             cost = (
@@ -151,7 +152,9 @@ class H1SetCriterion(nn.Module):
             pair_iou = generalized_box_iou(
                 box_cxcywh_to_xyxy(predicted_boxes), box_cxcywh_to_xyxy(target_boxes)
             ).diag().clamp(0.0, 1.0)
-            quality_target[batch_index, query_indices, 0] = pair_iou.detach()
+            quality_target[batch_index, query_indices, 0] = pair_iou.detach().to(
+                dtype=quality_target.dtype
+            )
             for key in matched_predictions:
                 matched_predictions[key].append(outputs[key][batch_index, query_indices])
             for key in matched_targets:

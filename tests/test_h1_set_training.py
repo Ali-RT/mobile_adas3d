@@ -85,6 +85,34 @@ class H1SetTrainingTests(unittest.TestCase):
         self.assertTrue(all(value.grad is not None for value in outputs.values()))
         self.assertTrue(all(torch.isfinite(value.grad).all() for value in outputs.values()))
 
+    def test_half_outputs_accept_float_targets(self):
+        outputs = {
+            "class_logits": torch.randn(1, 2, 2, dtype=torch.float16, requires_grad=True),
+            "box2d_cxcywh": torch.rand(1, 2, 4, dtype=torch.float16, requires_grad=True),
+            "projected_center": torch.rand(1, 2, 2, dtype=torch.float16, requires_grad=True),
+            "depth_logits": torch.randn(1, 2, 40, dtype=torch.float16, requires_grad=True),
+            "depth_residual": torch.randn(1, 2, 1, dtype=torch.float16, requires_grad=True),
+            "dimensions": torch.randn(1, 2, 3, dtype=torch.float16, requires_grad=True),
+            "yaw": torch.randn(1, 2, 2, dtype=torch.float16, requires_grad=True),
+            "location_xy": torch.randn(1, 2, 2, dtype=torch.float16, requires_grad=True),
+            "quality": torch.randn(1, 2, 1, dtype=torch.float16, requires_grad=True),
+        }
+        targets = {
+            "object_mask": torch.tensor([[True]]),
+            "class_ids": torch.tensor([[0]]),
+            "box2d": torch.tensor([[[0.5, 0.5, 0.2, 0.2]]]),
+            "projected_center": torch.tensor([[[0.5, 0.6]]]),
+            "projected_center_valid": torch.tensor([[True]]),
+            "depth_bin": torch.tensor([[20]]),
+            "depth_residual": torch.zeros(1, 1),
+            "dimensions": torch.zeros(1, 1, 3),
+            "yaw": torch.tensor([[[0.0, 1.0]]]),
+            "location_xy": torch.zeros(1, 1, 2),
+        }
+        loss = H1SetCriterion(2, [1.0, 2.5])(outputs, targets)["total_loss"]
+        self.assertTrue(torch.isfinite(loss))
+        loss.backward()
+
     @unittest.skipUnless(torch.cuda.is_available(), "CUDA regression runs in GPU CI/Colab")
     def test_cpu_constructed_criterion_accepts_cuda_tensors(self):
         device = torch.device("cuda")
