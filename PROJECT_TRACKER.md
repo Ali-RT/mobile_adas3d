@@ -15,9 +15,9 @@ generalization testing, and complete recording/export artifacts.
 
 ## Current position
 
-- Current phase: **MobileADAS3D-H1 architecture and edge preflight**
-- Active task: run the H1 random-weight physical-iPhone model-only gate before
-  any training. Local FP16 parity is complete.
+- Current phase: **MobileADAS3D-H1 GT-only training preparation**
+- Active task: build the resumable, Drive-backed H1 GT-only 20-epoch health
+  gate. Random-weight edge qualification is complete.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Deployment candidate: **MobileADAS3D-H1 teacher-shaped hybrid student**
 - Knowledge distillation: **not active yet**; it follows the GT-only H1
@@ -51,7 +51,7 @@ generalization testing, and complete recording/export artifacts.
 | M18 | Final physical-iPhone qualification | Pending | Runtime, sustained thermal, no-saving/full-recording, and artifact gates. |
 | M19 | Deployment decision | Pending | Approve only if accuracy, generalization, parity, runtime, stability, and artifact gates all pass. |
 | M20 | H1 teacher-shaped hybrid contract | Complete | MobileNetV4 + Lite-FPN + fixed standard depth-aware encoder/query decoder is frozen in `HYBRID_STUDENT_ARCHITECTURE_CONTRACT.md`. |
-| M21 | H1 random graph and edge preflight | In progress—device gate pending | Graph, neutral query-head initialization, finite forward/backward, trace, conversion, parameter, compute, package, operator, and strict FP16 parity checks pass. Results: 3.619M parameters, 4.907 GMAC, 10.35 MB FP16, no custom ops, FP16 raw delta 0.001941. Physical-iPhone timing remains pending. |
+| M21 | H1 random graph and edge preflight | Complete | 3.619M parameters, 4.907 GMAC, 10.35 MB FP16, no custom ops, FP16 raw delta 0.001941. iPhone 16 Pro Max CPU+NE, 5 warmups/100 runs: mean 5.042 ms, median 4.924 ms, p95 5.804 ms, max 7.137 ms. See `artifacts/h1_edge_preflight_20260821.json`. |
 
 ## Frozen R0 reference
 
@@ -116,13 +116,16 @@ passing these three AP values alone does not authorize deployment.
    S1-V2b. Freeze the complete dense S1 family as rejected.
 10. **Completed:** freeze MobileADAS3D-H1's teacher-shaped hybrid architecture.
 11. **Local preflight complete:** H1 passes unit, trace, parameter, compute,
-   package, operator, and FP16 parity checks (`0.001941` <= `0.002`). Run the
-   physical-iPhone timing gate before creating any training notebook.
-12. Sweep a future healthy H1 run using the frozen R0 product evaluator and
+   package, operator, and FP16 parity checks (`0.001941` <= `0.002`).
+12. **Physical edge gate complete:** iPhone 16 Pro Max CPU+NE p95 was
+   `5.804 ms` over 100 timed predictions after 5 warmups (gate <=35 ms).
+13. Prepare and run a fresh GT-only H1 20-epoch health gate with durable Drive
+   checkpoints, visible logs, and automatic resume. Distillation stays off.
+14. Sweep a future healthy H1 run using the frozen R0 product evaluator and
    select using per-class moderate 3D AP plus nearby recall—not validation
    loss alone.
-13. Freeze the GT-only H1 checkpoint and results.
-14. Run one paired distillation experiment from the identical initialization.
+15. Freeze the GT-only H1 checkpoint and results.
+16. Run one paired distillation experiment from the identical initialization.
    Keep distillation only if it improves the frozen comparison without harming
    Pedestrian or nearby safety metrics.
 

@@ -1,6 +1,6 @@
 # MobileADAS3D-H1 hybrid student architecture contract
 
-Status: local random-graph gates passed; physical-device gate pending
+Status: random-graph edge preflight complete; GT-only training preparation next
 Decision date: 2026-08-20
 
 ## Decision
@@ -169,9 +169,15 @@ reduced-precision tolerance change. With the unchanged strict `0.002` gate,
 the all-FP16 graph passes at `0.001941`. A trained checkpoint must receive its
 own parity evaluation; the random-weight result cannot waive that later gate.
 
-No H1 training is authorized yet. The next task is the physical iPhone
-5-warmup/100-prediction gate. Mac prediction time is diagnostic only and must
-not be substituted for the device result.
+The physical iPhone gate also passed on an iPhone 16 Pro Max using
+`cpuAndNeuralEngine`: 5 warmups followed by 100 predictions produced mean
+`5.042 ms`, median `4.924 ms`, p95 `5.804 ms`, and maximum `7.137 ms`. The p95
+is well below the frozen `35 ms` ceiling. Durable evidence is stored in
+`artifacts/h1_edge_preflight_20260821.json`.
+
+H1 is now authorized to proceed to a fresh GT-only 20-epoch health-gate
+notebook. Distillation remains disabled, and trained weights must later repeat
+Core ML parity and physical-device qualification.
 
 ## Training order
 

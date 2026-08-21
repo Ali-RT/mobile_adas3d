@@ -1,0 +1,29 @@
+{
+  "schema_version": "mobileadas3d_h1_edge_preflight_v1",
+  "complete": true,
+  "architecture": "MobileADAS3D-H1",
+  "random_seed": 11,
+  "input_shape": [1, 3, 384, 1280],
+  "parameters": 3619457,
+  "gmacs": 4.90676508,
+  "fp16_mlpackage_size_mb": 10.351880073547363,
+  "coreml_max_abs_delta": 0.001941027119755745,
+  "coreml_custom_operations": 0,
+  "device_gate": {
+    "device": "iPhone 16 Pro Max",
+    "model_identifier": "iPhone17,2",
+    "os_version": "iOS 26.6",
+    "os_build": "23G71",
+    "compute_units": "cpuAndNeuralEngine",
+    "warmup_runs": 5,
+    "timed_runs": 100,
+    "mean_ms": 5.041683780000002,
+    "median_ms": 4.92425,
+    "p95_ms": 5.80425,
+    "min_ms": 4.852166,
+    "max_ms": 7.1365,
+    "p95_gate_ms": 35.0,
+    "passed": true
+  },
+  "source_xcresult": "/tmp/H1EdgeGate-20260821.xcresult"
+}

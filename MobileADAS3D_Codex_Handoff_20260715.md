@@ -1954,3 +1954,21 @@ The remaining pre-training gate is physical iPhone 16 Pro Max model-only
 latency: 5 warmups, 100 timed predictions, and p95 <=35 ms. Xcode currently
 reports the registered phone as unavailable; reconnect, unlock, and trust it
 before continuing. Do not start H1 training yet.
+
+#### 2026-08-21 H1 physical edge gate passed
+
+The validated random H1 FP16 package was added only to an isolated iOS unit
+test target; the app's working trained model and runtime paths were not
+replaced. The test ran on the paired iPhone 16 Pro Max (`iPhone17,2`, iOS 26.6,
+build `23G71`) with `cpuAndNeuralEngine`, 5 warmups, and 100 timed predictions.
+
+Measured latency was mean `5.0417 ms`, median `4.9243 ms`, p95 `5.8043 ms`,
+minimum `4.8522 ms`, and maximum `7.1365 ms`. The frozen p95 ceiling is
+`35 ms`, so the physical gate passes with substantial margin. Xcode recorded
+one passing test in `/tmp/H1EdgeGate-20260821.xcresult`; durable summarized
+evidence is committed as `artifacts/h1_edge_preflight_20260821.json`. Temporary
+test/model resources were removed from the iPhone app repository afterward.
+
+M21 is complete. The next task is to prepare the fresh GT-only H1 20-epoch
+health-gate configuration and Colab notebook with Google Drive checkpoints,
+visible epoch/batch logs, and automatic resume. Keep teacher distillation off.
