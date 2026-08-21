@@ -4,11 +4,11 @@ Current progress, frozen results, and next actions are maintained in
 [`PROJECT_TRACKER.md`](PROJECT_TRACKER.md).
 
 The active supervised-student workflow is
-[`notebooks/MobileADAS3D_S1_GT_Baseline_Colab.ipynb`](notebooks/MobileADAS3D_S1_GT_Baseline_Colab.ipynb).
-It verifies the frozen R0 epoch-185 selection and hash, keeps distillation
-disabled, preflights the audited Vehicle/Pedestrian data and one real CUDA
-loss, runs a resumable 20-epoch health gate, and blocks continuation to epoch
-100 until the complete product-taxonomy gate result is reviewed.
+[`notebooks/MobileADAS3D_H1_GT_Gate_Colab.ipynb`](notebooks/MobileADAS3D_H1_GT_Gate_Colab.ipynb).
+It verifies frozen R0 and H1 edge evidence, keeps distillation disabled,
+preflights the audited Vehicle/Pedestrian data and a real CUDA Hungarian-set
+loss, runs a resumable 20-epoch health gate, and stops after complete
+product-taxonomy AP_R40 evaluation for review.
 
 Mobile monocular-3D detector for safety-relevant road objects. The locked
 product target, class taxonomy, dataset isolation rules, candidate architecture,
@@ -25,14 +25,12 @@ uncertainty on a stride-16 feature map.
   validated in the iPhone benchmark app and its decode contract remains frozen.
 - **Legacy custom student:** MobileNetV4 Conv Small with convolutional heads.
   It remains Core-ML-exportable but did not meet the 3D-accuracy target.
-- **Locked product candidate:** MobileMonoDETR-VP1, using MobileNetV4 Conv Small
-  with the unchanged MonoDETR depth-aware transformer and two production
-  classes. Its highest-risk deformable-attention microkernel now passes native
-  Core ML conversion at decoder and encoder scale, and the complete fixed-shape
-  random-weight graph converts to a custom-op-free ML Program. Native package
-  compilation/loading remains unresolved, so deployment approval is still
-  conditional on that gate, trained-model parity, and physical-iPhone tests. See
-  [`COREML_FEASIBILITY_REPORT.md`](COREML_FEASIBILITY_REPORT.md).
+- **Active product candidate:** MobileADAS3D-H1, using MobileNetV4 Conv Small,
+  Lite-FPN, 40-bin depth context, a fixed two-layer standard encoder, and a
+  two-layer 50-query decoder. Its random graph passes custom-op-free FP16 Core
+  ML parity and iPhone 16 Pro Max p95 latency. GT-only supervised training is
+  the current gate; no H1 checkpoint is qualified yet. See
+  [`HYBRID_STUDENT_ARCHITECTURE_CONTRACT.md`](HYBRID_STUDENT_ARCHITECTURE_CONTRACT.md).
 
 Historical v6/v7 F1 and device results in the supporting documents describe
 the deployed lineage; they are not claimed as MobileNetV4 results.

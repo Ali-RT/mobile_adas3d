@@ -6,6 +6,7 @@ import torch
 import torch.nn.functional as F
 
 from data.target_builder import build_targets_for_sample
+from data.h1_query_targets import build_h1_query_targets_for_sample, pad_h1_query_targets
 from data.teacher_target_adapter import TeacherTargetAdapter
 
 
@@ -49,6 +50,10 @@ def mobile_adas3d_collate_fn(
     class_weights: Optional[Dict[str, float]] = None,
     quality_center_sigma: float = 1.0,
     teacher_adapter: Optional[TeacherTargetAdapter] = None,
+    target_format: str = "dense",
+    depth_bins: int = 40,
+    min_depth_m: float = 1.0,
+    max_depth_m: float = 80.0,
 ) -> Dict[str, Any]:
     images = []
     targets = []
@@ -67,21 +72,38 @@ def mobile_adas3d_collate_fn(
                 sample["sample_id"], sample["objects"]
             )
 
-        target = build_targets_for_sample(
-            objects=sample["objects"],
-            original_width=int(sample["original_size"]["width"]),
-            original_height=int(sample["original_size"]["height"]),
-            input_width=input_width,
-            input_height=input_height,
-            output_stride=output_stride,
-            classes=classes,
-            class_mean_dims=class_mean_dims,
-            center_sampling_radius=center_sampling_radius,
-            class_weights=class_weights,
-            P2=sample.get("P2"),
-            quality_center_sigma=quality_center_sigma,
-            teacher_targets=teacher_targets,
-        )
+        if target_format == "query":
+            if teacher_targets is not None:
+                raise ValueError("H1 query targets do not support distillation")
+            target = build_h1_query_targets_for_sample(
+                objects=sample["objects"],
+                original_width=int(sample["original_size"]["width"]),
+                original_height=int(sample["original_size"]["height"]),
+                classes=classes,
+                class_mean_dims=class_mean_dims,
+                P2=sample["P2"],
+                depth_bins=depth_bins,
+                min_depth_m=min_depth_m,
+                max_depth_m=max_depth_m,
+            )
+        elif target_format == "dense":
+            target = build_targets_for_sample(
+                objects=sample["objects"],
+                original_width=int(sample["original_size"]["width"]),
+                original_height=int(sample["original_size"]["height"]),
+                input_width=input_width,
+                input_height=input_height,
+                output_stride=output_stride,
+                classes=classes,
+                class_mean_dims=class_mean_dims,
+                center_sampling_radius=center_sampling_radius,
+                class_weights=class_weights,
+                P2=sample.get("P2"),
+                quality_center_sigma=quality_center_sigma,
+                teacher_targets=teacher_targets,
+            )
+        else:
+            raise ValueError(f"Unsupported target_format: {target_format}")
 
         images.append(image)
         targets.append(target)
@@ -99,6 +121,10 @@ def mobile_adas3d_collate_fn(
 
     return {
         "images": torch.stack(images, dim=0),
-        "targets": stack_target_dicts(targets),
+        "targets": (
+            pad_h1_query_targets(targets)
+            if target_format == "query"
+            else stack_target_dicts(targets)
+        ),
         "metadata": metadata,
     }

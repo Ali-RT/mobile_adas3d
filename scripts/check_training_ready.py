@@ -125,6 +125,10 @@ def main() -> None:
         class_mean_dims=target_cfg["class_mean_dims"],
         center_sampling_radius=int(target_cfg["center_sampling"]["radius"]),
         class_weights=loss_cfg["class_weights"],
+        target_format=("query" if model_cfg["name"] == "MobileADAS3D-H1" else "dense"),
+        depth_bins=int(model_cfg.get("depth_bins", 40)),
+        min_depth_m=float(target_cfg.get("min_depth_m", 1.0)),
+        max_depth_m=float(target_cfg.get("max_depth_m", 80.0)),
     )
     batch = next(iter(DataLoader(dataset, batch_size=1, num_workers=0, collate_fn=collate)))
     model = build_model(config).to(device).train()
@@ -134,13 +138,17 @@ def main() -> None:
     if not torch.isfinite(losses["total_loss"]):
         raise RuntimeError(f"Non-finite preflight loss: {losses['total_loss'].item()}")
 
-    output_shape = list(outputs["cls_logits"].shape)
-    expected_shape = [
-        1,
-        len(dataset_cfg["classes"]),
-        int(model_cfg["input_height"]) // int(model_cfg["output_stride"]),
-        int(model_cfg["input_width"]) // int(model_cfg["output_stride"]),
-    ]
+    if model_cfg["name"] == "MobileADAS3D-H1":
+        output_shape = list(outputs["class_logits"].shape)
+        expected_shape = [1, int(model_cfg["num_queries"]), len(dataset_cfg["classes"])]
+    else:
+        output_shape = list(outputs["cls_logits"].shape)
+        expected_shape = [
+            1,
+            len(dataset_cfg["classes"]),
+            int(model_cfg["input_height"]) // int(model_cfg["output_stride"]),
+            int(model_cfg["input_width"]) // int(model_cfg["output_stride"]),
+        ]
     if output_shape != expected_shape:
         raise RuntimeError(f"Expected cls output {expected_shape}; got {output_shape}")
 

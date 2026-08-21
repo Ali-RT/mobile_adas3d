@@ -1,0 +1,69 @@
+base_config: kitti_mobileadas3d_h1.yaml
+
+logging:
+  run_name: "mobileadas3d_h1_gt_gate20"
+
+training:
+  epochs: 20
+  batch_size: 2
+  gradient_accumulation_steps: 2
+  learning_rate: 0.0001
+  weight_decay: 0.0001
+  use_amp: true
+  gradient_clip_norm: 1.0
+  log_interval: 20
+  save_interval: 1
+
+validation:
+  batch_size: 2
+  interval_epochs: 1
+  monitor_metric: val_total_loss
+  mode: min
+
+early_stopping:
+  enabled: false
+
+targets:
+  min_depth_m: 1.0
+  max_depth_m: 80.0
+
+loss:
+  type: h1_hungarian_set
+  class_weights:
+    Vehicle: 1.0
+    Pedestrian: 2.5
+  matching:
+    class: 2.0
+    box_l1: 5.0
+    giou: 2.0
+    projected_center: 1.0
+  cls_weight: 2.0
+  box2d_weight: 5.0
+  giou_weight: 2.0
+  projected_center_weight: 1.0
+  depth_weight: 2.0
+  dim_weight: 1.0
+  yaw_weight: 1.0
+  loc_xy_weight: 1.0
+  quality_weight: 1.0
+  focal_alpha: 0.25
+  focal_gamma: 2.0
+
+outputs:
+  output_dir: ./outputs/mobileadas3d_h1_gt_gate20
+  profile_output_dirs:
+    local_mac: ./outputs/mobileadas3d_h1_gt_gate20
+    colab_drive: /content/drive/MyDrive/mobile_adas3d_outputs/mobileadas3d_h1_gt_gate20
+
+distillation:
+  enabled: false
+
+reference:
+  name: "MonoDETR-R0"
+  selected_epoch: 185
+  checkpoint_sha256: "fc0eba200e44b88921af76b0a5c94279872fd5c4838ab4d8936838447debfa59"
+  vehicle_3d_moderate: 17.634769196266316
+  pedestrian_3d_moderate: 5.721371354710236
+  vehicle_75pct_minimum: 13.226076897199737
+  pedestrian_75pct_minimum: 4.291028516032677
+  vehicle_bev_moderate_minimum: 20.0

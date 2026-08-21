@@ -194,9 +194,12 @@ The physical gate is now complete. On iPhone 16 Pro Max with CPU+Neural Engine,
 5 warmups and 100 timed predictions measured mean `5.042 ms`, median
 `4.924 ms`, p95 `5.804 ms`, and maximum `7.137 ms`; the p95 gate is `35 ms`.
 
-The next step is a fresh, resumable, Drive-backed GT-only H1 20-epoch health
-gate. Distillation remains disabled until that supervised baseline is healthy,
-fully evaluated, selected, and frozen.
+The fresh, resumable, Drive-backed GT-only H1 20-epoch health-gate notebook is
+ready. It trains with query-native KITTI targets and Hungarian set assignment,
+saves every epoch and visible logs to Drive, automatically resumes `latest.pt`,
+and ends with the complete 3,769-image Vehicle/Pedestrian product AP_R40
+evaluation. Distillation remains disabled until that supervised baseline is
+healthy, fully evaluated, selected, and frozen.
 
 If H1 misses the edge gate, reduce transformer width from 192 to 128 as the
 single controlled fallback. Do not reduce resolution, remove stride-8 memory,

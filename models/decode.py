@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from typing import Any, Dict, List, Optional, Tuple
 
 import torch
@@ -598,6 +599,102 @@ def _decode_single_image_vectorized(
     return predictions
 
 
+def _decode_h1_outputs(
+    outputs: Dict[str, torch.Tensor],
+    classes: List[str],
+    class_mean_dims: Dict[str, List[float]],
+    input_height: int,
+    input_width: int,
+    score_threshold: float,
+    topk: int,
+    nms_iou_threshold: float,
+    P2: Optional[Any],
+    quality_score_power: float,
+) -> List[List[Dict[str, Any]]]:
+    logits = outputs["class_logits"]
+    batch_predictions = []
+    depth_centers = torch.linspace(
+        math.log(1.0), math.log(80.0), outputs["depth_logits"].shape[-1],
+        device=logits.device, dtype=logits.dtype,
+    )
+    mean_dims = _make_class_mean_dims_tensor(
+        classes, class_mean_dims, logits.device, logits.dtype
+    )
+    for batch_index in range(logits.shape[0]):
+        class_scores = logits[batch_index].sigmoid()
+        quality = outputs["quality"][batch_index].sigmoid().clamp(min=1e-6)
+        scores = class_scores * quality.pow(float(quality_score_power))
+        query_scores, query_classes = scores.max(dim=-1)
+        k = min(int(topk), query_scores.numel())
+        selected_scores, query_ids = torch.topk(query_scores, k=k)
+        valid = selected_scores >= score_threshold
+        selected_scores = selected_scores[valid]
+        query_ids = query_ids[valid]
+        if not query_ids.numel():
+            batch_predictions.append([])
+            continue
+        class_ids = query_classes[query_ids]
+        boxes = outputs["box2d_cxcywh"][batch_index, query_ids]
+        cx, cy, width, height = boxes.unbind(-1)
+        xyxy = torch.stack(
+            ((cx - width * 0.5) * input_width, (cy - height * 0.5) * input_height,
+             (cx + width * 0.5) * input_width, (cy + height * 0.5) * input_height),
+            dim=-1,
+        )
+        keep = _class_aware_nms(xyxy, selected_scores, class_ids, nms_iou_threshold)
+        query_ids = query_ids[keep]
+        class_ids = class_ids[keep]
+        selected_scores = selected_scores[keep]
+        xyxy = xyxy[keep]
+        depth_bin = outputs["depth_logits"][batch_index, query_ids].argmax(-1)
+        depth = torch.exp(
+            depth_centers[depth_bin]
+            + outputs["depth_residual"][batch_index, query_ids, 0]
+        ).clamp(0.1, 200.0)
+        dimensions = mean_dims[class_ids] * torch.exp(
+            outputs["dimensions"][batch_index, query_ids]
+        )
+        yaw_vector = outputs["yaw"][batch_index, query_ids]
+        yaw = torch.atan2(yaw_vector[:, 0], yaw_vector[:, 1])
+        p2 = _select_p2_for_batch(P2, batch_index, logits.device, logits.dtype)
+        projected = outputs["projected_center"][batch_index, query_ids]
+        if p2 is not None:
+            location = _backproject_uv_depth_with_p2(
+                projected[:, 0] * input_width,
+                projected[:, 1] * input_height,
+                depth,
+                p2,
+            )
+            location_source = "projected_center"
+        else:
+            ratios = outputs["location_xy"][batch_index, query_ids]
+            location = torch.stack(
+                (ratios[:, 0] * depth, ratios[:, 1] * depth, depth), dim=-1
+            )
+            location_source = "loc_xy"
+        predictions = []
+        for index in range(query_ids.numel()):
+            class_id = int(class_ids[index])
+            predictions.append({
+                "class_id": class_id,
+                "class_name": classes[class_id],
+                "score": float(selected_scores[index]),
+                "class_score": float(class_scores[query_ids[index], class_id]),
+                "quality_score": float(quality[query_ids[index], 0]),
+                "bbox_2d": [float(value) for value in xyxy[index]],
+                "center_2d": [float(projected[index, 0] * input_width), float(projected[index, 1] * input_height)],
+                "depth": float(depth[index]),
+                "location_3d": [float(value) for value in location[index]],
+                "dimensions_3d_hwl": [float(value) for value in dimensions[index]],
+                "yaw": float(yaw[index]),
+                "depth_uncertainty": 0.0,
+                "query_id": int(query_ids[index]),
+                "location_decode_source": location_source,
+            })
+        batch_predictions.append(predictions)
+    return batch_predictions
+
+
 def decode_mobile_adas3d_outputs(
     outputs: Dict[str, torch.Tensor],
     classes: List[str],
@@ -637,6 +734,20 @@ def decode_mobile_adas3d_outputs(
           ...
         ]
     """
+
+    if "class_logits" in outputs:
+        return _decode_h1_outputs(
+            outputs=outputs,
+            classes=classes,
+            class_mean_dims=class_mean_dims,
+            input_height=input_height,
+            input_width=input_width,
+            score_threshold=score_threshold,
+            topk=topk,
+            nms_iou_threshold=nms_iou_threshold,
+            P2=P2,
+            quality_score_power=quality_score_power,
+        )
 
     required_keys = [
         "cls_logits",

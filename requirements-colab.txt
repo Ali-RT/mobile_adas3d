@@ -7,4 +7,5 @@ pyyaml
 tqdm
 matplotlib
 scikit-learn
+scipy
 tensorboard

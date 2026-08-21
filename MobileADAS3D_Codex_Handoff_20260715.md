@@ -1972,3 +1972,22 @@ test/model resources were removed from the iPhone app repository afterward.
 M21 is complete. The next task is to prepare the fresh GT-only H1 20-epoch
 health-gate configuration and Colab notebook with Google Drive checkpoints,
 visible epoch/batch logs, and automatic resume. Keep teacher distillation off.
+
+#### 2026-08-21 H1 GT-only health-gate workflow prepared
+
+H1 now has a separate query-native supervised path rather than reusing the
+retired S1 dense-grid loss. KITTI objects are encoded as normalized boxes,
+projected bottom centers, 40-bin log-depth plus residual, log-dimension
+residuals, continuous sine/cosine yaw, and X/Z/Y/Z geometry. Fifty predictions
+are assigned one-to-one with Hungarian matching using class, box L1, GIoU, and
+projected-center costs. Unmatched queries remain negative focal/quality
+targets. The H1 decoder reconstructs KITTI-format 2D/3D predictions for the
+unchanged product AP_R40 evaluator.
+
+Run `notebooks/MobileADAS3D_H1_GT_Gate_Colab.ipynb` top-to-bottom on a Colab
+GPU. It validates frozen R0 and H1 edge evidence, refreshes the taxonomy audit,
+runs focused tests and a real CUDA loss preflight, saves every epoch and the
+streamed log to Google Drive, resumes only the exact H1 run, stops at epoch 20,
+and evaluates all 3,769 Chen-val images. Distillation is fail-closed false and
+there is no continuation cell. Return the final training summary and AP table
+before changing the schedule or enabling teacher losses.

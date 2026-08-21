@@ -179,6 +179,15 @@ H1 is now authorized to proceed to a fresh GT-only 20-epoch health-gate
 notebook. Distillation remains disabled, and trained weights must later repeat
 Core ML parity and physical-device qualification.
 
+The supervised gate uses one-to-one Hungarian assignment between 50 queries
+and valid KITTI objects. Matching costs combine class probability, normalized
+2D-box L1, generalized IoU, and projected-center L1. The optimized losses are
+sigmoid focal classification, box L1/GIoU, projected center, 40-bin log-depth
+classification plus residual, log-dimension residual, continuous yaw cosine,
+X/Z and Y/Z location ratios, and localization quality. Unmatched queries are
+negative classification/quality targets. The query decoder reconstructs KITTI
+boxes and camera-frame 3D geometry for the frozen product AP_R40 evaluator.
+
 ## Training order
 
 1. Implement and unit-test the fixed-shape random graph.

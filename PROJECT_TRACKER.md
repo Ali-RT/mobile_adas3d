@@ -15,9 +15,9 @@ generalization testing, and complete recording/export artifacts.
 
 ## Current position
 
-- Current phase: **MobileADAS3D-H1 GT-only training preparation**
-- Active task: build the resumable, Drive-backed H1 GT-only 20-epoch health
-  gate. Random-weight edge qualification is complete.
+- Current phase: **MobileADAS3D-H1 GT-only 20-epoch health gate**
+- Active task: run `notebooks/MobileADAS3D_H1_GT_Gate_Colab.ipynb` top-to-bottom
+  on a Colab GPU and return the epoch-20 AP table and training summary.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Deployment candidate: **MobileADAS3D-H1 teacher-shaped hybrid student**
 - Knowledge distillation: **not active yet**; it follows the GT-only H1
@@ -52,6 +52,7 @@ generalization testing, and complete recording/export artifacts.
 | M19 | Deployment decision | Pending | Approve only if accuracy, generalization, parity, runtime, stability, and artifact gates all pass. |
 | M20 | H1 teacher-shaped hybrid contract | Complete | MobileNetV4 + Lite-FPN + fixed standard depth-aware encoder/query decoder is frozen in `HYBRID_STUDENT_ARCHITECTURE_CONTRACT.md`. |
 | M21 | H1 random graph and edge preflight | Complete | 3.619M parameters, 4.907 GMAC, 10.35 MB FP16, no custom ops, FP16 raw delta 0.001941. iPhone 16 Pro Max CPU+NE, 5 warmups/100 runs: mean 5.042 ms, median 4.924 ms, p95 5.804 ms, max 7.137 ms. See `artifacts/h1_edge_preflight_20260821.json`. |
+| M22 | H1 GT-only health-gate workflow | Ready to run | Query-native KITTI targets, Hungarian matching/set loss, H1 KITTI decoder, fail-closed provenance preparation, Drive checkpoints/logging, automatic resume, and complete product AP_R40 evaluation are implemented in `MobileADAS3D_H1_GT_Gate_Colab.ipynb`. Distillation is false. |
 
 ## Frozen R0 reference
 
@@ -119,8 +120,9 @@ passing these three AP values alone does not authorize deployment.
    package, operator, and FP16 parity checks (`0.001941` <= `0.002`).
 12. **Physical edge gate complete:** iPhone 16 Pro Max CPU+NE p95 was
    `5.804 ms` over 100 timed predictions after 5 warmups (gate <=35 ms).
-13. Prepare and run a fresh GT-only H1 20-epoch health gate with durable Drive
-   checkpoints, visible logs, and automatic resume. Distillation stays off.
+13. **Prepared:** run the fresh GT-only H1 20-epoch health gate with durable
+   Drive checkpoints, visible logs, automatic resume, and full product AP.
+   Distillation stays off.
 14. Sweep a future healthy H1 run using the frozen R0 product evaluator and
    select using per-class moderate 3D AP plus nearby recall—not validation
    loss alone.

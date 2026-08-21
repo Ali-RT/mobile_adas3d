@@ -20,6 +20,7 @@ from data.teacher_target_adapter import TeacherTargetAdapter
 from data.class_taxonomy import normalize_class_mapping, validate_taxonomy_manifest
 from data.split_resolver import get_split_file
 from losses.mobile_adas3d_loss import MobileADAS3DLoss
+from losses.h1_set_loss import H1SetCriterion
 from models.build import build_model
 from tools.cli import parse_config_profile_args
 from tools.config import load_runtime_config_from_args
@@ -181,6 +182,10 @@ def build_dataloader(
         class_weights=loss_cfg.get("class_weights", {}),
         quality_center_sigma=float(target_cfg.get("quality_center_sigma", 1.0)),
         teacher_adapter=teacher_adapter,
+        target_format=("query" if model_cfg["name"] == "MobileADAS3D-H1" else "dense"),
+        depth_bins=int(model_cfg.get("depth_bins", 40)),
+        min_depth_m=float(target_cfg.get("min_depth_m", 1.0)),
+        max_depth_m=float(target_cfg.get("max_depth_m", 80.0)),
     )
 
     loader = DataLoader(
@@ -199,9 +204,36 @@ def build_dataloader(
     return loader
 
 
-def build_criterion(config: Dict[str, Any]) -> MobileADAS3DLoss:
+def build_criterion(config: Dict[str, Any]) -> torch.nn.Module:
     loss_cfg = config.get("loss", {})
     distillation_cfg = config.get("distillation", {})
+    if config["model"]["name"] == "MobileADAS3D-H1":
+        if distillation_cfg.get("enabled", False):
+            raise RuntimeError("H1 GT-only gate requires distillation.enabled=false")
+        classes = config["dataset"]["classes"]
+        matching = loss_cfg.get("matching", {})
+        return H1SetCriterion(
+            num_classes=len(classes),
+            class_weights=[
+                float(loss_cfg.get("class_weights", {}).get(name, 1.0))
+                for name in classes
+            ],
+            match_class_cost=matching.get("class", 2.0),
+            match_box_cost=matching.get("box_l1", 5.0),
+            match_giou_cost=matching.get("giou", 2.0),
+            match_center_cost=matching.get("projected_center", 1.0),
+            cls_weight=loss_cfg.get("cls_weight", 2.0),
+            box2d_weight=loss_cfg.get("box2d_weight", 5.0),
+            giou_weight=loss_cfg.get("giou_weight", 2.0),
+            projected_center_weight=loss_cfg.get("projected_center_weight", 1.0),
+            depth_weight=loss_cfg.get("depth_weight", 2.0),
+            dim_weight=loss_cfg.get("dim_weight", 1.0),
+            yaw_weight=loss_cfg.get("yaw_weight", 1.0),
+            loc_xy_weight=loss_cfg.get("loc_xy_weight", 1.0),
+            quality_weight=loss_cfg.get("quality_weight", 1.0),
+            focal_alpha=loss_cfg.get("focal_alpha", 0.25),
+            focal_gamma=loss_cfg.get("focal_gamma", 2.0),
+        )
     teacher_loss_cfg = distillation_cfg.get("loss_weights", {})
 
     return MobileADAS3DLoss(
@@ -287,7 +319,7 @@ def average_losses(
 def train_one_epoch(
     model: torch.nn.Module,
     dataloader: DataLoader,
-    criterion: MobileADAS3DLoss,
+    criterion: torch.nn.Module,
     optimizer: torch.optim.Optimizer,
     scaler: torch.cuda.amp.GradScaler,
     device: torch.device,
@@ -383,7 +415,7 @@ def train_one_epoch(
 def validate_one_epoch(
     model: torch.nn.Module,
     dataloader: DataLoader,
-    criterion: MobileADAS3DLoss,
+    criterion: torch.nn.Module,
     device: torch.device,
     use_amp: bool,
 ) -> Dict[str, float]:
