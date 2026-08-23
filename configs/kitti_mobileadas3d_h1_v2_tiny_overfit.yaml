@@ -4,6 +4,13 @@ dataset:
   # The tiny split is derived from the already-audited Chen training split.
   # It intentionally has different split hashes from the product manifest.
   require_taxonomy_manifest: false
+  splits:
+    protocol: h1_v2_tiny16_memorization
+    expected_train_count: 16
+    expected_val_count: 16
+    require_identical_train_val: true
+    require_disjoint: false
+    require_full_union: false
 
 logging:
   run_name: "mobileadas3d_h1_v2_tiny16"

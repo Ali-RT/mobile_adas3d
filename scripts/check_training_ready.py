@@ -73,12 +73,32 @@ def main() -> None:
     val_file = Path(get_split_file(config, "val"))
     train_ids = read_split_file(train_file)
     val_ids = read_split_file(val_file)
-    if len(train_ids) != 3712 or len(val_ids) != 3769:
+    split_cfg = dataset_cfg["splits"]
+    expected_train_count = int(split_cfg.get("expected_train_count", 3712))
+    expected_val_count = int(split_cfg.get("expected_val_count", 3769))
+    if (
+        len(train_ids) != expected_train_count
+        or len(val_ids) != expected_val_count
+    ):
         raise RuntimeError(
-            f"Expected Chen split 3712/3769; got {len(train_ids)}/{len(val_ids)}"
+            f"Expected split {expected_train_count}/{expected_val_count}; "
+            f"got {len(train_ids)}/{len(val_ids)}"
         )
-    if set(train_ids) & set(val_ids) or len(set(train_ids) | set(val_ids)) != 7481:
-        raise RuntimeError("Canonical KITTI split overlap/union validation failed")
+    if len(set(train_ids)) != len(train_ids) or len(set(val_ids)) != len(val_ids):
+        raise RuntimeError("Split files contain duplicate sample IDs")
+    if split_cfg.get("require_identical_train_val", False):
+        if train_ids != val_ids:
+            raise RuntimeError("Tiny-overfit train and validation splits must be identical")
+    else:
+        if split_cfg.get("require_disjoint", True) and set(train_ids) & set(val_ids):
+            raise RuntimeError("Training and validation splits overlap")
+        if split_cfg.get("require_full_union", True):
+            expected_union_count = int(split_cfg.get("expected_union_count", 7481))
+            if len(set(train_ids) | set(val_ids)) != expected_union_count:
+                raise RuntimeError(
+                    f"Expected split union {expected_union_count}; got "
+                    f"{len(set(train_ids) | set(val_ids))}"
+                )
 
     class_mapping = normalize_class_mapping(
         dataset_cfg.get("class_mapping"), dataset_cfg["classes"]

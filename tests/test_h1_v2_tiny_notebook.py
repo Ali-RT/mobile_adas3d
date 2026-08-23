@@ -25,7 +25,16 @@ class H1V2TinyNotebookTests(unittest.TestCase):
         self.assertIn("classification_mode: implicit_background_softmax", source)
         self.assertIn("no_object_weight: 0.1", source)
         self.assertIn("quality_negative_weight: 0.1", source)
+        self.assertIn("expected_train_count: 16", source)
+        self.assertIn("expected_val_count: 16", source)
+        self.assertIn("require_identical_train_val: true", source)
         self.assertIn("enabled: false", source)
+
+    def test_preflight_keeps_full_split_defaults_but_allows_frozen_tiny_counts(self):
+        source = (ROOT / "scripts" / "check_training_ready.py").read_text()
+        self.assertIn('split_cfg.get("expected_train_count", 3712)', source)
+        self.assertIn('split_cfg.get("expected_val_count", 3769)', source)
+        self.assertIn('split_cfg.get("require_identical_train_val", False)', source)
 
 
 if __name__ == "__main__":
