@@ -203,11 +203,13 @@ AP_R40 evaluator.
 4. Run a 16-image H1-v2 memorization gate with Hungarian matching.
 5. Require matched-score median >=0.50, unmatched-score p95 <=0.10, matched
    2D IoU mean >=0.70, and mean predicted-count error <=1 object/image.
-6. Prepare a fresh full GT-only run only if the tiny gate passes.
-7. Review complete Vehicle/Pedestrian AP_R40 and geometry diagnostics.
-8. Continue GT-only training only if both classes learn and AP is materially
+6. If the 16-image gate fails, run one 1,000-step single-image capacity gate
+   and a cross-image output-sensitivity check before revising the graph.
+7. Prepare a fresh full GT-only run only if the capacity gates pass.
+8. Review complete Vehicle/Pedestrian AP_R40 and geometry diagnostics.
+9. Continue GT-only training only if both classes learn and AP is materially
    above the S1 baseline.
-9. Freeze the GT-only checkpoint and then run one paired R0-distillation
+10. Freeze the GT-only checkpoint and then run one paired R0-distillation
    experiment from the identical initialization.
 
 The frozen product gates, data splits, class mapping, external nuScenes test,

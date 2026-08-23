@@ -15,9 +15,10 @@ generalization testing, and complete recording/export artifacts.
 
 ## Current position
 
-- Current phase: **MobileADAS3D-H1 v2 tiny-subset overfit gate**
-- Active task: run `notebooks/MobileADAS3D_H1_V2_Tiny_Overfit_Colab.ipynb`
-  top-to-bottom and return the query diagnostic report.
+- Current phase: **MobileADAS3D-H1 v2 single-image capacity gate**
+- Active task: run
+  `notebooks/MobileADAS3D_H1_V2_Single_Image_Overfit_Colab.ipynb`
+  top-to-bottom and return the query and image-sensitivity reports.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Deployment candidate: **MobileADAS3D-H1 teacher-shaped hybrid student**
 - Knowledge distillation: **not active yet**; it follows the GT-only H1
@@ -54,7 +55,8 @@ generalization testing, and complete recording/export artifacts.
 | M21 | H1 random graph and edge preflight | Complete | 3.619M parameters, 4.907 GMAC, 10.35 MB FP16, no custom ops, FP16 raw delta 0.001941. iPhone 16 Pro Max CPU+NE, 5 warmups/100 runs: mean 5.042 ms, median 4.924 ms, p95 5.804 ms, max 7.137 ms. See `artifacts/h1_edge_preflight_20260821.json`. |
 | M22 | H1 GT-only health-gate workflow | Complete—learning gate failed | Query-native training ran stably for 20 epochs with complete product AP evaluation. Runtime/device/AMP defects were fixed, but the model produced 0.00 AP_R40 and excessive background proposals. Do not resume it. |
 | M23 | H1 v1 GT-only learning gate | Failed, diagnosed | The run produced 123,303 detections (32.72/image) with overwhelming false positives. Best validation loss was 7.443909 at epoch 9; latest epoch 20 was 7.742177. Query heads learned plausible geometry priors without reliable object presence/background ranking. |
-| M24 | H1 v2 tiny-overfit workflow | Training rerun pending | Preserve the two-logit Core ML head while adding a fixed implicit background logit for DETR-style softmax supervision, ordinary-IoU quality targets, controlled negative quality weighting, and a resumable 16-image/400-step memorization gate with hard score, IoU, and count checks. Colab exposed and fixed the shared preflight's hard-coded Chen counts and a tiny-config validation/monitor interval mismatch. Distillation remains false. |
+| M24 | H1 v2 tiny-overfit workflow | Failed—partial separation only | The 16-image/400-step run completed. Matched score median was 0.172, unmatched p95 0.188, matched mean 2D IoU 0.258, and predictions averaged 15.63/image versus 3.94 GT. All four gates failed. Do not run full KITTI or distillation. |
+| M25 | H1 v2 single-image capacity workflow | Ready to run | Select one Chen-train image containing both product classes, run exactly 1,000 resumable optimizer steps with atomic Drive checkpoints, reapply query score/IoU/count gates, and compare outputs against a different image to verify image conditioning. |
 
 ## Frozen R0 reference
 

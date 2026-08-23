@@ -1,0 +1,36 @@
+base_config: kitti_mobileadas3d_h1_v2_tiny_overfit.yaml
+
+dataset:
+  splits:
+    protocol: h1_v2_single_image_memorization
+    expected_train_count: 1
+    expected_val_count: 1
+    require_identical_train_val: true
+    require_disjoint: false
+    require_full_union: false
+
+logging:
+  run_name: "mobileadas3d_h1_v2_single"
+
+training:
+  # scripts/run_h1_single_image_overfit.py interprets epochs as exact steps.
+  epochs: 1000
+  batch_size: 1
+  gradient_accumulation_steps: 1
+  learning_rate: 0.0002
+  weight_decay: 0.0
+  use_amp: true
+  gradient_clip_norm: 1.0
+
+validation:
+  enabled: false
+  batch_size: 1
+
+outputs:
+  output_dir: ./outputs/mobileadas3d_h1_v2_single
+  profile_output_dirs:
+    local_mac: ./outputs/mobileadas3d_h1_v2_single
+    colab_drive: /content/drive/MyDrive/mobile_adas3d_outputs/mobileadas3d_h1_v2_single
+
+distillation:
+  enabled: false

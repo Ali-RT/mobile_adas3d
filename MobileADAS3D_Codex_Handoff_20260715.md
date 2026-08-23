@@ -2008,3 +2008,18 @@ normalizes matched/background quality terms separately. Run
 `notebooks/MobileADAS3D_H1_V2_Tiny_Overfit_Colab.ipynb` next. The 16-image,
 400-step memorization gate must pass matched confidence, unmatched p95,
 matched IoU, and object-count checks before another full KITTI experiment.
+
+#### 2026-08-23 H1-v2 tiny16 gate failed; single-image gate prepared
+
+The tiny16 run completed 100 epochs/400 optimizer steps but failed every hard
+gate: matched-score median `0.172`, unmatched-score p95 `0.188`, matched mean
+2D IoU `0.258`, and `15.63` predictions/image versus `3.94` ground truth. The
+implicit background objective improved separation but did not establish
+memorization or localization. Do not start full KITTI training or distillation.
+
+Run `notebooks/MobileADAS3D_H1_V2_Single_Image_Overfit_Colab.ipynb` next. It
+selects one Chen-train image containing Vehicle and Pedestrian, performs exactly
+1,000 optimizer steps with atomic Drive checkpoints every 100 steps, repeats
+the query gate, and compares raw outputs against a different image. Failure to
+memorize one image means H1 requires structural/loss revision; successful
+memorization plus image sensitivity points instead to schedule/matching issues.
