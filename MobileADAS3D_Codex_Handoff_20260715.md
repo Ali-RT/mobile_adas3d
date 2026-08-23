@@ -1991,3 +1991,20 @@ streamed log to Google Drive, resumes only the exact H1 run, stops at epoch 20,
 and evaluates all 3,769 Chen-val images. Distillation is fail-closed false and
 there is no continuation cell. Return the final training summary and AP table
 before changing the schedule or enabling teacher losses.
+
+#### 2026-08-23 H1 v1 learning gate failed; v2 tiny-overfit gate prepared
+
+The H1 GT-only run completed all 20 epochs and the full 3,769-image evaluation,
+but product BEV and 3D AP_R40 rounded to 0.00. It emitted 123,303 detections
+(32.72/image); most were plausible road-region geometry priors rather than
+image-conditioned objects. Best validation loss occurred at epoch 9
+(`7.443909`) and epoch 20 ended at `7.742177`. Do not resume this run and do not
+enable distillation.
+
+H1-v2 preserves the exported two-class tensor and the validated Core ML graph.
+It appends a fixed zero no-object logit only inside training/decoding for
+DETR-style softmax supervision, uses ordinary matched 2D IoU for quality, and
+normalizes matched/background quality terms separately. Run
+`notebooks/MobileADAS3D_H1_V2_Tiny_Overfit_Colab.ipynb` next. The 16-image,
+400-step memorization gate must pass matched confidence, unmatched p95,
+matched IoU, and object-count checks before another full KITTI experiment.

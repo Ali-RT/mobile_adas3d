@@ -35,6 +35,16 @@ def generalized_box_iou(boxes1: torch.Tensor, boxes2: torch.Tensor) -> torch.Ten
     return iou - (enclosing_area - union) / enclosing_area.clamp(min=1e-6)
 
 
+def box_iou(boxes1: torch.Tensor, boxes2: torch.Tensor) -> torch.Tensor:
+    left_top = torch.maximum(boxes1[:, None, :2], boxes2[None, :, :2])
+    right_bottom = torch.minimum(boxes1[:, None, 2:], boxes2[None, :, 2:])
+    intersection = (right_bottom - left_top).clamp(min=0).prod(-1)
+    area1 = (boxes1[:, 2:] - boxes1[:, :2]).clamp(min=0).prod(-1)
+    area2 = (boxes2[:, 2:] - boxes2[:, :2]).clamp(min=0).prod(-1)
+    union = area1[:, None] + area2[None, :] - intersection
+    return intersection / union.clamp(min=1e-6)
+
+
 class H1SetCriterion(nn.Module):
     distillation_enabled = False
 
@@ -55,6 +65,9 @@ class H1SetCriterion(nn.Module):
         yaw_weight: float = 1.0,
         loc_xy_weight: float = 1.0,
         quality_weight: float = 1.0,
+        classification_mode: str = "focal_sigmoid",
+        no_object_weight: float = 0.1,
+        quality_negative_weight: float = 0.1,
         focal_alpha: float = 0.25,
         focal_gamma: float = 2.0,
     ) -> None:
@@ -74,6 +87,14 @@ class H1SetCriterion(nn.Module):
         self.yaw_weight = float(yaw_weight)
         self.loc_xy_weight = float(loc_xy_weight)
         self.quality_weight = float(quality_weight)
+        if classification_mode not in {
+            "focal_sigmoid",
+            "implicit_background_softmax",
+        }:
+            raise ValueError(f"Unsupported H1 classification mode: {classification_mode}")
+        self.classification_mode = classification_mode
+        self.no_object_weight = float(no_object_weight)
+        self.quality_negative_weight = float(quality_negative_weight)
         self.focal_alpha = float(focal_alpha)
         self.focal_gamma = float(focal_gamma)
 
@@ -93,7 +114,14 @@ class H1SetCriterion(nn.Module):
             target_boxes = targets["box2d"][batch_index, mask].float()
             target_centers = targets["projected_center"][batch_index, mask].float()
             target_center_valid = targets["projected_center_valid"][batch_index, mask]
-            class_probability = outputs["class_logits"][batch_index].float().sigmoid()
+            raw_class_logits = outputs["class_logits"][batch_index].float()
+            if self.classification_mode == "implicit_background_softmax":
+                background = torch.zeros_like(raw_class_logits[:, :1])
+                class_probability = torch.cat(
+                    (raw_class_logits, background), dim=-1
+                ).softmax(dim=-1)[:, :self.num_classes]
+            else:
+                class_probability = raw_class_logits.sigmoid()
             class_cost = -class_probability[:, target_classes]
             predicted_boxes = outputs["box2d_cxcywh"][batch_index].float()
             box_cost = torch.cdist(predicted_boxes, target_boxes, p=1)
@@ -127,7 +155,18 @@ class H1SetCriterion(nn.Module):
     ) -> Dict[str, torch.Tensor]:
         matches = self._match(outputs, targets)
         class_target = torch.zeros_like(outputs["class_logits"])
+        class_indices = torch.full(
+            outputs["class_logits"].shape[:2],
+            self.num_classes,
+            dtype=torch.long,
+            device=outputs["class_logits"].device,
+        )
         quality_target = torch.zeros_like(outputs["quality"])
+        matched_query_mask = torch.zeros(
+            outputs["quality"].shape[:2],
+            dtype=torch.bool,
+            device=outputs["quality"].device,
+        )
         matched_predictions: Dict[str, List[torch.Tensor]] = {
             key: [] for key in outputs if key not in {"class_logits", "quality"}
         }
@@ -144,14 +183,18 @@ class H1SetCriterion(nn.Module):
             valid_targets = targets["object_mask"][batch_index]
             for local_index, query_index in enumerate(query_indices):
                 target_index = target_indices[local_index]
-                padded_index = torch.nonzero(valid_targets, as_tuple=False).flatten()[target_index]
+                padded_index = torch.nonzero(
+                    valid_targets, as_tuple=False
+                ).flatten()[target_index]
                 class_id = targets["class_ids"][batch_index, padded_index]
                 class_target[batch_index, query_index, class_id] = 1.0
+                class_indices[batch_index, query_index] = class_id
+                matched_query_mask[batch_index, query_index] = True
             target_boxes = targets["box2d"][batch_index, valid_targets][target_indices]
             predicted_boxes = outputs["box2d_cxcywh"][batch_index, query_indices]
-            pair_iou = generalized_box_iou(
+            pair_iou = box_iou(
                 box_cxcywh_to_xyxy(predicted_boxes), box_cxcywh_to_xyxy(target_boxes)
-            ).diag().clamp(0.0, 1.0)
+            ).diag()
             quality_target[batch_index, query_indices, 0] = pair_iou.detach().to(
                 dtype=quality_target.dtype
             )
@@ -162,24 +205,68 @@ class H1SetCriterion(nn.Module):
                     targets[key][batch_index, valid_targets][target_indices]
                 )
 
-        probability = outputs["class_logits"].sigmoid()
-        bce = F.binary_cross_entropy_with_logits(
-            outputs["class_logits"], class_target, reduction="none"
-        )
-        pt = probability * class_target + (1.0 - probability) * (1.0 - class_target)
-        alpha = self.focal_alpha * class_target + (1.0 - self.focal_alpha) * (1.0 - class_target)
         class_weights = self.class_weights.to(
             device=class_target.device, dtype=class_target.dtype
         )
-        class_balance = torch.where(
-            class_target > 0,
-            class_weights.view(1, 1, -1),
-            torch.ones_like(class_target),
-        )
-        cls_loss = (alpha * (1.0 - pt).pow(self.focal_gamma) * bce * class_balance).mean()
-        quality_loss = F.binary_cross_entropy_with_logits(outputs["quality"], quality_target)
+        if self.classification_mode == "implicit_background_softmax":
+            background_logits = torch.zeros_like(outputs["class_logits"][..., :1])
+            classification_logits = torch.cat(
+                (outputs["class_logits"], background_logits), dim=-1
+            )
+            ce_weights = torch.cat(
+                (
+                    class_weights,
+                    class_weights.new_tensor([self.no_object_weight]),
+                )
+            )
+            cls_loss = F.cross_entropy(
+                classification_logits.flatten(0, 1),
+                class_indices.flatten(),
+                weight=ce_weights,
+            )
+        else:
+            probability = outputs["class_logits"].sigmoid()
+            bce = F.binary_cross_entropy_with_logits(
+                outputs["class_logits"], class_target, reduction="none"
+            )
+            pt = probability * class_target + (1.0 - probability) * (1.0 - class_target)
+            alpha = self.focal_alpha * class_target + (
+                1.0 - self.focal_alpha
+            ) * (1.0 - class_target)
+            class_balance = torch.where(
+                class_target > 0,
+                class_weights.view(1, 1, -1),
+                torch.ones_like(class_target),
+            )
+            cls_loss = (
+                alpha * (1.0 - pt).pow(self.focal_gamma) * bce * class_balance
+            ).mean()
 
+        quality_logits = outputs["quality"].squeeze(-1)
+        quality_values = quality_target.squeeze(-1)
         zero = outputs["class_logits"].sum() * 0.0
+        matched_quality_loss = (
+            F.binary_cross_entropy_with_logits(
+                quality_logits[matched_query_mask],
+                quality_values[matched_query_mask],
+            )
+            if matched_query_mask.any()
+            else zero
+        )
+        unmatched_query_mask = ~matched_query_mask
+        unmatched_quality_loss = (
+            F.binary_cross_entropy_with_logits(
+                quality_logits[unmatched_query_mask],
+                quality_values[unmatched_query_mask],
+            )
+            if unmatched_query_mask.any()
+            else zero
+        )
+        quality_loss = (
+            matched_quality_loss
+            + self.quality_negative_weight * unmatched_quality_loss
+        )
+
         if not matched_targets["box2d"]:
             box_l1 = giou_loss = projected_loss = depth_loss = dim_loss = yaw_loss = loc_loss = zero
         else:
@@ -233,5 +320,7 @@ class H1SetCriterion(nn.Module):
             "loc_xy_loss": loc_loss,
             "projected_center_loss": projected_loss,
             "quality_loss": quality_loss,
+            "matched_quality_loss": matched_quality_loss,
+            "unmatched_quality_loss": unmatched_quality_loss,
             "corner3d_loss": zero,
         }

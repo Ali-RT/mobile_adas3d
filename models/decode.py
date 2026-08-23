@@ -610,6 +610,7 @@ def _decode_h1_outputs(
     nms_iou_threshold: float,
     P2: Optional[Any],
     quality_score_power: float,
+    classification_mode: str,
 ) -> List[List[Dict[str, Any]]]:
     logits = outputs["class_logits"]
     batch_predictions = []
@@ -621,7 +622,17 @@ def _decode_h1_outputs(
         classes, class_mean_dims, logits.device, logits.dtype
     )
     for batch_index in range(logits.shape[0]):
-        class_scores = logits[batch_index].sigmoid()
+        if classification_mode == "implicit_background_softmax":
+            background = torch.zeros_like(logits[batch_index, :, :1])
+            class_scores = torch.cat(
+                (logits[batch_index], background), dim=-1
+            ).softmax(dim=-1)[:, :len(classes)]
+        elif classification_mode == "focal_sigmoid":
+            class_scores = logits[batch_index].sigmoid()
+        else:
+            raise ValueError(
+                f"Unsupported H1 classification mode: {classification_mode}"
+            )
         quality = outputs["quality"][batch_index].sigmoid().clamp(min=1e-6)
         scores = class_scores * quality.pow(float(quality_score_power))
         query_scores, query_classes = scores.max(dim=-1)
@@ -708,6 +719,7 @@ def decode_mobile_adas3d_outputs(
     location_source: str = "loc_xy",
     score_mode: str = "class",
     quality_score_power: float = 1.0,
+    h1_classification_mode: str = "focal_sigmoid",
 ) -> List[List[Dict[str, Any]]]:
     """
     Decode MobileADAS3D raw output tensors into per-image prediction dictionaries.
@@ -747,6 +759,7 @@ def decode_mobile_adas3d_outputs(
             nms_iou_threshold=nms_iou_threshold,
             P2=P2,
             quality_score_power=quality_score_power,
+            classification_mode=h1_classification_mode,
         )
 
     required_keys = [

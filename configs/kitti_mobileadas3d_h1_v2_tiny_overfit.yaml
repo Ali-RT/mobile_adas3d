@@ -1,0 +1,49 @@
+base_config: kitti_mobileadas3d_h1_gt_gate.yaml
+
+dataset:
+  # The tiny split is derived from the already-audited Chen training split.
+  # It intentionally has different split hashes from the product manifest.
+  require_taxonomy_manifest: false
+
+logging:
+  run_name: "mobileadas3d_h1_v2_tiny16"
+
+training:
+  epochs: 100
+  batch_size: 4
+  gradient_accumulation_steps: 1
+  learning_rate: 0.0002
+  weight_decay: 0.00001
+  log_interval: 1
+  save_interval: 10
+
+validation:
+  batch_size: 4
+  interval_epochs: 5
+
+scheduler:
+  enabled: false
+
+loss:
+  type: h1_hungarian_set_v2
+  classification_mode: implicit_background_softmax
+  no_object_weight: 0.1
+  quality_negative_weight: 0.1
+  cls_weight: 5.0
+  quality_weight: 2.0
+
+inference:
+  score_threshold: 0.1
+  topk: 50
+  eval_topk: 50
+  nms_iou_threshold: 0.5
+  quality_score_power: 1.0
+
+outputs:
+  output_dir: ./outputs/mobileadas3d_h1_v2_tiny16
+  profile_output_dirs:
+    local_mac: ./outputs/mobileadas3d_h1_v2_tiny16
+    colab_drive: /content/drive/MyDrive/mobile_adas3d_outputs/mobileadas3d_h1_v2_tiny16
+
+distillation:
+  enabled: false

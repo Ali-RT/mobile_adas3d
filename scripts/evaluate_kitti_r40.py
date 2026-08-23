@@ -177,6 +177,9 @@ def main() -> None:
                 quality_score_power=float(
                     config.get("inference", {}).get("quality_score_power", 1.0)
                 ),
+                h1_classification_mode=config.get("loss", {}).get(
+                    "classification_mode", "focal_sigmoid"
+                ),
             )[0]
             sample_id = sample["sample_id"]
             predictions[sample_id] = [

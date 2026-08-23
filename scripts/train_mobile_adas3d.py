@@ -231,6 +231,13 @@ def build_criterion(config: Dict[str, Any]) -> torch.nn.Module:
             yaw_weight=loss_cfg.get("yaw_weight", 1.0),
             loc_xy_weight=loss_cfg.get("loc_xy_weight", 1.0),
             quality_weight=loss_cfg.get("quality_weight", 1.0),
+            classification_mode=loss_cfg.get(
+                "classification_mode", "focal_sigmoid"
+            ),
+            no_object_weight=loss_cfg.get("no_object_weight", 0.1),
+            quality_negative_weight=loss_cfg.get(
+                "quality_negative_weight", 0.1
+            ),
             focal_alpha=loss_cfg.get("focal_alpha", 0.25),
             focal_gamma=loss_cfg.get("focal_gamma", 2.0),
         )

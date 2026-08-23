@@ -15,6 +15,7 @@ from tools.config import load_config
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CONFIG = PROJECT_ROOT / "configs" / "kitti_mobileadas3d_h1_gt_gate.yaml"
+V2_CONFIG = PROJECT_ROOT / "configs" / "kitti_mobileadas3d_h1_v2_tiny_overfit.yaml"
 
 
 class H1SetTrainingTests(unittest.TestCase):
@@ -151,6 +152,46 @@ class H1SetTrainingTests(unittest.TestCase):
         self.assertEqual(config["training"]["epochs"], 20)
         self.assertIsInstance(build_criterion(config), H1SetCriterion)
 
+    def test_v2_uses_implicit_background_without_changing_head_shape(self):
+        config = load_config(str(V2_CONFIG))
+        criterion = build_criterion(config)
+        self.assertEqual(criterion.classification_mode, "implicit_background_softmax")
+        self.assertEqual(config["model"]["num_queries"], 50)
+        self.assertEqual(config["dataset"]["classes"], ["Vehicle", "Pedestrian"])
+        self.assertFalse(config["distillation"]["enabled"])
+
+    def test_v2_penalizes_positive_logits_for_unmatched_queries(self):
+        def outputs(class_value):
+            return {
+                "class_logits": torch.full((1, 2, 2), class_value, requires_grad=True),
+                "box2d_cxcywh": torch.rand(1, 2, 4, requires_grad=True),
+                "projected_center": torch.rand(1, 2, 2, requires_grad=True),
+                "depth_logits": torch.randn(1, 2, 40, requires_grad=True),
+                "depth_residual": torch.randn(1, 2, 1, requires_grad=True),
+                "dimensions": torch.randn(1, 2, 3, requires_grad=True),
+                "yaw": torch.randn(1, 2, 2, requires_grad=True),
+                "location_xy": torch.randn(1, 2, 2, requires_grad=True),
+                "quality": torch.full((1, 2, 1), -4.0, requires_grad=True),
+            }
+        targets = {
+            "object_mask": torch.tensor([[False]]),
+            "class_ids": torch.zeros(1, 1, dtype=torch.long),
+            "box2d": torch.zeros(1, 1, 4),
+            "projected_center": torch.zeros(1, 1, 2),
+            "projected_center_valid": torch.tensor([[False]]),
+            "depth_bin": torch.zeros(1, 1, dtype=torch.long),
+            "depth_residual": torch.zeros(1, 1),
+            "dimensions": torch.zeros(1, 1, 3),
+            "yaw": torch.zeros(1, 1, 2),
+            "location_xy": torch.zeros(1, 1, 2),
+        }
+        criterion = H1SetCriterion(
+            2, [1.0, 2.5], classification_mode="implicit_background_softmax"
+        )
+        high = criterion(outputs(4.0), targets)["cls_loss"]
+        low = criterion(outputs(-4.0), targets)["cls_loss"]
+        self.assertGreater(float(high.detach()), float(low.detach()) + 3.0)
+
     def test_query_decoder_emits_kitti_geometry(self):
         outputs = {
             "class_logits": torch.tensor([[[8.0, -8.0]]]),
@@ -179,6 +220,31 @@ class H1SetTrainingTests(unittest.TestCase):
         self.assertAlmostEqual(decoded[0]["bbox_2d"][0], 512.0, places=3)
         self.assertGreater(decoded[0]["depth"], 1.0)
         self.assertEqual(decoded[0]["dimensions_3d_hwl"], [1.600000023841858, 1.7000000476837158, 4.199999809265137])
+
+    def test_v2_decoder_suppresses_implicit_background(self):
+        outputs = {
+            "class_logits": torch.tensor([[[-8.0, -8.0], [8.0, -8.0]]]),
+            "box2d_cxcywh": torch.tensor([[[0.2, 0.2, 0.1, 0.1], [0.5, 0.5, 0.2, 0.2]]]),
+            "projected_center": torch.tensor([[[0.2, 0.2], [0.5, 0.5]]]),
+            "depth_logits": torch.zeros(1, 2, 40),
+            "depth_residual": torch.zeros(1, 2, 1),
+            "dimensions": torch.zeros(1, 2, 3),
+            "yaw": torch.tensor([[[0.0, 1.0], [0.0, 1.0]]]),
+            "location_xy": torch.zeros(1, 2, 2),
+            "quality": torch.full((1, 2, 1), 8.0),
+        }
+        decoded = decode_mobile_adas3d_outputs(
+            outputs=outputs,
+            classes=["Vehicle", "Pedestrian"],
+            class_mean_dims={"Vehicle": [1.6, 1.7, 4.2], "Pedestrian": [1.7, 0.6, 0.8]},
+            input_height=384,
+            input_width=1280,
+            score_threshold=0.1,
+            topk=2,
+            h1_classification_mode="implicit_background_softmax",
+        )[0]
+        self.assertEqual(len(decoded), 1)
+        self.assertEqual(decoded[0]["query_id"], 1)
 
 
 if __name__ == "__main__":

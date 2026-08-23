@@ -175,9 +175,9 @@ The physical iPhone gate also passed on an iPhone 16 Pro Max using
 is well below the frozen `35 ms` ceiling. Durable evidence is stored in
 `artifacts/h1_edge_preflight_20260821.json`.
 
-H1 is now authorized to proceed to a fresh GT-only 20-epoch health-gate
-notebook. Distillation remains disabled, and trained weights must later repeat
-Core ML parity and physical-device qualification.
+The first GT-only 20-epoch H1 run passed runtime stability but failed learning
+quality with 0.00 AP_R40 and excessive background proposals. Distillation
+remains disabled, and those weights are not eligible for export.
 
 The supervised gate uses one-to-one Hungarian assignment between 50 queries
 and valid KITTI objects. Matching costs combine class probability, normalized
@@ -185,19 +185,29 @@ and valid KITTI objects. Matching costs combine class probability, normalized
 sigmoid focal classification, box L1/GIoU, projected center, 40-bin log-depth
 classification plus residual, log-dimension residual, continuous yaw cosine,
 X/Z and Y/Z location ratios, and localization quality. Unmatched queries are
-negative classification/quality targets. The query decoder reconstructs KITTI
-boxes and camera-frame 3D geometry for the frozen product AP_R40 evaluator.
+negative classification/quality targets. This v1 objective is retired.
+
+H1-v2 does not change the model or exported output shapes. It appends a fixed
+zero no-object logit only inside the loss and decoder, giving the existing two
+class logits DETR-style softmax background supervision. Quality targets use
+ordinary matched 2D IoU, with matched and unmatched quality losses normalized
+separately and the unmatched term explicitly down-weighted. The query decoder
+reconstructs KITTI boxes and camera-frame 3D geometry for the frozen product
+AP_R40 evaluator.
 
 ## Training order
 
 1. Implement and unit-test the fixed-shape random graph.
 2. Convert to Core ML and pass local raw-output parity.
 3. Run the physical-iPhone random graph gate.
-4. Prepare a fresh GT-only 20-epoch health gate with Hungarian matching.
-5. Review complete Vehicle/Pedestrian AP_R40 and geometry diagnostics.
-6. Continue GT-only training only if both classes learn and AP is materially
+4. Run a 16-image H1-v2 memorization gate with Hungarian matching.
+5. Require matched-score median >=0.50, unmatched-score p95 <=0.10, matched
+   2D IoU mean >=0.70, and mean predicted-count error <=1 object/image.
+6. Prepare a fresh full GT-only run only if the tiny gate passes.
+7. Review complete Vehicle/Pedestrian AP_R40 and geometry diagnostics.
+8. Continue GT-only training only if both classes learn and AP is materially
    above the S1 baseline.
-7. Freeze the GT-only checkpoint and then run one paired R0-distillation
+9. Freeze the GT-only checkpoint and then run one paired R0-distillation
    experiment from the identical initialization.
 
 The frozen product gates, data splits, class mapping, external nuScenes test,
