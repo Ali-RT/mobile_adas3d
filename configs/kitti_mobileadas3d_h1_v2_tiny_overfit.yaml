@@ -26,7 +26,9 @@ training:
 
 validation:
   batch_size: 4
-  interval_epochs: 5
+  # val_total_loss selects the best checkpoint, so it must exist every epoch.
+  # The identical tiny validation split is only four batches.
+  interval_epochs: 1
 
 scheduler:
   enabled: false
