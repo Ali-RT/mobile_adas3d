@@ -1,0 +1,16 @@
+base_config: kitti_mobileadas3d_h1_v2_tiny_overfit.yaml
+
+logging:
+  run_name: "mobileadas3d_h1_v2_tiny16_2000step"
+
+training:
+  # 16 samples / batch 4 = 4 optimizer steps per epoch; 500 epochs = 2,000.
+  epochs: 500
+  save_interval: 100
+
+outputs:
+  output_dir: ./outputs/mobileadas3d_h1_v2_tiny16_2000step
+  profile_output_dirs:
+    local_mac: ./outputs/mobileadas3d_h1_v2_tiny16_2000step
+    colab_drive: /content/drive/MyDrive/mobile_adas3d_outputs/mobileadas3d_h1_v2_tiny16_2000step
+

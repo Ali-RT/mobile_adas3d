@@ -2046,3 +2046,19 @@ Tiny16 run extended to 2,000 optimizer steps, with diagnostics at steps
 400/800/1200/1600/2000. Keep the model, loss, matcher, data, and thresholds
 fixed, and do not initialize from the one-image memorization checkpoint. Full
 KITTI training and distillation remain unauthorized until that gate passes.
+
+#### 2026-08-24 H1-v2 Tiny16 2,000-step gate prepared
+
+Run `notebooks/MobileADAS3D_H1_V2_Tiny_2000Step_Colab.ipynb` top-to-bottom on
+a Colab GPU. It reproduces the exact prior Tiny16 split and inherits the same
+H1-v2 graph, Hungarian matcher, loss weights, learning rate, batch size, and
+inference thresholds. The only experimental change is training duration: 500
+four-batch epochs equal exactly 2,000 optimizer steps.
+
+The run uses a new Google Drive output directory so it cannot accidentally
+resume the failed 400-step run or the single-image checkpoint. It saves atomic
+epoch checkpoints and durable logs, automatically resumes only its own run,
+and preserves milestone checkpoints at steps 400/800/1200/1600/2000. The final
+cell applies the unchanged query confidence, background, IoU, and count gates
+to every milestone and writes `h1_v2_tiny_2000step_diagnostics.json`. Return
+that file before authorizing full KITTI training or distillation.
