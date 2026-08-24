@@ -16,9 +16,9 @@ generalization testing, and complete recording/export artifacts.
 ## Current position
 
 - Current phase: **MobileADAS3D-H1 v2 Tiny16 failure diagnosis**
-- Active task: measure query-assignment stability across the five saved
-  milestones and compare Tiny16 inference in eval mode against frozen/train
-  BatchNorm behavior before changing the loss or graph.
+- Active task: run
+  `notebooks/MobileADAS3D_H1_V2_Assignment_Normalization_Diagnostic_Colab.ipynb`
+  top-to-bottom and return `h1_v2_assignment_normalization_diagnostic.json`.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Deployment candidate: **MobileADAS3D-H1 teacher-shaped hybrid student**
 - Knowledge distillation: **not active yet**; it follows the GT-only H1
@@ -58,7 +58,7 @@ generalization testing, and complete recording/export artifacts.
 | M24 | H1 v2 tiny-overfit workflow | Failed—partial separation only | The 16-image/400-step run completed. Matched score median was 0.172, unmatched p95 0.188, matched mean 2D IoU 0.258, and predictions averaged 15.63/image versus 3.94 GT. All four gates failed. Do not run full KITTI or distillation. |
 | M25 | H1 v2 single-image capacity workflow | Complete—passed | Sample 000010 memorized all 9 objects: matched-score median 0.732, unmatched p95 <0.000001, matched mean 2D IoU 0.825, and predicted/GT count 9/9. Cross-image sensitivity also passed with zero repeat delta and substantial changes in every output head. See `artifacts/h1_v2_single_image_gate_20260824.json`. |
 | M26 | H1 v2 staged Tiny16 optimization gate | Complete—failed | No milestone passed. From steps 400→2000, matched-score median changed 0.172→0.261, unmatched p95 worsened 0.188→0.367, mean IoU improved 0.258→0.425, and predictions/image changed 15.63→14.06 versus 3.94 GT. Step 1600 was the best compromise but still failed every gate. See `artifacts/h1_v2_tiny_2000step_gate_20260824.json`. |
-| M27 | H1 v2 assignment and normalization diagnosis | Next | Use the saved step 400/800/1200/1600/2000 checkpoints to quantify GT-to-query assignment churn, per-object localization, and eval/train/frozen-BatchNorm deltas. Do not train another model until this separates matching instability from normalization/evaluation mismatch. |
+| M27 | H1 v2 assignment and normalization diagnosis | Ready to run | Read-only Colab workflow uses steps 400/800/1200/1600/2000 to quantify GT-to-query assignment churn, per-object IoU progression, and eval-mode versus batch-statistics behavior. Do not train another model until this separates matching instability from normalization mismatch. |
 
 ## Frozen R0 reference
 

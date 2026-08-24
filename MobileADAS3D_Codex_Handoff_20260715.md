@@ -2083,3 +2083,20 @@ localization across milestones. Also compare eval-mode outputs with controlled
 BatchNorm behavior on the identical Tiny16 data. This will distinguish unstable
 Hungarian ownership from small-batch running-statistics mismatch and prevents
 combining multiple speculative changes in the next experiment.
+
+#### 2026-08-24 H1-v2 assignment/normalization diagnostic prepared
+
+Run
+`notebooks/MobileADAS3D_H1_V2_Assignment_Normalization_Diagnostic_Colab.ipynb`
+top-to-bottom on a Colab GPU. It performs no training and requires the one
+completed Tiny16 2,000-step run with milestone checkpoints at epochs
+100/200/300/400/500.
+
+For every milestone, the diagnostic computes matched/unmatched score
+distributions, matched 2D IoU, and prediction-count error in normal eval mode
+and with BatchNorm layers using current batch statistics. In eval mode it also
+records the Hungarian query owner and IoU for every one of the 63 Tiny16
+objects, then reports adjacent query retention, fully stable object rate, and
+unique queries used per object across milestones. The durable output is
+`h1_v2_assignment_normalization_diagnostic.json`. Return that file before any
+new training, loss changes, graph changes, full KITTI run, or distillation.
