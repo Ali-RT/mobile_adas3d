@@ -1,6 +1,6 @@
 # MobileADAS3D model milestones and architecture
 
-Last updated: 2026-08-19
+Last updated: 2026-08-24
 
 This document is the concise reporting reference for model selection,
 teacher/student status, metrics, edge constraints, completed evidence, and the
@@ -10,10 +10,10 @@ next experiment. The canonical execution status remains in `PROJECT_TRACKER.md`.
 
 1. Detect and reconstruct road objects from one RGB camera image, including 2D
    box, 3D position, depth, dimensions, orientation, and confidence.
-2. Deploy the selected model through Core ML for stable real-time inference on
-   iPhone without blocking the camera pipeline.
-3. Retain a useful fraction of the high-accuracy teacher and validate the frozen
-   model outside KITTI before deployment approval.
+2. First train a teacher-compatible student to at least 90% of the frozen R0
+   metrics, without rejecting it for current iPhone limits.
+3. Validate the frozen accurate model outside KITTI, then compress and qualify
+   the selected descendant for a deployment target.
 
 The frozen production classes are:
 
@@ -30,9 +30,9 @@ Cyclist, Misc, and DontCare are excluded from the first product model.
 | Published MonoDETR feasibility | Published ResNet50 checkpoint reproduced on all 3,769 Chen-validation images; Car moderate 2D/BEV/3D AP_R40 was about 88.10/27.1/20.35 | Accept MonoDETR as the accuracy source and teacher family |
 | Two-class R0 teacher training | Fine-tuned original ResNet50 MonoDETR for Vehicle/Pedestrian through 195 epochs | Teacher/reference available; not an iPhone candidate |
 | R0 checkpoint sweep | Evaluated 39 checkpoints; selected epoch 185 using balanced Vehicle/Pedestrian moderate 3D AP_R40 | Freeze epoch 185 and its SHA-256 as the denominator |
-| MonoDETR MobileNetV4 backbone ablation | Reduced backbone cost but lost too much accuracy | Do not use as the high-accuracy reference |
-| Full transformer Core ML gate | Graph conversion was possible after compatibility work, but full-model iPhone latency was unacceptable | Do not deploy full MonoDETR on iPhone |
-| MobileADAS3D-S1 graph gate | Core-ML-native MobileNetV4 student was very small and fast on physical iPhone | Keep the convolutional student direction |
+| MonoDETR MobileNetV4 backbone ablation | Car-only epoch 40 reached moderate 3D AP_R40 14.065, retaining 69.2% of the ResNet50 teacher | Use as evidence for a fresh two-class teacher-compatible baseline, not as a product checkpoint |
+| Full transformer Core ML gate | Graph conversion was possible after compatibility work, but full-model iPhone latency was unacceptable | Preserve evidence; suspend this rejection criterion during accuracy development |
+| MobileADAS3D-S1/H1/H2 | Edge-efficient graphs, but supervised learning gates failed | Freeze as negative experiments; do not resume |
 | S1 GT-only 20-epoch gate | Training was stable, but Vehicle/Pedestrian moderate 3D AP_R40 was only 0.024/0.519 | Reject continuation to 100 epochs |
 | S1 checkpoint and geometry diagnosis | Epoch 20 was best; 12,105 Vehicle detections matched at mean 2D IoU 0.675, but yaw/shape/placement were poor | 2D detection is not the first failure |
 | S1 yaw diagnosis | Vehicle axis error was good at 9.63 degrees mean, but final yaw was 72.28 degrees with a 35.8% flip-candidate rate | Reject independent axis plus hard direction-bit yaw |
@@ -77,11 +77,13 @@ minimum 3D or BEV intersection-over-union, samples the curve at 40 recall
 positions, and reports its average area. Vehicle uses a strict 0.70 3D/BEV IoU
 threshold and Pedestrian uses 0.50 in the product protocol.
 
-The initial student-retention gates are 75% of the frozen R0 moderate 3D AP:
+The accuracy-first student gates are 90% of the frozen R0 moderate metrics:
 
-- Vehicle moderate 3D AP_R40 >= **13.2261**.
-- Pedestrian moderate 3D AP_R40 >= **4.2910**.
-- Vehicle moderate BEV AP_R40 >= **20.0**.
+- Vehicle moderate 3D AP_R40 >= **15.8713**.
+- Pedestrian moderate 3D AP_R40 >= **5.1493**.
+- Balanced moderate 3D mean >= **10.5103**.
+- Vehicle moderate BEV AP_R40 >= **21.3134**.
+- Pedestrian moderate BEV AP_R40 >= **5.9365**.
 - Complete evaluation of all **3,769** validation images.
 
 The exact 2D product AP of R0 epoch 185 is not in the frozen sweep summary.
@@ -89,46 +91,23 @@ The often-quoted 88.10 moderate 2D AP belongs to the reproduced published Car
 checkpoint. Measuring epoch-185 product 2D AP requires an evaluator extension,
 but no retraining.
 
-## Student architecture
+## Accuracy-first student architecture
 
-The deployment candidate is MobileADAS3D-S1, a fixed-shape convolutional model:
+The active A1 candidate preserves MonoDETR and replaces only its backbone:
 
 ```text
 RGB image [1, 3, 384, 1280]
   -> MobileNetV4 Conv Small backbone
-  -> stride-8, stride-16, and stride-32 features
-  -> lightweight top-down feature pyramid
-  -> shared stride-8 prediction feature [1, 96, 48, 160]
-  -> independent 1x1 dense prediction heads
+  -> MonoDETR multi-scale projections and LID depth predictor
+  -> three-layer depth-aware deformable encoder
+  -> three-layer, 50-query decoder
+  -> two-class MonoDETR prediction heads
 ```
 
-The corrected S1 learned heads are:
-
-| Head | Channels | Purpose |
-| --- | ---: | --- |
-| `cls_logits` | 2 | Vehicle and Pedestrian confidence |
-| `quality` | 1 | localization-quality ranking |
-| `box2d` | 4 | 2D left/top/right/bottom distances |
-| `center_offset` | 2 | 2D box-center offset from the owned cell |
-| `projected_center_offset` | 2 | projected 3D bottom-center offset |
-| `log_depth` | 1 | camera-space depth |
-| `depth_uncertainty` | 1 | depth uncertainty |
-| `dim` | 3 | 3D dimension residuals |
-| `yaw_axis` | 2 | 180-degree-invariant orientation axis |
-| `yaw_direction` | 1 | front/back direction decision |
-| `loc_xy` | 2 | auxiliary X/Z and Y/Z location ratios |
-
-The first S1 version implemented yaw as a double-angle axis plus a separate
-front/back direction bit. Its axis was learned, but the discontinuous direction
-decision caused frequent 180-degree flips. S1-V2 now replaces only this yaw
-representation with continuous `[sin(yaw), cos(yaw)]` regression and decoder
-normalization; its dedicated
-config and resumable 20-epoch Colab workflow are ready to run.
-
-Dynamic TopK, calibration back-projection, non-maximum suppression, tracking,
-and artifact writing remain outside the neural network. The graph intentionally
-avoids deformable attention, custom Core ML operators, recurrent state, and
-dynamic tensor shapes.
+Resolution, product taxonomy, transformer, query count, heads, decoding, and
+evaluation remain aligned with frozen R0. Compatible R0 epoch-185 tensors are
+transferred; only the new backbone/projection interface requires its defined
+pretrained/new initialization. See `ACCURACY_FIRST_STUDENT_CONTRACT.md`.
 
 ## Core ML and physical-iPhone evidence
 
@@ -169,38 +148,28 @@ preprocessing removed the original 540-570 ms bottleneck and measured around
 - **Retired student S1:** MobileNetV4 + Lite-FPN + dense stride-8 heads. It is
   exceptionally fast but failed Vehicle/Pedestrian 3D AP in every supervised
   variant. The optional checkpoint sweep was waived by the decision to move on.
-- **Active student H1:** MobileNetV4 + 128-channel Lite-FPN + 40-bin depth
-  context + two-layer standard stride-32 encoder + two-layer 50-query decoder,
-  width 192. It restores teacher-shaped reasoning without deformable attention.
+- **Retired students H1/H2:** fast MobileNetV4 hybrid query graphs; frozen after
+  supervised capacity/assignment/localization gates failed.
+- **Active student A1:** MobileNetV4 Conv Small backbone inside the otherwise
+  preserved two-class MonoDETR architecture.
 - **Qualified student weights:** none yet.
-- **Distillation:** disabled until a healthy GT-only H1 baseline is frozen.
+- **Distillation:** disabled until the GT-only A1 baseline is frozen; the old
+  Car-only cache is not valid for the two-class run.
 
-The complete side-by-side structure, tensor widths, output contract, transfer
-map, exclusions, and gates are frozen in
-`HYBRID_STUDENT_ARCHITECTURE_CONTRACT.md`.
+The active architecture and experiment gates are frozen in
+`ACCURACY_FIRST_STUDENT_CONTRACT.md`; the older S1/H1/H2 contracts remain as
+historical, reproducible evidence.
 
 ## Next step
 
-The H1 random graph is now implemented and passes forward/backward, shape,
-trace, parameter, compute, package-size, and supported-operator checks. It has
-3.619M parameters, costs 4.907 GMAC, and produces a 10.35 MB FP16 package with
-no custom Core ML operation. Neutral query-head initialization (weight standard
-deviation 0.001, zero bias) prevents an untrained head from amplifying random
-FP16 feature noise. The required all-FP16 conversion now matches PyTorch within
-0.001941 and passes the frozen 0.002 parity gate. This does not waive parity
-testing for future trained weights.
+Prepare the fresh two-class A1 GT-only Colab workflow. It must reuse the pinned
+MonoDETR source, frozen R0 epoch-185 provenance, Chen splits, product taxonomy,
+resolution, transformer, decoder, and evaluator while replacing only ResNet50
+with MobileNetV4 Conv Small. It must save durable Google Drive checkpoints,
+stream batch/epoch losses, resume only the exact run, and sweep the completed
+checkpoints over all 3,769 validation images.
 
-The physical gate is now complete. On iPhone 16 Pro Max with CPU+Neural Engine,
-5 warmups and 100 timed predictions measured mean `5.042 ms`, median
-`4.924 ms`, p95 `5.804 ms`, and maximum `7.137 ms`; the p95 gate is `35 ms`.
-
-The fresh, resumable, Drive-backed GT-only H1 20-epoch health-gate notebook is
-ready. It trains with query-native KITTI targets and Hungarian set assignment,
-saves every epoch and visible logs to Drive, automatically resumes `latest.pt`,
-and ends with the complete 3,769-image Vehicle/Pedestrian product AP_R40
-evaluation. Distillation remains disabled until that supervised baseline is
-healthy, fully evaluated, selected, and frozen.
-
-If H1 misses the edge gate, reduce transformer width from 192 to 128 as the
-single controlled fallback. Do not reduce resolution, remove stride-8 memory,
-or start training before that decision.
+Do not add distillation to this baseline. After its initialization and result
+are frozen, create a paired two-class teacher experiment. Only after a student
+passes the five 90%-of-R0 gates and nearby-recall review should compression or
+deployment qualification begin.

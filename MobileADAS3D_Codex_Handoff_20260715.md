@@ -2179,3 +2179,23 @@ GT and predicted box/projected centers, whether each target is representable
 within the ±`0.10` bounds, boundary saturation, size error, and IoU. Use that
 evidence to choose between changing the offset scale, anchoring only box
 centers, or revising the reference layout.
+
+#### 2026-08-24 accuracy-first strategy pivot
+
+The iPhone constraint is suspended during model development. S1, H1, and H2
+are frozen as reproducible negative experiments: they demonstrated excellent
+edge speed, but not adequate supervised two-class learning. The planned H2
+reachability diagnostic and Tiny16 continuation are cancelled.
+
+The active candidate is now MobileMonoDETR-Student-A1: the proven two-class
+MonoDETR pipeline with only ResNet50 replaced by MobileNetV4 Conv Small. The
+first run is GT-only; a paired distilled run may follow only from the identical
+initialization and schedule. The existing Car-only teacher cache is not valid
+for this two-class experiment.
+
+Comparable performance is locked at 90% of frozen R0 epoch 185 for all five
+moderate metrics: Vehicle/Pedestrian 3D AP_R40 `15.8713/5.1493`, balanced 3D
+mean `10.5103`, and Vehicle/Pedestrian BEV AP_R40 `21.3134/5.9365`. After an
+accurate student is frozen, compression proceeds one controlled variable at a
+time before Core ML and physical-device qualification are restored. See
+`ACCURACY_FIRST_STUDENT_CONTRACT.md` and `PROJECT_TRACKER.md`.

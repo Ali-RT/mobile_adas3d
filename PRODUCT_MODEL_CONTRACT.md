@@ -1,7 +1,8 @@
 # MobileADAS3D product model contract
 
-Status: S1 device, taxonomy, and two-class reference protocols locked
+Status: accuracy-first amendment active; taxonomy and reference locked
 Decision date: 2026-08-11
+Accuracy-first amendment: 2026-08-24
 
 ## 1. Product objective and priority order
 
@@ -15,13 +16,13 @@ The priorities are ordered and must not be traded silently:
    especially in the near field. A missed nearby object is the primary failure.
 2. **Distance and position.** Estimate longitudinal range and lateral position;
    minimize dangerous overestimation of distance.
-3. **Edge reliability and latency.** Run continuously on the iPhone without
-   blocking the camera queue, freezing, overheating prematurely, or exceeding
-   the latency budget.
-4. **2D and 3D localization.** Produce stable 2D boxes, camera-space centers,
+3. **2D and 3D localization.** Produce stable 2D boxes, camera-space centers,
    BEV boxes, and 3D boxes.
-5. **Dimensions and orientation.** Estimate physical dimensions and yaw. These
+4. **Dimensions and orientation.** Estimate physical dimensions and yaw. These
    are retained, but cannot take priority over detection, distance, or runtime.
+5. **Deployment efficiency after accuracy.** Once an accuracy-qualified model
+   is frozen, compress and qualify it for the chosen hardware without silently
+   changing the accuracy denominator.
 
 This is a perception and warning component, not a safety-certified autonomous
 driving controller.
@@ -131,11 +132,12 @@ The dense production candidate **MobileADAS3D-S1** passed its speed gate but
 failed all supervised product-accuracy experiments. It is retired and retained
 only as a speed baseline in `STUDENT_ARCHITECTURE_CONTRACT.md`.
 
-The active candidate is **MobileADAS3D-H1**, defined in
-`HYBRID_STUDENT_ARCHITECTURE_CONTRACT.md`. H1 retains MobileNetV4 and fixed
-Core ML shapes but restores a small standard depth-aware encoder and 50-query
-decoder. It contains no deformable attention or custom operation. H1 must pass
-the complete random-graph Core ML and physical-iPhone gates before training.
+H1 and H2 are now frozen negative experiments: their random graphs were fast,
+but their supervised learning gates failed. The active accuracy candidate is
+**MobileMonoDETR-Student-A1**, defined in
+`ACCURACY_FIRST_STUDENT_CONTRACT.md`. It retains the proven MonoDETR pipeline
+and changes only the ResNet50 backbone to MobileNetV4 Conv Small. Edge limits
+are deferred until the candidate first demonstrates comparable accuracy.
 
 ## 5. Metrics and acceptance gates
 
@@ -147,19 +149,19 @@ Always include sample counts and confidence intervals where practical.
 Report official 2D, BEV, and 3D AP_R40 for easy/moderate/hard. The primary
 checkpoint-selection metric is moderate 3D AP_R40, not validation loss.
 
-Initial product gate:
+Accuracy-first comparable-performance gate:
 
-- each production class retains at least 75% of its same-protocol ResNet50
+- each production class retains at least 90% of its same-protocol ResNet50
   MonoDETR teacher moderate 3D AP_R40;
-- Vehicle moderate BEV AP_R40 >= 20;
+- Vehicle/Pedestrian moderate 3D AP_R40 >= 15.8713/5.1493;
+- Vehicle/Pedestrian moderate BEV AP_R40 >= 21.3134/5.9365;
+- balanced moderate 3D mean >= 10.5103;
 - no checkpoint is selected from KITTI loss alone;
 - all 3,769 Chen-val prediction files must exist.
 
-The current Car-only epoch-40 model retains 69.2%, so it has not passed the
-75% production-accuracy gate. Before applying the per-class retention rule, run
-one frozen-protocol ResNet50 Vehicle + Pedestrian reference training/evaluation;
-the validated published checkpoint is Car-only and cannot supply a legitimate
-Pedestrian denominator.
+The current Car-only epoch-40 model retained 69.2%, so it is evidence for the
+architecture direction but not a two-class candidate. The required two-class
+denominators are already frozen from R0 epoch 185.
 
 ### B. External zero-shot gate
 
@@ -228,16 +230,20 @@ velocity fields.
    `TWO_CLASS_REFERENCE_PROTOCOL.md`. The completed 39-checkpoint sweep selected
    epoch 185 (SHA-256 `fc0eba200e44b88921af76b0a5c94279872fd5c4838ab4d8936838447debfa59`)
    with Vehicle/Pedestrian moderate 3D AP_R40 17.6348/5.7214.
-9. **In progress:** train a fresh Vehicle + Pedestrian S1 student. The
-   fail-closed GT-only notebook/config is prepared; run and review the
-   20-epoch health gate before continuing to epochs 40, 50, 75, and 100.
-10. Select the checkpoint using per-class moderate 3D AP plus the nearby recall
-   gate, not a single aggregate loss.
-11. Freeze the checkpoint and all inference parameters.
-12. Validate the nuScenes adapter on mini, then run the locked zero-shot test.
-13. Export the trained checkpoint to Core ML, verify parity, and run physical-iPhone benchmarks.
-14. Approve deployment only if model quality, external generalization, parity,
-   and edge-runtime gates all pass.
+9. **Completed 2026-08-24:** retire S1/H1/H2 after their supervised learning
+   gates failed despite favorable edge measurements.
+10. Prepare and train the GT-only two-class MobileNetV4-MonoDETR A1 baseline,
+    changing only the R0 backbone and preserving exact-run resume/provenance.
+11. Select using all five 90%-of-R0 moderate gates plus nearby recall, not a
+    single aggregate loss, and freeze the baseline result.
+12. Build a valid two-class teacher cache/path and run one paired distilled A1
+    experiment from identical initialization. The Car-only cache is invalid.
+13. Freeze an accuracy-qualified student, validate externally, and compress one
+    controlled variable at a time.
+14. Select the deployment target, export the compressed candidate, verify
+    parity, and run its physical-device runtime/stability gates.
+15. Approve deployment only if model quality, external generalization, parity,
+    and target-runtime gates all pass.
 
 Any architecture, taxonomy, dataset-role, or threshold change requires a new
 version of this contract and a new evaluation manifest.
