@@ -15,10 +15,10 @@ generalization testing, and complete recording/export artifacts.
 
 ## Current position
 
-- Current phase: **MobileADAS3D-H1 v2 Tiny16 failure diagnosis**
-- Active task: run
-  `notebooks/MobileADAS3D_H1_V2_Assignment_Normalization_Diagnostic_Colab.ipynb`
-  top-to-bottom and return `h1_v2_assignment_normalization_diagnostic.json`.
+- Current phase: **MobileADAS3D-H2 spatial-reference query design**
+- Active task: freeze a minimal H2 contract that preserves MobileNetV4 and the
+  nine exported output shapes while giving each query a fixed 2D reference
+  point and predicting box/projected-center offsets from that reference.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Deployment candidate: **MobileADAS3D-H1 teacher-shaped hybrid student**
 - Knowledge distillation: **not active yet**; it follows the GT-only H1
@@ -58,7 +58,8 @@ generalization testing, and complete recording/export artifacts.
 | M24 | H1 v2 tiny-overfit workflow | Failed—partial separation only | The 16-image/400-step run completed. Matched score median was 0.172, unmatched p95 0.188, matched mean 2D IoU 0.258, and predictions averaged 15.63/image versus 3.94 GT. All four gates failed. Do not run full KITTI or distillation. |
 | M25 | H1 v2 single-image capacity workflow | Complete—passed | Sample 000010 memorized all 9 objects: matched-score median 0.732, unmatched p95 <0.000001, matched mean 2D IoU 0.825, and predicted/GT count 9/9. Cross-image sensitivity also passed with zero repeat delta and substantial changes in every output head. See `artifacts/h1_v2_single_image_gate_20260824.json`. |
 | M26 | H1 v2 staged Tiny16 optimization gate | Complete—failed | No milestone passed. From steps 400→2000, matched-score median changed 0.172→0.261, unmatched p95 worsened 0.188→0.367, mean IoU improved 0.258→0.425, and predictions/image changed 15.63→14.06 versus 3.94 GT. Step 1600 was the best compromise but still failed every gate. See `artifacts/h1_v2_tiny_2000step_gate_20260824.json`. |
-| M27 | H1 v2 assignment and normalization diagnosis | Ready to run | Read-only Colab workflow uses steps 400/800/1200/1600/2000 to quantify GT-to-query assignment churn, per-object IoU progression, and eval-mode versus batch-statistics behavior. Do not train another model until this separates matching instability from normalization mismatch. |
+| M27 | H1 v2 assignment and normalization diagnosis | Complete—matching instability isolated | Batch-statistics inference produced only small mixed changes, ruling out BatchNorm as the primary cause. Adjacent same-query rate was 7.14%, fully stable object rate 0%, and objects used 4.44 unique queries across five checkpoints on average. See `artifacts/h1_v2_assignment_normalization_20260824.json`. |
+| M28 | H2 spatial-reference query contract and tiny gate | Next | Preserve MobileNetV4, transformer dimensions, 50 queries, and nine output shapes. Add fixed 2D reference points and bounded center offsets so queries begin spatially distinct; then repeat single-image and Tiny16 gates before any edge requalification or full training. |
 
 ## Frozen R0 reference
 
@@ -146,6 +147,12 @@ passing these three AP values alone does not authorize deployment.
    false-positive count, and the background tail degraded after step 800.
 20. **Next diagnostic:** quantify assignment churn and BatchNorm mode effects
    on the saved checkpoints before selecting a loss-only or graph revision.
+21. **Completed:** BatchNorm was not the primary failure. Query assignment was
+   highly unstable: `7.14%` adjacent retention, `0%` fully stable objects, and
+   `4.44` unique query owners/object across five checkpoints.
+22. **Next:** define H2 fixed spatial-reference queries with bounded center
+   offsets. Change no backbone, transformer width/depth, query count, taxonomy,
+   or exported tensor shapes. Re-run capacity gates before Core ML work.
 
 ## Decision rules
 

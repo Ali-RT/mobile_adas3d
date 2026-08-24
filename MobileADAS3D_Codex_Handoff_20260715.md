@@ -2100,3 +2100,27 @@ objects, then reports adjacent query retention, fully stable object rate, and
 unique queries used per object across milestones. The durable output is
 `h1_v2_assignment_normalization_diagnostic.json`. Return that file before any
 new training, loss changes, graph changes, full KITTI run, or distillation.
+
+#### 2026-08-24 H1-v2 assignment/normalization diagnosis completed
+
+BatchNorm running statistics are not the primary failure. Across steps
+400/800/1200/1600/2000, switching 52 BatchNorm layers to current batch
+statistics produced only small, mixed changes. At step 1600, for example,
+eval/batch-stat matched-score median was `0.287/0.275`, unmatched p95 was
+`0.291/0.258`, mean IoU was `0.397/0.372`, and count error was `6.31/5.81`.
+Neither mode approached the gates.
+
+Hungarian ownership was extremely unstable. Only `7.14%` of adjacent
+checkpoint assignments retained the same query, no object kept one query
+through all five checkpoints, and the 63 objects used `4.44` unique query IDs
+on average (median and p95 both `5`). Query permutation across widely separated
+checkpoints is not independently an error, but combined with weak IoU,
+confidence separation, and count control it is strong evidence that H1's
+spatially indistinguishable learned queries never establish stable ownership.
+
+Freeze H1-v2 as rejected; do not tune BatchNorm, extend its schedule, run full
+KITTI, or enable distillation. The next bounded architecture revision is H2:
+keep MobileNetV4, transformer size, 50 queries, and all nine exported tensor
+shapes, but assign fixed 2D reference points and predict bounded box-center and
+projected-center offsets from those references. Repeat the single-image and
+Tiny16 capacity gates before rerunning Core ML or full KITTI qualification.

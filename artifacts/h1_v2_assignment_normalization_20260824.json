@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "complete": true,
+  "experiment": "H1-v2 Tiny16 assignment and normalization diagnostic",
+  "samples": 16,
+  "objects": 63,
+  "steps": [400, 800, 1200, 1600, 2000],
+  "assignment_stability": {
+    "adjacent_same_query_rate": 0.0714285714,
+    "fully_stable_object_rate": 0.0,
+    "unique_queries_per_object_mean": 4.4444446564,
+    "unique_queries_per_object_median": 5.0,
+    "unique_queries_per_object_p95": 5.0
+  },
+  "batchnorm_comparison_step_1600": {
+    "eval": {"matched_score_median": 0.2871174216, "unmatched_score_p95": 0.2913892567, "matched_iou_mean": 0.3970921338, "mean_count_error": 6.3125},
+    "batch_stats": {"matched_score_median": 0.2753883004, "unmatched_score_p95": 0.2583674192, "matched_iou_mean": 0.3722588718, "mean_count_error": 5.8125},
+    "batch_norm_layers": 52
+  },
+  "decision": {
+    "primary_failure": "unstable spatially unanchored query ownership",
+    "batchnorm_primary_cause": false,
+    "h1_v2_status": "rejected",
+    "full_kitti_authorized": false,
+    "distillation_authorized": false,
+    "next_architecture": "H2 fixed 2D reference queries with bounded center offsets"
+  }
+}
