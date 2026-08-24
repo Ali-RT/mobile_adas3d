@@ -2124,3 +2124,23 @@ keep MobileNetV4, transformer size, 50 queries, and all nine exported tensor
 shapes, but assign fixed 2D reference points and predict bounded box-center and
 projected-center offsets from those references. Repeat the single-image and
 Tiny16 capacity gates before rerunning Core ML or full KITTI qualification.
+
+#### 2026-08-24 H2 spatial-reference graph implemented and locally qualified
+
+H2 is a versioned subclass; the frozen H1 graph and its old checkpoints remain
+reproducible. H2 keeps MobileNetV4 Conv Small, Lite-FPN, depth context,
+transformer width/layers/heads, 50 queries, 40 depth bins, 3,619,457 trainable
+parameters, and the exact nine exported output names and shapes.
+
+The 50 queries now receive fixed row-major 10×5 normalized reference points
+and the corresponding 2D sine/cosine encoding. Box center and projected center
+are decoded as `reference + 0.10*tanh(raw_offset)` and clamped to `[0,1]`;
+width/height and all other heads retain their H1 behavior. Thus neutral initial
+heads begin at 50 spatially distinct centers rather than all near `(0.5,0.5)`.
+
+Local forward/backward, finite-output, fixed-grid, wrapper, output-contract,
+parameter, criterion-routing, and H1 regression checks pass. The full suite is
+125 passing tests with one expected CUDA-only skip. No Core ML or physical
+iPhone claim is made for H2 yet. Next prepare the fresh 1,000-step H2
+single-image capacity gate with unchanged H1-v2 loss and thresholds; Tiny16 is
+authorized only if that first gate passes.

@@ -260,7 +260,7 @@ class MobileADAS3DH1(nn.Module):
     def _tokens(feature: torch.Tensor) -> torch.Tensor:
         return feature.flatten(2).transpose(1, 2)
 
-    def forward(self, images: torch.Tensor) -> Dict[str, torch.Tensor]:
+    def _decode_queries(self, images: torch.Tensor) -> torch.Tensor:
         images = (images - self.input_mean) / self.input_std
         feature8, feature16, feature32 = self.backbone(images)
         lateral8 = self.lateral8(feature8)
@@ -298,11 +298,16 @@ class MobileADAS3DH1(nn.Module):
             ),
             dim=1,
         )
-        queries = self.query_embedding.expand(images.shape[0], -1, -1)
+        queries = self._initial_queries(images.shape[0])
         decoded = queries
         for decoder_layer in self.decoder:
             decoded = decoder_layer(decoded, memory)
+        return decoded
 
+    def _initial_queries(self, batch_size: int) -> torch.Tensor:
+        return self.query_embedding.expand(batch_size, -1, -1)
+
+    def _format_outputs(self, decoded: torch.Tensor) -> Dict[str, torch.Tensor]:
         return {
             "class_logits": self.class_head(decoded),
             "box2d_cxcywh": self.box2d_head(decoded).sigmoid(),
@@ -314,6 +319,9 @@ class MobileADAS3DH1(nn.Module):
             "location_xy": self.location_xy_head(decoded),
             "quality": self.quality_head(decoded),
         }
+
+    def forward(self, images: torch.Tensor) -> Dict[str, torch.Tensor]:
+        return self._format_outputs(self._decode_queries(images))
 
 
 class MobileADAS3DH1TupleWrapper(nn.Module):

@@ -182,7 +182,7 @@ def build_dataloader(
         class_weights=loss_cfg.get("class_weights", {}),
         quality_center_sigma=float(target_cfg.get("quality_center_sigma", 1.0)),
         teacher_adapter=teacher_adapter,
-        target_format=("query" if model_cfg["name"] == "MobileADAS3D-H1" else "dense"),
+        target_format=("query" if model_cfg["name"] in {"MobileADAS3D-H1", "MobileADAS3D-H2"} else "dense"),
         depth_bins=int(model_cfg.get("depth_bins", 40)),
         min_depth_m=float(target_cfg.get("min_depth_m", 1.0)),
         max_depth_m=float(target_cfg.get("max_depth_m", 80.0)),
@@ -207,7 +207,7 @@ def build_dataloader(
 def build_criterion(config: Dict[str, Any]) -> torch.nn.Module:
     loss_cfg = config.get("loss", {})
     distillation_cfg = config.get("distillation", {})
-    if config["model"]["name"] == "MobileADAS3D-H1":
+    if config["model"]["name"] in {"MobileADAS3D-H1", "MobileADAS3D-H2"}:
         if distillation_cfg.get("enabled", False):
             raise RuntimeError("H1 GT-only gate requires distillation.enabled=false")
         classes = config["dataset"]["classes"]

@@ -1,0 +1,14 @@
+base_config: kitti_mobileadas3d_h1.yaml
+
+logging:
+  run_name: "mobileadas3d_h2_random_gate"
+
+model:
+  name: "MobileADAS3D-H2"
+  center_offset_scale: 0.10
+
+outputs:
+  output_dir: ./outputs/mobileadas3d_h2
+  profile_output_dirs:
+    local_mac: ./outputs/mobileadas3d_h2
+    colab_drive: /content/drive/MyDrive/mobile_adas3d_outputs/mobileadas3d_h2

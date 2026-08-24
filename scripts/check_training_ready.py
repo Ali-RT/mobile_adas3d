@@ -145,7 +145,7 @@ def main() -> None:
         class_mean_dims=target_cfg["class_mean_dims"],
         center_sampling_radius=int(target_cfg["center_sampling"]["radius"]),
         class_weights=loss_cfg["class_weights"],
-        target_format=("query" if model_cfg["name"] == "MobileADAS3D-H1" else "dense"),
+        target_format=("query" if model_cfg["name"] in {"MobileADAS3D-H1", "MobileADAS3D-H2"} else "dense"),
         depth_bins=int(model_cfg.get("depth_bins", 40)),
         min_depth_m=float(target_cfg.get("min_depth_m", 1.0)),
         max_depth_m=float(target_cfg.get("max_depth_m", 80.0)),
@@ -159,7 +159,7 @@ def main() -> None:
     if not torch.isfinite(losses["total_loss"]):
         raise RuntimeError(f"Non-finite preflight loss: {losses['total_loss'].item()}")
 
-    if model_cfg["name"] == "MobileADAS3D-H1":
+    if model_cfg["name"] in {"MobileADAS3D-H1", "MobileADAS3D-H2"}:
         output_shape = list(outputs["class_logits"].shape)
         expected_shape = [1, int(model_cfg["num_queries"]), len(dataset_cfg["classes"])]
     else:
