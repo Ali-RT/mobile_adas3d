@@ -16,8 +16,9 @@ generalization testing, and complete recording/export artifacts.
 ## Current position
 
 - Current phase: **MobileADAS3D-H2 single-image capacity workflow**
-- Active task: prepare the H2 1,000-step single-image gate using the frozen
-  spatial-reference graph and unchanged H1-v2 loss thresholds.
+- Active task: run
+  `notebooks/MobileADAS3D_H2_Single_Image_Overfit_Colab.ipynb` top-to-bottom
+  on a Colab GPU and return both generated diagnostic JSON files.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Deployment candidate: **MobileADAS3D-H1 teacher-shaped hybrid student**
 - Knowledge distillation: **not active yet**; it follows the GT-only H1
@@ -59,7 +60,7 @@ generalization testing, and complete recording/export artifacts.
 | M26 | H1 v2 staged Tiny16 optimization gate | Complete—failed | No milestone passed. From steps 400→2000, matched-score median changed 0.172→0.261, unmatched p95 worsened 0.188→0.367, mean IoU improved 0.258→0.425, and predictions/image changed 15.63→14.06 versus 3.94 GT. Step 1600 was the best compromise but still failed every gate. See `artifacts/h1_v2_tiny_2000step_gate_20260824.json`. |
 | M27 | H1 v2 assignment and normalization diagnosis | Complete—matching instability isolated | Batch-statistics inference produced only small mixed changes, ruling out BatchNorm as the primary cause. Adjacent same-query rate was 7.14%, fully stable object rate 0%, and objects used 4.44 unique queries across five checkpoints on average. See `artifacts/h1_v2_assignment_normalization_20260824.json`. |
 | M28 | H2 spatial-reference query graph and contract | Complete—local preflight passed | Preserves MobileNetV4, 3,619,457 parameters, transformer dimensions, 50 queries, and nine output shapes. Adds a fixed 10×5 reference grid, positional query encoding, and ±0.10 bounded box/projected-center offsets. All 125 tests passed with one expected CUDA skip. See `H2_SPATIAL_REFERENCE_QUERY_CONTRACT.md`. |
-| M29 | H2 single-image capacity gate | Next | Run exactly 1,000 fresh optimizer steps on the same two-class image and require the unchanged confidence, background, IoU, count, and image-sensitivity gates before Tiny16. |
+| M29 | H2 single-image capacity gate | Ready to run | Isolated Colab workflow runs exactly 1,000 fresh/resumable steps on the same two-class image, rejects H1 checkpoints, and applies the unchanged confidence, background, IoU, count, and image-sensitivity gates before Tiny16. |
 | M30 | H2 Tiny16 capacity and assignment gate | Pending | Run only if M29 passes; require original Tiny16 quality gates plus materially improved assignment stability before Core ML or full-data work. |
 
 ## Frozen R0 reference
@@ -158,6 +159,8 @@ passing these three AP values alone does not authorize deployment.
    parameters and exact nine-output interface. H1 regression remains intact.
 24. **Next:** prepare/run the fresh H2 1,000-step single-image gate using the
    unchanged H1-v2 supervision and thresholds.
+25. **Prepared:** run the dedicated H2 single-image notebook and return
+   `single_image_query_diagnostics.json` plus `single_image_sensitivity.json`.
 
 ## Decision rules
 

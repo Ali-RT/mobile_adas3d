@@ -2144,3 +2144,19 @@ parameter, criterion-routing, and H1 regression checks pass. The full suite is
 iPhone claim is made for H2 yet. Next prepare the fresh 1,000-step H2
 single-image capacity gate with unchanged H1-v2 loss and thresholds; Tiny16 is
 authorized only if that first gate passes.
+
+#### 2026-08-24 H2 single-image capacity workflow prepared
+
+Run `notebooks/MobileADAS3D_H2_Single_Image_Overfit_Colab.ipynb`
+top-to-bottom on a Colab GPU. It deterministically selects the same Chen-train
+image containing Vehicle and Pedestrian as the H1 capacity test, but uses a
+new split/output directory and refuses cross-architecture checkpoint resume.
+
+The workflow validates the H2 graph and unchanged H1-v2 implicit-background
+criterion on CUDA, performs exactly 1,000 optimizer steps, atomically saves and
+resumes every 100 steps, then runs the unchanged query confidence/background,
+2D IoU, object-count, deterministic-repeat, and cross-image sensitivity gates.
+Return `single_image_query_diagnostics.json` and
+`single_image_sensitivity.json`. A failure blocks Tiny16, Core ML, full KITTI,
+and distillation. The full local suite passes 128 tests with one expected
+CUDA-only skip.

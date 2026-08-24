@@ -1,0 +1,18 @@
+base_config: kitti_mobileadas3d_h1_v2_single_overfit.yaml
+
+dataset:
+  splits:
+    protocol: h2_single_image_spatial_reference_capacity
+
+logging:
+  run_name: "mobileadas3d_h2_single"
+
+model:
+  name: "MobileADAS3D-H2"
+  center_offset_scale: 0.10
+
+outputs:
+  output_dir: ./outputs/mobileadas3d_h2_single
+  profile_output_dirs:
+    local_mac: ./outputs/mobileadas3d_h2_single
+    colab_drive: /content/drive/MyDrive/mobile_adas3d_outputs/mobileadas3d_h2_single

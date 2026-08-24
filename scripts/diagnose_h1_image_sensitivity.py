@@ -41,6 +41,8 @@ def main() -> None:
     )
     dataset_cfg = config["dataset"]
     model_cfg = config["model"]
+    if model_cfg["name"] not in {"MobileADAS3D-H1", "MobileADAS3D-H2"}:
+        raise RuntimeError("Image sensitivity requires MobileADAS3D-H1/H2")
     root = dataset_cfg["profiles"][dataset_cfg["active_profile"]]["root_dir"]
     dataset = KITTIDataset(
         root_dir=root,
@@ -56,6 +58,13 @@ def main() -> None:
     device = get_device(config["training"].get("device", "auto"))
     model = build_model(config).to(device).eval()
     checkpoint = torch.load(args.checkpoint, map_location=device, weights_only=False)
+    checkpoint_architecture = checkpoint.get(
+        "architecture", checkpoint.get("config", {}).get("model", {}).get("name")
+    )
+    if checkpoint_architecture != model_cfg["name"]:
+        raise RuntimeError(
+            f"Refusing {checkpoint_architecture} checkpoint for {model_cfg['name']}"
+        )
     model.load_state_dict(checkpoint["model_state_dict"])
 
     images = torch.stack(

@@ -58,8 +58,8 @@ def main() -> None:
         split_dir=args.split_dir,
         output_dir=args.output_dir,
     )
-    if config["model"]["name"] != "MobileADAS3D-H1":
-        raise RuntimeError("H1 query diagnostics require MobileADAS3D-H1")
+    if config["model"]["name"] not in {"MobileADAS3D-H1", "MobileADAS3D-H2"}:
+        raise RuntimeError("Query diagnostics require MobileADAS3D-H1/H2")
     if config.get("loss", {}).get("classification_mode") != "implicit_background_softmax":
         raise RuntimeError("Diagnostics require the H1-v2 implicit background objective")
 

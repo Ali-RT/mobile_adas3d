@@ -58,6 +58,7 @@ def _save_checkpoint(
             "scaler_state_dict": scaler.state_dict(),
             "config": config,
             "single_image_overfit": True,
+            "architecture": config["model"]["name"],
             "latest_losses": latest_losses,
         },
         temporary,
@@ -76,8 +77,9 @@ def main() -> None:
         split_dir=args.split_dir,
         output_dir=args.output_dir,
     )
-    if config["model"]["name"] != "MobileADAS3D-H1":
-        raise RuntimeError("Single-image overfit requires MobileADAS3D-H1")
+    architecture = config["model"]["name"]
+    if architecture not in {"MobileADAS3D-H1", "MobileADAS3D-H2"}:
+        raise RuntimeError("Single-image overfit requires MobileADAS3D-H1/H2")
     if config.get("distillation", {}).get("enabled", False):
         raise RuntimeError("Single-image overfit requires distillation=false")
     if config.get("loss", {}).get("classification_mode") != "implicit_background_softmax":
@@ -121,6 +123,14 @@ def main() -> None:
         checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
         if not checkpoint.get("single_image_overfit", False):
             raise RuntimeError(f"Refusing non-single-image checkpoint: {checkpoint_path}")
+        checkpoint_architecture = checkpoint.get(
+            "architecture", checkpoint.get("config", {}).get("model", {}).get("name")
+        )
+        if checkpoint_architecture != architecture:
+            raise RuntimeError(
+                f"Refusing {checkpoint_architecture} checkpoint for {architecture}: "
+                f"{checkpoint_path}"
+            )
         model.load_state_dict(checkpoint["model_state_dict"])
         optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
         scaler.load_state_dict(checkpoint.get("scaler_state_dict", {}))
@@ -183,6 +193,7 @@ def main() -> None:
         "checkpoint": str(checkpoint_path),
         "latest_losses": latest_losses,
         "distillation_enabled": False,
+        "architecture": architecture,
     }
     report_path = Path(args.report)
     report_path.parent.mkdir(parents=True, exist_ok=True)
