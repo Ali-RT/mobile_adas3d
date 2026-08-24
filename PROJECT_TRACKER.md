@@ -15,10 +15,10 @@ generalization testing, and complete recording/export artifacts.
 
 ## Current position
 
-- Current phase: **MobileADAS3D-H2 single-image capacity workflow**
-- Active task: run
-  `notebooks/MobileADAS3D_H2_Single_Image_Overfit_Colab.ipynb` top-to-bottom
-  on a Colab GPU and return both generated diagnostic JSON files.
+- Current phase: **MobileADAS3D-H2 reference-offset reachability diagnosis**
+- Active task: inspect the saved H2 single-image checkpoint per object to
+  measure box/projected-center reachability, offset saturation, and which
+  localization outliers caused the mean-IoU gate failure.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Deployment candidate: **MobileADAS3D-H1 teacher-shaped hybrid student**
 - Knowledge distillation: **not active yet**; it follows the GT-only H1
@@ -60,8 +60,9 @@ generalization testing, and complete recording/export artifacts.
 | M26 | H1 v2 staged Tiny16 optimization gate | Complete—failed | No milestone passed. From steps 400→2000, matched-score median changed 0.172→0.261, unmatched p95 worsened 0.188→0.367, mean IoU improved 0.258→0.425, and predictions/image changed 15.63→14.06 versus 3.94 GT. Step 1600 was the best compromise but still failed every gate. See `artifacts/h1_v2_tiny_2000step_gate_20260824.json`. |
 | M27 | H1 v2 assignment and normalization diagnosis | Complete—matching instability isolated | Batch-statistics inference produced only small mixed changes, ruling out BatchNorm as the primary cause. Adjacent same-query rate was 7.14%, fully stable object rate 0%, and objects used 4.44 unique queries across five checkpoints on average. See `artifacts/h1_v2_assignment_normalization_20260824.json`. |
 | M28 | H2 spatial-reference query graph and contract | Complete—local preflight passed | Preserves MobileNetV4, 3,619,457 parameters, transformer dimensions, 50 queries, and nine output shapes. Adds a fixed 10×5 reference grid, positional query encoding, and ±0.10 bounded box/projected-center offsets. All 125 tests passed with one expected CUDA skip. See `H2_SPATIAL_REFERENCE_QUERY_CONTRACT.md`. |
-| M29 | H2 single-image capacity gate | Ready to run | Isolated Colab workflow runs exactly 1,000 fresh/resumable steps on the same two-class image, rejects H1 checkpoints, and applies the unchanged confidence, background, IoU, count, and image-sensitivity gates before Tiny16. |
-| M30 | H2 Tiny16 capacity and assignment gate | Pending | Run only if M29 passes; require original Tiny16 quality gates plus materially improved assignment stability before Core ML or full-data work. |
+| M29 | H2 single-image capacity gate | Complete—failed localization | Confidence median 0.724, unmatched p95 0.000333, count 9/9, and image sensitivity passed, but matched mean IoU was 0.555 versus the 0.70 gate and H1's 0.825 on the same image. Median IoU 0.702 indicates a small set of severe localization outliers. See `artifacts/h2_single_image_gate_20260824.json`. |
+| M30 | H2 Tiny16 capacity and assignment gate | Blocked by M29 | Do not run until the H2 single-image localization failure is resolved and the unchanged gate passes. |
+| M31 | H2 reference-offset reachability diagnostic | Next | Reuse the saved H2 checkpoint; report per-object query reference, GT/predicted box and projected centers, theoretical reachability under ±0.10, boundary saturation, and IoU. No retraining. |
 
 ## Frozen R0 reference
 
@@ -161,6 +162,11 @@ passing these three AP values alone does not authorize deployment.
    unchanged H1-v2 supervision and thresholds.
 25. **Prepared:** run the dedicated H2 single-image notebook and return
    `single_image_query_diagnostics.json` plus `single_image_sensitivity.json`.
+26. **Completed but failed localization:** H2 passed three query gates and the
+   sensitivity gate, but mean IoU was `0.555` (`0.702` median), below `0.70`.
+27. **Next diagnostic:** determine whether box-center or projected-center
+   reference bounds are unreachable/saturated for the low-IoU objects before
+   changing offset scale or anchoring policy.
 
 ## Decision rules
 

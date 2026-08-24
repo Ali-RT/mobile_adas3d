@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "complete": true,
+  "experiment": "MobileADAS3D-H2 single-image capacity gate",
+  "sample_id": "000010",
+  "optimizer_steps": 1000,
+  "query_diagnostics": {
+    "matched_score_mean": 0.5730287433,
+    "matched_score_median": 0.7243371010,
+    "unmatched_score_p95": 0.0003327116,
+    "matched_iou_mean": 0.5549517870,
+    "matched_iou_median": 0.7024241090,
+    "matched_iou_p95": 0.8174745440,
+    "predictions": 9,
+    "ground_truth": 9,
+    "passed": false,
+    "failed_gate": "matched_iou_mean_ge_0_70"
+  },
+  "image_sensitivity": {
+    "repeat_max_absolute_delta": 0.0,
+    "class_logits_mean_absolute_delta": 7.7179441452,
+    "box_mean_absolute_delta": 0.0729034469,
+    "passed": true
+  },
+  "comparison_to_h1_same_image": {
+    "h1_matched_iou_mean": 0.8251599073,
+    "h2_matched_iou_mean": 0.5549517870
+  },
+  "decision": {
+    "tiny16_authorized": false,
+    "full_kitti_authorized": false,
+    "distillation_authorized": false,
+    "next_task": "per-object H2 reference-offset reachability and saturation diagnostic"
+  }
+}

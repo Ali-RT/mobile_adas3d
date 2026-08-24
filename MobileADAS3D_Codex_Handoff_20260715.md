@@ -2160,3 +2160,22 @@ Return `single_image_query_diagnostics.json` and
 `single_image_sensitivity.json`. A failure blocks Tiny16, Core ML, full KITTI,
 and distillation. The full local suite passes 128 tests with one expected
 CUDA-only skip.
+
+#### 2026-08-24 H2 single-image gate failed localization
+
+After 1,000 steps, H2 passed matched confidence (`0.724` median), background
+suppression (`0.000333` unmatched p95), exact count (`9/9`), deterministic
+repeat, and cross-image sensitivity. Every output head changed materially for
+the comparison image. However, matched 2D IoU mean was only `0.555` against
+the `0.70` gate, although median/p95 was `0.702/0.817`. The overall query gate
+therefore failed and Tiny16 is not authorized.
+
+Compared with H1-v2 on the same image (`0.825` mean IoU), H2 preserved object
+presence/background learning but degraded localization. The median/mean gap
+suggests a few severe outliers rather than uniform failure. Do not relax the
+gate, extend training, or run Tiny16 yet. First reuse the saved checkpoint for
+a per-object reachability diagnostic: record matched query reference points,
+GT and predicted box/projected centers, whether each target is representable
+within the ±`0.10` bounds, boundary saturation, size error, and IoU. Use that
+evidence to choose between changing the offset scale, anchoring only box
+centers, or revising the reference layout.
