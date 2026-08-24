@@ -17,8 +17,8 @@ not constrain the current accuracy-development stage.
 ## Current position
 
 - Current phase: **accuracy-first teacher-compatible student development**
-- Active task: prepare the fresh two-class MobileNetV4-MonoDETR GT-only A1
-  baseline workflow with R0-compatible initialization and frozen evaluation.
+- Active task: run the fresh two-class MobileNetV4-MonoDETR A1 GT-only baseline
+  in Colab and return its manifest, final training summary, and product sweep.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Accuracy candidate: **MobileMonoDETR-Student-A1**
 - S1/H1/H2 status: **frozen negative experiments; do not resume**.
@@ -67,8 +67,8 @@ not constrain the current accuracy-development stage.
 | M30 | H2 Tiny16 capacity and assignment gate | Blocked by M29 | Do not run until the H2 single-image localization failure is resolved and the unchanged gate passes. |
 | M31 | H2 reference-offset reachability diagnostic | Cancelled by strategy pivot | H2 remains reproducible, but further custom-query debugging is lower value than returning to the proven MonoDETR learning path. |
 | M32 | Accuracy-first student contract | Complete | H1/H2 frozen; 90%-of-R0 comparable-performance gates and the MobileNetV4-MonoDETR A1 sequence are locked in `ACCURACY_FIRST_STUDENT_CONTRACT.md`. |
-| M33 | Two-class A1 GT-only baseline workflow | Next | Prepare a resumable, Drive-backed, verbose Colab workflow that changes only the R0 backbone to MobileNetV4 Conv Small. |
-| M34 | Two-class A1 GT-only baseline run | Pending | Train, sweep, and evaluate all 3,769 Chen-val images using the frozen product protocol. |
+| M33 | Two-class A1 GT-only baseline workflow | Complete | `MonoDETR_A1_MobileNetV4_Two_Class_GT_Colab.ipynb` is Drive-backed, verbose, restartable, and fail-closed on the frozen R0 epoch/hash. The preparer transfers every compatible downstream R0 tensor, changes only backbone/projections, fixes the initialization seed, and disables distillation. The restartable sweep reports all five 90%-of-R0 gates. |
+| M34 | Two-class A1 GT-only baseline run | Next | Run the A1 notebook on a Colab GPU, train/sweep durable checkpoints, and evaluate all 3,769 Chen-val images using the frozen product protocol. |
 | M35 | Paired A1 distillation experiment | Pending | Use identical initialization and schedule; requires a new two-class R0 teacher cache/path. |
 | M36 | Accuracy-qualified student selection | Pending | Require all five 90%-of-R0 3D/BEV gates plus nearby recall review. |
 | M37 | Post-accuracy compression ladder | Pending | Test FP16, INT8/QAT, structured pruning, depth/width/token reduction, and low-rank changes one at a time. |
@@ -118,10 +118,11 @@ frozen; passing AP does not by itself authorize deployment.
    cancel further H2 reachability and Tiny16 work.
 2. **Completed:** freeze the accuracy-first A1 architecture, 90%-of-R0 gates,
    experiment discipline, and post-accuracy compression ladder.
-3. **Next:** prepare the two-class MobileNetV4-MonoDETR GT-only Colab workflow.
-   It must be resumable, Drive-backed, verbose, and fail closed on R0/protocol
-   provenance while changing only the backbone.
-4. Train A1, sweep its durable checkpoints, and evaluate the full Chen val set.
+3. **Completed:** prepare the two-class MobileNetV4-MonoDETR GT-only Colab
+   workflow with exact provenance, deterministic initialization, durable resume,
+   visible logs, and a restartable five-gate product sweep.
+4. **Next:** run A1, sweep its durable checkpoints, and evaluate the full Chen
+   validation set.
 5. Freeze the GT-only initialization and result before adding teacher losses.
 6. Build a two-class R0 teacher cache/path and run one paired distilled A1
    experiment. Do not use the existing Car-only cache.

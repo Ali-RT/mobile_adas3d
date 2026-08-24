@@ -2199,3 +2199,25 @@ mean `10.5103`, and Vehicle/Pedestrian BEV AP_R40 `21.3134/5.9365`. After an
 accurate student is frozen, compression proceeds one controlled variable at a
 time before Core ML and physical-device qualification are restored. See
 `ACCURACY_FIRST_STUDENT_CONTRACT.md` and `PROJECT_TRACKER.md`.
+
+#### 2026-08-24 A1 GT-only workflow prepared
+
+Run `notebooks/MonoDETR_A1_MobileNetV4_Two_Class_GT_Colab.ipynb`
+top-to-bottom on a Colab GPU. It pins MonoDETR commit
+`6994b9f512400b258c6edb75f77423beb9c126f2`, reconstructs the Chen 3,712/3,769
+view, and refuses to prepare A1 unless the R0 product selection identifies
+epoch 185 with checkpoint SHA-256
+`fc0eba200e44b88921af76b0a5c94279872fd5c4838ab4d8936838447debfa59`.
+
+The preparer fixes initialization seed `20260824`, loads ImageNet MobileNetV4
+Conv Small plus every shape-compatible downstream tensor from the frozen
+two-class R0 checkpoint, and treats only the backbone and required feature
+projections as new. Taxonomy, resolution, transformer, queries, heads, decoder,
+training data, and product evaluator remain unchanged. Distillation is false.
+
+Training output is unbuffered and duplicated to timestamped Google Drive logs.
+Every five epochs is durably saved; restart scans only the exact A1 run and
+skips incomplete checkpoints. The final restartable product sweep evaluates
+all 3,769 images and writes `a1_product_selection.json` with the five frozen
+90%-of-R0 gates. Return the experiment manifest, final training summary, and
+selection report. Do not start paired distillation until this result is frozen.

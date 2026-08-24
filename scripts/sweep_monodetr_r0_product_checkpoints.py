@@ -90,6 +90,7 @@ def main() -> None:
     parser.add_argument("--profile", default="colab_drive")
     parser.add_argument("--score-threshold", type=float, default=0.001)
     parser.add_argument("--topk", type=int, default=50)
+    parser.add_argument("--source-name-prefix", default="MonoDETR_R0")
     parser.add_argument("--epochs", type=int, nargs="*")
     args = parser.parse_args()
 
@@ -178,7 +179,7 @@ def main() -> None:
                     "Vehicle",
                     "Pedestrian",
                     "--source-name",
-                    f"MonoDETR_R0_epoch_{epoch:03d}",
+                    f"{args.source_name_prefix}_epoch_{epoch:03d}",
                     "--output-dir",
                     str(epoch_dir),
                 ],
