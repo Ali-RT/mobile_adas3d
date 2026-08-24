@@ -2023,3 +2023,26 @@ selects one Chen-train image containing Vehicle and Pedestrian, performs exactly
 the query gate, and compares raw outputs against a different image. Failure to
 memorize one image means H1 requires structural/loss revision; successful
 memorization plus image sensitivity points instead to schedule/matching issues.
+
+#### 2026-08-24 H1-v2 single-image capacity and sensitivity gates passed
+
+The 1,000-step single-image run memorized sample `000010` containing nine
+objects. Matched confidence mean/median/p95 was `0.693/0.732/0.853`, unmatched
+confidence mean/p95 was below `0.000001`, matched 2D IoU mean/median/p95 was
+`0.825/0.854/0.916`, and decoded prediction count exactly matched ground truth
+(`9/9`). All four query gates passed.
+
+The image-conditioning check also passed. Repeating the same image produced
+zero maximum output delta. Comparing sample `000010` with `000000` changed
+every output head; representative mean absolute deltas were `9.197` for class
+logits, `0.336` for boxes, `4.471` for depth logits, `0.433` for yaw, and
+`4.827` for quality. H1-v2 therefore has sufficient local capacity, receives
+image information, can localize objects, and can suppress unmatched queries.
+
+This does not overturn the failed 16-image/400-step result; it narrows its root
+cause to multi-image optimization, stable assignment, or schedule rather than
+a disconnected or incapable graph. The next controlled gate is a fresh
+Tiny16 run extended to 2,000 optimizer steps, with diagnostics at steps
+400/800/1200/1600/2000. Keep the model, loss, matcher, data, and thresholds
+fixed, and do not initialize from the one-image memorization checkpoint. Full
+KITTI training and distillation remain unauthorized until that gate passes.

@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "complete": true,
+  "experiment": "MobileADAS3D-H1-v2 single-image capacity gate",
+  "sample_id": "000010",
+  "optimizer_steps": 1000,
+  "ground_truth_objects": 9,
+  "query_diagnostics": {
+    "matched_scores": {"count": 9, "mean": 0.6925501227, "median": 0.7324604988, "p95": 0.8525573611},
+    "unmatched_scores": {"count": 41, "mean": 1.59e-7, "p95": 1.68e-7},
+    "matched_box_iou": {"count": 9, "mean": 0.8251599073, "median": 0.8543000221, "p95": 0.9161699414},
+    "predictions_per_image": 9,
+    "ground_truth_per_image": 9,
+    "passed": true
+  },
+  "image_sensitivity": {
+    "comparison_sample_id": "000000",
+    "repeat_max_absolute_delta": 0.0,
+    "mean_absolute_delta": {"class_logits": 9.1966, "boxes": 0.33565, "projected_center": 0.24727, "depth_logits": 4.47056, "depth_residual": 0.02743, "dimensions": 0.13905, "yaw": 0.43344, "location": 0.26644, "quality": 4.827},
+    "passed": true
+  },
+  "decision": {
+    "architecture_capacity": "pass",
+    "image_conditioning": "pass",
+    "multi_image_generalization": "not_established",
+    "next_experiment": "fresh Tiny16 initialization, 2000 optimizer steps, diagnostics every 400 steps",
+    "full_kitti_authorized": false,
+    "distillation_authorized": false
+  }
+}

@@ -1,6 +1,6 @@
 # MobileADAS3D project tracker
 
-Last updated: 2026-08-23
+Last updated: 2026-08-24
 
 This is the canonical status page. Update it whenever a task changes state,
 an experiment finishes, a gate passes/fails, or the next action changes.
@@ -15,10 +15,10 @@ generalization testing, and complete recording/export artifacts.
 
 ## Current position
 
-- Current phase: **MobileADAS3D-H1 v2 single-image capacity gate**
-- Active task: run
-  `notebooks/MobileADAS3D_H1_V2_Single_Image_Overfit_Colab.ipynb`
-  top-to-bottom and return the query and image-sensitivity reports.
+- Current phase: **MobileADAS3D-H1 v2 staged Tiny16 optimization gate**
+- Active task: prepare a fresh H1-v2 Tiny16 run with a longer, checkpointed
+  optimizer schedule. Change only training duration so the result isolates
+  optimization from architecture/loss changes.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Deployment candidate: **MobileADAS3D-H1 teacher-shaped hybrid student**
 - Knowledge distillation: **not active yet**; it follows the GT-only H1
@@ -56,7 +56,8 @@ generalization testing, and complete recording/export artifacts.
 | M22 | H1 GT-only health-gate workflow | Complete—learning gate failed | Query-native training ran stably for 20 epochs with complete product AP evaluation. Runtime/device/AMP defects were fixed, but the model produced 0.00 AP_R40 and excessive background proposals. Do not resume it. |
 | M23 | H1 v1 GT-only learning gate | Failed, diagnosed | The run produced 123,303 detections (32.72/image) with overwhelming false positives. Best validation loss was 7.443909 at epoch 9; latest epoch 20 was 7.742177. Query heads learned plausible geometry priors without reliable object presence/background ranking. |
 | M24 | H1 v2 tiny-overfit workflow | Failed—partial separation only | The 16-image/400-step run completed. Matched score median was 0.172, unmatched p95 0.188, matched mean 2D IoU 0.258, and predictions averaged 15.63/image versus 3.94 GT. All four gates failed. Do not run full KITTI or distillation. |
-| M25 | H1 v2 single-image capacity workflow | Ready to run | Select one Chen-train image containing both product classes, run exactly 1,000 resumable optimizer steps with atomic Drive checkpoints, reapply query score/IoU/count gates, and compare outputs against a different image to verify image conditioning. |
+| M25 | H1 v2 single-image capacity workflow | Complete—passed | Sample 000010 memorized all 9 objects: matched-score median 0.732, unmatched p95 <0.000001, matched mean 2D IoU 0.825, and predicted/GT count 9/9. Cross-image sensitivity also passed with zero repeat delta and substantial changes in every output head. See `artifacts/h1_v2_single_image_gate_20260824.json`. |
+| M26 | H1 v2 staged Tiny16 optimization gate | Next | Start from fresh pretrained H1-v2 initialization, retain the same data/loss/matcher, extend Tiny16 to 2,000 optimizer steps, and diagnose checkpoints at 400-step intervals. Do not initialize from the one-image memorization checkpoint. |
 
 ## Frozen R0 reference
 
@@ -134,6 +135,11 @@ passing these three AP values alone does not authorize deployment.
 16. Run one paired distillation experiment from the identical initialization.
    Keep distillation only if it improves the frozen comparison without harming
    Pedestrian or nearby safety metrics.
+17. **Completed:** H1-v2 passed the 1,000-step single-image capacity and
+   cross-image sensitivity gates. The graph is trainable and image-conditioned.
+18. **Next controlled experiment:** rerun Tiny16 from a fresh initialization
+   for 2,000 optimizer steps, saving/diagnosing steps 400/800/1200/1600/2000.
+   Keep architecture, matching, losses, data, and thresholds fixed.
 
 ## Decision rules
 

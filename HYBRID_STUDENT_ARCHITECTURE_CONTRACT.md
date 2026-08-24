@@ -205,8 +205,17 @@ AP_R40 evaluator.
    2D IoU mean >=0.70, and mean predicted-count error <=1 object/image.
 6. If the 16-image gate fails, run one 1,000-step single-image capacity gate
    and a cross-image output-sensitivity check before revising the graph.
-7. Prepare a fresh full GT-only run only if the capacity gates pass.
-8. Review complete Vehicle/Pedestrian AP_R40 and geometry diagnostics.
+7. **Passed 2026-08-24:** the single-image gate memorized 9/9 objects with
+   matched-score median `0.732`, unmatched-score p95 below `0.000001`, and
+   matched mean 2D IoU `0.825`. Every output head changed on a second image,
+   while repeat inference was exact. This establishes graph capacity and image
+   conditioning; it does not establish multi-image generalization.
+8. Repeat Tiny16 from a fresh initialization for 2,000 optimizer steps and
+   inspect the unchanged gates at 400-step intervals. Do not warm-start from
+   the single-image checkpoint or alter the graph/loss in this experiment.
+9. Prepare a fresh full GT-only run only after the staged multi-image gate
+   passes.
+10. Review complete Vehicle/Pedestrian AP_R40 and geometry diagnostics.
 9. Continue GT-only training only if both classes learn and AP is materially
    above the S1 baseline.
 10. Freeze the GT-only checkpoint and then run one paired R0-distillation
