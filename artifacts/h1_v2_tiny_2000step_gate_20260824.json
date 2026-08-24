@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "complete": true,
+  "experiment": "MobileADAS3D-H1-v2 Tiny16 2000-step optimization gate",
+  "fresh_initialization": true,
+  "distillation_enabled": false,
+  "samples": 16,
+  "mean_ground_truth_per_image": 3.9375,
+  "milestones": [
+    {"step": 400, "matched_score_median": 0.1721462160, "unmatched_score_p95": 0.1882182658, "matched_iou_mean": 0.2575342655, "predictions_per_image": 15.625, "passed": false},
+    {"step": 800, "matched_score_median": 0.1800716966, "unmatched_score_p95": 0.2291086316, "matched_iou_mean": 0.3213662207, "predictions_per_image": 12.25, "passed": false},
+    {"step": 1200, "matched_score_median": 0.2365036756, "unmatched_score_p95": 0.3092648983, "matched_iou_mean": 0.2939881086, "predictions_per_image": 9.3125, "passed": false},
+    {"step": 1600, "matched_score_median": 0.2871174216, "unmatched_score_p95": 0.2913892567, "matched_iou_mean": 0.3970921338, "predictions_per_image": 10.25, "passed": false},
+    {"step": 2000, "matched_score_median": 0.2613254189, "unmatched_score_p95": 0.3668783903, "matched_iou_mean": 0.4250095785, "predictions_per_image": 14.0625, "passed": false}
+  ],
+  "passed_steps": [],
+  "decision": {
+    "schedule_extension_sufficient": false,
+    "full_kitti_authorized": false,
+    "distillation_authorized": false,
+    "resume_run": false,
+    "next_task": "diagnose query assignment churn and BatchNorm mode sensitivity on saved milestones"
+  }
+}

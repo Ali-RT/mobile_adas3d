@@ -2062,3 +2062,24 @@ and preserves milestone checkpoints at steps 400/800/1200/1600/2000. The final
 cell applies the unchanged query confidence, background, IoU, and count gates
 to every milestone and writes `h1_v2_tiny_2000step_diagnostics.json`. Return
 that file before authorizing full KITTI training or distillation.
+
+#### 2026-08-24 H1-v2 Tiny16 2,000-step gate failed
+
+The fresh run completed all 2,000 optimizer steps and evaluated checkpoints at
+steps 400/800/1200/1600/2000. No checkpoint passed any of the four hard gates.
+Matched-score median was `0.172/0.180/0.237/0.287/0.261`; unmatched-score p95
+was `0.188/0.229/0.309/0.291/0.367`; mean matched IoU was
+`0.258/0.321/0.294/0.397/0.425`; and predictions/image was
+`15.63/12.25/9.31/10.25/14.06` versus `3.94` ground truth.
+
+The longer schedule is therefore ruled out as a sufficient fix. Localization
+did improve, proving continued learning, but confidence/background separation
+remained weak and the false-positive tail worsened late in training. Do not
+continue this run, start full KITTI, or enable distillation.
+
+Before revising the loss or model, use the saved five checkpoints for a
+bounded diagnostic that measures GT-to-query assignment churn and per-object
+localization across milestones. Also compare eval-mode outputs with controlled
+BatchNorm behavior on the identical Tiny16 data. This will distinguish unstable
+Hungarian ownership from small-batch running-statistics mismatch and prevents
+combining multiple speculative changes in the next experiment.

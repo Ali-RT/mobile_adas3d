@@ -15,10 +15,10 @@ generalization testing, and complete recording/export artifacts.
 
 ## Current position
 
-- Current phase: **MobileADAS3D-H1 v2 staged Tiny16 optimization gate**
-- Active task: run
-  `notebooks/MobileADAS3D_H1_V2_Tiny_2000Step_Colab.ipynb` top-to-bottom on a
-  Colab GPU and return `h1_v2_tiny_2000step_diagnostics.json`.
+- Current phase: **MobileADAS3D-H1 v2 Tiny16 failure diagnosis**
+- Active task: measure query-assignment stability across the five saved
+  milestones and compare Tiny16 inference in eval mode against frozen/train
+  BatchNorm behavior before changing the loss or graph.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Deployment candidate: **MobileADAS3D-H1 teacher-shaped hybrid student**
 - Knowledge distillation: **not active yet**; it follows the GT-only H1
@@ -57,7 +57,8 @@ generalization testing, and complete recording/export artifacts.
 | M23 | H1 v1 GT-only learning gate | Failed, diagnosed | The run produced 123,303 detections (32.72/image) with overwhelming false positives. Best validation loss was 7.443909 at epoch 9; latest epoch 20 was 7.742177. Query heads learned plausible geometry priors without reliable object presence/background ranking. |
 | M24 | H1 v2 tiny-overfit workflow | Failed—partial separation only | The 16-image/400-step run completed. Matched score median was 0.172, unmatched p95 0.188, matched mean 2D IoU 0.258, and predictions averaged 15.63/image versus 3.94 GT. All four gates failed. Do not run full KITTI or distillation. |
 | M25 | H1 v2 single-image capacity workflow | Complete—passed | Sample 000010 memorized all 9 objects: matched-score median 0.732, unmatched p95 <0.000001, matched mean 2D IoU 0.825, and predicted/GT count 9/9. Cross-image sensitivity also passed with zero repeat delta and substantial changes in every output head. See `artifacts/h1_v2_single_image_gate_20260824.json`. |
-| M26 | H1 v2 staged Tiny16 optimization gate | Ready to run | Dedicated Colab notebook starts from fresh pretrained H1-v2 initialization, retains the same data/loss/matcher, runs exactly 2,000 optimizer steps, resumes only its own Drive checkpoint, and diagnoses steps 400/800/1200/1600/2000. Do not initialize from the one-image memorization checkpoint. |
+| M26 | H1 v2 staged Tiny16 optimization gate | Complete—failed | No milestone passed. From steps 400→2000, matched-score median changed 0.172→0.261, unmatched p95 worsened 0.188→0.367, mean IoU improved 0.258→0.425, and predictions/image changed 15.63→14.06 versus 3.94 GT. Step 1600 was the best compromise but still failed every gate. See `artifacts/h1_v2_tiny_2000step_gate_20260824.json`. |
+| M27 | H1 v2 assignment and normalization diagnosis | Next | Use the saved step 400/800/1200/1600/2000 checkpoints to quantify GT-to-query assignment churn, per-object localization, and eval/train/frozen-BatchNorm deltas. Do not train another model until this separates matching instability from normalization/evaluation mismatch. |
 
 ## Frozen R0 reference
 
@@ -140,6 +141,11 @@ passing these three AP values alone does not authorize deployment.
 18. **Next controlled experiment:** rerun Tiny16 from a fresh initialization
    for 2,000 optimizer steps, saving/diagnosing steps 400/800/1200/1600/2000.
    Keep architecture, matching, losses, data, and thresholds fixed.
+19. **Completed but failed:** all five Tiny16 milestones failed. Longer training
+   improved mean IoU to `0.425` but did not solve confidence separation or
+   false-positive count, and the background tail degraded after step 800.
+20. **Next diagnostic:** quantify assignment churn and BatchNorm mode effects
+   on the saved checkpoints before selecting a loss-only or graph revision.
 
 ## Decision rules
 
