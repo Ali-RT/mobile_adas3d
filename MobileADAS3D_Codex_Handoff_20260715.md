@@ -2265,3 +2265,24 @@ gate must report approved query pairs, finite combined loss/gradients, and
 checkpoints/logs, exact resume, evaluator, and five-gate sweep. Return
 `a1_distillation_smoke.json`, the final training summary,
 `a1_product_selection.json`, and `a1_distillation_vs_gt_comparison.json`.
+
+#### 2026-08-25 paired A1 distillation completed and rejected
+
+The paired run and product sweep completed successfully. GT-only epoch 140 had
+Vehicle/Pedestrian moderate 3D AP_R40 `12.8604/7.2669`, balanced mean
+`10.0636`, and moderate BEV `18.7852/8.5095`. The selected distilled checkpoint
+produced `12.9428/5.3299`, balanced mean `9.1364`, and BEV `18.0403/6.7577`.
+
+Distillation therefore changed Vehicle 3D by only `+0.0824` (`+0.64%`) while
+Pedestrian 3D fell `1.9370` (`-26.65%`), balanced mean fell `0.9273` (`-9.21%`),
+Vehicle BEV fell `0.7449` (`-3.96%`), and Pedestrian BEV fell `1.7519`
+(`-20.59%`). Only the two Pedestrian absolute gates remained above their frozen
+thresholds; all five gates did not pass.
+
+Reject this distilled checkpoint and do not retune or resume the A1
+distillation branch. The controlled result indicates that A1 representation
+capacity is the more likely bottleneck than missing teacher supervision. Keep
+GT-only epoch 140 as the stronger A1 comparison baseline. The next experiment
+is GT-only A2: increase only MobileNetV4 backbone capacity while preserving the
+MonoDETR transformer, protocol, schedule, and evaluator. Compression and device
+qualification remain blocked until a student passes every accuracy gate.

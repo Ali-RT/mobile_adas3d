@@ -37,6 +37,7 @@ Cyclist, Misc, and DontCare are excluded from the first product model.
 | S1 checkpoint and geometry diagnosis | Epoch 20 was best; 12,105 Vehicle detections matched at mean 2D IoU 0.675, but yaw/shape/placement were poor | 2D detection is not the first failure |
 | S1 yaw diagnosis | Vehicle axis error was good at 9.63 degrees mean, but final yaw was 72.28 degrees with a 35.8% flip-candidate rate | Reject independent axis plus hard direction-bit yaw |
 | A1 two-class GT-only baseline | MobileNetV4-MonoDETR trained for 195 epochs; epoch 140 reached Vehicle/Pedestrian moderate 3D AP_R40 12.860/7.267 and BEV 18.785/8.510 | Freeze as a healthy paired-experiment baseline; Pedestrian exceeds R0, but Vehicle prevents final qualification |
+| A1 paired R0 distillation | Online R0 query guidance changed Vehicle moderate 3D AP_R40 by only +0.082 while Pedestrian fell 1.937, balanced mean fell 0.927, and both BEV metrics regressed | Reject the distilled branch; the evidence points to A1 representation capacity, not missing teacher supervision, as the next bottleneck |
 
 ## Teacher/reference status
 
@@ -155,8 +156,8 @@ preprocessing removed the original 540-570 ms bottleneck and measured around
   preserved two-class MonoDETR architecture.
 - **Frozen GT-only A1 baseline:** epoch 140; healthy but not accuracy-qualified.
 - **Qualified student weights:** none yet.
-- **Distillation:** now authorized as one paired experiment; the old Car-only
-  cache remains invalid for the two-class run.
+- **Distillation:** completed and rejected for A1; GT-only epoch 140 remains the
+  stronger A1 baseline and the distilled checkpoint is not a product candidate.
 
 The active architecture and experiment gates are frozen in
 `ACCURACY_FIRST_STUDENT_CONTRACT.md`; the older S1/H1/H2 contracts remain as
@@ -164,12 +165,10 @@ historical, reproducible evidence.
 
 ## Next step
 
-Run `MonoDETR_A1_Two_Class_Distillation_Colab.ipynb` through its required CUDA
-smoke gate, then complete the paired schedule only if the report has approved
-query pairs, finite combined loss/gradients, and zero optimizer steps. The
-workflow performs online frozen R0 inference on the same augmented images,
-matches teacher and student queries independently through shared GT objects,
-and retains every normal GT loss. It starts from the exact A1 initialization
-and preserves the baseline data, optimizer, schedule, and evaluator. Compare
-the sweep directly with frozen A1 epoch 140. Compression remains blocked until
-a student passes every accuracy gate and nearby recall.
+Prepare a GT-only MobileNetV4-MonoDETR A2 experiment with a higher-capacity
+backbone. Preserve the transformer, query count, heads, input resolution, R0
+initialization policy, Chen split, augmentation, optimizer/schedule, and
+evaluator; change only backbone capacity. Verify and pin the exact model
+identifier available in `timm==1.0.20` before creating the training config.
+Do not add teacher losses or begin compression. Compare A2 directly with A1
+epoch 140 using the same five accuracy gates and nearby-recall review.
