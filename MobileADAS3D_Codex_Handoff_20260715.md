@@ -2239,3 +2239,29 @@ M35 is authorized next: prepare one two-class R0-to-A1 distillation experiment
 from the identical saved A1 initialization, data, optimizer, schedule, and
 evaluator. The legacy Car-only cache is invalid. Do not compress or return to
 device gates until a student passes all five accuracy gates and nearby recall.
+
+#### 2026-08-25 paired A1 query-distillation workflow prepared
+
+Run `notebooks/MonoDETR_A1_Two_Class_Distillation_Colab.ipynb` top-to-bottom on
+a Colab GPU. This workflow intentionally does not reuse the legacy Car-only
+cache or dense-student target adapter. The frozen ResNet50 R0 teacher instead
+runs online on the same augmented batch as A1. Teacher and student Hungarian
+assignments are joined through their common GT object IDs, avoiding any
+assumption that query indices correspond across different backbones.
+
+Teacher pairs require score at least `0.30` and 2D IoU at least `0.50`. Normal
+GT losses remain unchanged. The added final-layer guidance covers class logits,
+2D/3D box parameters, relative depth, dimensions, and angle-bin/residual
+outputs. Overall teacher weight is `0.25`; Vehicle target weight is `1.0` and
+Pedestrian is `0.25` because frozen A1 is Vehicle-limited while Pedestrian
+already exceeds R0. The teacher is eval-only, gradient-free, and excluded from
+the student optimizer.
+
+Preparation fails closed on the frozen R0 epoch/hash and exact A1 epoch-140
+metrics, and training restarts from the saved A1 epoch-zero initialization—not
+the epoch-140 weights. Before any optimizer step, a real two-image CUDA smoke
+gate must report approved query pairs, finite combined loss/gradients, and
+`optimizer_steps=0`. Full training preserves the A1 195-epoch schedule, Drive
+checkpoints/logs, exact resume, evaluator, and five-gate sweep. Return
+`a1_distillation_smoke.json`, the final training summary,
+`a1_product_selection.json`, and `a1_distillation_vs_gt_comparison.json`.

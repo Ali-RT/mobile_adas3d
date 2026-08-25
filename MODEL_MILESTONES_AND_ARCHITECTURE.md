@@ -164,9 +164,12 @@ historical, reproducible evidence.
 
 ## Next step
 
-Prepare one paired two-class R0-to-A1 distillation workflow. It must start from
-the exact saved A1 initialization and preserve the GT-only data, optimizer,
-schedule, augmentation, and evaluator. Generate or validate a Vehicle and
-Pedestrian teacher path; never reuse the Car-only cache. Compare the distilled
-run directly with frozen A1 epoch 140, including per-class 3D/BEV and nearby
-recall. Compression remains blocked until a student passes every accuracy gate.
+Run `MonoDETR_A1_Two_Class_Distillation_Colab.ipynb` through its required CUDA
+smoke gate, then complete the paired schedule only if the report has approved
+query pairs, finite combined loss/gradients, and zero optimizer steps. The
+workflow performs online frozen R0 inference on the same augmented images,
+matches teacher and student queries independently through shared GT objects,
+and retains every normal GT loss. It starts from the exact A1 initialization
+and preserves the baseline data, optimizer, schedule, and evaluator. Compare
+the sweep directly with frozen A1 epoch 140. Compression remains blocked until
+a student passes every accuracy gate and nearby recall.
