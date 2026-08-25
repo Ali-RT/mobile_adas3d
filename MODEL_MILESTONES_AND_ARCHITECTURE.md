@@ -152,9 +152,11 @@ preprocessing removed the original 540-570 ms bottleneck and measured around
   variant. The optional checkpoint sweep was waived by the decision to move on.
 - **Retired students H1/H2:** fast MobileNetV4 hybrid query graphs; frozen after
   supervised capacity/assignment/localization gates failed.
-- **Active student A1:** MobileNetV4 Conv Small backbone inside the otherwise
-  preserved two-class MonoDETR architecture.
-- **Frozen GT-only A1 baseline:** epoch 140; healthy but not accuracy-qualified.
+- **Frozen student A1:** MobileNetV4 Conv Small backbone inside the otherwise
+  preserved two-class MonoDETR architecture; epoch 140 is healthy but not
+  accuracy-qualified.
+- **Prepared student A2:** replaces only A1's backbone/projections with
+  `mobilenetv4_conv_medium.e500_r256_in1k`; no trained A2 weights exist yet.
 - **Qualified student weights:** none yet.
 - **Distillation:** completed and rejected for A1; GT-only epoch 140 remains the
   stronger A1 baseline and the distilled checkpoint is not a product candidate.
@@ -165,10 +167,11 @@ historical, reproducible evidence.
 
 ## Next step
 
-Prepare a GT-only MobileNetV4-MonoDETR A2 experiment with a higher-capacity
-backbone. Preserve the transformer, query count, heads, input resolution, R0
-initialization policy, Chen split, augmentation, optimizer/schedule, and
-evaluator; change only backbone capacity. Verify and pin the exact model
-identifier available in `timm==1.0.20` before creating the training config.
-Do not add teacher losses or begin compression. Compare A2 directly with A1
-epoch 140 using the same five accuracy gates and nearby-recall review.
+Run `MonoDETR_A2_MobileNetV4_Medium_Two_Class_GT_Colab.ipynb` top-to-bottom
+on a Colab GPU. A2 uses the verified `timm==1.0.20` identifier
+`mobilenetv4_conv_medium.e500_r256_in1k`. It preserves the transformer, query
+count, heads, input resolution, R0 initialization policy, Chen split,
+augmentation, optimizer/schedule, evaluator, exact resume, and all five gates.
+Do not add teacher losses or begin compression. Compare its product sweep
+directly with A1 epoch 140 and complete nearby-recall review only if all five
+accuracy gates pass.

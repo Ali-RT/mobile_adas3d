@@ -17,10 +17,10 @@ not constrain the current accuracy-development stage.
 ## Current position
 
 - Current phase: **accuracy-first teacher-compatible student development**
-- Active task: prepare a higher-capacity GT-only MobileNetV4-MonoDETR A2
-  experiment while holding the transformer, protocol, and evaluator fixed.
+- Active task: run the prepared GT-only MobileNetV4-MonoDETR A2 notebook on
+  Colab GPU and return its final training summary plus product sweep.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
-- Accuracy candidate: **MobileMonoDETR-Student-A1**
+- Accuracy candidate: **MobileMonoDETR-Student-A2 (prepared; untrained)**
 - S1/H1/H2 status: **frozen negative experiments; do not resume**.
 - Knowledge distillation: **completed and rejected for A1**; it did not improve
   balanced accuracy and should not be retuned or resumed.
@@ -73,7 +73,7 @@ not constrain the current accuracy-development stage.
 | M36 | Accuracy-qualified student selection | Complete—none qualified | Neither GT-only A1 nor distilled A1 passed all five 90%-of-R0 gates. Epoch-140 GT-only A1 remains the stronger comparison baseline; no A1 checkpoint is eligible for compression or deployment. |
 | M37 | Post-accuracy compression ladder | Blocked | Test FP16, INT8/QAT, structured pruning, depth/width/token reduction, and low-rank changes only after an accuracy-qualified student exists. |
 | M38 | Deployment qualification | Blocked | Select hardware target and restore conversion/parity/runtime/stability gates only after accuracy qualification. |
-| M39 | Higher-capacity A2 backbone experiment | Next | Increase only MobileNetV4 backbone capacity; preserve the MonoDETR transformer, input resolution, R0-compatible initialization policy, Chen split, augmentation, optimizer/schedule, and evaluator. Verify and pin the exact `timm==1.0.20` model identifier before training. |
+| M39 | Higher-capacity A2 backbone experiment | Prepared—run next | `MonoDETR_A2_MobileNetV4_Medium_Two_Class_GT_Colab.ipynb` changes only A1's Conv Small backbone/projections to pinned `mobilenetv4_conv_medium.e500_r256_in1k`. It preserves the transformer, input resolution, R0-compatible initialization, Chen split, augmentation, optimizer/schedule, evaluator, exact resume, and all five gates. The notebook fails closed on `timm==1.0.20` and model registry availability. |
 
 ## Frozen R0 reference
 
@@ -130,9 +130,10 @@ frozen; passing AP does not by itself authorize deployment.
 6. **Completed—rejected:** paired A1 distillation produced only `+0.0824`
    Vehicle moderate 3D AP_R40 while reducing Pedestrian by `1.9370`, balanced
    mean by `0.9273`, Vehicle BEV by `0.7449`, and Pedestrian BEV by `1.7519`.
-7. **Next:** prepare a GT-only A2 experiment with a higher-capacity MobileNetV4
-   backbone. Hold the transformer, data, initialization policy, schedule, and
-   evaluator fixed so the backbone-capacity effect is isolated.
+7. **Prepared—run next:** execute
+   `MonoDETR_A2_MobileNetV4_Medium_Two_Class_GT_Colab.ipynb` on Colab GPU.
+   It uses pinned MobileNetV4 Conv Medium and changes only the backbone plus
+   required feature projections relative to A1.
 8. Select and freeze a student only if every comparable-performance gate and
    nearby-recall review passes.
 9. Run locked external validation, then compress the frozen student one change

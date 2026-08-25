@@ -2286,3 +2286,26 @@ GT-only epoch 140 as the stronger A1 comparison baseline. The next experiment
 is GT-only A2: increase only MobileNetV4 backbone capacity while preserving the
 MonoDETR transformer, protocol, schedule, and evaluator. Compression and device
 qualification remain blocked until a student passes every accuracy gate.
+
+#### 2026-08-25 A2 Conv Medium GT-only workflow prepared
+
+Run `notebooks/MonoDETR_A2_MobileNetV4_Medium_Two_Class_GT_Colab.ipynb`
+top-to-bottom on a Colab GPU. The controlled A2 change is
+`mobilenetv4_conv_small.e2400_r224_in1k` to
+`mobilenetv4_conv_medium.e500_r256_in1k` plus the required feature projection
+shapes. The pinned `timm==1.0.20` wheel was inspected directly and contains
+this exact pretrained identifier. The notebook also checks the installed timm
+version, registry entry, output channels, and strides before preparation.
+
+A2 remains GT-only. It preserves the frozen R0 epoch-185 checkpoint/hash,
+two-class mapping, Chen 3712/3769 split, input resolution, transformer, query
+count, heads, losses, augmentation, batch size `16`, learning rate `1e-4`,
+195-epoch schedule, checkpoint frequency `5`, exact optimizer resume,
+Drive-backed logs, evaluator, and five 90%-of-R0 gates. Its Drive output root is
+`/content/drive/MyDrive/mobile_adas3d_outputs/students/monodetr_a2_gt` and run
+name is `monodetr_a2_mnv4_vehicle_pedestrian_gt`.
+
+No A2 trained weights exist yet. Return the final training summary and
+`product_checkpoint_sweep/a2_product_selection.json`. Do not run
+distillation, compression, or device qualification unless A2 passes all five
+accuracy gates and the subsequent nearby-recall review.
