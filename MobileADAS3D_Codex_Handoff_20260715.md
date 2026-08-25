@@ -2221,3 +2221,21 @@ skips incomplete checkpoints. The final restartable product sweep evaluates
 all 3,769 images and writes `a1_product_selection.json` with the five frozen
 90%-of-R0 gates. Return the experiment manifest, final training summary, and
 selection report. Do not start paired distillation until this result is frozen.
+
+#### 2026-08-25 A1 GT-only baseline completed
+
+The complete 195-epoch A1 run and restartable checkpoint sweep succeeded.
+Epoch 140 was selected by balanced moderate 3D AP_R40. Its Vehicle/Pedestrian
+moderate 3D AP_R40 was `12.8604/7.2669`, balanced mean `10.0636`, and moderate
+BEV AP_R40 `18.7852/8.5095`.
+
+Relative to frozen R0, A1 retained `72.9%` Vehicle 3D, `127.0%` Pedestrian 3D,
+`86.2%` balanced 3D mean, `79.3%` Vehicle BEV, and `129.0%` Pedestrian BEV.
+Pedestrian passed both gates, while Vehicle 3D, Vehicle BEV, and balanced mean
+did not. Therefore A1 epoch 140 is a healthy GT-only baseline and a valid
+paired-experiment denominator, but not an accuracy-qualified student.
+
+M35 is authorized next: prepare one two-class R0-to-A1 distillation experiment
+from the identical saved A1 initialization, data, optimizer, schedule, and
+evaluator. The legacy Car-only cache is invalid. Do not compress or return to
+device gates until a student passes all five accuracy gates and nearby recall.

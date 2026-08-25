@@ -17,8 +17,8 @@ not constrain the current accuracy-development stage.
 ## Current position
 
 - Current phase: **accuracy-first teacher-compatible student development**
-- Active task: run the fresh two-class MobileNetV4-MonoDETR A1 GT-only baseline
-  in Colab and return its manifest, final training summary, and product sweep.
+- Active task: prepare the paired two-class R0-to-A1 distillation experiment
+  from the frozen A1 initialization and schedule.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Accuracy candidate: **MobileMonoDETR-Student-A1**
 - S1/H1/H2 status: **frozen negative experiments; do not resume**.
@@ -68,8 +68,8 @@ not constrain the current accuracy-development stage.
 | M31 | H2 reference-offset reachability diagnostic | Cancelled by strategy pivot | H2 remains reproducible, but further custom-query debugging is lower value than returning to the proven MonoDETR learning path. |
 | M32 | Accuracy-first student contract | Complete | H1/H2 frozen; 90%-of-R0 comparable-performance gates and the MobileNetV4-MonoDETR A1 sequence are locked in `ACCURACY_FIRST_STUDENT_CONTRACT.md`. |
 | M33 | Two-class A1 GT-only baseline workflow | Complete | `MonoDETR_A1_MobileNetV4_Two_Class_GT_Colab.ipynb` is Drive-backed, verbose, restartable, and fail-closed on the frozen R0 epoch/hash. The preparer transfers every compatible downstream R0 tensor, changes only backbone/projections, fixes the initialization seed, and disables distillation. The restartable sweep reports all five 90%-of-R0 gates. |
-| M34 | Two-class A1 GT-only baseline run | Next | Run the A1 notebook on a Colab GPU, train/sweep durable checkpoints, and evaluate all 3,769 Chen-val images using the frozen product protocol. |
-| M35 | Paired A1 distillation experiment | Pending | Use identical initialization and schedule; requires a new two-class R0 teacher cache/path. |
+| M34 | Two-class A1 GT-only baseline run | Complete—healthy, below final gate | All 195 epochs and the product sweep completed. Epoch 140 won by balanced moderate 3D AP_R40: Vehicle 12.8604, Pedestrian 7.2669, mean 10.0636; BEV was 18.7852/8.5095. Pedestrian exceeded R0, but Vehicle 3D/BEV and balanced mean missed the 90% gates. Freeze epoch 140 as the GT-only comparison baseline, not an accuracy-qualified student. |
+| M35 | Paired A1 distillation experiment | Next | Use the identical A1 initialization, data, optimizer, schedule, and evaluator. Build a valid two-class R0 teacher path/cache; do not use the old Car-only cache. |
 | M36 | Accuracy-qualified student selection | Pending | Require all five 90%-of-R0 3D/BEV gates plus nearby recall review. |
 | M37 | Post-accuracy compression ladder | Pending | Test FP16, INT8/QAT, structured pruning, depth/width/token reduction, and low-rank changes one at a time. |
 | M38 | Deployment qualification | Pending | Select hardware target, restore conversion/parity/runtime/stability gates, and use the validated app workflow. |
@@ -121,10 +121,12 @@ frozen; passing AP does not by itself authorize deployment.
 3. **Completed:** prepare the two-class MobileNetV4-MonoDETR GT-only Colab
    workflow with exact provenance, deterministic initialization, durable resume,
    visible logs, and a restartable five-gate product sweep.
-4. **Next:** run A1, sweep its durable checkpoints, and evaluate the full Chen
-   validation set.
-5. Freeze the GT-only initialization and result before adding teacher losses.
-6. Build a two-class R0 teacher cache/path and run one paired distilled A1
+4. **Completed:** A1 trained through epoch 195 and all durable checkpoints were
+   swept. Epoch 140 is frozen as the healthy GT-only baseline but missed three
+   gates: Vehicle 3D, balanced 3D mean, and Vehicle BEV.
+5. **Completed:** freeze the A1 initialization and epoch-140 GT-only result
+   before adding teacher losses.
+6. **Next:** build a two-class R0 teacher cache/path and run one paired A1
    experiment. Do not use the existing Car-only cache.
 7. Select and freeze a student only if every comparable-performance gate and
    nearby-recall review passes.

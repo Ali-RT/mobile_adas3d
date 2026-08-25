@@ -36,6 +36,7 @@ Cyclist, Misc, and DontCare are excluded from the first product model.
 | S1 GT-only 20-epoch gate | Training was stable, but Vehicle/Pedestrian moderate 3D AP_R40 was only 0.024/0.519 | Reject continuation to 100 epochs |
 | S1 checkpoint and geometry diagnosis | Epoch 20 was best; 12,105 Vehicle detections matched at mean 2D IoU 0.675, but yaw/shape/placement were poor | 2D detection is not the first failure |
 | S1 yaw diagnosis | Vehicle axis error was good at 9.63 degrees mean, but final yaw was 72.28 degrees with a 35.8% flip-candidate rate | Reject independent axis plus hard direction-bit yaw |
+| A1 two-class GT-only baseline | MobileNetV4-MonoDETR trained for 195 epochs; epoch 140 reached Vehicle/Pedestrian moderate 3D AP_R40 12.860/7.267 and BEV 18.785/8.510 | Freeze as a healthy paired-experiment baseline; Pedestrian exceeds R0, but Vehicle prevents final qualification |
 
 ## Teacher/reference status
 
@@ -152,9 +153,10 @@ preprocessing removed the original 540-570 ms bottleneck and measured around
   supervised capacity/assignment/localization gates failed.
 - **Active student A1:** MobileNetV4 Conv Small backbone inside the otherwise
   preserved two-class MonoDETR architecture.
+- **Frozen GT-only A1 baseline:** epoch 140; healthy but not accuracy-qualified.
 - **Qualified student weights:** none yet.
-- **Distillation:** disabled until the GT-only A1 baseline is frozen; the old
-  Car-only cache is not valid for the two-class run.
+- **Distillation:** now authorized as one paired experiment; the old Car-only
+  cache remains invalid for the two-class run.
 
 The active architecture and experiment gates are frozen in
 `ACCURACY_FIRST_STUDENT_CONTRACT.md`; the older S1/H1/H2 contracts remain as
@@ -162,14 +164,9 @@ historical, reproducible evidence.
 
 ## Next step
 
-Prepare the fresh two-class A1 GT-only Colab workflow. It must reuse the pinned
-MonoDETR source, frozen R0 epoch-185 provenance, Chen splits, product taxonomy,
-resolution, transformer, decoder, and evaluator while replacing only ResNet50
-with MobileNetV4 Conv Small. It must save durable Google Drive checkpoints,
-stream batch/epoch losses, resume only the exact run, and sweep the completed
-checkpoints over all 3,769 validation images.
-
-Do not add distillation to this baseline. After its initialization and result
-are frozen, create a paired two-class teacher experiment. Only after a student
-passes the five 90%-of-R0 gates and nearby-recall review should compression or
-deployment qualification begin.
+Prepare one paired two-class R0-to-A1 distillation workflow. It must start from
+the exact saved A1 initialization and preserve the GT-only data, optimizer,
+schedule, augmentation, and evaluator. Generate or validate a Vehicle and
+Pedestrian teacher path; never reuse the Car-only cache. Compare the distilled
+run directly with frozen A1 epoch 140, including per-class 3D/BEV and nearby
+recall. Compression remains blocked until a student passes every accuracy gate.
