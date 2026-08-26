@@ -2333,5 +2333,7 @@ predictions, and runs `scripts/audit_product_prediction_geometry.py`. Return
 `nearby_geometry_epoch130/nearby_geometry_summary.json`. The output includes
 Vehicle recall below 40 m, Pedestrian recall below 30 m, their frozen 85%/80%
 gates, and depth/dimension/yaw/3D-center/BEV/3D-IoU diagnostics for defining
-one controlled A2b change. The diagnostic cell is self-contained for its `yaml`
-and `pandas` imports; rerun the updated cell after pulling commit from 2026-08-26.
+one controlled A2b change. The final diagnostic section is fully standalone: in a fresh Colab GPU runtime,
+run its single code cell without running any earlier notebook cell. It mounts Drive,
+prepares repositories/dependencies/data/config, verifies epoch 130, runs inference,
+and writes the report.

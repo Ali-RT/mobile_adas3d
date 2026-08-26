@@ -64,6 +64,12 @@ class MonoDETRA2WorkflowTests(unittest.TestCase):
         )
         self.assertIn("import pandas as pd", diagnostic)
         self.assertIn("import yaml", diagnostic)
+        self.assertIn("drive.mount('/content/drive')", diagnostic)
+        self.assertIn("MOBILE_REPO = Path('/content/mobile_adas3d')", diagnostic)
+        self.assertIn("prepare_monodetr_a2_student.py", diagnostic)
+        self.assertIn("CONFIG=MONODETR_REPO/", diagnostic)
+        self.assertIn("def run_logged(", diagnostic)
+        self.assertIn("audit_product_prediction_geometry.py", diagnostic)
 
     def test_all_five_accuracy_gates_are_frozen(self):
         self.assertEqual(
