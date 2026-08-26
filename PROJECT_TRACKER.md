@@ -74,7 +74,8 @@ not constrain the current accuracy-development stage.
 | M37 | Post-accuracy compression ladder | Blocked | Test FP16, INT8/QAT, structured pruning, depth/width/token reduction, and low-rank changes only after an accuracy-qualified student exists. |
 | M38 | Deployment qualification | Blocked | Select hardware target and restore conversion/parity/runtime/stability gates only after accuracy qualification. |
 | M39 | Higher-capacity A2 backbone experiment | Complete—strongest student, near gate | All 195 epochs and 39 complete checkpoint evaluations succeeded. Epoch 130 uniquely ranked first and was best for Vehicle 3D, Pedestrian 3D, balanced 3D mean, and Vehicle BEV. It passed four gates; Vehicle moderate 3D was `15.4573` versus `15.8713` (short `0.4140`, retaining `87.65%` of R0). Freeze SHA-256 `ed2134a98acbf1ab2fc61f7c8749b38fdfd2418e7f7932593e5e37a8d9ef33f4`. |
-| M40 | A2 epoch-130 nearby-recall and geometry diagnosis | Prepared—run next | The A2 notebook now recreates exactly 3,769 predictions from the hash-locked checkpoint and runs `audit_product_prediction_geometry.py`; the standalone diagnostic section mounts Drive and recreates every required runtime dependency without earlier cells. It reports Vehicle <40 m and Pedestrian <30 m recall gates plus depth, dimensions, yaw, 3D center, BEV/3D IoU, matched rows, and false negatives. |
+| M40 | A2 epoch-130 nearby-recall and geometry diagnosis | Complete—Vehicle passes, Pedestrian fails | All 3,769 validation images were audited. Vehicle <40 m recall was `88.29%` (passes `85%`); Pedestrian <30 m recall was `69.22%` (fails `80%`). Vehicle matched 2D IoU was strong (`0.818` overall), but 3D IoU was `0.414`; yaw MAE was `42.64°` with p90 `177.80°`, exposing front/back flips. Vehicle depth MAE rose from `0.65 m` at 0–20 m to `1.72 m` at 20–40 m and `3.67 m` at 40–60 m. Pedestrian recall/objectness is the primary product failure. |
+| M41 | A2b targeted accuracy experiment | Define next | Preserve A2 and the frozen protocol. Make one controlled intervention aimed first at Pedestrian query recall/classification and second at Vehicle yaw direction ambiguity; do not change backbone capacity, taxonomy, evaluator, or deployment constraints in the same run. |
 
 ## Frozen R0 reference
 
@@ -134,12 +135,17 @@ frozen; passing AP does not by itself authorize deployment.
 7. **Completed:** A2 trained through epoch 195 and all 39 checkpoints were
    evaluated. Freeze epoch 130 as the strongest diagnostic baseline; no hidden
    checkpoint passes all five gates.
-8. **Prepared—run next:** run the final A2 notebook diagnostic section to
-   measure frozen nearby recall and isolate Vehicle depth/dimension/yaw/center
-   error before defining A2b.
-9. Select and freeze a student only if every comparable-performance gate and
-   nearby-recall review passes.
-10. Run locked external validation, then compress the frozen student one change
+8. **Completed:** the A2 epoch-130 diagnostic found Vehicle <40 m recall
+   `88.29%` (pass), Pedestrian <30 m recall `69.22%` (fail), strong Vehicle 2D
+   IoU `0.818`, weak Vehicle 3D IoU `0.414`, and severe yaw front/back flips
+   (`42.64°` mean, `177.80°` p90).
+9. **Next:** define A2b as one controlled accuracy intervention. Preserve the
+   A2 backbone and protocol; target Pedestrian recall/objectness first and
+   Vehicle direction ambiguity second. Do not combine compression or iPhone
+   work with this experiment.
+10. Select and freeze a student only if every comparable-performance gate and
+    nearby-recall review passes.
+11. Run locked external validation, then compress the frozen student one change
     at a time and restore deployment-specific parity/runtime qualification.
 
 ## Decision rules

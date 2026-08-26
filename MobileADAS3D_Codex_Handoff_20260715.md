@@ -2337,3 +2337,32 @@ one controlled A2b change. The final diagnostic section is fully standalone: in 
 run its single code cell without running any earlier notebook cell. It mounts Drive,
 prepares repositories/dependencies/data/config, verifies epoch 130, runs inference,
 and writes the report.
+
+
+#### 2026-08-26 A2 epoch-130 nearby-recall and geometry diagnosis completed
+
+The standalone diagnostic completed inference on all 3,769 Chen validation
+images and wrote
+`students/monodetr_a2_gt/nearby_geometry_epoch130/nearby_geometry_summary.json`.
+Vehicle recall below 40 m was `11253/12745 = 88.29%`, passing the frozen `85%`
+gate. Pedestrian recall below 30 m was `1570/2268 = 69.22%`, failing the frozen
+`80%` gate. The `0.001` evaluation score threshold intentionally maximizes
+recall for AP analysis, so its raw precision is diagnostic and is not an
+operating threshold.
+
+For matched Vehicles, mean 2D IoU was strong (`0.8179`) while mean BEV/3D IoU
+was only `0.4425/0.4136`. Overall depth MAE was `1.923 m`; by distance it was
+`0.649 m` at 0–20 m, `1.717 m` at 20–40 m, and `3.672 m` at 40–60 m. Vehicle
+yaw MAE was `42.64°` and p90 was `177.80°`, showing that front/back direction
+flips remain a major limiter despite good image-plane localization. Pedestrian
+matched 2D IoU was `0.7036`, but the recall failure means objectness/query
+coverage must be addressed before geometry-only tuning.
+
+The upstream MonoDETR evaluation printed in the same run reports native KITTI
+`Car`, whereas the product evaluator merges Car, Van, Truck, and Tram into
+`Vehicle`; the native Car AP values therefore are not replacements for the
+frozen product A2 metrics. A2 remains unqualified. The next experiment is A2b:
+preserve the A2 Conv Medium backbone and frozen evaluation protocol, then make
+one controlled intervention targeting Pedestrian recall/classification first
+and Vehicle front/back direction ambiguity second. Do not begin compression,
+Core ML conversion, or iPhone qualification yet.
