@@ -2366,3 +2366,28 @@ preserve the A2 Conv Medium backbone and frozen evaluation protocol, then make
 one controlled intervention targeting Pedestrian recall/classification first
 and Vehicle front/back direction ambiguity second. Do not begin compression,
 Core ML conversion, or iPhone qualification yet.
+
+
+#### 2026-08-26 A2b Pedestrian-balanced workflow prepared
+
+The diagnostic made Pedestrian nearby recall (`69.22%` versus the `80%` gate)
+the first A2b target. Run
+`notebooks/MonoDETR_A2b_Pedestrian_Balanced_Two_Class_GT_Colab.ipynb`
+top-to-bottom on a Colab GPU. A2b starts from the same deterministic A2
+initialization and preserves MobileNetV4 Conv Medium, the MonoDETR transformer
+and heads, GT losses, optimizer, learning rate, 195-epoch schedule, validation
+split, evaluator, and all five accuracy gates. The only change is a generated
+training split that includes every original Chen training image once and adds
+one extra copy of each image containing Pedestrian or Person_sitting. The
+manifest records source count, Pedestrian-image count, balanced count, repeat
+factor, and split SHA-256. Resume and checkpoint sweeping remain durable.
+
+Temperature was not ignored: the rejected A1 distillation branch used a fixed
+soft-target temperature of `2.0`, but no alternate temperature or sweep was
+run. Temperature operates only in the teacher/student distillation losses; it
+does not change a GT-only model. A2b therefore explicitly disables both
+distillation and temperature scaling. Do not combine a temperature study, yaw
+change, compression, or iPhone work with this sampling experiment. Return the
+final training summary and
+`product_checkpoint_sweep/a2b_product_selection.json`; nearby recall is audited
+only after the five-gate sweep selects a checkpoint.
