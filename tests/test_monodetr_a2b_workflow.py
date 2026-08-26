@@ -57,7 +57,7 @@ class MonoDETRA2bWorkflowTests(unittest.TestCase):
         self.assertIn("--pedestrian-repeat", self.code)
         self.assertIn("'2'", self.code)
         self.assertIn(
-            "train_a2b_ped",
+            "train_a2b_source.txt",
             (ROOT / "scripts/prepare_monodetr_a2b_student.py").read_text(),
         )
         self.assertIn("manifest[\x27temperature_scaling_enabled\x27] is False", self.code)
@@ -73,8 +73,15 @@ class MonoDETRA2bWorkflowTests(unittest.TestCase):
             (root / "training/label_2/000002.txt").write_text("Pedestrian 0 0 0\n")
             (root / "training/label_2/000003.txt").write_text("Person_sitting 0 0 0\n")
             split_name, report = create_pedestrian_balanced_split(root, 2)
-            lines = (root / f"ImageSets/{split_name}.txt").read_text().splitlines()
+            self.assertEqual(split_name, "train")
+            lines = (root / "ImageSets/train.txt").read_text().splitlines()
             self.assertEqual(lines, ["000001", "000002", "000003", "000002", "000003"])
+            split_name_2, report_2 = create_pedestrian_balanced_split(root, 2)
+            self.assertEqual(split_name_2, "train")
+            self.assertEqual(
+                (root / "ImageSets/train.txt").read_text().splitlines(), lines
+            )
+            self.assertEqual(report_2["source_split_sha256"], report["source_split_sha256"])
             self.assertEqual(report["source_samples"], 3)
             self.assertEqual(report["pedestrian_source_samples"], 2)
             self.assertEqual(report["balanced_samples"], 5)

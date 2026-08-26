@@ -61,7 +61,10 @@ def resolve_r0_selection(path: Path) -> tuple[Path, dict]:
 def create_pedestrian_balanced_split(dataset_root: Path, repeat: int) -> tuple[str, dict]:
     if repeat < 1:
         raise ValueError("pedestrian_repeat must be at least 1")
-    source = dataset_root / "ImageSets/train.txt"
+    output = dataset_root / "ImageSets/train.txt"
+    source = dataset_root / "ImageSets/train_a2b_source.txt"
+    if not source.is_file():
+        source.write_text(output.read_text(encoding="utf-8"), encoding="utf-8")
     label_root = dataset_root / "training/label_2"
     if not label_root.is_dir():
         raise FileNotFoundError(label_root)
@@ -82,11 +85,12 @@ def create_pedestrian_balanced_split(dataset_root: Path, repeat: int) -> tuple[s
         }
         if classes & {"Pedestrian", "Person_sitting"}:
             pedestrian_ids.append(sample_id)
-    split_name = f"train_a2b_ped{repeat}"
-    output = dataset_root / f"ImageSets/{split_name}.txt"
+    split_name = "train"
     balanced_ids = sample_ids + pedestrian_ids * (repeat - 1)
     output.write_text("\n".join(balanced_ids) + "\n", encoding="utf-8")
     return split_name, {
+        "source_split": str(source),
+        "source_split_sha256": sha256_file(source),
         "source_samples": len(sample_ids),
         "pedestrian_source_samples": len(pedestrian_ids),
         "pedestrian_repeat": repeat,
@@ -252,7 +256,7 @@ def main() -> None:
         "r0_checkpoint": str(r0_checkpoint),
         "r0_checkpoint_sha256": R0_CHECKPOINT_SHA256,
         "r0_selected_epoch": R0_EPOCH,
-        "train_split_sha256": sha256_file(dataset_root / "ImageSets/train.txt"),
+        "train_split_sha256": sampling["source_split_sha256"],
         "sampling": sampling,
         "val_split_sha256": sha256_file(dataset_root / "ImageSets/val.txt"),
         "native_training_classes": ["Car", "Pedestrian"],

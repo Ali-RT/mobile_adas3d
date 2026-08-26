@@ -2391,3 +2391,21 @@ change, compression, or iPhone work with this sampling experiment. Return the
 final training summary and
 `product_checkpoint_sweep/a2b_product_selection.json`; nearby recall is audited
 only after the five-gate sweep selects a checkpoint.
+
+
+#### 2026-08-26 A2b split-name preflight failure fixed
+
+The first A2b launch stopped before constructing a dataloader or taking any
+optimizer step. Pinned MonoDETR asserts that `train_split` is one of `train`,
+`val`, `trainval`, or `test`; the initial generated name `train_a2b_ped2` was
+therefore rejected. No checkpoint or partial training state was created.
+
+The preparer now keeps MonoDETR-compatible `train_split: train`. Inside the
+isolated A2b KITTI view it preserves the canonical 3,712-ID list as
+`ImageSets/train_a2b_source.txt`, deterministically writes the balanced list to
+`ImageSets/train.txt`, and records both source and balanced SHA-256 values in
+the manifest. Re-running preparation reads the preserved source list, so it
+cannot repeatedly duplicate samples. Unit coverage executes preparation twice
+and verifies identical output. After updating the Colab clone to the fix, rerun
+the dataset-view cell, preparation cell, checkpoint-discovery cell, and training
+cell; the previous failure requires no cleanup.
