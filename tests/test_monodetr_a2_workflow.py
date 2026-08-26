@@ -55,6 +55,16 @@ class MonoDETRA2WorkflowTests(unittest.TestCase):
         self.assertIn("nearby_geometry_epoch130", self.code)
         self.assertIn("ed2134a98acbf1ab2fc61f7c8749b38fdfd2418e7f7932593e5e37a8d9ef33f4", self.code)
 
+    def test_diagnostic_cell_imports_runtime_dependencies(self):
+        diagnostic = next(
+            "".join(cell["source"])
+            for cell in self.notebook["cells"]
+            if cell["cell_type"] == "code"
+            and "SELECTED_EPOCH = 130" in "".join(cell["source"])
+        )
+        self.assertIn("import pandas as pd", diagnostic)
+        self.assertIn("import yaml", diagnostic)
+
     def test_all_five_accuracy_gates_are_frozen(self):
         self.assertEqual(
             set(GATES),

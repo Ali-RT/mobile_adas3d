@@ -2333,4 +2333,5 @@ predictions, and runs `scripts/audit_product_prediction_geometry.py`. Return
 `nearby_geometry_epoch130/nearby_geometry_summary.json`. The output includes
 Vehicle recall below 40 m, Pedestrian recall below 30 m, their frozen 85%/80%
 gates, and depth/dimension/yaw/3D-center/BEV/3D-IoU diagnostics for defining
-one controlled A2b change.
+one controlled A2b change. The diagnostic cell is self-contained for its `yaml`
+and `pandas` imports; rerun the updated cell after pulling commit from 2026-08-26.

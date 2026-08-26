@@ -74,7 +74,7 @@ not constrain the current accuracy-development stage.
 | M37 | Post-accuracy compression ladder | Blocked | Test FP16, INT8/QAT, structured pruning, depth/width/token reduction, and low-rank changes only after an accuracy-qualified student exists. |
 | M38 | Deployment qualification | Blocked | Select hardware target and restore conversion/parity/runtime/stability gates only after accuracy qualification. |
 | M39 | Higher-capacity A2 backbone experiment | Complete—strongest student, near gate | All 195 epochs and 39 complete checkpoint evaluations succeeded. Epoch 130 uniquely ranked first and was best for Vehicle 3D, Pedestrian 3D, balanced 3D mean, and Vehicle BEV. It passed four gates; Vehicle moderate 3D was `15.4573` versus `15.8713` (short `0.4140`, retaining `87.65%` of R0). Freeze SHA-256 `ed2134a98acbf1ab2fc61f7c8749b38fdfd2418e7f7932593e5e37a8d9ef33f4`. |
-| M40 | A2 epoch-130 nearby-recall and geometry diagnosis | Prepared—run next | The A2 notebook now recreates exactly 3,769 predictions from the hash-locked checkpoint and runs `audit_product_prediction_geometry.py`. It reports Vehicle <40 m and Pedestrian <30 m recall gates plus depth, dimensions, yaw, 3D center, BEV/3D IoU, matched rows, and false negatives. |
+| M40 | A2 epoch-130 nearby-recall and geometry diagnosis | Prepared—run next | The A2 notebook now recreates exactly 3,769 predictions from the hash-locked checkpoint and runs `audit_product_prediction_geometry.py`; the diagnostic cell imports its runtime dependencies explicitly. It reports Vehicle <40 m and Pedestrian <30 m recall gates plus depth, dimensions, yaw, 3D center, BEV/3D IoU, matched rows, and false negatives. |
 
 ## Frozen R0 reference
 
