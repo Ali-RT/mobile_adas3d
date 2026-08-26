@@ -2309,3 +2309,28 @@ No A2 trained weights exist yet. Return the final training summary and
 `product_checkpoint_sweep/a2_product_selection.json`. Do not run
 distillation, compression, or device qualification unless A2 passes all five
 accuracy gates and the subsequent nearby-recall review.
+
+#### 2026-08-26 A2 epoch-130 sweep frozen and diagnostic prepared
+
+All 39 expected A2 checkpoints from epochs 5-195 completed the full 3,769-image
+product evaluation. No checkpoint passes all five gates. Epoch 130 is uniquely
+best: it is the only checkpoint passing the other four gates and is also the
+maximum for Vehicle 3D, Pedestrian 3D, balanced 3D mean, and Vehicle BEV.
+Metrics are `15.4573/7.5328` Vehicle/Pedestrian moderate 3D, balanced mean
+`11.4950`, and BEV `21.3750/8.4892`. Vehicle 3D misses its `15.8713` gate
+by `0.4140`; all other gates pass. Freeze checkpoint SHA-256
+`ed2134a98acbf1ab2fc61f7c8749b38fdfd2418e7f7932593e5e37a8d9ef33f4`.
+
+The canonical A1/A2 architecture, Hungarian matching costs, supervised loss
+terms/weights, grouped-query behavior, optimizer, and schedule are now frozen
+in `ACCURACY_FIRST_STUDENT_CONTRACT.md`.
+
+The final section of
+`notebooks/MonoDETR_A2_MobileNetV4_Medium_Two_Class_GT_Colab.ipynb` is the
+next task. Run setup as needed, then the epoch-130 diagnostic section. It
+performs no training: it verifies the frozen hash, recreates exactly 3,769
+predictions, and runs `scripts/audit_product_prediction_geometry.py`. Return
+`nearby_geometry_epoch130/nearby_geometry_summary.json`. The output includes
+Vehicle recall below 40 m, Pedestrian recall below 30 m, their frozen 85%/80%
+gates, and depth/dimension/yaw/3D-center/BEV/3D-IoU diagnostics for defining
+one controlled A2b change.

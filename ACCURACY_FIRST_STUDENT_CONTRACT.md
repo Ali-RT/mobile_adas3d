@@ -31,44 +31,75 @@ All five gates and all 3,769 validation predictions are required. Checkpoint
 selection also reports per-class nearby recall; aggregate loss or Vehicle AP
 alone cannot select a model.
 
-## Student A1 architecture
+## A1 and A2 student architecture
 
-The first accuracy-first candidate is a teacher-compatible MonoDETR student:
+Both accuracy-first students preserve the R0 MonoDETR depth/transformer path:
 
 ```text
 RGB [1, 3, 384, 1280]
-  -> MobileNetV4 Conv Small backbone
-  -> MonoDETR multi-scale feature projections
-  -> LID depth predictor and depth positional encoding
+  -> MobileNetV4 backbone
+  -> stride-8/16/32 features plus fourth projected feature level
+  -> 256-channel feature projections
+  -> 80-bin LID depth predictor, 0-60 m
   -> 3-layer depth-aware deformable encoder
-  -> 3-layer, 50-query decoder
-  -> Vehicle/Pedestrian 2D, depth, dimension, position, yaw, and confidence heads
+  -> 3-layer decoder, 8 heads, 50 inference queries
+  -> class, 2D box/projected-center, depth/uncertainty,
+     dimensions, and 12-bin-plus-residual yaw heads
 ```
 
-The experiment changes only the ResNet50 backbone to MobileNetV4. Resolution,
-taxonomy, split, augmentation, transformer, queries, heads, decoder, evaluator,
-threshold, TopK, NMS, and selection rule remain frozen. Compatible tensors are
-initialized from R0 epoch 185; the new backbone/projection interface uses its
-defined pretrained/new initialization.
+A1 uses `mobilenetv4_conv_small.e2400_r224_in1k` (about 3.8M backbone
+parameters). A2 changes only the backbone and required projection shapes to
+`mobilenetv4_conv_medium.e500_r256_in1k` (about 9.7M backbone parameters).
+Resolution, taxonomy, Chen split, augmentation, transformer, grouped-query
+training, heads, decoder, evaluator, threshold, TopK, NMS, and selection rule
+remain frozen. Compatible tensors are initialized from R0 epoch 185; the new
+backbone/projection interface uses ImageNet-pretrained/new initialization.
+
+The upstream-compatible head retains Car, Pedestrian, and Cyclist logits, but
+training targets map Car/Van/Truck/Tram to Car (product Vehicle), map
+Pedestrian/Person_sitting to Pedestrian, and exclude Cyclist.
+
+## Frozen supervised loss
+
+A1 and A2 are GT-only and use the same Hungarian set criterion:
+
+```text
+total =
+    2 * sigmoid focal classification
+  + 5 * 2D box L1
+  + 2 * generalized IoU
+  + 10 * projected 3D-center L1
+  + 1 * uncertainty-aware metric depth
+  + 1 * dimension-aware L1
+  + 1 * orientation (12-bin cross entropy + selected-residual L1)
+  + 1 * dense 80-bin depth-map loss
+```
+
+Hungarian assignment uses the matching costs class/box/GIoU/projected-center =
+`2/5/2/10`. Cardinality error is logging-only. Auxiliary classification, box,
+GIoU, center, depth, dimension, and angle losses supervise the first two
+decoder layers; the dense depth-map loss is final-only. During training,
+11 groups of 50 queries provide repeated assignments; inference uses 50
+queries. A2 uses AdamW, learning rate `1e-4`, weight decay `1e-4`, batch size
+16, 195 epochs, and 0.1 learning-rate decays at epochs 125 and 165.
+Distillation is disabled.
 
 ## Controlled experiment sequence
 
-1. Freeze S1, H1, and H2 as negative experiments; do not resume them.
-2. Train A1 GT-only with durable Google Drive checkpoints, verbose epoch/batch
-   logs, exact-run automatic resume, and the frozen product evaluator.
-3. Freeze the A1 initialization and baseline result.
-4. Generate a two-class R0 train cache or implement an equivalent deterministic
-   teacher path. The existing Car-only cache is not valid for this experiment.
-5. Train one paired distilled A1 run from the identical initialization and
-   schedule. Keep distillation only if it improves the frozen comparison
-   without reducing Pedestrian or nearby recall.
-6. Freeze the best accuracy-qualified student and run the locked external test.
-7. Compress one variable at a time: FP16, INT8 weights, activation QAT,
-   structured pruning, encoder/decoder depth, width, feature/token reduction,
-   then low-rank substitutions where justified.
-8. Measure each compressed candidate against the frozen accurate student, then
-   restore Core ML parity and physical-device qualification for the selected
-   deployment target.
+1. S1, H1, and H2 are frozen negative experiments.
+2. A1 GT-only is frozen at epoch 140; paired A1 distillation was completed and
+   rejected because balanced/Pedestrian accuracy regressed.
+3. A2 changed only Conv Small to Conv Medium and completed all 195 epochs plus
+   all 39 checkpoint evaluations.
+4. Freeze A2 epoch 130 as the strongest current student. It passes four of five
+   gates; Vehicle moderate 3D is `15.4573` versus the `15.8713` gate.
+5. Run the frozen nearby-recall and geometry diagnostic before defining A2b.
+6. Change one diagnosed variable in A2b; do not blindly enlarge the model or
+   repeat rejected distillation.
+7. Freeze the first student passing all five accuracy and nearby-recall gates,
+   then run the locked external test.
+8. Compress one variable at a time and restore Core ML parity and physical
+   device qualification only after accuracy qualification.
 
 Quantization is a later optimization, not a substitute for a learnable model.
 Transformer activation and memory cost must be measured separately because

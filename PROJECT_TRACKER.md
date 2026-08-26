@@ -17,10 +17,10 @@ not constrain the current accuracy-development stage.
 ## Current position
 
 - Current phase: **accuracy-first teacher-compatible student development**
-- Active task: run the prepared GT-only MobileNetV4-MonoDETR A2 notebook on
-  Colab GPU and return its final training summary plus product sweep.
+- Active task: run the frozen A2 epoch-130 nearby-recall and Vehicle geometry
+  diagnostic, then define one evidence-driven A2b change.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
-- Accuracy candidate: **MobileMonoDETR-Student-A2 (prepared; untrained)**
+- Accuracy candidate: **MobileMonoDETR-Student-A2 epoch 130 (frozen diagnostic baseline)**
 - S1/H1/H2 status: **frozen negative experiments; do not resume**.
 - Knowledge distillation: **completed and rejected for A1**; it did not improve
   balanced accuracy and should not be retuned or resumed.
@@ -73,7 +73,8 @@ not constrain the current accuracy-development stage.
 | M36 | Accuracy-qualified student selection | Complete—none qualified | Neither GT-only A1 nor distilled A1 passed all five 90%-of-R0 gates. Epoch-140 GT-only A1 remains the stronger comparison baseline; no A1 checkpoint is eligible for compression or deployment. |
 | M37 | Post-accuracy compression ladder | Blocked | Test FP16, INT8/QAT, structured pruning, depth/width/token reduction, and low-rank changes only after an accuracy-qualified student exists. |
 | M38 | Deployment qualification | Blocked | Select hardware target and restore conversion/parity/runtime/stability gates only after accuracy qualification. |
-| M39 | Higher-capacity A2 backbone experiment | Prepared—run next | `MonoDETR_A2_MobileNetV4_Medium_Two_Class_GT_Colab.ipynb` changes only A1's Conv Small backbone/projections to pinned `mobilenetv4_conv_medium.e500_r256_in1k`. It preserves the transformer, input resolution, R0-compatible initialization, Chen split, augmentation, optimizer/schedule, evaluator, exact resume, and all five gates. The notebook fails closed on `timm==1.0.20` and model registry availability. |
+| M39 | Higher-capacity A2 backbone experiment | Complete—strongest student, near gate | All 195 epochs and 39 complete checkpoint evaluations succeeded. Epoch 130 uniquely ranked first and was best for Vehicle 3D, Pedestrian 3D, balanced 3D mean, and Vehicle BEV. It passed four gates; Vehicle moderate 3D was `15.4573` versus `15.8713` (short `0.4140`, retaining `87.65%` of R0). Freeze SHA-256 `ed2134a98acbf1ab2fc61f7c8749b38fdfd2418e7f7932593e5e37a8d9ef33f4`. |
+| M40 | A2 epoch-130 nearby-recall and geometry diagnosis | Prepared—run next | The A2 notebook now recreates exactly 3,769 predictions from the hash-locked checkpoint and runs `audit_product_prediction_geometry.py`. It reports Vehicle <40 m and Pedestrian <30 m recall gates plus depth, dimensions, yaw, 3D center, BEV/3D IoU, matched rows, and false negatives. |
 
 ## Frozen R0 reference
 
@@ -130,14 +131,16 @@ frozen; passing AP does not by itself authorize deployment.
 6. **Completed—rejected:** paired A1 distillation produced only `+0.0824`
    Vehicle moderate 3D AP_R40 while reducing Pedestrian by `1.9370`, balanced
    mean by `0.9273`, Vehicle BEV by `0.7449`, and Pedestrian BEV by `1.7519`.
-7. **Prepared—run next:** execute
-   `MonoDETR_A2_MobileNetV4_Medium_Two_Class_GT_Colab.ipynb` on Colab GPU.
-   It uses pinned MobileNetV4 Conv Medium and changes only the backbone plus
-   required feature projections relative to A1.
-8. Select and freeze a student only if every comparable-performance gate and
+7. **Completed:** A2 trained through epoch 195 and all 39 checkpoints were
+   evaluated. Freeze epoch 130 as the strongest diagnostic baseline; no hidden
+   checkpoint passes all five gates.
+8. **Prepared—run next:** run the final A2 notebook diagnostic section to
+   measure frozen nearby recall and isolate Vehicle depth/dimension/yaw/center
+   error before defining A2b.
+9. Select and freeze a student only if every comparable-performance gate and
    nearby-recall review passes.
-9. Run locked external validation, then compress the frozen student one change
-   at a time and restore deployment-specific parity/runtime qualification.
+10. Run locked external validation, then compress the frozen student one change
+    at a time and restore deployment-specific parity/runtime qualification.
 
 ## Decision rules
 

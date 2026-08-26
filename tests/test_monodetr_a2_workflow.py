@@ -51,6 +51,9 @@ class MonoDETRA2WorkflowTests(unittest.TestCase):
         self.assertIn("Durable combined log:", self.code)
         self.assertIn("sweep_monodetr_a2_product_checkpoints.py", self.code)
         self.assertIn("a2_product_selection.json", self.code)
+        self.assertIn("audit_product_prediction_geometry.py", self.code)
+        self.assertIn("nearby_geometry_epoch130", self.code)
+        self.assertIn("ed2134a98acbf1ab2fc61f7c8749b38fdfd2418e7f7932593e5e37a8d9ef33f4", self.code)
 
     def test_all_five_accuracy_gates_are_frozen(self):
         self.assertEqual(

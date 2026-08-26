@@ -1,6 +1,6 @@
 # MobileADAS3D model milestones and architecture
 
-Last updated: 2026-08-24
+Last updated: 2026-08-26
 
 This document is the concise reporting reference for model selection,
 teacher/student status, metrics, edge constraints, completed evidence, and the
@@ -38,6 +38,7 @@ Cyclist, Misc, and DontCare are excluded from the first product model.
 | S1 yaw diagnosis | Vehicle axis error was good at 9.63 degrees mean, but final yaw was 72.28 degrees with a 35.8% flip-candidate rate | Reject independent axis plus hard direction-bit yaw |
 | A1 two-class GT-only baseline | MobileNetV4-MonoDETR trained for 195 epochs; epoch 140 reached Vehicle/Pedestrian moderate 3D AP_R40 12.860/7.267 and BEV 18.785/8.510 | Freeze as a healthy paired-experiment baseline; Pedestrian exceeds R0, but Vehicle prevents final qualification |
 | A1 paired R0 distillation | Online R0 query guidance changed Vehicle moderate 3D AP_R40 by only +0.082 while Pedestrian fell 1.937, balanced mean fell 0.927, and both BEV metrics regressed | Reject the distilled branch; the evidence points to A1 representation capacity, not missing teacher supervision, as the next bottleneck |
+| A2 Conv Medium GT-only | All 195 epochs and 39 checkpoints completed; epoch 130 reached Vehicle/Pedestrian moderate 3D AP_R40 15.457/7.533, mean 11.495, and BEV 21.375/8.489 | Freeze epoch 130 as the strongest student; four of five gates pass and Vehicle 3D misses by only 0.414 |
 
 ## Teacher/reference status
 
@@ -155,9 +156,10 @@ preprocessing removed the original 540-570 ms bottleneck and measured around
 - **Frozen student A1:** MobileNetV4 Conv Small backbone inside the otherwise
   preserved two-class MonoDETR architecture; epoch 140 is healthy but not
   accuracy-qualified.
-- **Prepared student A2:** replaces only A1's backbone/projections with
-  `mobilenetv4_conv_medium.e500_r256_in1k`; no trained A2 weights exist yet.
-- **Qualified student weights:** none yet.
+- **Frozen student A2:** Conv Medium, epoch 130, SHA-256
+  `ed2134a98acbf1ab2fc61f7c8749b38fdfd2418e7f7932593e5e37a8d9ef33f4`;
+  strongest current student, but Vehicle 3D remains below its gate.
+- **Qualified student weights:** none yet; A2 passes four of five gates.
 - **Distillation:** completed and rejected for A1; GT-only epoch 140 remains the
   stronger A1 baseline and the distilled checkpoint is not a product candidate.
 
@@ -167,11 +169,9 @@ historical, reproducible evidence.
 
 ## Next step
 
-Run `MonoDETR_A2_MobileNetV4_Medium_Two_Class_GT_Colab.ipynb` top-to-bottom
-on a Colab GPU. A2 uses the verified `timm==1.0.20` identifier
-`mobilenetv4_conv_medium.e500_r256_in1k`. It preserves the transformer, query
-count, heads, input resolution, R0 initialization policy, Chen split,
-augmentation, optimizer/schedule, evaluator, exact resume, and all five gates.
-Do not add teacher losses or begin compression. Compare its product sweep
-directly with A1 epoch 140 and complete nearby-recall review only if all five
-accuracy gates pass.
+Run only the final epoch-130 diagnostic section of
+`MonoDETR_A2_MobileNetV4_Medium_Two_Class_GT_Colab.ipynb` after its setup
+cells. It hash-locks the checkpoint, regenerates all 3,769 predictions, and
+reports the frozen nearby-recall gates plus matched Vehicle/Pedestrian depth,
+dimension, yaw, center, BEV IoU, and 3D IoU errors. Use that evidence to define
+one A2b change. Do not distill, compress, or enlarge the model blindly.
