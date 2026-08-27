@@ -2409,3 +2409,28 @@ cannot repeatedly duplicate samples. Unit coverage executes preparation twice
 and verifies identical output. After updating the Colab clone to the fix, rerun
 the dataset-view cell, preparation cell, checkpoint-discovery cell, and training
 cell; the previous failure requires no cleanup.
+
+
+#### 2026-08-27 A2b sweep completed and rejected
+
+A2b completed all 195 epochs and the full restartable product sweep. The frozen
+selection rule chose epoch 150 with Vehicle/Pedestrian moderate 3D AP_R40
+`15.2811/7.4720`, balanced mean `11.3765`, and moderate BEV
+`21.0396/8.0988`. Vehicle 3D and Vehicle BEV failed their `15.8713` and
+`21.3134` gates; the other three gates passed.
+
+Relative to frozen A2 epoch 130, A2b changed Vehicle 3D by `-0.1762`,
+Pedestrian 3D by `-0.0608`, balanced mean by `-0.1185`, Vehicle BEV by
+`-0.3354`, and Pedestrian BEV by `-0.3904`. Thus deterministic 2× exposure of
+Pedestrian-containing images regressed every selection metric and reduced the
+number of passed gates from four to three. Reject epoch 150 and the entire A2b
+branch; do not resume it. Because it is already ineligible under the frozen AP
+contract, do not spend another full inference pass on nearby-recall diagnosis.
+A2 epoch 130 remains the strongest student.
+
+The next task is to inspect the pinned MonoDETR Hungarian matching and focal
+classification paths and define one A2c class-specific supervision change.
+The intervention should directly affect Pedestrian objectness/matching rather
+than repeating all objects in Pedestrian-containing images. Preserve A2
+architecture and initialization, and do not combine the experiment with yaw,
+temperature, distillation, compression, or iPhone changes.

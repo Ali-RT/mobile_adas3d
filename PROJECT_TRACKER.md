@@ -1,6 +1,6 @@
 # MobileADAS3D project tracker
 
-Last updated: 2026-08-24
+Last updated: 2026-08-27
 
 This is the canonical status page. Update it whenever a task changes state,
 an experiment finishes, a gate passes/fails, or the next action changes.
@@ -17,8 +17,8 @@ not constrain the current accuracy-development stage.
 ## Current position
 
 - Current phase: **accuracy-first teacher-compatible student development**
-- Active task: run the frozen A2 epoch-130 nearby-recall and Vehicle geometry
-  diagnostic, then define one evidence-driven A2b change.
+- Active task: close rejected A2b and define one controlled A2c intervention
+  that changes class-specific supervision rather than image frequency.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Accuracy candidate: **MobileMonoDETR-Student-A2 epoch 130 (frozen diagnostic baseline)**
 - S1/H1/H2 status: **frozen negative experiments; do not resume**.
@@ -75,8 +75,9 @@ not constrain the current accuracy-development stage.
 | M38 | Deployment qualification | Blocked | Select hardware target and restore conversion/parity/runtime/stability gates only after accuracy qualification. |
 | M39 | Higher-capacity A2 backbone experiment | Complete—strongest student, near gate | All 195 epochs and 39 complete checkpoint evaluations succeeded. Epoch 130 uniquely ranked first and was best for Vehicle 3D, Pedestrian 3D, balanced 3D mean, and Vehicle BEV. It passed four gates; Vehicle moderate 3D was `15.4573` versus `15.8713` (short `0.4140`, retaining `87.65%` of R0). Freeze SHA-256 `ed2134a98acbf1ab2fc61f7c8749b38fdfd2418e7f7932593e5e37a8d9ef33f4`. |
 | M40 | A2 epoch-130 nearby-recall and geometry diagnosis | Complete—Vehicle passes, Pedestrian fails | All 3,769 validation images were audited. Vehicle <40 m recall was `88.29%` (passes `85%`); Pedestrian <30 m recall was `69.22%` (fails `80%`). Vehicle matched 2D IoU was strong (`0.818` overall), but 3D IoU was `0.414`; yaw MAE was `42.64°` with p90 `177.80°`, exposing front/back flips. Vehicle depth MAE rose from `0.65 m` at 0–20 m to `1.72 m` at 20–40 m and `3.67 m` at 40–60 m. Pedestrian recall/objectness is the primary product failure. |
-| M41 | A2b Pedestrian-balanced accuracy experiment | Prepared—run next | Preserve the complete A2 graph, initialization seed, GT losses, optimizer, 195-epoch schedule, validation split, and five gates. The only intervention is deterministic 2× sampling of training images containing Pedestrian/Person_sitting. The isolated KITTI view backs up the original list and writes balanced IDs to the upstream-required `ImageSets/train.txt`; preparation is idempotent. Distillation and temperature scaling are disabled. Run `MonoDETR_A2b_Pedestrian_Balanced_Two_Class_GT_Colab.ipynb` top-to-bottom on a Colab GPU. |
-| M42 | Temperature study | Deferred | A1 distillation used temperature `2.0`, but no temperature comparison or sweep was run. Temperature affects teacher/student soft targets and is not applicable to GT-only A2b. Reconsider only if a future qualified GT baseline justifies a new paired distillation study. |
+| M41 | A2b Pedestrian-balanced accuracy experiment | Complete—rejected | All 195 epochs and the complete product sweep finished. Epoch 150 was selected by the frozen balanced-3D rule: Vehicle/Pedestrian moderate 3D `15.2811/7.4720`, mean `11.3765`, BEV `21.0396/8.0988`. It passed only 3/5 gates and regressed versus A2 epoch 130 by `0.1762/0.0608/0.1185/0.3354/0.3904` across Vehicle 3D, Pedestrian 3D, mean 3D, Vehicle BEV, and Pedestrian BEV. Image-level repetition is rejected; do not resume or audit this checkpoint. |
+| M42 | Temperature study | Deferred | A1 distillation used temperature `2.0`, but no temperature comparison or sweep was run. Temperature affects teacher/student soft targets and did not participate in GT-only A2/A2b. Reconsider only as a small paired gate if future teacher supervision is justified. |
+| M43 | A2c class-specific supervision experiment | Define next | Preserve frozen A2 epoch 130 as the comparison baseline. Inspect pinned MonoDETR matching/classification losses and design one class-specific Pedestrian objectness/matching intervention; avoid repeating whole images, changing the backbone, adding yaw changes, or introducing temperature in the same run. |
 
 ## Frozen R0 reference
 
@@ -140,13 +141,15 @@ frozen; passing AP does not by itself authorize deployment.
    `88.29%` (pass), Pedestrian <30 m recall `69.22%` (fail), strong Vehicle 2D
    IoU `0.818`, weak Vehicle 3D IoU `0.414`, and severe yaw front/back flips
    (`42.64°` mean, `177.80°` p90).
-9. **Prepared—run next:** train A2b from the same frozen initialization.
-   Repeat only Pedestrian-containing training images once (2× total exposure);
-   keep the A2 graph, GT losses, optimizer, schedule, validation, and gates
-   unchanged. Temperature and distillation remain disabled.
-10. Select and freeze a student only if every comparable-performance gate and
+9. **Completed—rejected:** A2b 2× Pedestrian-image sampling regressed all
+   five AP metrics and passed only three gates. Do not resume it or spend an
+   additional nearby-recall inference run on its ineligible checkpoint.
+10. **Next:** inspect pinned MonoDETR matching and classification supervision,
+    then define one A2c class-specific intervention. Keep A2 epoch 130 frozen;
+    do not mix sampling, yaw, temperature, architecture, or deployment changes.
+11. Select and freeze a student only if every comparable-performance gate and
     nearby-recall review passes.
-11. Run locked external validation, then compress the frozen student one change
+12. Run locked external validation, then compress the frozen student one change
     at a time and restore deployment-specific parity/runtime qualification.
 
 ## Decision rules
