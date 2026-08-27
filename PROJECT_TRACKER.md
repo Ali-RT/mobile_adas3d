@@ -17,8 +17,8 @@ not constrain the current accuracy-development stage.
 ## Current position
 
 - Current phase: **accuracy-first teacher-compatible student development**
-- Active task: run the prepared A2c paired five-epoch gate: control plus
-  Pedestrian positive focal weights `1.5`, `2.0`, and `2.5`.
+- Active task: diagnose A2 Pedestrian false negatives by size, occlusion,
+  truncation, depth, and best attainable query IoU before defining A2d.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Accuracy candidate: **MobileMonoDETR-Student-A2 epoch 130 (frozen diagnostic baseline)**
 - S1/H1/H2 status: **frozen negative experiments; do not resume**.
@@ -77,7 +77,8 @@ not constrain the current accuracy-development stage.
 | M40 | A2 epoch-130 nearby-recall and geometry diagnosis | Complete—Vehicle passes, Pedestrian fails | All 3,769 validation images were audited. Vehicle <40 m recall was `88.29%` (passes `85%`); Pedestrian <30 m recall was `69.22%` (fails `80%`). Vehicle matched 2D IoU was strong (`0.818` overall), but 3D IoU was `0.414`; yaw MAE was `42.64°` with p90 `177.80°`, exposing front/back flips. Vehicle depth MAE rose from `0.65 m` at 0–20 m to `1.72 m` at 20–40 m and `3.67 m` at 40–60 m. Pedestrian recall/objectness is the primary product failure. |
 | M41 | A2b Pedestrian-balanced accuracy experiment | Complete—rejected | All 195 epochs and the complete product sweep finished. Epoch 150 was selected by the frozen balanced-3D rule: Vehicle/Pedestrian moderate 3D `15.2811/7.4720`, mean `11.3765`, BEV `21.0396/8.0988`. It passed only 3/5 gates and regressed versus A2 epoch 130 by `0.1762/0.0608/0.1185/0.3354/0.3904` across Vehicle 3D, Pedestrian 3D, mean 3D, Vehicle BEV, and Pedestrian BEV. Image-level repetition is rejected; do not resume or audit this checkpoint. |
 | M42 | Temperature study | Deferred | A1 distillation used temperature `2.0`, but no temperature comparison or sweep was run. Temperature affects teacher/student soft targets and did not participate in GT-only A2/A2b. Reconsider only as a small paired gate if future teacher supervision is justified. |
-| M43 | A2c class-specific supervision experiment | Prepared—run next | Pinned MonoDETR inspection confirmed one global sigmoid focal classification loss (`alpha=0.25`, `gamma=2`) with no class weighting. The paired gate resumes frozen A2 epoch 130 for five epochs at LR `1e-5` with identical safe seed `20268`/data: control weight `1.0` plus Pedestrian-positive weights `1.5`, `2.0`, and `2.5`. Matcher, DN loss, geometry losses, architecture, sampling, distillation, and temperature remain unchanged. Complete AP and nearby recall are evaluated for every branch; at most one eligible branch may receive a full run. |
+| M43 | A2c class-specific supervision experiment | Complete - rejected | All four paired five-epoch branches completed. Weight `2.5` was strongest: Vehicle/Pedestrian moderate 3D `15.4745/7.5128`, mean `11.4937`, BEV `21.0777/8.6164`. Versus control it improved Pedestrian nearby recall only `0.00529` (required `0.02`) and reduced Vehicle BEV by `0.2462` AP (maximum allowed `0.15`). No branch was eligible; `selected=null` and `full_run_authorized=false`. Do not continue A2c. |
+| M44 | A2 Pedestrian false-negative localization diagnosis | Next | A2b sampling and A2c positive classification weighting did not improve nearby recall, so do not launch another training variant yet. On frozen A2 epoch 130, stratify Pedestrian false negatives by height, KITTI difficulty, occlusion, truncation, and distance; measure best class-agnostic query 2D IoU and score to separate missing-query/localization failures from classification failures. Use the result to define one A2d change. |
 
 ## Frozen R0 reference
 
@@ -144,16 +145,17 @@ frozen; passing AP does not by itself authorize deployment.
 9. **Completed—rejected:** A2b 2× Pedestrian-image sampling regressed all
    five AP metrics and passed only three gates. Do not resume it or spend an
    additional nearby-recall inference run on its ineligible checkpoint.
-10. **Prepared—run next:** execute the four-branch A2c five-epoch paired gate
-    (control `1.0`; Pedestrian-positive focal weights `1.5`, `2.0`, `2.5`).
-    Promote at most one variant only if Pedestrian nearby recall gains at least
-    `0.02` versus control, Vehicle nearby recall drops no more than `0.01`,
-    Vehicle 3D/BEV each drop no more than `0.15` AP, and Pedestrian 3D/BEV do
-    not regress. Do not mix sampling, yaw, temperature, architecture, or
-    deployment changes.
-11. Select and freeze a student only if every comparable-performance gate and
+10. **Completed - rejected:** A2c positive Pedestrian focal weights `1.5`,
+    `2.0`, and `2.5` produced no eligible branch. The best recall change was
+    only `+0.00529` versus control and its Vehicle BEV loss was `-0.2462` AP.
+    Do not launch a full A2c run.
+11. **Next:** diagnose frozen A2 Pedestrian false negatives by size, difficulty,
+    occlusion, truncation, distance, class-agnostic best-query IoU, and score.
+    Define A2d only after determining whether the miss is query/localization or
+    classification.
+12. Select and freeze a student only if every comparable-performance gate and
     nearby-recall review passes.
-12. Run locked external validation, then compress the frozen student one change
+13. Run locked external validation, then compress the frozen student one change
     at a time and restore deployment-specific parity/runtime qualification.
 
 ## Decision rules

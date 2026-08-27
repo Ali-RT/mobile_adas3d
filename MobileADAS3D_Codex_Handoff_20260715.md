@@ -2475,3 +2475,30 @@ A2c seed `20260827` overflowed NumPy legacy RandomState's accepted range
 `0..65535`. The notebook passes and asserts the safe seed explicitly. Update the
 Colab clone, then rerun the source/patch cell, preparation cell, and training
 cell. No checkpoint cleanup is required because the failed launch created none.
+
+
+#### 2026-08-27 A2c paired gate completed and rejected
+
+All four five-epoch branches completed and were evaluated on the full 3,769-image
+validation split with both product AP and nearby-recall audits. No branch met the
+frozen eligibility rules; the evaluator correctly returned `selected: null` and
+`full_run_authorized: false`.
+
+The control produced Vehicle/Pedestrian moderate 3D AP_R40
+`15.5036/6.9450`, balanced mean `11.2243`, moderate BEV
+`21.3238/8.1115`, and nearby recall `0.87987/0.69048`. Weight `2.5` was
+the strongest experimental branch: moderate 3D `15.4745/7.5128`, mean
+`11.4937`, BEV `21.0777/8.6164`, and nearby recall
+`0.87783/0.69577`. Relative to control, it changed Pedestrian nearby recall by
+only `+0.00529`, below the required `+0.02`, and Vehicle BEV by `-0.2462`
+AP, worse than the allowed `-0.15`. Weights `1.5` and `2.0` also failed,
+and no full run is authorized.
+
+A2c shows that increasing the positive Pedestrian classification term can
+recover some Pedestrian AP after five additional epochs, but does not materially
+recover the missing nearby objects. Combined with rejected A2b image repetition,
+this points away from simple class exposure or positive focal scaling. Frozen A2
+epoch 130 remains the strongest student. Before A2d, audit its Pedestrian false
+negatives by object height, KITTI difficulty, occlusion, truncation, distance,
+best class-agnostic query 2D IoU, and query score to distinguish
+query/localization failures from classification failures.
