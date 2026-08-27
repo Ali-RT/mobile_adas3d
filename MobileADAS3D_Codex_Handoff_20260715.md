@@ -2434,3 +2434,32 @@ The intervention should directly affect Pedestrian objectness/matching rather
 than repeating all objects in Pedestrian-containing images. Preserve A2
 architecture and initialization, and do not combine the experiment with yaw,
 temperature, distillation, compression, or iPhone changes.
+
+
+#### 2026-08-27 A2c paired focal-weight gate prepared
+
+Inspection of pinned MonoDETR commit
+`6994b9f512400b258c6edb75f77423beb9c126f2` confirmed that the main and
+auxiliary query-classification paths use one global sigmoid focal loss with
+`alpha=0.25` and `gamma=2`; neither the loss nor Hungarian matcher applies a
+class-specific weight. A2c therefore changes only the positive Pedestrian term
+in the main/auxiliary `SetCriterion` focal loss. It leaves the matcher, DN loss,
+all geometry losses, data/sampling, backbone, transformer, heads, decoding,
+distillation, and temperature unchanged.
+
+Run `notebooks/MonoDETR_A2c_Pedestrian_Focal_Gate_Colab.ipynb` top-to-bottom on
+a Colab GPU. It applies a fail-closed, idempotent patch to the pinned checkout,
+verifies frozen A2 epoch 130 and SHA-256
+`ed2134a98acbf1ab2fc61f7c8749b38fdfd2418e7f7932593e5e37a8d9ef33f4`, and
+runs four paired five-epoch branches at learning rate `1e-5` and seed
+`20260827`: control weight `1.0`, then Pedestrian-positive focal weights `1.5`,
+`2.0`, and `2.5`. These are four branches but only three experimental changes.
+Each branch receives complete 3,769-image product AP and nearby-recall audits.
+
+A non-control branch is eligible only if its Pedestrian nearby recall gains at
+least `0.02` over the paired control, Vehicle nearby recall drops no more than
+`0.01`, Vehicle moderate 3D and BEV each drop no more than `0.15` AP, and
+Pedestrian moderate 3D and BEV do not regress. The evaluator authorizes at most
+one full run, choosing the eligible branch with highest Pedestrian nearby
+recall and then balanced moderate 3D AP. If none passes, stop and retain frozen
+A2; do not launch four full 195-epoch runs.

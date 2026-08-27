@@ -17,8 +17,8 @@ not constrain the current accuracy-development stage.
 ## Current position
 
 - Current phase: **accuracy-first teacher-compatible student development**
-- Active task: close rejected A2b and define one controlled A2c intervention
-  that changes class-specific supervision rather than image frequency.
+- Active task: run the prepared A2c paired five-epoch gate: control plus
+  Pedestrian positive focal weights `1.5`, `2.0`, and `2.5`.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Accuracy candidate: **MobileMonoDETR-Student-A2 epoch 130 (frozen diagnostic baseline)**
 - S1/H1/H2 status: **frozen negative experiments; do not resume**.
@@ -77,7 +77,7 @@ not constrain the current accuracy-development stage.
 | M40 | A2 epoch-130 nearby-recall and geometry diagnosis | Complete—Vehicle passes, Pedestrian fails | All 3,769 validation images were audited. Vehicle <40 m recall was `88.29%` (passes `85%`); Pedestrian <30 m recall was `69.22%` (fails `80%`). Vehicle matched 2D IoU was strong (`0.818` overall), but 3D IoU was `0.414`; yaw MAE was `42.64°` with p90 `177.80°`, exposing front/back flips. Vehicle depth MAE rose from `0.65 m` at 0–20 m to `1.72 m` at 20–40 m and `3.67 m` at 40–60 m. Pedestrian recall/objectness is the primary product failure. |
 | M41 | A2b Pedestrian-balanced accuracy experiment | Complete—rejected | All 195 epochs and the complete product sweep finished. Epoch 150 was selected by the frozen balanced-3D rule: Vehicle/Pedestrian moderate 3D `15.2811/7.4720`, mean `11.3765`, BEV `21.0396/8.0988`. It passed only 3/5 gates and regressed versus A2 epoch 130 by `0.1762/0.0608/0.1185/0.3354/0.3904` across Vehicle 3D, Pedestrian 3D, mean 3D, Vehicle BEV, and Pedestrian BEV. Image-level repetition is rejected; do not resume or audit this checkpoint. |
 | M42 | Temperature study | Deferred | A1 distillation used temperature `2.0`, but no temperature comparison or sweep was run. Temperature affects teacher/student soft targets and did not participate in GT-only A2/A2b. Reconsider only as a small paired gate if future teacher supervision is justified. |
-| M43 | A2c class-specific supervision experiment | Define next | Preserve frozen A2 epoch 130 as the comparison baseline. Inspect pinned MonoDETR matching/classification losses and design one class-specific Pedestrian objectness/matching intervention; avoid repeating whole images, changing the backbone, adding yaw changes, or introducing temperature in the same run. |
+| M43 | A2c class-specific supervision experiment | Prepared—run next | Pinned MonoDETR inspection confirmed one global sigmoid focal classification loss (`alpha=0.25`, `gamma=2`) with no class weighting. The paired gate resumes frozen A2 epoch 130 for five epochs at LR `1e-5` with identical seed/data: control weight `1.0` plus Pedestrian-positive weights `1.5`, `2.0`, and `2.5`. Matcher, DN loss, geometry losses, architecture, sampling, distillation, and temperature remain unchanged. Complete AP and nearby recall are evaluated for every branch; at most one eligible branch may receive a full run. |
 
 ## Frozen R0 reference
 
@@ -144,9 +144,13 @@ frozen; passing AP does not by itself authorize deployment.
 9. **Completed—rejected:** A2b 2× Pedestrian-image sampling regressed all
    five AP metrics and passed only three gates. Do not resume it or spend an
    additional nearby-recall inference run on its ineligible checkpoint.
-10. **Next:** inspect pinned MonoDETR matching and classification supervision,
-    then define one A2c class-specific intervention. Keep A2 epoch 130 frozen;
-    do not mix sampling, yaw, temperature, architecture, or deployment changes.
+10. **Prepared—run next:** execute the four-branch A2c five-epoch paired gate
+    (control `1.0`; Pedestrian-positive focal weights `1.5`, `2.0`, `2.5`).
+    Promote at most one variant only if Pedestrian nearby recall gains at least
+    `0.02` versus control, Vehicle nearby recall drops no more than `0.01`,
+    Vehicle 3D/BEV each drop no more than `0.15` AP, and Pedestrian 3D/BEV do
+    not regress. Do not mix sampling, yaw, temperature, architecture, or
+    deployment changes.
 11. Select and freeze a student only if every comparable-performance gate and
     nearby-recall review passes.
 12. Run locked external validation, then compress the frozen student one change
