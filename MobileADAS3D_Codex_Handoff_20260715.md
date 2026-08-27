@@ -2452,7 +2452,7 @@ a Colab GPU. It applies a fail-closed, idempotent patch to the pinned checkout,
 verifies frozen A2 epoch 130 and SHA-256
 `ed2134a98acbf1ab2fc61f7c8749b38fdfd2418e7f7932593e5e37a8d9ef33f4`, and
 runs four paired five-epoch branches at learning rate `1e-5` and seed
-`20260827`: control weight `1.0`, then Pedestrian-positive focal weights `1.5`,
+`20268`: control weight `1.0`, then Pedestrian-positive focal weights `1.5`,
 `2.0`, and `2.5`. These are four branches but only three experimental changes.
 Each branch receives complete 3,769-image product AP and nearby-recall audits.
 
@@ -2463,3 +2463,15 @@ Pedestrian moderate 3D and BEV do not regress. The evaluator authorizes at most
 one full run, choosing the eligible branch with highest Pedestrian nearby
 recall and then balanced moderate 3D AP. If none passes, stop and retain frozen
 A2; do not launch four full 195-epoch runs.
+
+
+#### 2026-08-27 A2c seed preflight failure fixed
+
+The first control launch stopped before model construction and before any
+optimizer step. Pinned MonoDETR calls `np.random.seed(seed ** 2)`; the original
+A2c seed `20260827` overflowed NumPy legacy RandomState's accepted range
+`0..2**32-1`. The paired experiment now uses deterministic seed `20268`
+(`20268**2 = 410,791,824`) and fails closed unless the configured seed is in
+`0..65535`. The notebook passes and asserts the safe seed explicitly. Update the
+Colab clone, then rerun the source/patch cell, preparation cell, and training
+cell. No checkpoint cleanup is required because the failed launch created none.

@@ -43,6 +43,13 @@ class MonoDETRA2cGateTests(unittest.TestCase):
         self.assertIn("--gate-epochs','5'", self.code)
         self.assertIn("--learning-rate','1e-5'", self.code)
 
+    def test_default_seed_survives_monodetr_squared_seed(self):
+        source = (ROOT / "scripts/prepare_monodetr_a2c_gate.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("default=20268", source)
+        self.assertLessEqual(20268**2, 2**32 - 1)
+
     def test_pedestrian_is_native_class_zero(self):
         source = (ROOT / "scripts/prepare_monodetr_a2c_gate.py").read_text(encoding="utf-8")
         self.assertIn("[pedestrian_weight, 1.0, 1.0]", source)

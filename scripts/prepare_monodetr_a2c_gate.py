@@ -40,8 +40,6 @@ def resolve_a2_checkpoint(selection_path: Path) -> Path:
 
 
 def main() -> None:
-    import yaml
-
     parser = argparse.ArgumentParser(
         description="Prepare four paired A2c positive-class focal gates."
     )
@@ -51,8 +49,17 @@ def main() -> None:
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--gate-epochs", type=int, default=5)
     parser.add_argument("--learning-rate", type=float, default=1e-5)
-    parser.add_argument("--seed", type=int, default=20260827)
+    # Pinned MonoDETR passes seed**2 to NumPy's legacy 32-bit RNG.
+    parser.add_argument("--seed", type=int, default=20268)
     args = parser.parse_args()
+
+    if not 0 <= args.seed <= 65535:
+        raise ValueError(
+            "MonoDETR requires 0 <= seed <= 65535 because it calls "
+            "np.random.seed(seed ** 2)"
+        )
+
+    import yaml
 
     repo = args.monodetr_repo.resolve()
     base_config_path = args.base_config.resolve()
