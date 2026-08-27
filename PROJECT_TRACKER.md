@@ -17,8 +17,8 @@ not constrain the current accuracy-development stage.
 ## Current position
 
 - Current phase: **accuracy-first teacher-compatible student development**
-- Active task: diagnose A2 Pedestrian false negatives by size, occlusion,
-  truncation, depth, and best attainable query IoU before defining A2d.
+- Active task: run the prepared M44 frozen-A2 Pedestrian false-negative
+  diagnostic, then define A2d from the dominant measured failure mode.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Accuracy candidate: **MobileMonoDETR-Student-A2 epoch 130 (frozen diagnostic baseline)**
 - S1/H1/H2 status: **frozen negative experiments; do not resume**.
@@ -78,7 +78,7 @@ not constrain the current accuracy-development stage.
 | M41 | A2b Pedestrian-balanced accuracy experiment | Complete—rejected | All 195 epochs and the complete product sweep finished. Epoch 150 was selected by the frozen balanced-3D rule: Vehicle/Pedestrian moderate 3D `15.2811/7.4720`, mean `11.3765`, BEV `21.0396/8.0988`. It passed only 3/5 gates and regressed versus A2 epoch 130 by `0.1762/0.0608/0.1185/0.3354/0.3904` across Vehicle 3D, Pedestrian 3D, mean 3D, Vehicle BEV, and Pedestrian BEV. Image-level repetition is rejected; do not resume or audit this checkpoint. |
 | M42 | Temperature study | Deferred | A1 distillation used temperature `2.0`, but no temperature comparison or sweep was run. Temperature affects teacher/student soft targets and did not participate in GT-only A2/A2b. Reconsider only as a small paired gate if future teacher supervision is justified. |
 | M43 | A2c class-specific supervision experiment | Complete - rejected | All four paired five-epoch branches completed. Weight `2.5` was strongest: Vehicle/Pedestrian moderate 3D `15.4745/7.5128`, mean `11.4937`, BEV `21.0777/8.6164`. Versus control it improved Pedestrian nearby recall only `0.00529` (required `0.02`) and reduced Vehicle BEV by `0.2462` AP (maximum allowed `0.15`). No branch was eligible; `selected=null` and `full_run_authorized=false`. Do not continue A2c. |
-| M44 | A2 Pedestrian false-negative localization diagnosis | Next | A2b sampling and A2c positive classification weighting did not improve nearby recall, so do not launch another training variant yet. On frozen A2 epoch 130, stratify Pedestrian false negatives by height, KITTI difficulty, occlusion, truncation, and distance; measure best class-agnostic query 2D IoU and score to separate missing-query/localization failures from classification failures. Use the result to define one A2d change. |
+| M44 | A2 Pedestrian false-negative localization diagnosis | Prepared - run next | The standalone frozen epoch-130 diagnostic cell now regenerates exactly 3,769 predictions from the hash-locked A2 checkpoint, then classifies every Pedestrian GT as detected, wrong-class classification, assignment conflict, localization failure, or missing query. Nearby results are stratified by height, KITTI difficulty, occlusion, truncation, source class, and distance. The audit covers saved decoded top-50 predictions and explicitly does not claim access to every internal transformer query. |
 
 ## Frozen R0 reference
 

@@ -71,6 +71,17 @@ class MonoDETRA2WorkflowTests(unittest.TestCase):
         self.assertIn("def run_logged(", diagnostic)
         self.assertIn("audit_product_prediction_geometry.py", diagnostic)
 
+    def test_diagnostic_cell_runs_pedestrian_false_negative_audit(self):
+        diagnostic = next(
+            "".join(cell["source"])
+            for cell in self.notebook["cells"]
+            if cell["cell_type"] == "code"
+            and "SELECTED_EPOCH = 130" in "".join(cell["source"])
+        )
+        self.assertIn("diagnose_a2_pedestrian_false_negatives.py", diagnostic)
+        self.assertIn("pedestrian_false_negative_diagnostic_epoch130", diagnostic)
+        self.assertIn("--expected-checkpoint-sha256", diagnostic)
+
     def test_all_five_accuracy_gates_are_frozen(self):
         self.assertEqual(
             set(GATES),

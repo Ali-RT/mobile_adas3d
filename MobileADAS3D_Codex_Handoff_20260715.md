@@ -2502,3 +2502,31 @@ epoch 130 remains the strongest student. Before A2d, audit its Pedestrian false
 negatives by object height, KITTI difficulty, occlusion, truncation, distance,
 best class-agnostic query 2D IoU, and query score to distinguish
 query/localization failures from classification failures.
+
+
+#### 2026-08-27 M44 Pedestrian false-negative diagnostic prepared
+
+The M44 diagnostic is integrated into the final standalone epoch-130 diagnostic
+cell in `notebooks/MonoDETR_A2_MobileNetV4_Medium_Two_Class_GT_Colab.ipynb`.
+Run that one cell on a Colab GPU. It pulls current source, verifies the frozen A2
+epoch-130 SHA-256, regenerates all 3,769 validation prediction files, reruns the
+nearby geometry audit, and immediately runs
+`scripts/diagnose_a2_pedestrian_false_negatives.py` against those fresh files.
+Fresh inference is intentional: it prevents a stale `outputs/data` directory
+from silently representing another checkpoint.
+
+For each product-taxonomy Pedestrian GT, the script finds the decoded top-50
+prediction with highest 2D IoU while ignoring its predicted class. At IoU 0.5,
+it separates `detected_pedestrian`, `wrong_class_classification`, and
+`pedestrian_assignment_conflict`; IoU 0.1-0.5 is `localization_failure`, and
+IoU below 0.1 (or no prediction) is `missing_query`. The primary report is
+restricted to nearby GT depth below 30 m and groups results by height bucket,
+KITTI difficulty, occlusion, truncation, depth bucket, and original source
+class. This is a decoded-output diagnosis, not an audit of all hidden decoder
+queries.
+
+Return
+`pedestrian_false_negative_diagnostic_epoch130/a2_pedestrian_false_negative_summary.json`
+and
+`pedestrian_false_negative_diagnostic_epoch130/a2_pedestrian_false_negative_groups.csv`.
+Do not begin A2d until the dominant nearby failure mode is measured.
