@@ -17,8 +17,8 @@ not constrain the current accuracy-development stage.
 ## Current position
 
 - Current phase: **accuracy-first teacher-compatible student development**
-- Active task: run the prepared M44 frozen-A2 Pedestrian false-negative
-  diagnostic, then define A2d from the dominant measured failure mode.
+- Active task: define one paired A2d Pedestrian 2D localization-loss gate while
+  preserving frozen A2 matching, classification, architecture, and data.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Accuracy candidate: **MobileMonoDETR-Student-A2 epoch 130 (frozen diagnostic baseline)**
 - S1/H1/H2 status: **frozen negative experiments; do not resume**.
@@ -78,7 +78,8 @@ not constrain the current accuracy-development stage.
 | M41 | A2b Pedestrian-balanced accuracy experiment | Complete—rejected | All 195 epochs and the complete product sweep finished. Epoch 150 was selected by the frozen balanced-3D rule: Vehicle/Pedestrian moderate 3D `15.2811/7.4720`, mean `11.3765`, BEV `21.0396/8.0988`. It passed only 3/5 gates and regressed versus A2 epoch 130 by `0.1762/0.0608/0.1185/0.3354/0.3904` across Vehicle 3D, Pedestrian 3D, mean 3D, Vehicle BEV, and Pedestrian BEV. Image-level repetition is rejected; do not resume or audit this checkpoint. |
 | M42 | Temperature study | Deferred | A1 distillation used temperature `2.0`, but no temperature comparison or sweep was run. Temperature affects teacher/student soft targets and did not participate in GT-only A2/A2b. Reconsider only as a small paired gate if future teacher supervision is justified. |
 | M43 | A2c class-specific supervision experiment | Complete - rejected | All four paired five-epoch branches completed. Weight `2.5` was strongest: Vehicle/Pedestrian moderate 3D `15.4745/7.5128`, mean `11.4937`, BEV `21.0777/8.6164`. Versus control it improved Pedestrian nearby recall only `0.00529` (required `0.02`) and reduced Vehicle BEV by `0.2462` AP (maximum allowed `0.15`). No branch was eligible; `selected=null` and `full_run_authorized=false`. Do not continue A2c. |
-| M44 | A2 Pedestrian false-negative localization diagnosis | Corrected CPU rerun required | Initial full inference completed and showed localization as the dominant provisional miss type, but M44 counted 1,647 detections versus the benchmark's 1,570 because it omitted the frozen score threshold during matching. The code now applies `0.001` and reports well-localized sub-threshold queries separately. Reuse the fresh epoch-130 predictions for a CPU-only rerun; do not define A2d from the uncorrected percentages. |
+| M44 | A2 Pedestrian false-negative localization diagnosis | Complete - localization dominant | Corrected M44 exactly reconciled with frozen nearby recall: `1570/2268 = 69.224%`. Of 698 nearby misses, localization failure was `522` (`74.8%`), sub-threshold but well-localized query `77` (`11.0%`), missing query `84` (`12.0%`), assignment conflict `15` (`2.1%`), and wrong-class classification `0`. Localization worsened with difficulty, occlusion, and distance: detected/localization rates were `41.3%/48.1%` for hard, `38.5%/50.4%` at occlusion 2, and `40.3%/37.5%` at 20-30 m. |
+| M45 | A2d Pedestrian localization-supervision gate | Define next | Preserve A2 epoch 130 and change only the matched Pedestrian 2D box/GIoU regression weight in a short paired control. Do not alter focal classification, sampling, Hungarian matcher, 3D geometry losses, architecture, temperature, or distillation in the same experiment. Evaluate full AP and corrected M44 nearby failure modes before authorizing one full run. |
 
 ## Frozen R0 reference
 
@@ -149,13 +150,14 @@ frozen; passing AP does not by itself authorize deployment.
     `2.0`, and `2.5` produced no eligible branch. The best recall change was
     only `+0.00529` versus control and its Vehicle BEV loss was `-0.2462` AP.
     Do not launch a full A2c run.
-11. **Next:** diagnose frozen A2 Pedestrian false negatives by size, difficulty,
-    occlusion, truncation, distance, class-agnostic best-query IoU, and score.
-    Define A2d only after determining whether the miss is query/localization or
-    classification.
-12. Select and freeze a student only if every comparable-performance gate and
+11. **Completed:** corrected M44 found localization in `522/698 = 74.8%`
+    of nearby Pedestrian misses, with zero wrong-class failures.
+12. **Next:** define a paired A2d short gate that changes only matched
+    Pedestrian 2D box/GIoU loss weighting; keep matcher and all other variables
+    frozen.
+13. Select and freeze a student only if every comparable-performance gate and
     nearby-recall review passes.
-13. Run locked external validation, then compress the frozen student one change
+14. Run locked external validation, then compress the frozen student one change
     at a time and restore deployment-specific parity/runtime qualification.
 
 ## Decision rules

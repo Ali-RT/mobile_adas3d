@@ -2555,3 +2555,32 @@ conflict was 15, and wrong-class classification was zero. The 77-object
 detection-count discrepancy is expected to move primarily into the new
 sub-threshold category. This strongly suggests localization is dominant, but the
 corrected report is the decision artifact.
+
+
+#### 2026-08-28 corrected M44 completed: localization is dominant
+
+The corrected report exactly matches the frozen nearby audit:
+`1570/2268 = 69.22399%` detected Pedestrians below 30 m. Among the 698 nearby
+misses, `522` (`74.8%`) are localization failures with a decoded query at 2D
+IoU 0.1-0.5, `77` (`11.0%`) are well-localized at IoU at least 0.5 but below
+score `0.001`, `84` (`12.0%`) are missing queries below IoU 0.1, and `15`
+(`2.1%`) are Pedestrian assignment conflicts. Wrong-class classification is
+zero. This closes M44 and confirms that classification weighting was the wrong
+primary lever.
+
+The localization problem concentrates in difficult conditions. Easy objects
+were detected at `85.69%` with `9.07%` localization failures, while hard
+objects were detected at `41.31%` with `48.06%` localization failures.
+Unoccluded objects were detected at `84.40%`; occlusion level 2 fell to
+`38.55%` detected with `50.44%` localization failure. Detection declined
+from `87.27%` at 0-10 m to `65.92%` at 10-20 m and `40.28%` at 20-30 m.
+The 20-30 m group also had `13.82%` missing queries and `8.20%` sub-threshold
+well-localized queries.
+
+The next experiment is A2d, a short paired gate starting from frozen A2 epoch
+130. Change only matched Pedestrian 2D box/GIoU regression weighting. Preserve
+the Hungarian matcher, focal classification, data sampling, all 3D geometry
+losses, backbone, transformer, decoding, temperature, and distillation. Compare
+against a same-seed control using full product AP plus corrected M44 failure
+modes. Do not authorize a full run until the short gate demonstrates materially
+better nearby localization without breaking Vehicle AP.
