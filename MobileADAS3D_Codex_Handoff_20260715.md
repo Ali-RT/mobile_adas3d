@@ -2636,3 +2636,29 @@ Vehicle protection gates. Do not launch a full A2d run or retune global box-loss
 weights. Frozen A2 epoch 130 remains the strongest student. The next experiment
 should target the small/difficult/occluded Pedestrian localization regime
 directly rather than repeat global class, sampling, focal, or box weighting.
+
+
+#### 2026-08-28 A2e size-aware localization gate prepared
+
+A2d established that globally increasing matched Pedestrian box losses does not
+materially improve nearby localization. A2e narrows the same intervention to
+the failure regime identified by M44. A training Pedestrian is classified as
+small when its 2D box height after the canonical 1280×384 transform is at most
+64 pixels. This signal comes only from the transformed training annotation;
+validation difficulty, occlusion, and distance are not used for optimization.
+
+Run `notebooks/MonoDETR_A2e_Small_Pedestrian_Box_Gate_Colab.ipynb`
+top-to-bottom on a Colab GPU. It starts from frozen A2 epoch 130 and runs four
+paired five-epoch branches at learning rate `1e-5`, seed `20268`, and small-box
+L1/GIoU weights `1.0`, `1.5`, `2.0`, and `2.5`. The pinned Hungarian matcher,
+classification, image sampling, DN path, 3D geometry losses, architecture,
+decoding, temperature, and distillation remain unchanged. Completed branch
+checkpoints are reused after a runtime restart.
+
+The evaluator writes `a2e_gate_comparison.json` and
+`a2e_gate_comparison.csv`. Eligibility remains strict: at least `0.02`
+Pedestrian nearby-recall gain and `0.02` localization-failure reduction, no
+more than `0.01` Vehicle nearby-recall loss, no more than `0.15` Vehicle 3D or
+BEV AP loss, and no Pedestrian 3D/BEV regression versus the paired control. If
+A2e fails, permit at most one final accuracy experiment—a higher-resolution
+feature path—before ending local loss tuning.
