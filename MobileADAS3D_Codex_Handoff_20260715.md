@@ -2611,3 +2611,28 @@ each drop no more than `0.15` AP, and Pedestrian moderate 3D/BEV do not regress
 against the paired control. The workflow writes `a2d_gate_comparison.json` and
 `a2d_gate_comparison.csv` and authorizes at most one full run. If none passes,
 stop and retain frozen A2.
+
+
+#### 2026-08-28 A2d paired gate completed and rejected
+
+All four five-epoch branches completed and reconciled between the comparison
+CSV and JSON. No branch met the frozen rules; `selected` is null and
+`full_run_authorized` is false.
+
+The control produced Vehicle/Pedestrian moderate 3D AP_R40
+`15.5500/7.0809`, balanced mean `11.3155`, moderate BEV
+`21.3773/8.2984`, nearby recall `0.87909/0.68783`, and Pedestrian nearby
+localization-failure rate `0.23986`. Weight `1.5` was the least harmful
+experimental branch: nearby Pedestrian recall rose only `0.00176`, localization
+failure fell only `0.00397`, Vehicle 3D changed `-0.0930` AP, and Vehicle BEV
+changed `+0.0230`. The required recall gain and localization reduction were
+both `0.02`.
+
+Weight `2.0` reduced Vehicle 3D/BEV by `0.2439/0.2597` AP, and weight `2.5`
+reduced them by `0.2025/0.2311` while Pedestrian nearby recall fell
+`0.00132`. Although weight `2.5` gave the highest Pedestrian moderate 3D/BEV
+within A2d (`7.3249/8.5910`), it did not solve nearby localization and violated
+Vehicle protection gates. Do not launch a full A2d run or retune global box-loss
+weights. Frozen A2 epoch 130 remains the strongest student. The next experiment
+should target the small/difficult/occluded Pedestrian localization regime
+directly rather than repeat global class, sampling, focal, or box weighting.

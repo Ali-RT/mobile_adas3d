@@ -17,8 +17,8 @@ not constrain the current accuracy-development stage.
 ## Current position
 
 - Current phase: **accuracy-first teacher-compatible student development**
-- Active task: run the prepared paired A2d Pedestrian 2D localization-loss gate
-  and return its complete AP plus corrected M44 comparison.
+- Active task: define the next targeted small/difficult-Pedestrian localization experiment;
+  A2d global box-loss scaling is frozen and rejected.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Accuracy candidate: **MobileMonoDETR-Student-A2 epoch 130 (frozen diagnostic baseline)**
 - S1/H1/H2 status: **frozen negative experiments; do not resume**.
@@ -79,7 +79,7 @@ not constrain the current accuracy-development stage.
 | M42 | Temperature study | Deferred | A1 distillation used temperature `2.0`, but no temperature comparison or sweep was run. Temperature affects teacher/student soft targets and did not participate in GT-only A2/A2b. Reconsider only as a small paired gate if future teacher supervision is justified. |
 | M43 | A2c class-specific supervision experiment | Complete - rejected | All four paired five-epoch branches completed. Weight `2.5` was strongest: Vehicle/Pedestrian moderate 3D `15.4745/7.5128`, mean `11.4937`, BEV `21.0777/8.6164`. Versus control it improved Pedestrian nearby recall only `0.00529` (required `0.02`) and reduced Vehicle BEV by `0.2462` AP (maximum allowed `0.15`). No branch was eligible; `selected=null` and `full_run_authorized=false`. Do not continue A2c. |
 | M44 | A2 Pedestrian false-negative localization diagnosis | Complete - localization dominant | Corrected M44 exactly reconciled with frozen nearby recall: `1570/2268 = 69.224%`. Of 698 nearby misses, localization failure was `522` (`74.8%`), sub-threshold but well-localized query `77` (`11.0%`), missing query `84` (`12.0%`), assignment conflict `15` (`2.1%`), and wrong-class classification `0`. Localization worsened with difficulty, occlusion, and distance: detected/localization rates were `41.3%/48.1%` for hard, `38.5%/50.4%` at occlusion 2, and `40.3%/37.5%` at 20-30 m. |
-| M45 | A2d Pedestrian localization-supervision gate | Prepared—run next | Four paired five-epoch branches start from frozen A2 epoch 130 at LR `1e-5`, seed `20268`: matched-Pedestrian 2D L1/GIoU weights `1.0`, `1.5`, `2.0`, `2.5`. Matcher, focal classification, sampling, 3D losses, architecture, temperature, and distillation remain frozen. Full AP and corrected M44 failure modes determine whether one full run is authorized. |
+| M45 | A2d Pedestrian localization-supervision gate | Complete—rejected | All four paired five-epoch branches completed. Weight `1.5` was least harmful: Pedestrian nearby recall improved only `+0.00176` (required `+0.02`) and localization-failure rate fell only `0.00397` (required `0.02`); Vehicle 3D changed `-0.0930` AP and BEV `+0.0230`. Weights `2.0`/`2.5` damaged Vehicle 3D and BEV beyond the allowed `0.15` AP, while `2.5` also reduced Pedestrian recall. No branch was eligible; `selected=null`, `full_run_authorized=false`. |
 
 ## Frozen R0 reference
 
@@ -152,13 +152,15 @@ frozen; passing AP does not by itself authorize deployment.
     Do not launch a full A2c run.
 11. **Completed:** corrected M44 found localization in `522/698 = 74.8%`
     of nearby Pedestrian misses, with zero wrong-class failures.
-12. **Prepared—run next:** execute the paired A2d short gate with matched
-    Pedestrian 2D box/GIoU weights `1.0`, `1.5`, `2.0`, and `2.5`; keep
-    matcher and every other variable frozen. Authorize at most one full run only
-    if both nearby recall and localization-failure gates pass without AP damage.
-13. Select and freeze a student only if every comparable-performance gate and
+12. **Completed—rejected:** A2d global matched-Pedestrian box/GIoU scaling
+    produced at most `+0.00176` nearby recall and `0.00485` localization-rate
+    reduction, far below both `0.02` gates. No full run is authorized.
+13. **Next:** use the frozen M44/A2d evidence to define one targeted
+    small/difficult-Pedestrian localization experiment; do not repeat global
+    class, image-sampling, focal, or box-loss scaling.
+14. Select and freeze a student only if every comparable-performance gate and
     nearby-recall review passes.
-14. Run locked external validation, then compress the frozen student one change
+15. Run locked external validation, then compress the frozen student one change
     at a time and restore deployment-specific parity/runtime qualification.
 
 ## Decision rules
