@@ -2530,3 +2530,28 @@ Return
 and
 `pedestrian_false_negative_diagnostic_epoch130/a2_pedestrian_false_negative_groups.csv`.
 Do not begin A2d until the dominant nearby failure mode is measured.
+
+
+#### 2026-08-28 M44 score-threshold correction
+
+The first M44 output was internally inconsistent: it reported 1,647 detected
+nearby Pedestrians while the frozen nearby audit reported 1,570. The M44 greedy
+matcher had used every saved top-50 Pedestrian prediction, including scores below
+the frozen `0.001` threshold. Therefore the initial failure-mode percentages
+must not be frozen.
+
+The diagnostic now applies score `>=0.001` for benchmark-aligned Pedestrian
+matching and reports a new `subthreshold_well_localized_query` category when
+the best class-agnostic query reaches IoU 0.5 but remains below the score
+threshold. The already generated epoch-130 prediction directory is valid and
+does not need another inference pass. Pull the correction and rerun only
+`scripts/diagnose_a2_pedestrian_false_negatives.py` with
+`--score-threshold 0.001`, overwriting the M44 output directory. Return the
+corrected summary JSON and grouped CSV before defining A2d.
+
+The uncorrected output is still qualitatively informative but not final:
+localization failure was 522/2,268 nearby GT, missing query was 84, assignment
+conflict was 15, and wrong-class classification was zero. The 77-object
+detection-count discrepancy is expected to move primarily into the new
+sub-threshold category. This strongly suggests localization is dominant, but the
+corrected report is the decision artifact.

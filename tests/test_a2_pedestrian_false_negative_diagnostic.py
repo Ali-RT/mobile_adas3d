@@ -28,6 +28,7 @@ class A2PedestrianFalseNegativeDiagnosticTests(unittest.TestCase):
                 target([20, 0, 30, 50]),
                 target([40, 0, 50, 50]),
                 target([60, 0, 70, 50]),
+                target([80, 0, 90, 50]),
             ]
         }
         predictions = {
@@ -35,6 +36,7 @@ class A2PedestrianFalseNegativeDiagnosticTests(unittest.TestCase):
                 prediction("Pedestrian", [0, 0, 10, 50], 0.9),
                 prediction("Vehicle", [20, 0, 30, 50], 0.8),
                 prediction("Pedestrian", [44, 0, 54, 50], 0.7),
+                prediction("Pedestrian", [80, 0, 90, 50], 0.0005),
             ]
         }
         report, rows, _ = diagnose(predictions, ground_truth)
@@ -45,9 +47,10 @@ class A2PedestrianFalseNegativeDiagnosticTests(unittest.TestCase):
                 "wrong_class_classification",
                 "localization_failure",
                 "missing_query",
+                "subthreshold_well_localized_query",
             ],
         )
-        self.assertEqual(report["near_pedestrian_ground_truth"], 4)
+        self.assertEqual(report["near_pedestrian_ground_truth"], 5)
         self.assertIn("truncation_bucket", rows[0])
 
     def test_difficulty_uses_kitti_thresholds(self):

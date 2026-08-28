@@ -87,11 +87,17 @@ def greedy_pedestrian_matches(
     targets: Sequence[Mapping[str, Any]],
     predictions: Sequence[Mapping[str, Any]],
     iou_threshold: float,
+    score_threshold: float,
 ) -> set[int]:
     unmatched = set(range(len(targets)))
     matched = set()
     pedestrian_predictions = sorted(
-        (p for p in predictions if p["class_name"] == PEDESTRIAN),
+        (
+            p
+            for p in predictions
+            if p["class_name"] == PEDESTRIAN
+            and float(p["score"]) >= score_threshold
+        ),
         key=lambda p: float(p["score"]),
         reverse=True,
     )
@@ -115,12 +121,15 @@ def classify_target(
     class_matched: bool,
     iou_threshold: float,
     weak_iou_threshold: float,
+    score_threshold: float,
 ) -> dict[str, Any]:
     prediction, overlap = best_prediction(target, predictions)
     best_class = prediction["class_name"] if prediction else None
     best_score = float(prediction["score"]) if prediction else 0.0
     if class_matched:
         failure_mode = "detected_pedestrian"
+    elif overlap >= iou_threshold and best_score < score_threshold:
+        failure_mode = "subthreshold_well_localized_query"
     elif overlap >= iou_threshold and best_class != PEDESTRIAN:
         failure_mode = "wrong_class_classification"
     elif overlap >= iou_threshold:
@@ -168,6 +177,10 @@ def summarize(rows: Sequence[Mapping[str, Any]], field: str) -> list[dict[str, A
                 "assignment_conflict_rate": modes["pedestrian_assignment_conflict"] / count,
                 "localization_failure_rate": modes["localization_failure"] / count,
                 "missing_query_rate": modes["missing_query"] / count,
+                "subthreshold_well_localized_rate": modes[
+                    "subthreshold_well_localized_query"
+                ]
+                / count,
             }
         )
     return output
@@ -178,12 +191,15 @@ def diagnose(
     ground_truth: Mapping[str, Sequence[Mapping[str, Any]]],
     iou_threshold: float = 0.5,
     weak_iou_threshold: float = 0.1,
+    score_threshold: float = 0.001,
 ) -> tuple[dict[str, Any], list[dict[str, Any]], list[dict[str, Any]]]:
     rows = []
     for sample_id, objects in ground_truth.items():
         targets = [obj for obj in objects if obj["class_name"] == PEDESTRIAN]
         sample_predictions = list(predictions.get(sample_id, ()))
-        matched = greedy_pedestrian_matches(targets, sample_predictions, iou_threshold)
+        matched = greedy_pedestrian_matches(
+            targets, sample_predictions, iou_threshold, score_threshold
+        )
         for index, target in enumerate(targets):
             row = classify_target(
                 target,
@@ -191,6 +207,7 @@ def diagnose(
                 index in matched,
                 iou_threshold,
                 weak_iou_threshold,
+                score_threshold,
             )
             row["sample_id"] = sample_id
             rows.append(row)
@@ -214,6 +231,7 @@ def diagnose(
         "prediction_scope": "saved decoded top-50 predictions; best IoU ignores predicted class",
         "iou_threshold": iou_threshold,
         "weak_iou_threshold": weak_iou_threshold,
+        "score_threshold": score_threshold,
         "pedestrian_ground_truth": len(rows),
         "near_pedestrian_ground_truth": len(near_rows),
         "near_failure_modes": dict(sorted(near_modes.items())),
@@ -245,6 +263,7 @@ def main() -> None:
     parser.add_argument("--expected-images", type=int, default=3769)
     parser.add_argument("--iou-threshold", type=float, default=0.5)
     parser.add_argument("--weak-iou-threshold", type=float, default=0.1)
+    parser.add_argument("--score-threshold", type=float, default=0.001)
     args = parser.parse_args()
 
     checkpoint_hash = file_sha256(args.checkpoint)
@@ -272,7 +291,11 @@ def main() -> None:
         for sample_id, items in raw_predictions.items()
     }
     report, rows, summaries = diagnose(
-        predictions, ground_truth, args.iou_threshold, args.weak_iou_threshold
+        predictions,
+        ground_truth,
+        args.iou_threshold,
+        args.weak_iou_threshold,
+        args.score_threshold,
     )
     report.update(
         {
