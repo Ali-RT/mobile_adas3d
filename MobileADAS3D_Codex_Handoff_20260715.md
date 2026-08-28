@@ -2584,3 +2584,30 @@ losses, backbone, transformer, decoding, temperature, and distillation. Compare
 against a same-seed control using full product AP plus corrected M44 failure
 modes. Do not authorize a full run until the short gate demonstrates materially
 better nearby localization without breaking Vehicle AP.
+
+
+#### 2026-08-28 A2d matched-Pedestrian localization gate prepared
+
+M44 established that `522/698 = 74.8%` of nearby Pedestrian misses are 2D
+localization failures, while wrong-class failures are zero. A2d therefore starts
+from frozen A2 epoch 130 and changes only the matched Pedestrian 2D box L1 and
+GIoU loss multiplier. The pinned Hungarian matcher, focal classification, data
+sampling, all 3D geometry losses, MobileNetV4-Medium backbone, transformer,
+decoding, temperature, and distillation remain unchanged.
+
+Run `notebooks/MonoDETR_A2d_Pedestrian_Box_Gate_Colab.ipynb` top-to-bottom on a
+Colab GPU. It verifies frozen checkpoint SHA-256
+`ed2134a98acbf1ab2fc61f7c8749b38fdfd2418e7f7932593e5e37a8d9ef33f4`,
+applies the fail-closed patch to pinned MonoDETR commit
+`6994b9f512400b258c6edb75f77423beb9c126f2`, and trains four paired five-epoch
+branches at learning rate `1e-5` and seed `20268`: weights `1.0` (control),
+`1.5`, `2.0`, and `2.5`. Completed branch checkpoints are reused after a Colab
+restart.
+
+A non-control branch is eligible only when Pedestrian nearby recall gains at
+least `0.02`, the nearby localization-failure rate falls by at least `0.02`,
+Vehicle nearby recall drops no more than `0.01`, Vehicle moderate 3D and BEV
+each drop no more than `0.15` AP, and Pedestrian moderate 3D/BEV do not regress
+against the paired control. The workflow writes `a2d_gate_comparison.json` and
+`a2d_gate_comparison.csv` and authorizes at most one full run. If none passes,
+stop and retain frozen A2.
