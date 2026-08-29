@@ -2716,3 +2716,8 @@ frozen A2 or moving to a materially larger teacher-compatible architecture.
 The unchanged control branch completed. The initial stride-4 branch failed on its first batch before any optimizer step or checkpoint: the new feature ordering caused the standard depth-predictor self-attention to operate at stride 8 instead of stride 16. That quadrupled its token count and increased its quadratic attention storage by roughly 16x; even an 80 GB A100 could not allocate the additional 28.12 GiB. This was feature-routing error, not insufficient GPU capacity.
 
 The corrected patch sends strides 8/16/32 to the unchanged depth fusion in both control and A2f, with stride 16 masks/position embeddings, while the deformable transformer alone receives A2f's strides 4/8/16/32. The notebook uses a fresh versioned MonoDETR clone to avoid retaining the obsolete in-runtime patch. Rerun the setup, source/patch, preparation, and training cells; the completed control checkpoint is reused and only the stride-4 branch trains.
+
+
+#### 2026-08-29 A2f decoder depth-mask mismatch corrected
+
+The first rerun passed the former OOM site, confirming that depth features were restored to stride 16, then failed before the first optimizer step because `DepthAwareTransformer` still hard-coded `masks[1]`. In the stride-4 ordering that mask has 7,680 positions while the stride-16 depth embeddings have 1,920. The patch now passes the computed depth level explicitly into the transformer and builds `mask_depth` from the matching stride-16 mask. Control behavior remains index 1; A2f uses index 2. No failed checkpoint was produced.

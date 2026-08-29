@@ -48,7 +48,8 @@ class MonoDETRA2fGateTests(unittest.TestCase):
         self.assertIn("depth_features = srcs[depth_start:]", source)
         self.assertIn("masks[depth_index], pos[depth_index]", source)
         self.assertNotIn("loss_bbox", source)
-        self.assertNotIn("depthaware_transformer.py", source)
+        self.assertIn("depth_mask_index=depth_index", source)
+        self.assertIn("masks[depth_mask_index].flatten(1)", source)
         self.assertIn("assert len(feature) >= 3", source)
 
     def test_preparer_adds_stride4_and_remaps_trained_projections(self):

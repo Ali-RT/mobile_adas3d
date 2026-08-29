@@ -164,8 +164,9 @@ frozen; passing AP does not by itself authorize deployment.
     the first stride-4 attempt incorrectly routed stride-8 tensors into standard
     depth self-attention and failed before an optimizer step. The corrected gate
     keeps depth fusion at strides 8/16/32 for both branches and adds stride 4 only
-    to the deformable transformer. Rerun the updated notebook; cached control is
-    preserved.
+    to the deformable transformer. A subsequent decoder mask mismatch was also
+    corrected by routing the same stride-16 mask explicitly. Rerun the updated
+    notebook; cached control is preserved.
 15. If A2f fails, end local tuning and choose between accepting frozen A2 or
     moving to a materially larger teacher-compatible architecture.
 16. Select and freeze a student only if every comparable-performance gate and

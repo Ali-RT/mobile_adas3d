@@ -96,6 +96,26 @@ def main() -> None:
         "        depth_feature_start_index=cfg.get('depth_feature_start_index', 0))",
         "depth feature config",
     )
+    replace_once(
+        model,
+        "            srcs, masks, pos, query_embeds, depth_pos_embed, depth_pos_embed_ip)#, attn_mask)",
+        "            srcs, masks, pos, query_embeds, depth_pos_embed, depth_pos_embed_ip,\n"
+        "            depth_mask_index=depth_index)#, attn_mask)",
+        "transformer depth mask call",
+    )
+    transformer = repo / "lib/models/monodetr/depthaware_transformer.py"
+    replace_once(
+        transformer,
+        "    def forward(self, srcs, masks, pos_embeds, query_embed=None, depth_pos_embed=None, depth_pos_embed_ip=None, attn_mask=None):",
+        "    def forward(self, srcs, masks, pos_embeds, query_embed=None, depth_pos_embed=None, depth_pos_embed_ip=None, attn_mask=None, depth_mask_index=1):",
+        "configurable transformer depth mask argument",
+    )
+    replace_once(
+        transformer,
+        "        mask_depth = masks[1].flatten(1)",
+        "        mask_depth = masks[depth_mask_index].flatten(1)",
+        "stride-preserving transformer depth mask",
+    )
     depth_predictor = repo / "lib/models/monodetr/depth_predictor/depth_predictor.py"
     replace_once(
         depth_predictor,
