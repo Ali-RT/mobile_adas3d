@@ -59,6 +59,50 @@ def main() -> None:
         "            expected_strides = [expected_strides[-1]]\n",
         "configurable MobileNetV4 feature strides",
     )
+    model = repo / "lib/models/monodetr/monodetr.py"
+    replace_once(
+        model,
+        "    def __init__(self, backbone, depthaware_transformer, depth_predictor, num_classes, num_queries, num_feature_levels,\n"
+        "                 aux_loss=True, with_box_refine=False, two_stage=False, init_box=False, use_dab=False, group_num=11, two_stage_dino=False):",
+        "    def __init__(self, backbone, depthaware_transformer, depth_predictor, num_classes, num_queries, num_feature_levels,\n"
+        "                 aux_loss=True, with_box_refine=False, two_stage=False, init_box=False, use_dab=False, group_num=11, two_stage_dino=False, depth_feature_start_index=0):",
+        "configurable depth feature argument",
+    )
+    replace_once(
+        model,
+        "        self.num_feature_levels = num_feature_levels\n"
+        "        self.two_stage_dino = two_stage_dino",
+        "        self.num_feature_levels = num_feature_levels\n"
+        "        self.depth_feature_start_index = int(depth_feature_start_index)\n"
+        "        if not 0 <= self.depth_feature_start_index <= num_feature_levels - 3:\n"
+        "            raise ValueError('depth_feature_start_index must leave at least three feature levels')\n"
+        "        self.two_stage_dino = two_stage_dino",
+        "configurable depth feature state",
+    )
+    replace_once(
+        model,
+        "        pred_depth_map_logits, depth_pos_embed, weighted_depth, depth_pos_embed_ip = self.depth_predictor(srcs, masks[1], pos[1])",
+        "        depth_start = self.depth_feature_start_index\n        depth_features = srcs[depth_start:]\n        depth_index = depth_start + 1\n"
+        "        pred_depth_map_logits, depth_pos_embed, weighted_depth, depth_pos_embed_ip = self.depth_predictor(\n"
+        "            depth_features, masks[depth_index], pos[depth_index])",
+        "stride-preserving depth feature routing",
+    )
+    replace_once(
+        model,
+        "        use_dab = cfg['use_dab'],\n"
+        "        two_stage_dino=cfg['two_stage_dino'])",
+        "        use_dab = cfg['use_dab'],\n"
+        "        two_stage_dino=cfg['two_stage_dino'],\n"
+        "        depth_feature_start_index=cfg.get('depth_feature_start_index', 0))",
+        "depth feature config",
+    )
+    depth_predictor = repo / "lib/models/monodetr/depth_predictor/depth_predictor.py"
+    replace_once(
+        depth_predictor,
+        "        assert len(feature) == 4\n",
+        "        assert len(feature) >= 3\n",
+        "depth predictor accepts routed three-level pyramid",
+    )
     print("MonoDETR A2f stride-4 feature patch ready")
 
 

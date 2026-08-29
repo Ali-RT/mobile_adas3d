@@ -160,9 +160,12 @@ frozen; passing AP does not by itself authorize deployment.
 13. **Completed—rejected:** A2e size-aware box weighting produced only
     `+0.00353` nearby recall and `0.00132` localization reduction at its best
     signal, with unacceptable Vehicle AP loss. No full run is authorized.
-14. **Prepared—run next and final planned accuracy experiment:** A2f compares
-    unchanged A2 against a real stride-4/8/16/32 feature pyramid for five
-    epochs. Do not add another loss-weight sweep.
+14. **Running—OOM corrected; rerun stride-4 branch:** A2f control completed, but
+    the first stride-4 attempt incorrectly routed stride-8 tensors into standard
+    depth self-attention and failed before an optimizer step. The corrected gate
+    keeps depth fusion at strides 8/16/32 for both branches and adds stride 4 only
+    to the deformable transformer. Rerun the updated notebook; cached control is
+    preserved.
 15. If A2f fails, end local tuning and choose between accepting frozen A2 or
     moving to a materially larger teacher-compatible architecture.
 16. Select and freeze a student only if every comparable-performance gate and

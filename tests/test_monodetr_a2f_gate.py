@@ -45,13 +45,17 @@ class MonoDETRA2fGateTests(unittest.TestCase):
     def test_patch_changes_only_configurable_feature_strides(self):
         source = (ROOT / "scripts/patch_monodetr_a2f_high_resolution.py").read_text(encoding="utf-8")
         self.assertIn("backbone_expected_strides", source)
+        self.assertIn("depth_features = srcs[depth_start:]", source)
+        self.assertIn("masks[depth_index], pos[depth_index]", source)
         self.assertNotIn("loss_bbox", source)
         self.assertNotIn("depthaware_transformer.py", source)
+        self.assertIn("assert len(feature) >= 3", source)
 
     def test_preparer_adds_stride4_and_remaps_trained_projections(self):
         source = (ROOT / "scripts/prepare_monodetr_a2f_gate.py").read_text(encoding="utf-8")
         self.assertIn("backbone_out_indices\u0022] = [1, 2, 3, 4]", source)
         self.assertIn("backbone_expected_strides\u0022] = [4, 8, 16, 32]", source)
+        self.assertIn("depth_feature_start_index\u0022] = 1", source)
         self.assertIn("name.startswith(\u0022input_proj.0.\u0022)", source)
         self.assertIn("int(name.split(\u0022.\u0022)[1]) - 1", source)
         self.assertIn("\u0022losses_changed\u0022: False", source)

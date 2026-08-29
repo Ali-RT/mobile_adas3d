@@ -111,6 +111,7 @@ def main() -> None:
     high["random_seed"] = args.seed
     high["model"]["backbone_out_indices"] = [1, 2, 3, 4]
     high["model"]["backbone_expected_strides"] = [4, 8, 16, 32]
+    high["model"]["depth_feature_start_index"] = 1
     high["optimizer"]["lr"] = args.learning_rate
 
     sys.path.insert(0, str(repo))
@@ -198,6 +199,9 @@ def main() -> None:
         "learning_rate": args.learning_rate,
         "random_seed": args.seed,
         "num_feature_levels": 4,
+        "control_depth_feature_strides": [8, 16, 32],
+        "stride4_depth_feature_strides": [8, 16, 32],
+        "depth_predictor_feature_routing_preserved": True,
         "transformer_changed": False,
         "heads_changed": False,
         "losses_changed": False,

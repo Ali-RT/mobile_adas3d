@@ -2709,3 +2709,10 @@ The evaluator writes `a2f_gate_comparison.json` and
 rules as A2d/A2e. This is the final planned local accuracy experiment. If the
 stride-4 branch is ineligible, stop local tuning and choose between accepting
 frozen A2 or moving to a materially larger teacher-compatible architecture.
+
+
+#### 2026-08-29 A2f A100 OOM diagnosed and corrected
+
+The unchanged control branch completed. The initial stride-4 branch failed on its first batch before any optimizer step or checkpoint: the new feature ordering caused the standard depth-predictor self-attention to operate at stride 8 instead of stride 16. That quadrupled its token count and increased its quadratic attention storage by roughly 16x; even an 80 GB A100 could not allocate the additional 28.12 GiB. This was feature-routing error, not insufficient GPU capacity.
+
+The corrected patch sends strides 8/16/32 to the unchanged depth fusion in both control and A2f, with stride 16 masks/position embeddings, while the deformable transformer alone receives A2f's strides 4/8/16/32. The notebook uses a fresh versioned MonoDETR clone to avoid retaining the obsolete in-runtime patch. Rerun the setup, source/patch, preparation, and training cells; the completed control checkpoint is reused and only the stride-4 branch trains.
