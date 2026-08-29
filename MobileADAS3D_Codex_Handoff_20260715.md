@@ -2662,3 +2662,25 @@ more than `0.01` Vehicle nearby-recall loss, no more than `0.15` Vehicle 3D or
 BEV AP loss, and no Pedestrian 3D/BEV regression versus the paired control. If
 A2e fails, permit at most one final accuracy experiment—a higher-resolution
 feature path—before ending local loss tuning.
+
+
+#### 2026-08-28 A2e paired gate completed and rejected
+
+All four five-epoch branches completed. The comparison is complete, no branch
+is eligible, `selected` is null, and `full_run_authorized` is false.
+
+The paired control produced Vehicle/Pedestrian moderate 3D AP_R40
+`15.4560/7.2381`, balanced mean `11.3470`, moderate BEV `21.3851/8.3401`,
+Vehicle/Pedestrian nearby recall `0.87980/0.68959`, and Pedestrian localization
+failure `0.23325`. Weight `2.0` produced the only positive nearby signal:
+Pedestrian recall changed `+0.00353` and localization failure fell `0.00132`,
+but Vehicle 3D/BEV changed `-0.2902/-0.1901` AP and Pedestrian 3D regressed.
+Both required nearby improvements were `0.02`.
+
+Weight `1.5` worsened Pedestrian recall by `0.00397`, increased localization
+failure by `0.00926`, and reduced Vehicle BEV by `0.3124` AP. Weight `2.5`
+kept Vehicle AP relatively stable but reduced Pedestrian recall by `0.00309`
+and Pedestrian BEV from `8.3401` to `8.0769`. A2e confirms that neither global
+nor small-box loss scaling resolves the failure. Do not launch a full A2e run
+or another loss-weight sweep. The one remaining planned accuracy experiment is
+a higher-resolution feature-path gate; if it fails, stop local tuning.
