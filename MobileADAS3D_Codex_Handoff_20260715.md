@@ -2684,3 +2684,28 @@ and Pedestrian BEV from `8.3401` to `8.0769`. A2e confirms that neither global
 nor small-box loss scaling resolves the failure. Do not launch a full A2e run
 or another loss-weight sweep. The one remaining planned accuracy experiment is
 a higher-resolution feature-path gate; if it fails, stop local tuning.
+
+
+#### 2026-08-29 A2f higher-resolution feature gate prepared
+
+Pinned architecture inspection showed that A2 already consumes real MobileNetV4
+stride-8/16/32 features and creates a fourth synthetic stride-64 feature. A2f
+therefore does not increase the transformer level count. It replaces the
+synthetic stride-64 level with the real MobileNetV4 stride-4 feature, producing
+strides 4/8/16/32 while preserving the four-level transformer interface.
+
+Run `notebooks/MonoDETR_A2f_High_Resolution_Feature_Gate_Colab.ipynb`
+top-to-bottom on a Colab GPU. This is a paired two-branch gate, not another
+four-way loss sweep: unchanged A2 control and A2f stride 4. Both start from the
+frozen A2 epoch-130 checkpoint and fine-tune for five epochs at learning rate
+`1e-5` and seed `20268`. A2f copies all shape-compatible A2 backbone,
+transformer, and head tensors, remaps the trained stride-8/16/32 input
+projections to their new indices, and initializes only the new stride-4
+projection. The transformer, heads, losses, data, matching, sampling, decoding,
+temperature, and distillation remain unchanged.
+
+The evaluator writes `a2f_gate_comparison.json` and
+`a2f_gate_comparison.csv` using the same complete AP, nearby-recall, and M44
+rules as A2d/A2e. This is the final planned local accuracy experiment. If the
+stride-4 branch is ineligible, stop local tuning and choose between accepting
+frozen A2 or moving to a materially larger teacher-compatible architecture.

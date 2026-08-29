@@ -1,6 +1,6 @@
 # MobileADAS3D project tracker
 
-Last updated: 2026-08-28
+Last updated: 2026-08-29
 
 This is the canonical status page. Update it whenever a task changes state,
 an experiment finishes, a gate passes/fails, or the next action changes.
@@ -17,8 +17,8 @@ not constrain the current accuracy-development stage.
 ## Current position
 
 - Current phase: **accuracy-first teacher-compatible student development**
-- Active task: define the final A2f higher-resolution feature experiment;
-  A2e size-aware loss scaling is frozen and rejected.
+- Active task: run the prepared final A2f higher-resolution feature gate and
+  return its complete AP plus corrected M44 comparison.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Accuracy candidate: **MobileMonoDETR-Student-A2 epoch 130 (frozen diagnostic baseline)**
 - S1/H1/H2 status: **frozen negative experiments; do not resume**.
@@ -81,6 +81,7 @@ not constrain the current accuracy-development stage.
 | M44 | A2 Pedestrian false-negative localization diagnosis | Complete - localization dominant | Corrected M44 exactly reconciled with frozen nearby recall: `1570/2268 = 69.224%`. Of 698 nearby misses, localization failure was `522` (`74.8%`), sub-threshold but well-localized query `77` (`11.0%`), missing query `84` (`12.0%`), assignment conflict `15` (`2.1%`), and wrong-class classification `0`. Localization worsened with difficulty, occlusion, and distance: detected/localization rates were `41.3%/48.1%` for hard, `38.5%/50.4%` at occlusion 2, and `40.3%/37.5%` at 20-30 m. |
 | M45 | A2d Pedestrian localization-supervision gate | Complete—rejected | All four paired five-epoch branches completed. Weight `1.5` was least harmful: Pedestrian nearby recall improved only `+0.00176` (required `+0.02`) and localization-failure rate fell only `0.00397` (required `0.02`); Vehicle 3D changed `-0.0930` AP and BEV `+0.0230`. Weights `2.0`/`2.5` damaged Vehicle 3D and BEV beyond the allowed `0.15` AP, while `2.5` also reduced Pedestrian recall. No branch was eligible; `selected=null`, `full_run_authorized=false`. |
 | M46 | A2e size-aware Pedestrian localization gate | Complete—rejected | All four paired five-epoch branches completed. Weight `2.0` produced the only positive recall/localization signal: nearby recall `+0.00353` and localization-failure reduction `0.00132`, far below both required `0.02` gates, while Vehicle 3D/BEV changed `-0.2902/-0.1901` AP. Weight `1.5` worsened recall/localization and Vehicle BEV; weight `2.5` reduced Pedestrian recall and BEV. No branch was eligible; `selected=null`, `full_run_authorized=false`. |
+| M47 | A2f higher-resolution feature gate | Prepared—run next | Two paired five-epoch branches start from frozen A2 epoch 130: unchanged A2 strides 8/16/32 plus synthetic 64, and A2f real MobileNetV4 strides 4/8/16/32. A2f preserves four transformer levels, remaps trained A2 projections for strides 8/16/32, initializes only the new stride-4 projection, and leaves transformer, heads, losses, sampling, decoding, temperature, and distillation unchanged. |
 
 ## Frozen R0 reference
 
@@ -159,8 +160,9 @@ frozen; passing AP does not by itself authorize deployment.
 13. **Completed—rejected:** A2e size-aware box weighting produced only
     `+0.00353` nearby recall and `0.00132` localization reduction at its best
     signal, with unacceptable Vehicle AP loss. No full run is authorized.
-14. **Next and final planned accuracy experiment:** define one A2f
-    higher-resolution feature-path gate. Do not add another loss-weight sweep.
+14. **Prepared—run next and final planned accuracy experiment:** A2f compares
+    unchanged A2 against a real stride-4/8/16/32 feature pyramid for five
+    epochs. Do not add another loss-weight sweep.
 15. If A2f fails, end local tuning and choose between accepting frozen A2 or
     moving to a materially larger teacher-compatible architecture.
 16. Select and freeze a student only if every comparable-performance gate and
