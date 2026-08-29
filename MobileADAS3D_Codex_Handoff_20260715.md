@@ -2721,3 +2721,12 @@ The corrected patch sends strides 8/16/32 to the unchanged depth fusion in both 
 #### 2026-08-29 A2f decoder depth-mask mismatch corrected
 
 The first rerun passed the former OOM site, confirming that depth features were restored to stride 16, then failed before the first optimizer step because `DepthAwareTransformer` still hard-coded `masks[1]`. In the stride-4 ordering that mask has 7,680 positions while the stride-16 depth embeddings have 1,920. The patch now passes the computed depth level explicitly into the transformer and builds `mask_depth` from the matching stride-16 mask. Control behavior remains index 1; A2f uses index 2. No failed checkpoint was produced.
+
+
+#### 2026-08-29 A2f completed and rejected; local A2 tuning closed
+
+The complete paired evaluation selected no branch and set `full_run_authorized` to false. The five-epoch control produced Vehicle/Pedestrian moderate 3D AP_R40 `15.2973/6.8850`, moderate BEV `21.2189/8.2383`, Vehicle/Pedestrian nearby recall `0.87940/0.68827`, and Pedestrian localization failure `0.22928`.
+
+The stride-4 branch produced Vehicle/Pedestrian moderate 3D AP_R40 `9.0657/2.8491`, moderate BEV `15.2668/3.3447`, Vehicle/Pedestrian nearby recall `0.89282/0.66887`, and Pedestrian localization failure `0.29233`. Relative to control it changed Pedestrian nearby recall by `-0.01940`, localization reduction by `-0.06305`, Vehicle 3D by `-6.2316` AP, and Vehicle BEV by `-5.9521` AP. Checkpoint SHA-256 is `ae2e03890f6df41c0ca9f55e9d023abeb0f3f05080a2e07780ffd920bf579ec6`.
+
+Do not launch a full A2f run. A2b sampling, A2c focal weighting, A2d global box weighting, A2e size-aware box weighting, and A2f higher-resolution features are all rejected. End local A2 tuning and retain frozen A2 epoch 130 as the strongest current student diagnostic while deciding whether to accept its remaining accuracy gap or move to a materially larger teacher-compatible student.
