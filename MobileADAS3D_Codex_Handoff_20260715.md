@@ -2730,3 +2730,10 @@ The complete paired evaluation selected no branch and set `full_run_authorized` 
 The stride-4 branch produced Vehicle/Pedestrian moderate 3D AP_R40 `9.0657/2.8491`, moderate BEV `15.2668/3.3447`, Vehicle/Pedestrian nearby recall `0.89282/0.66887`, and Pedestrian localization failure `0.29233`. Relative to control it changed Pedestrian nearby recall by `-0.01940`, localization reduction by `-0.06305`, Vehicle 3D by `-6.2316` AP, and Vehicle BEV by `-5.9521` AP. Checkpoint SHA-256 is `ae2e03890f6df41c0ca9f55e9d023abeb0f3f05080a2e07780ffd920bf579ec6`.
 
 Do not launch a full A2f run. A2b sampling, A2c focal weighting, A2d global box weighting, A2e size-aware box weighting, and A2f higher-resolution features are all rejected. End local A2 tuning and retain frozen A2 epoch 130 as the strongest current student diagnostic while deciding whether to accept its remaining accuracy gap or move to a materially larger teacher-compatible student.
+
+
+#### 2026-08-29 A3 Conv Large capacity experiment prepared
+
+A3 is the next and only planned capacity escalation after closing A2b-A2f. It changes A2s MobileNetV4 Conv Medium backbone to the upstream `mobilenetv4_conv_large.e500_r256_in1k` model and rebuilds only the required feature projections. The R0-compatible depth predictor, deformable transformer, decoder, queries, heads, GT-only losses, class mapping, Chen split, 1280x384 input, optimizer schedule, decoding, and five product gates remain frozen. Distillation and temperature scaling remain disabled.
+
+Run `notebooks/MonoDETR_A3_MobileNetV4_Large_Two_Class_GT_Colab.ipynb` top-to-bottom on an A100-class Colab GPU. It creates a fresh pinned MonoDETR checkout, validates timm 1.0.20 and the pretrained model identifier, initializes shape-compatible downstream tensors from frozen R0 epoch 185, trains for 195 epochs with checkpoints every five epochs, resumes with optimizer state after interruption, and performs the restartable complete product sweep. Do not judge A3 from a five-epoch fine-tuning gate; this new backbone requires a full learning trajectory.

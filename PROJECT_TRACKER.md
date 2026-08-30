@@ -165,12 +165,14 @@ frozen; passing AP does not by itself authorize deployment.
     recall by `0.01940`, and increased localization failure by `0.06305`. No full
     A2f run is authorized.
 15. **Completed:** local A2 loss, sampling, and feature-path tuning is closed.
-    Freeze A2 epoch 130 as the strongest current student diagnostic, then choose
-    between accepting its shortfall or moving to a materially larger
-    teacher-compatible architecture.
-16. Select and freeze a student only if every comparable-performance gate and
+    A2 epoch 130 remains the strongest current student diagnostic.
+16. **Prepared—run next:** A3 changes only the backbone from MobileNetV4 Conv
+    Medium to Conv Large and trains the unchanged GT-only MonoDETR system for
+    195 epochs with restartable five-epoch checkpoints and the frozen five-gate
+    sweep. This is the sole capacity escalation before reconsidering the family.
+17. Select and freeze a student only if every comparable-performance gate and
     nearby-recall review passes.
-17. Run locked external validation, then compress the frozen student one change
+18. Run locked external validation, then compress the frozen student one change
     at a time and restore deployment-specific parity/runtime qualification.
 
 ## Decision rules

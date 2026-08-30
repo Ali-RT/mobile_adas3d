@@ -101,6 +101,12 @@ Distillation is disabled.
 8. Compress one variable at a time and restore Core ML parity and physical
    device qualification only after accuracy qualification.
 
+### A3 capacity escalation
+
+A2b-A2f did not close the remaining accuracy and nearby-Pedestrian gaps, so local A2 tuning is closed. A3 is the single next accuracy experiment. It replaces only A2s `mobilenetv4_conv_medium.e500_r256_in1k` backbone and required projection tensors with `mobilenetv4_conv_large.e500_r256_in1k`. It retains the R0/A2 depth predictor, deformable transformer, query count, heads, GT-only losses, taxonomy, Chen split, 1280x384 input, optimizer schedule, decoder, and five product gates.
+
+A3 trains from ImageNet-pretrained Conv Large plus all shape-compatible frozen R0 epoch-185 downstream tensors for 195 epochs, saving every five epochs. This is a capacity experiment, not distillation, temperature tuning, or deployment compression. A3 must pass all five gates and nearby-recall review before external validation or compression.
+
 Quantization is a later optimization, not a substitute for a learnable model.
 Transformer activation and memory cost must be measured separately because
 weight quantization alone may not make the graph sufficiently fast.
