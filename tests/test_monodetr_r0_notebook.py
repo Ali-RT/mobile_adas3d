@@ -49,6 +49,16 @@ class MonoDETRR0NotebookTests(unittest.TestCase):
         self.assertIn("r0_product_selection.json", self.code)
         self.assertIn("r0_product_checkpoint_sweep.csv", self.code)
 
+    def test_locked_epoch185_qualification_is_wired(self):
+        self.assertIn("Expected frozen R0 epoch 185", self.code)
+        self.assertIn("fc0eba200e44b88921af76b0a5c94279872fd5c4838ab4d8936838447debfa59", self.code)
+        self.assertIn("Expected 3769 prediction files", self.code)
+        self.assertIn("audit_product_prediction_geometry.py", self.code)
+        self.assertIn("evaluate_yaw_diagnostics.py", self.code)
+        self.assertIn("diagnose_a2_pedestrian_false_negatives.py", self.code)
+        self.assertIn("score-threshold\",\"0.001", self.code.replace(" ", ""))
+        self.assertIn("match-iou-threshold\",\"0.5", self.code.replace(" ", ""))
+
 
 if __name__ == "__main__":
     unittest.main()

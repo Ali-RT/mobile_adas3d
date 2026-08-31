@@ -2744,3 +2744,10 @@ Run `notebooks/MonoDETR_A3_MobileNetV4_Large_Two_Class_GT_Colab.ipynb` top-to-bo
 The complete A3 sweep selected epoch 140. Vehicle/Pedestrian moderate 3D AP_R40 was `14.9492/7.6859`, balanced mean `11.3176`, and Vehicle/Pedestrian moderate BEV was `20.7324/8.8273`. It passed Pedestrian 3D, balanced mean, and Pedestrian BEV, but missed the frozen Vehicle 3D gate by `0.9221` and Vehicle BEV gate by `0.5810`. Compared with A2 epoch 130, A3 changed Vehicle 3D by `-0.5081`, Pedestrian 3D by `+0.1531`, balanced mean by `-0.1775`, Vehicle BEV by `-0.6426`, and Pedestrian BEV by `+0.3382`.
 
 The 15 strongest balanced checkpoints displayed all remain below the Vehicle 3D gate, so a larger MobileNetV4 backbone does not resolve the limiting geometry performance. Reject A3 as an accuracy-qualified model and end MobileNetV4 capacity escalation. Frozen R0 epoch 185 is now the accuracy parent; run its locked nearby-recall/geometry qualification and external validation before beginning controlled compression. Retain A2 epoch 130 only as the best MobileNetV4 diagnostic.
+
+
+#### 2026-08-31 locked R0 qualification workflow prepared
+
+The canonical `notebooks/MonoDETR_R0_Two_Class_Reference_Colab.ipynb` now ends with a locked evaluation-only qualification section. Run setup cells 2-5 and then the final qualification cell. It fails closed unless the selection is epoch 185 with checkpoint SHA-256 `fc0eba200e44b88921af76b0a5c94279872fd5c4838ab4d8936838447debfa59`, deletes only stale prediction outputs, regenerates exactly 3,769 validation prediction files at threshold `0.001` and TopK `50`, and performs no training.
+
+Artifacts are written under `references/monodetr_r0/r0_epoch185_locked_qualification`: `nearby_geometry_summary.json`, matched/false-negative/geometry CSVs, yaw diagnostic CSVs, and a detailed Pedestrian failure-mode report. The geometry matched CSV schema was additively extended with split, size bucket, and ground-truth/predicted yaw so the existing yaw diagnostic can consume the same frozen matches. Review these results before external validation or compression.

@@ -113,9 +113,19 @@ def geometry_row(
     pred_dimensions = np.asarray(prediction["dimensions_3d_hwl"], dtype=float)
     gt_dimensions = np.asarray(target["dimensions_3d"], dtype=float)
     depth = float(gt_location[2])
+    bbox_height = float(target["bbox_2d"][3]) - float(target["bbox_2d"][1])
+    size = (
+        "small_h_lt_32px" if bbox_height < 32.0
+        else "medium_h_32_96px" if bbox_height < 96.0
+        else "large_h_ge_96px"
+    )
     return {
+        "split": "val",
         "sample_id": sample_id,
         "class_name": class_name,
+        "size_bucket": size,
+        "gt_yaw_rad": float(target["rotation_y"]),
+        "pred_yaw_rad": float(prediction["rotation_y"]),
         "score": float(prediction["score"]),
         "distance_bucket": distance_bucket(depth),
         "gt_depth_m": depth,

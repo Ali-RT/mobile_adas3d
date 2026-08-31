@@ -55,6 +55,10 @@ class ProductPredictionGeometryTests(unittest.TestCase):
         self.assertAlmostEqual(pedestrian["near_recall"], 1.0)
         self.assertTrue(report["all_near_recall_gates_passed"])
         self.assertEqual(len(matched), 2)
+        self.assertEqual(matched[0]["split"], "val")
+        self.assertIn(matched[0]["size_bucket"], {"small_h_lt_32px", "medium_h_32_96px", "large_h_ge_96px"})
+        self.assertIn("gt_yaw_rad", matched[0])
+        self.assertIn("pred_yaw_rad", matched[0])
         self.assertEqual(len(false_negatives), 1)
         self.assertFalse(false_negatives[0]["near_field"])
 

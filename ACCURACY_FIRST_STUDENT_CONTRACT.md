@@ -111,6 +111,10 @@ Quantization is a later optimization, not a substitute for a learnable model.
 Transformer activation and memory cost must be measured separately because
 weight quantization alone may not make the graph sufficiently fast.
 
+## Locked R0 qualification
+
+Before compression, frozen R0 epoch 185 must be evaluated without training on all 3,769 Chen validation images at score threshold `0.001`, TopK `50`, and 2D diagnostic matching IoU `0.5`. The qualification records per-class overall and nearby recall, precision/false positives, depth and 3D center error, BEV/3D IoU, dimensions, yaw and front/back flips, distance/size buckets, and detailed nearby Pedestrian failure modes. The checkpoint SHA-256 must remain `fc0eba200e44b88921af76b0a5c94279872fd5c4838ab4d8936838447debfa59`.
+
 ## Experiment discipline
 
 - Baseline and distillation runs must share initialization, data order,
