@@ -105,7 +105,7 @@ Distillation is disabled.
 
 A2b-A2f did not close the remaining accuracy and nearby-Pedestrian gaps, so local A2 tuning is closed. A3 is the single next accuracy experiment. It replaces only A2s `mobilenetv4_conv_medium.e500_r256_in1k` backbone and required projection tensors with `mobilenetv4_conv_large.e500_r256_in1k`. It retains the R0/A2 depth predictor, deformable transformer, query count, heads, GT-only losses, taxonomy, Chen split, 1280x384 input, optimizer schedule, decoder, and five product gates.
 
-A3 trains from ImageNet-pretrained Conv Large plus all shape-compatible frozen R0 epoch-185 downstream tensors for 195 epochs, saving every five epochs. This is a capacity experiment, not distillation, temperature tuning, or deployment compression. A3 must pass all five gates and nearby-recall review before external validation or compression.
+A3 trained from ImageNet-pretrained Conv Large plus all shape-compatible frozen R0 epoch-185 downstream tensors for 195 epochs. Selected epoch 140 reached Vehicle/Pedestrian moderate 3D AP_R40 `14.9492/7.6859` and BEV `20.7324/8.8273`; it failed the Vehicle 3D and BEV gates. MobileNetV4 capacity escalation is therefore closed. Frozen R0 epoch 185 becomes the accuracy parent for locked nearby-recall/geometry and external validation before any compression. A2 epoch 130 remains the strongest MobileNetV4 diagnostic, not an accuracy-qualified product model.
 
 Quantization is a later optimization, not a substitute for a learnable model.
 Transformer activation and memory cost must be measured separately because

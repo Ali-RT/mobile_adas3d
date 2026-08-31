@@ -166,14 +166,17 @@ frozen; passing AP does not by itself authorize deployment.
     A2f run is authorized.
 15. **Completed:** local A2 loss, sampling, and feature-path tuning is closed.
     A2 epoch 130 remains the strongest current student diagnostic.
-16. **Prepared—run next:** A3 changes only the backbone from MobileNetV4 Conv
-    Medium to Conv Large and trains the unchanged GT-only MonoDETR system for
-    195 epochs with restartable five-epoch checkpoints and the frozen five-gate
-    sweep. This is the sole capacity escalation before reconsidering the family.
-17. Select and freeze a student only if every comparable-performance gate and
-    nearby-recall review passes.
-18. Run locked external validation, then compress the frozen student one change
-    at a time and restore deployment-specific parity/runtime qualification.
+16. **Completed—rejected:** A3 Conv Large selected epoch 140 at Vehicle/
+    Pedestrian moderate 3D AP_R40 `14.9492/7.6859` and BEV `20.7324/8.8273`.
+    It misses Vehicle 3D by `0.9221` and Vehicle BEV by `0.5810`; the 15
+    strongest balanced checkpoints shown all miss the Vehicle 3D gate.
+17. **Completed:** end MobileNetV4 capacity escalation. Frozen R0 epoch 185 is
+    the only current model meeting the accuracy denominator and becomes the
+    accuracy parent; A2 epoch 130 remains the best MobileNetV4 diagnostic.
+18. Run locked R0 nearby-recall/geometry qualification and external validation
+    before compressing the frozen parent one controlled change at a time.
+19. Restore deployment-specific Core ML parity/runtime qualification only after
+    a compressed candidate preserves the locked accuracy gates.
 
 ## Decision rules
 
