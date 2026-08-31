@@ -115,6 +115,8 @@ weight quantization alone may not make the graph sufficiently fast.
 
 Before compression, frozen R0 epoch 185 must be evaluated without training on all 3,769 Chen validation images at score threshold `0.001`, TopK `50`, and 2D diagnostic matching IoU `0.5`. The qualification records per-class overall and nearby recall, precision/false positives, depth and 3D center error, BEV/3D IoU, dimensions, yaw and front/back flips, distance/size buckets, and detailed nearby Pedestrian failure modes. The checkpoint SHA-256 must remain `fc0eba200e44b88921af76b0a5c94279872fd5c4838ab4d8936838447debfa59`.
 
+Qualification result: Vehicle nearby recall is `0.88246` and passes `0.85`; Pedestrian nearby recall is `0.68342` and fails `0.80`. The dominant nearby Pedestrian failure is localization (`558/718` misses), not missing queries (`82/718`). R0 remains the frozen AP reference but is not a fully qualified safety parent. Compression and external qualification are paused until either an R1 localization intervention passes the target or governance explicitly defines a separate relative compression-preservation gate without representing it as the `0.80` product target.
+
 ## Experiment discipline
 
 - Baseline and distillation runs must share initialization, data order,

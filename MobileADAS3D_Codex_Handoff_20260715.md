@@ -2751,3 +2751,12 @@ The 15 strongest balanced checkpoints displayed all remain below the Vehicle 3D 
 The canonical `notebooks/MonoDETR_R0_Two_Class_Reference_Colab.ipynb` now ends with a locked evaluation-only qualification section. Run setup cells 2-5 and then the final qualification cell. It fails closed unless the selection is epoch 185 with checkpoint SHA-256 `fc0eba200e44b88921af76b0a5c94279872fd5c4838ab4d8936838447debfa59`, deletes only stale prediction outputs, regenerates exactly 3,769 validation prediction files at threshold `0.001` and TopK `50`, and performs no training.
 
 Artifacts are written under `references/monodetr_r0/r0_epoch185_locked_qualification`: `nearby_geometry_summary.json`, matched/false-negative/geometry CSVs, yaw diagnostic CSVs, and a detailed Pedestrian failure-mode report. The geometry matched CSV schema was additively extended with split, size bucket, and ground-truth/predicted yaw so the existing yaw diagnostic can consume the same frozen matches. Review these results before external validation or compression.
+
+
+#### 2026-08-31 locked R0 qualification completed; Pedestrian nearby gate failed
+
+The evaluation completed successfully and regenerated all 3,769 predictions from frozen epoch 185/hash `fc0eba200e44b88921af76b0a5c94279872fd5c4838ab4d8936838447debfa59`. Vehicle nearby recall was `11247/12745 = 0.88246`, passing the `0.85` gate. Pedestrian nearby recall was `1550/2268 = 0.68342`, failing the `0.80` gate. Overall matched recall was `0.82220` Vehicle and `0.63818` Pedestrian.
+
+Matched Vehicle geometry: 2D/BEV/3D IoU means `0.8291/0.4618/0.4325`, depth MAE `1.6799 m`, center error `1.7744 m`, yaw mean `28.70°`. Matched Pedestrian geometry: `0.7011/0.2135/0.2034`, depth MAE `0.9284 m`, center error `1.0071 m`, yaw mean `74.96°`. Axis-aware yaw diagnostics show front/back flip candidate rates `0.12886` Vehicle and `0.22678` Pedestrian.
+
+Of 2,268 nearby Pedestrians, 1,550 were detected and 718 missed. Failure modes were 558 localization (`0.24603` of all nearby GT; `77.7%` of misses), 82 missing query, 57 subthreshold but well localized, and 21 assignment conflict. There were no wrong-class failures in the reported near summary. This blocks compression under the current contract: R0 is the AP parent but not a fully qualified nearby-Pedestrian safety parent. Do not start external qualification or compression until an R1 localization intervention is defined, or governance explicitly separates the aspirational `0.80` product target from a relative compression-preservation gate.

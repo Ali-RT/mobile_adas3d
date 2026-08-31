@@ -173,14 +173,19 @@ frozen; passing AP does not by itself authorize deployment.
 17. **Completed:** end MobileNetV4 capacity escalation. Frozen R0 epoch 185 is
     the only current model meeting the accuracy denominator and becomes the
     accuracy parent; A2 epoch 130 remains the best MobileNetV4 diagnostic.
-18. **Prepared—run next:** the canonical R0 notebook now has a locked
-    epoch-185 qualification section. It verifies the checkpoint hash, regenerates
-    all 3,769 predictions, and writes nearby-recall, geometry, yaw/front-back,
-    false-positive, and Pedestrian failure-mode evidence without training.
-19. Run locked external validation only after reviewing the R0 qualification;
-    then compress the frozen parent one controlled change at a time.
-20. Restore deployment-specific Core ML parity/runtime qualification only after
-    a compressed candidate preserves the locked accuracy gates.
+18. **Completed—nearby gate failed:** frozen R0 epoch 185 regenerated all
+    3,769 predictions. Vehicle nearby recall is `0.88246` versus the `0.85` gate;
+    Pedestrian nearby recall is `0.68342` versus the `0.80` gate.
+19. **Completed diagnosis:** among 718 missed nearby Pedestrians, `558` (`77.7%`)
+    are localization failures, `82` missing queries, `57` well-localized but
+    subthreshold, and `21` assignment conflicts. R0 is the AP parent but is not
+    yet a fully qualified safety parent.
+20. **Next decision:** do not begin compression or claim external qualification.
+    Define one evidence-based R1 nearby-Pedestrian localization intervention, or
+    explicitly separate the aspirational `0.80` product target from a relative
+    compression-preservation gate before proceeding.
+21. Restore deployment-specific Core ML parity/runtime qualification only after
+    the chosen parent and compression acceptance rules are frozen.
 
 ## Decision rules
 
