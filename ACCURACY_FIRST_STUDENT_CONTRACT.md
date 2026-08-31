@@ -117,6 +117,9 @@ Before compression, frozen R0 epoch 185 must be evaluated without training on al
 
 Qualification result: Vehicle nearby recall is `0.88246` and passes `0.85`; Pedestrian nearby recall is `0.68342` and fails `0.80`. The dominant nearby Pedestrian failure is localization (`558/718` misses), not missing queries (`82/718`). R0 remains the frozen AP reference but is not a fully qualified safety parent. Compression and external qualification are paused until either an R1 localization intervention passes the target or governance explicitly defines a separate relative compression-preservation gate without representing it as the `0.80` product target.
 
+R1 is the single authorized next intervention. It preserves the frozen ResNet50 MonoDETR architecture and supervised losses, and changes only the Hungarian matcher tradeoff by multiplying native Pedestrian target columns for 2D L1 and GIoU assignment costs by `2.0`. A weight-`1.0` branch is trained in parallel from the same R0 checkpoint for five epochs at `1e-5`, seed `20268`. Full continuation requires at least `+0.02` Pedestrian nearby recall, `0.02` localization-failure reduction, no Pedestrian 3D/BEV regression, no more than `0.15` Vehicle 3D/BEV AP loss, and no more than `0.01` Vehicle nearby-recall loss versus the paired control.
+
+
 ## Experiment discipline
 
 - Baseline and distillation runs must share initialization, data order,

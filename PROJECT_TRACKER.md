@@ -81,7 +81,8 @@ not constrain the current accuracy-development stage.
 | M44 | A2 Pedestrian false-negative localization diagnosis | Complete - localization dominant | Corrected M44 exactly reconciled with frozen nearby recall: `1570/2268 = 69.224%`. Of 698 nearby misses, localization failure was `522` (`74.8%`), sub-threshold but well-localized query `77` (`11.0%`), missing query `84` (`12.0%`), assignment conflict `15` (`2.1%`), and wrong-class classification `0`. Localization worsened with difficulty, occlusion, and distance: detected/localization rates were `41.3%/48.1%` for hard, `38.5%/50.4%` at occlusion 2, and `40.3%/37.5%` at 20-30 m. |
 | M45 | A2d Pedestrian localization-supervision gate | Complete—rejected | All four paired five-epoch branches completed. Weight `1.5` was least harmful: Pedestrian nearby recall improved only `+0.00176` (required `+0.02`) and localization-failure rate fell only `0.00397` (required `0.02`); Vehicle 3D changed `-0.0930` AP and BEV `+0.0230`. Weights `2.0`/`2.5` damaged Vehicle 3D and BEV beyond the allowed `0.15` AP, while `2.5` also reduced Pedestrian recall. No branch was eligible; `selected=null`, `full_run_authorized=false`. |
 | M46 | A2e size-aware Pedestrian localization gate | Complete—rejected | All four paired five-epoch branches completed. Weight `2.0` produced the only positive recall/localization signal: nearby recall `+0.00353` and localization-failure reduction `0.00132`, far below both required `0.02` gates, while Vehicle 3D/BEV changed `-0.2902/-0.1901` AP. Weight `1.5` worsened recall/localization and Vehicle BEV; weight `2.5` reduced Pedestrian recall and BEV. No branch was eligible; `selected=null`, `full_run_authorized=false`. |
-| M47 | A2f higher-resolution feature gate | Prepared—run next | Two paired five-epoch branches start from frozen A2 epoch 130: unchanged A2 strides 8/16/32 plus synthetic 64, and A2f real MobileNetV4 strides 4/8/16/32. A2f preserves four transformer levels, remaps trained A2 projections for strides 8/16/32, initializes only the new stride-4 projection, and leaves transformer, heads, losses, sampling, decoding, temperature, and distillation unchanged. |
+| M47 | A2f higher-resolution feature gate | Complete—rejected | A2f stride 4 reduced Vehicle/Pedestrian moderate 3D AP_R40 by `6.2316/4.0359`, reduced Pedestrian nearby recall by `0.01940`, and increased localization failure by `0.06305` versus its paired control. No full run is authorized. |
+| M48 | R1 Pedestrian matcher-localization gate | Prepared—run next | Two paired five-epoch branches start from frozen ResNet50 R0 epoch 185: unchanged assignment cost `1.0` and Pedestrian-only 2D L1/GIoU Hungarian assignment cost `2.0`. Architecture, losses after matching, data, decoding, temperature, and distillation remain unchanged. Full R1 is authorized only by complete AP, nearby recall, and localization-failure gates. |
 
 ## Frozen R0 reference
 
@@ -180,10 +181,12 @@ frozen; passing AP does not by itself authorize deployment.
     are localization failures, `82` missing queries, `57` well-localized but
     subthreshold, and `21` assignment conflicts. R0 is the AP parent but is not
     yet a fully qualified safety parent.
-20. **Next decision:** do not begin compression or claim external qualification.
-    Define one evidence-based R1 nearby-Pedestrian localization intervention, or
-    explicitly separate the aspirational `0.80` product target from a relative
-    compression-preservation gate before proceeding.
+20. **Prepared—run next:** R1 tests one evidence-based intervention: double only
+    native Pedestrian 2D L1/GIoU costs inside Hungarian assignment. Run an
+    unchanged paired control from the identical frozen R0 epoch-185 checkpoint.
+    Do not launch a full R1 unless Pedestrian nearby recall improves by at least
+    `0.02`, localization failures fall by at least `0.02`, and all Vehicle/
+    Pedestrian AP and Vehicle nearby-preservation gates pass.
 21. Restore deployment-specific Core ML parity/runtime qualification only after
     the chosen parent and compression acceptance rules are frozen.
 
