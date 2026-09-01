@@ -2772,3 +2772,7 @@ The paired five-epoch matcher gate completed and was rejected. Relative to its c
 ## R2 structural Pedestrian refinement gate (2026-08-31)
 
 R2 is prepared as the next controlled experiment after R1 rejection. It taps frozen ResNet50 layer-1 stride-4 features without changing transformer feature levels, samples a 3×3 local grid within every predicted box, fuses the pooled feature with the final query embedding, and applies a zero-initialized residual to only the four 2D box edges using native Pedestrian probability as a soft gate. Run the paired control/treatment notebook `notebooks/MonoDETR_R2_Pedestrian_Refinement_Gate_Colab.ipynb` top-to-bottom on a Colab GPU. The isolated Drive root is `mobileadas3d_outputs/students/monodetr_r2_pedestrian_refinement_gate`. No full run is authorized before the final R2 comparison passes all locked gates.
+
+## R2 result (2026-09-01)
+
+R2 completed but did not pass. Relative to paired control, Pedestrian nearby recall changed `+0.0119048`, localization-failure rate improved `0.0052910`, Pedestrian 3D AP improved `+0.3558003`, Vehicle 3D changed only `-0.0071878`, Vehicle BEV changed `-0.1801657`, and Pedestrian BEV changed `-0.0252468`. The structural signal is materially stronger than R1, but `selected=null` and `full_run_authorized=false`. Do not run full R2. The sole recommended follow-up is R2b: freeze all R0 weights, train only the local refinement projection/head, and hard-gate residual application to fixed native Pedestrian predictions; if it fails, close the refinement family.

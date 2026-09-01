@@ -83,7 +83,7 @@ not constrain the current accuracy-development stage.
 | M46 | A2e size-aware Pedestrian localization gate | Complete—rejected | All four paired five-epoch branches completed. Weight `2.0` produced the only positive recall/localization signal: nearby recall `+0.00353` and localization-failure reduction `0.00132`, far below both required `0.02` gates, while Vehicle 3D/BEV changed `-0.2902/-0.1901` AP. Weight `1.5` worsened recall/localization and Vehicle BEV; weight `2.5` reduced Pedestrian recall and BEV. No branch was eligible; `selected=null`, `full_run_authorized=false`. |
 | M47 | A2f higher-resolution feature gate | Complete—rejected | A2f stride 4 reduced Vehicle/Pedestrian moderate 3D AP_R40 by `6.2316/4.0359`, reduced Pedestrian nearby recall by `0.01940`, and increased localization failure by `0.06305` versus its paired control. No full run is authorized. |
 | M48 | R1 Pedestrian matcher-localization gate | Complete—rejected | The 2× Pedestrian assignment-cost branch improved nearby recall only `+0.00044` and reduced localization failures only `0.00176`, versus required `0.02/0.02`. It changed Vehicle 3D/BEV by `-0.15445/-0.06775` AP and regressed Pedestrian 3D/BEV by `-0.02964/-0.15296` AP. `selected=null`; no full R1 is authorized. |
-| M49 | R2 stride-4 Pedestrian refinement gate | Prepared—run next | Paired five-epoch branches start from frozen ResNet50 R0 epoch 185. Treatment samples a 3×3 grid from frozen stride-4 layer-1 features and applies a zero-initialized, Pedestrian-probability-gated residual only to four 2D box edges. Transformer, queries, depth/dimensions/yaw, data, decoder, temperature, and distillation remain fixed. |
+| M49 | R2 stride-4 Pedestrian refinement gate | Complete—rejected, positive signal | Versus paired control, R2 improved Pedestrian nearby recall `+0.01190`, reduced localization failures `0.00529`, and improved Pedestrian 3D AP `+0.35580`; however, gains missed the `0.02/0.02` gates, Vehicle BEV regressed `0.18017` AP (limit `0.15`), and Pedestrian BEV regressed `0.02525`. `selected=null`; no full R2 run is authorized. |
 
 ## Frozen R0 reference
 
@@ -186,11 +186,16 @@ frozen; passing AP does not by itself authorize deployment.
     Pedestrian nearby recall and `0.00176` localization-failure reduction, while
     Vehicle 3D fell `0.15445` AP and Pedestrian 3D/BEV also regressed. Do not
     launch a full R1 or continue scalar matcher/loss-weight tuning.
-21. **Prepared—run next:** R2 implements the structural option as a paired
-    stride-4 local-feature Pedestrian box-edge refinement gate. It starts with
-    exact R0 predictions because its residual head is zero initialized. Only a
-    complete AP/nearby/localization comparison may authorize a full R2 run.
-22. Restore deployment-specific Core ML parity/runtime qualification only after
+21. **Completed—rejected, positive signal:** R2 delivered `+0.01190` nearby
+    Pedestrian recall, `0.00529` localization reduction, and `+0.35580`
+    Pedestrian 3D AP versus control, but failed both gain thresholds and the
+    Vehicle/Pedestrian BEV preservation rules. Do not launch a full R2 run.
+22. **Recommended next:** one bounded R2b gate may retain the same local
+    refinement structure while freezing all R0 parameters and training only
+    the refinement projection/head, with a hard native-Pedestrian prediction
+    gate. This directly addresses R2 Vehicle drift; stop structural refinement
+    if R2b does not pass.
+23. Restore deployment-specific Core ML parity/runtime qualification only after
     the chosen parent and compression acceptance rules are frozen.
 
 ## Decision rules
