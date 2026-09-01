@@ -2776,3 +2776,7 @@ R2 is prepared as the next controlled experiment after R1 rejection. It taps fro
 ## R2 result (2026-09-01)
 
 R2 completed but did not pass. Relative to paired control, Pedestrian nearby recall changed `+0.0119048`, localization-failure rate improved `0.0052910`, Pedestrian 3D AP improved `+0.3558003`, Vehicle 3D changed only `-0.0071878`, Vehicle BEV changed `-0.1801657`, and Pedestrian BEV changed `-0.0252468`. The structural signal is materially stronger than R1, but `selected=null` and `full_run_authorized=false`. Do not run full R2. The sole recommended follow-up is R2b: freeze all R0 weights, train only the local refinement projection/head, and hard-gate residual application to fixed native Pedestrian predictions; if it fails, close the refinement family.
+
+## R2b frozen refinement gate prepared (2026-09-01)
+
+R2b is the final bounded refinement test. The original R0 backbone, transformer, queries, classifier, and 3D heads are frozen; only the stride-4 projection and local refinement head train for 10 epochs at `1e-4`. A detached hard gate applies box-edge residuals only to queries whose frozen native class argmax is Pedestrian. The mandatory CUDA smoke test proves exact R0 initialization parity, enumerates the exact trainable parameter set, verifies hard/frozen configuration, and requires finite nonzero refinement gradients. Run `notebooks/MonoDETR_R2b_Frozen_Refinement_Gate_Colab.ipynb` top-to-bottom. Immutable R0 is the control; no full continuation is allowed unless `r2b_gate_comparison.json` passes every locked gate.

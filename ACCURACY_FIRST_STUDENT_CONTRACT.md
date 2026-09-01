@@ -121,6 +121,9 @@ R1 result: rejected. The 2× Pedestrian Hungarian localization-cost branch impro
 
 R2 result: rejected with a positive structural signal. Relative to its paired control, stride-4 refinement improved Pedestrian nearby recall by `0.01190`, reduced localization failures by `0.00529`, and improved Pedestrian 3D AP by `0.35580`. It nevertheless missed both `0.02` gain gates, reduced Vehicle BEV by `0.18017` AP (beyond the `0.15` allowance), and reduced Pedestrian BEV by `0.02525` AP. No full R2 run is authorized. One bounded R2b gate may freeze every R0 parameter, train only the refinement projection/head, and apply its residual only when the fixed native classifier selects Pedestrian. R2b must use the same complete evaluation and thresholds; failure closes this refinement family.
 
+R2b is prepared as the final bounded refinement experiment: one treatment, 10 epochs, learning rate `1e-4`, seed `20268`, exact R0 initialization, all original R0 parameters frozen, and only `pedestrian_refinement_proj` plus `pedestrian_refinement_head` trainable. A detached hard gate applies residuals only where the frozen native classifier selects Pedestrian. Immutable R0 metrics replace a redundant trained control. The same `0.02/0.02` Pedestrian gains, Vehicle recall/AP preservation, and Pedestrian AP non-regression rules apply. Failure closes structural refinement.
+
+
 
 
 ## Experiment discipline
