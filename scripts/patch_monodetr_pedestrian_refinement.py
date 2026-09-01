@@ -22,6 +22,23 @@ def replace_once(path: Path, old: str, new: str, label: str) -> None:
     )
 
 
+def upgrade_if_present(path: Path, old: str, new: str, label: str) -> None:
+    text = path.read_text(encoding="utf-8")
+    if text.count(new) == 1:
+        print(f"already upgraded {label}")
+        return
+    if text.count(old) == 1:
+        path.write_text(text.replace(old, new), encoding="utf-8")
+        print(f"upgraded {label}")
+        return
+    if text.count(old) == 0 and text.count(new) == 0:
+        print(f"upgrade pending {label}")
+        return
+    raise RuntimeError(
+        f"Unexpected {label} source in {path}: old={text.count(old)}, new={text.count(new)}"
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--monodetr-repo", type=Path, required=True)
@@ -82,6 +99,12 @@ def main() -> None:
         "        for lvl in range(hs.shape[0]):",
         "project captured stride-4 feature",
     )
+    upgrade_if_present(
+        model,
+        "                refined_edges = (inverse_sigmoid(outputs_coord[..., 2:6]) + self.pedestrian_refinement_scale * pedestrian_probability * residual).sigmoid()\n",
+        "                refined_edges = (outputs_coord[..., 2:6] + self.pedestrian_refinement_scale * pedestrian_probability * residual).clamp(0, 1)\n",
+        "bitwise-zero Pedestrian residual",
+    )
     replace_once(
         model,
         "            outputs_class = self.class_embed[lvl](hs[lvl])\n            outputs_classes.append(outputs_class)\n",
@@ -105,7 +128,7 @@ def main() -> None:
         "                sampled = sampled.reshape(batch_size, self.hidden_dim, query_count, self.pedestrian_refinement_grid_size, self.pedestrian_refinement_grid_size).mean(dim=(-1, -2)).transpose(1, 2)\n"
         "                residual = self.pedestrian_refinement_head(torch.cat((hs[lvl], sampled), dim=-1))\n"
         "                pedestrian_probability = outputs_class[..., 0:1].sigmoid()\n"
-        "                refined_edges = (inverse_sigmoid(outputs_coord[..., 2:6]) + self.pedestrian_refinement_scale * pedestrian_probability * residual).sigmoid()\n"
+        "                refined_edges = (outputs_coord[..., 2:6] + self.pedestrian_refinement_scale * pedestrian_probability * residual).clamp(0, 1)\n"
         "                outputs_coord = torch.cat((outputs_coord[..., 0:2], refined_edges), dim=-1)\n"
         "                outputs_coords[-1] = outputs_coord\n",
         "Pedestrian local-feature residual refinement",

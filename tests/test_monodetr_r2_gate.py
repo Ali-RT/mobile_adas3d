@@ -53,6 +53,8 @@ class MonoDETRR2GateTests(unittest.TestCase):
         self.assertIn("F.grid_sample", source)
         self.assertIn("pedestrian_probability = outputs_class[..., 0:1].sigmoid()", source)
         self.assertIn("pedestrian_refinement_head.layers[-1].weight, 0", source)
+        self.assertIn("outputs_coord[..., 2:6] + self.pedestrian_refinement_scale", source)
+        self.assertIn("upgrade_if_present", source)
         self.assertIn("outputs_coord[..., 0:2], refined_edges", source)
         self.assertNotIn("out['pred_depth'] =", source)
         self.assertNotIn("out['pred_angle'] =", source)
