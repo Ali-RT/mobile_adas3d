@@ -2764,3 +2764,7 @@ Of 2,268 nearby Pedestrians, 1,550 were detected and 718 missed. Failure modes w
 ## R1 Pedestrian matcher-localization gate (2026-08-31)
 
 Frozen R0 epoch 185 passed Vehicle nearby recall (`0.88246`) but failed Pedestrian (`0.68342` vs `0.80`). Of 718 nearby Pedestrian misses, 558 were localization failures. R1 therefore tests one paired matcher-level intervention: control assignment weight `1.0` versus Pedestrian-only 2D L1/GIoU Hungarian assignment weight `2.0`, both for five epochs from the identical R0 checkpoint. The architecture, post-match losses, data, decoding, temperature, and distillation are fixed. Use `notebooks/MonoDETR_R1_Pedestrian_Matcher_Gate_Colab.ipynb`; only its final comparison may authorize a full run.
+
+## R1 result (2026-08-31)
+
+The paired five-epoch matcher gate completed and was rejected. Relative to its control, 2× Pedestrian 2D L1/GIoU Hungarian assignment cost changed nearby recall by only `+0.00044`, localization-failure rate by `-0.00176`, Vehicle 3D/BEV AP by `-0.15445/-0.06775`, and Pedestrian 3D/BEV AP by `-0.02964/-0.15296`. `selected=null` and `full_run_authorized=false`. Do not resume R1 or continue scalar matcher/loss-weight tuning. Note that the supplied Colab artifacts were saved under the older `monodetr_a2d_pedestrian_box_gate` Drive folder name; checkpoint hashes and manifest identify the R1 branches, so the metrics remain usable, but future experiments must use a correctly named output root.

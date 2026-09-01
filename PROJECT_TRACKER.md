@@ -82,7 +82,7 @@ not constrain the current accuracy-development stage.
 | M45 | A2d Pedestrian localization-supervision gate | Complete—rejected | All four paired five-epoch branches completed. Weight `1.5` was least harmful: Pedestrian nearby recall improved only `+0.00176` (required `+0.02`) and localization-failure rate fell only `0.00397` (required `0.02`); Vehicle 3D changed `-0.0930` AP and BEV `+0.0230`. Weights `2.0`/`2.5` damaged Vehicle 3D and BEV beyond the allowed `0.15` AP, while `2.5` also reduced Pedestrian recall. No branch was eligible; `selected=null`, `full_run_authorized=false`. |
 | M46 | A2e size-aware Pedestrian localization gate | Complete—rejected | All four paired five-epoch branches completed. Weight `2.0` produced the only positive recall/localization signal: nearby recall `+0.00353` and localization-failure reduction `0.00132`, far below both required `0.02` gates, while Vehicle 3D/BEV changed `-0.2902/-0.1901` AP. Weight `1.5` worsened recall/localization and Vehicle BEV; weight `2.5` reduced Pedestrian recall and BEV. No branch was eligible; `selected=null`, `full_run_authorized=false`. |
 | M47 | A2f higher-resolution feature gate | Complete—rejected | A2f stride 4 reduced Vehicle/Pedestrian moderate 3D AP_R40 by `6.2316/4.0359`, reduced Pedestrian nearby recall by `0.01940`, and increased localization failure by `0.06305` versus its paired control. No full run is authorized. |
-| M48 | R1 Pedestrian matcher-localization gate | Prepared—run next | Two paired five-epoch branches start from frozen ResNet50 R0 epoch 185: unchanged assignment cost `1.0` and Pedestrian-only 2D L1/GIoU Hungarian assignment cost `2.0`. Architecture, losses after matching, data, decoding, temperature, and distillation remain unchanged. Full R1 is authorized only by complete AP, nearby recall, and localization-failure gates. |
+| M48 | R1 Pedestrian matcher-localization gate | Complete—rejected | The 2× Pedestrian assignment-cost branch improved nearby recall only `+0.00044` and reduced localization failures only `0.00176`, versus required `0.02/0.02`. It changed Vehicle 3D/BEV by `-0.15445/-0.06775` AP and regressed Pedestrian 3D/BEV by `-0.02964/-0.15296` AP. `selected=null`; no full R1 is authorized. |
 
 ## Frozen R0 reference
 
@@ -181,13 +181,16 @@ frozen; passing AP does not by itself authorize deployment.
     are localization failures, `82` missing queries, `57` well-localized but
     subthreshold, and `21` assignment conflicts. R0 is the AP parent but is not
     yet a fully qualified safety parent.
-20. **Prepared—run next:** R1 tests one evidence-based intervention: double only
-    native Pedestrian 2D L1/GIoU costs inside Hungarian assignment. Run an
-    unchanged paired control from the identical frozen R0 epoch-185 checkpoint.
-    Do not launch a full R1 unless Pedestrian nearby recall improves by at least
-    `0.02`, localization failures fall by at least `0.02`, and all Vehicle/
-    Pedestrian AP and Vehicle nearby-preservation gates pass.
-21. Restore deployment-specific Core ML parity/runtime qualification only after
+20. **Completed—rejected:** R1 matcher weighting produced only `+0.00044`
+    Pedestrian nearby recall and `0.00176` localization-failure reduction, while
+    Vehicle 3D fell `0.15445` AP and Pedestrian 3D/BEV also regressed. Do not
+    launch a full R1 or continue scalar matcher/loss-weight tuning.
+21. **Next decision:** choose between (a) keeping `0.80` as an aspirational
+    safety target and developing a structural high-resolution Pedestrian
+    refinement stage, or (b) freezing R0 as the accuracy parent and defining an
+    explicitly relative compression-preservation recall gate. Do not conflate
+    the latter with meeting the `0.80` product target.
+22. Restore deployment-specific Core ML parity/runtime qualification only after
     the chosen parent and compression acceptance rules are frozen.
 
 ## Decision rules
