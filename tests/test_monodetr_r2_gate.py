@@ -36,6 +36,9 @@ class MonoDETRR2GateTests(unittest.TestCase):
         self.assertIn("--learning-rate','1e-5'", self.code)
         self.assertIn("smoke_test_monodetr_r2_refinement.py", self.code)
         self.assertIn("initialization_max_abs_deltas", self.code)
+        self.assertIn("monodetr_r2_pedestrian_refinement_gate", self.code)
+        self.assertNotIn("monodetr_a2d_pedestrian_box_gate", self.code)
+        self.assertIn("r2_refinement_smoke.log", self.code)
 
     def test_default_seed_survives_monodetr_squared_seed(self):
         source = (ROOT / "scripts/prepare_monodetr_r2_gate.py").read_text(
