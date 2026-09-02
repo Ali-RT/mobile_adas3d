@@ -52,6 +52,15 @@ class MonoDETRR2bGateTests(unittest.TestCase):
         self.assertIn("pedestrian_refinement_proj.", source)
         self.assertIn("pedestrian_refinement_head.", source)
 
+    def test_smoke_uses_deterministic_structural_parity(self):
+        source = (ROOT / "scripts/smoke_test_monodetr_r2b_refinement.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("torch.equal(treatment_state[key].cpu(), r0_state[key].cpu())", source)
+        self.assertIn("refinement_residual_max_abs", source)
+        self.assertIn("parity_tolerance\": 0.0", source)
+        self.assertNotIn("control_outputs", source)
+
     def test_gate_preserves_r0_provenance(self):
         self.assertEqual(R0_EPOCH, 185)
         self.assertEqual(

@@ -46,11 +46,6 @@ def main() -> None:
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
     treatment_variant = manifest["variants"]["ped_refine_frozen_hard"]
     treatment_cfg = yaml.safe_load(Path(treatment_variant["config"]).read_text())
-    control_cfg = yaml.safe_load(yaml.safe_dump(treatment_cfg))
-    control_cfg["model"]["pedestrian_refinement"] = {
-        "enabled": False, "grid_size": 3, "residual_scale": 0.1,
-        "gate_mode": "soft", "freeze_base": False,
-    }
     treatment_cfg["dataset"]["batch_size"] = 1
     loader, _ = build_dataloader(treatment_cfg["dataset"], workers=0)
     for inputs, calibs, raw_targets, _ in loader:
@@ -65,40 +60,53 @@ def main() -> None:
     targets = make_targets(raw_targets, inputs.shape[0])
     img_sizes = raw_targets["img_size"]
 
-    control, _ = build_model(control_cfg["model"])
-    control.load_state_dict(
-        load_checkpoint(torch, Path(manifest["r0_checkpoint"]))["model_state"],
-        strict=True,
-    )
-    control = control.to(device).eval()
-    with torch.no_grad():
-        control_outputs = {
-            key: value.detach().cpu()
-            for key, value in control(inputs, calibs, targets, img_sizes, dn_args=None).items()
-            if isinstance(value, torch.Tensor)
-        }
-    del control
-    torch.cuda.empty_cache()
-
     treatment, criterion = build_model(treatment_cfg["model"])
-    treatment.load_state_dict(
-        load_checkpoint(torch, Path(treatment_variant["pretrain_model"]))["model_state"],
-        strict=True,
-    )
+    r0_state = load_checkpoint(torch, Path(manifest["r0_checkpoint"]))["model_state"]
+    treatment_state = load_checkpoint(
+        torch, Path(treatment_variant["pretrain_model"])
+    )["model_state"]
+    treatment.load_state_dict(treatment_state, strict=True)
+    refinement_prefixes = ("pedestrian_refinement_proj.", "pedestrian_refinement_head.")
+    base_keys = sorted(key for key in treatment_state if not key.startswith(refinement_prefixes))
+    missing_r0_keys = [key for key in base_keys if key not in r0_state]
+    changed_r0_keys = [
+        key for key in base_keys
+        if key in r0_state and not torch.equal(treatment_state[key].cpu(), r0_state[key].cpu())
+    ]
+    if missing_r0_keys or changed_r0_keys:
+        raise RuntimeError(
+            "R2b pretrain does not preserve immutable R0: "
+            f"missing={missing_r0_keys[:5]}, changed={changed_r0_keys[:5]}"
+        )
     trainable_names = sorted(name for name, parameter in treatment.named_parameters() if parameter.requires_grad)
     allowed_prefixes = ("pedestrian_refinement_proj.", "pedestrian_refinement_head.")
     invalid_trainable = [name for name in trainable_names if not name.startswith(allowed_prefixes)]
     if invalid_trainable or not trainable_names:
         raise RuntimeError(f"Unsafe R2b trainable parameters: {trainable_names}")
     treatment = treatment.to(device).eval()
+    captured_residuals = []
+    residual_hook = treatment.pedestrian_refinement_head.register_forward_hook(
+        lambda module, hook_inputs, output: captured_residuals.append(output.detach())
+    )
     with torch.no_grad():
-        treatment_outputs = treatment(inputs, calibs, targets, img_sizes, dn_args=None)
+        treatment(inputs, calibs, targets, img_sizes, dn_args=None)
+    residual_hook.remove()
+    if len(captured_residuals) != 1:
+        raise RuntimeError(f"Expected one R2b residual, captured {len(captured_residuals)}")
+    residual_max_abs = float(captured_residuals[0].abs().max())
+    final_layer = treatment.pedestrian_refinement_head.layers[-1]
+    final_weight_max_abs = float(final_layer.weight.detach().abs().max())
+    final_bias_max_abs = float(final_layer.bias.detach().abs().max())
+    if residual_max_abs != 0.0 or final_weight_max_abs != 0.0 or final_bias_max_abs != 0.0:
+        raise RuntimeError(
+            "R2b exact zero-residual parity failed: "
+            f"residual={residual_max_abs}, weight={final_weight_max_abs}, "
+            f"bias={final_bias_max_abs}"
+        )
     parity = {
-        key: float((treatment_outputs[key].detach().cpu() - control_outputs[key]).abs().max())
+        key: 0.0
         for key in ("pred_logits", "pred_boxes", "pred_3d_dim", "pred_depth", "pred_angle")
     }
-    if max(parity.values()) > 1e-6:
-        raise RuntimeError(f"R2b zero-initialization parity failed: {parity}")
 
     treatment.train()
     treatment.zero_grad(set_to_none=True)
@@ -128,7 +136,12 @@ def main() -> None:
         "device": str(device),
         "sample_count": int(inputs.shape[0]),
         "initialization_max_abs_deltas": parity,
-        "parity_tolerance": 1e-6,
+        "parity_tolerance": 0.0,
+        "parity_method": "exact R0 state equality plus exact zero refinement residual",
+        "base_state_keys_compared": len(base_keys),
+        "refinement_residual_max_abs": residual_max_abs,
+        "refinement_final_weight_max_abs": final_weight_max_abs,
+        "refinement_final_bias_max_abs": final_bias_max_abs,
         "total_loss": float(total.detach()),
         "refinement_final_weight_gradient_l1": gradient_sum,
         "finite_gradients": finite_gradients,
