@@ -247,3 +247,8 @@ velocity fields.
 
 Any architecture, taxonomy, dataset-role, or threshold change requires a new
 version of this contract and a new evaluation manifest.
+
+Post-R2b compression experiments are additionally governed by
+`R0_COMPRESSION_CONTRACT.md`. Its 95%-of-R0 AP floors and relative recall/
+localization limits measure preservation only and do not replace the unmet
+Pedestrian nearby-recall product target.

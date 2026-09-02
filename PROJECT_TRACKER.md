@@ -84,7 +84,9 @@ not constrain the current accuracy-development stage.
 | M47 | A2f higher-resolution feature gate | Complete—rejected | A2f stride 4 reduced Vehicle/Pedestrian moderate 3D AP_R40 by `6.2316/4.0359`, reduced Pedestrian nearby recall by `0.01940`, and increased localization failure by `0.06305` versus its paired control. No full run is authorized. |
 | M48 | R1 Pedestrian matcher-localization gate | Complete—rejected | The 2× Pedestrian assignment-cost branch improved nearby recall only `+0.00044` and reduced localization failures only `0.00176`, versus required `0.02/0.02`. It changed Vehicle 3D/BEV by `-0.15445/-0.06775` AP and regressed Pedestrian 3D/BEV by `-0.02964/-0.15296` AP. `selected=null`; no full R1 is authorized. |
 | M49 | R2 stride-4 Pedestrian refinement gate | Complete—rejected, positive signal | Versus paired control, R2 improved Pedestrian nearby recall `+0.01190`, reduced localization failures `0.00529`, and improved Pedestrian 3D AP `+0.35580`; however, gains missed the `0.02/0.02` gates, Vehicle BEV regressed `0.18017` AP (limit `0.15`), and Pedestrian BEV regressed `0.02525`. `selected=null`; no full R2 run is authorized. |
-| M50 | R2b frozen hard-gated refinement | Prepared—run next | One 10-epoch treatment starts from exact R0 epoch 185. Every original R0 parameter is frozen; only `pedestrian_refinement_proj` and `pedestrian_refinement_head` train at `1e-4`. A detached hard native-Pedestrian gate prevents residuals on other predicted classes. Immutable R0 metrics are the control, and the existing complete AP/nearby/localization gates remain unchanged. |
+| M50 | R2b frozen hard-gated refinement | Complete—rejected; refinement family closed | R2b preserved R0 almost exactly and slightly improved Pedestrian 3D/BEV AP (`+0.04435/+0.04960`), but nearby recall improved only `+0.00220` and localization failures fell only `0.00132`, versus required `0.02/0.02`. `selected=null`; no full run is authorized. R1, R2, and R2b establish that this local-refinement family does not close the safety gap. |
+| M51 | Post-R2b model governance | Complete—contract frozen | `R0_COMPRESSION_CONTRACT.md` freezes R0 epoch 185/hash as the immutable parent. Candidates must retain 95% of every R0 AP metric, lose at most one absolute point of per-class nearby recall, add at most one point of Pedestrian localization failures, and evaluate all 3,769 images. Passing preserves R0 only; the unmet `0.80` Pedestrian target remains aspirational. |
+| M52 | FP16/mixed-precision R0 gate | Prepare next | Evaluation-only comparison against immutable R0 with unchanged architecture, data, decoding, and thresholds. No training or external/product qualification is authorized. |
 
 ## Frozen R0 reference
 
@@ -191,12 +193,16 @@ frozen; passing AP does not by itself authorize deployment.
     Pedestrian recall, `0.00529` localization reduction, and `+0.35580`
     Pedestrian 3D AP versus control, but failed both gain thresholds and the
     Vehicle/Pedestrian BEV preservation rules. Do not launch a full R2 run.
-22. **Prepared—run next:** R2b freezes every R0 parameter and trains only
-    the stride-4 refinement projection/head for 10 epochs at `1e-4`. Residuals
-    use a detached hard native-Pedestrian gate. The CUDA preflight must prove
-    exact parity and the exact trainable set before training; immutable R0 is
-    the control. Close structural refinement if R2b fails.
-23. Restore deployment-specific Core ML parity/runtime qualification only after
+22. **Completed—rejected:** R2b preserved Vehicle AP/recall and slightly
+    improved Pedestrian AP, but delivered only `+0.00220` nearby recall and
+    `0.00132` localization-failure reduction. No full run is authorized;
+    structural local refinement is closed.
+23. **Completed:** `R0_COMPRESSION_CONTRACT.md` freezes R0 epoch 185 as the
+    immutable parent and separates relative compression preservation from the
+    unmet `0.80` Pedestrian nearby-recall product target.
+24. **Prepare next:** M52 evaluates unchanged R0 in FP16/mixed precision against
+    all frozen AP, recall, localization, completeness, and provenance gates.
+25. Restore deployment-specific Core ML parity/runtime qualification only after
     the chosen parent and compression acceptance rules are frozen.
 
 ## Decision rules

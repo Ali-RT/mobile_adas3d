@@ -123,6 +123,8 @@ R2 result: rejected with a positive structural signal. Relative to its paired co
 
 R2b is prepared as the final bounded refinement experiment: one treatment, 10 epochs, learning rate `1e-4`, seed `20268`, exact R0 initialization, all original R0 parameters frozen, and only `pedestrian_refinement_proj` plus `pedestrian_refinement_head` trainable. A detached hard gate applies residuals only where the frozen native classifier selects Pedestrian. Immutable R0 metrics replace a redundant trained control. The same `0.02/0.02` Pedestrian gains, Vehicle recall/AP preservation, and Pedestrian AP non-regression rules apply. Failure closes structural refinement.
 
+R2b result: rejected. It changed Pedestrian nearby recall by only `+0.0022046` and reduced localization failures by only `0.0013228`, far below the locked `0.02/0.02` requirements. Vehicle 3D/BEV changed `-0.00096/+0.00010` AP and Pedestrian 3D/BEV improved `+0.04435/+0.04960`, confirming safe isolation but insufficient effect. `selected=null` and `full_run_authorized=false`. R1/R2/R2b local refinement is closed. The next action is model-governance versioning: either commission a materially new accuracy architecture or retain R0 as the compression parent with relative preservation gates while keeping `0.80` Pedestrian nearby recall aspirational rather than claiming it is met.
+
 
 
 
