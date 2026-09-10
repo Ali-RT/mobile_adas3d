@@ -45,6 +45,10 @@ class MonoDETRM52FP16GateTests(unittest.TestCase):
     def test_fp32_stability_islands_are_instrumented(self):
         source = (ROOT / "scripts/patch_monodetr_m52_fp16_eval.py").read_text(encoding="utf-8")
         self.assertIn("torch.is_autocast_enabled()", source)
+        self.assertIn("features, pos = m52_fp32(self.backbone, images)", source)
+        self.assertIn("m52_fp32(self.input_proj[l]", source)
+        self.assertIn("last_backbone_feature_dtypes", source)
+        self.assertIn("last_projected_feature_dtypes", source)
         self.assertIn("depth_features = [feature.float() for feature in srcs]", source)
         self.assertIn("last_depth_predictor_dtype", source)
         self.assertIn("M52 depth-predictor FP32 island", source)
@@ -57,6 +61,8 @@ class MonoDETRM52FP16GateTests(unittest.TestCase):
         evaluation = self.code.index("evaluate_monodetr_m52_fp16_gate.py")
         self.assertLess(smoke, evaluation)
         self.assertIn("depth_predictor_dtype", self.code)
+        self.assertIn("backbone_feature_dtypes", self.code)
+        self.assertIn("projected_feature_dtypes", self.code)
         self.assertIn("deformable_attention_kernel_dtypes", self.code)
         self.assertIn("torch.float32", self.code)
 

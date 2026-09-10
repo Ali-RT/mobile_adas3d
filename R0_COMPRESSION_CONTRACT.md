@@ -60,8 +60,10 @@ gates above, and a versioned result manifest before the next rung starts.
 
 M52 is prepared in `notebooks/MonoDETR_M52_R0_FP16_Gate_Colab.ipynb`. It uses
 selective CUDA mixed precision without changing stored R0 weights or model
-structure: compatible operators use FP16 autocast while the depth-prediction and
-depth-position path remains FP32. The legacy custom deformable-attention extension
-also remains FP32 because its pinned CUDA dispatch supports float/double, not half.
-A one-batch CUDA smoke test must pass before full validation. Only the complete
-JSON comparison may authorize the next compression rung.
+structure. The backbone feature extraction, input projections that feed depth,
+depth prediction/position path, and legacy custom deformable-attention extension
+remain FP32. The extension's pinned CUDA dispatch supports float/double, not half;
+only the remaining compatible transformer and prediction-head operators use FP16
+autocast. A one-batch CUDA smoke test must prove those dtype boundaries and finite
+outputs before full validation. Only the complete JSON comparison may authorize
+the next compression rung.

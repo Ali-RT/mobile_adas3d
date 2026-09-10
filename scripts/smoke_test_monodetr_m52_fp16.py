@@ -48,6 +48,12 @@ def main() -> None:
     output_dtypes = {key: str(value.dtype) for key, value in tensors.items()}
     if not all(bool(torch.isfinite(value).all()) for value in tensors.values()):
         raise RuntimeError("M52 smoke produced non-finite output")
+    backbone_dtypes = [str(dtype) for dtype in getattr(model, "last_backbone_feature_dtypes", [])]
+    projected_dtypes = [str(dtype) for dtype in getattr(model, "last_projected_feature_dtypes", [])]
+    if not backbone_dtypes or any(dtype != "torch.float32" for dtype in backbone_dtypes):
+        raise RuntimeError(f"Unsafe backbone feature dtypes: {backbone_dtypes}")
+    if not projected_dtypes or any(dtype != "torch.float32" for dtype in projected_dtypes):
+        raise RuntimeError(f"Unsafe projected feature dtypes: {projected_dtypes}")
     depth_dtype = str(getattr(model, "last_depth_predictor_dtype", "missing"))
     if depth_dtype != "torch.float32":
         raise RuntimeError(f"Unsafe depth-predictor dtype: {depth_dtype}")
@@ -56,7 +62,7 @@ def main() -> None:
         raise RuntimeError(f"Unsafe deformable-attention kernel dtypes: {kernel_dtypes}")
     if not any(dtype == "torch.float16" for dtype in output_dtypes.values()):
         raise RuntimeError(f"Autocast did not produce any FP16 model outputs: {output_dtypes}")
-    report = {"schema_version": 1, "complete": True, "device": torch.cuda.get_device_name(0), "precision": "fp16_autocast_with_fp32_depth_and_deformable_attention", "batch_size": int(inputs.shape[0]), "output_dtypes": output_dtypes, "depth_predictor_dtype": depth_dtype, "deformable_attention_kernel_dtypes": kernel_dtypes, "finite_outputs": True, "optimizer_steps": 0}
+    report = {"schema_version": 1, "complete": True, "device": torch.cuda.get_device_name(0), "precision": "fp16_autocast_with_fp32_feature_depth_and_deformable_attention", "batch_size": int(inputs.shape[0]), "output_dtypes": output_dtypes, "backbone_feature_dtypes": backbone_dtypes, "projected_feature_dtypes": projected_dtypes, "depth_predictor_dtype": depth_dtype, "deformable_attention_kernel_dtypes": kernel_dtypes, "finite_outputs": True, "optimizer_steps": 0}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report, indent=2))

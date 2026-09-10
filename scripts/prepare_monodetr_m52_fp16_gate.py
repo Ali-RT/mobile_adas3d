@@ -54,7 +54,7 @@ def main() -> None:
         "schema_version": 1, "complete": True,
         "experiment": "M52 R0 selective mixed-precision evaluation-only gate",
         "training_authorized": False, "architecture_changed": False,
-        "precision": "fp16_autocast_with_fp32_depth_and_deformable_attention", "r0_epoch": R0_EPOCH,
+        "precision": "fp16_autocast_with_fp32_feature_depth_and_deformable_attention", "r0_epoch": R0_EPOCH,
         "r0_checkpoint": str(source), "r0_checkpoint_sha256": R0_SHA256,
         "evaluation_checkpoint": str(checkpoint), "config": str(config_path),
         "run_dir": str(run_dir), "output_root": str(output),

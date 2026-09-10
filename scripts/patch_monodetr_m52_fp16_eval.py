@@ -60,7 +60,39 @@ def main() -> None:
     model = repo / "lib/models/monodetr/monodetr.py"
     replace_once(
         model,
+        "        features, pos = self.backbone(images)\n",
+        "        def m52_fp32(module, value):\n"
+        "            if torch.is_autocast_enabled():\n"
+        "                with torch.autocast(device_type='cuda', enabled=False):\n"
+        "                    return module(value.float())\n"
+        "            return module(value)\n"
+        "\n"
+        "        features, pos = m52_fp32(self.backbone, images)\n",
+        "M52 feature-extraction FP32 island",
+    )
+    replace_once(
+        model,
+        "            srcs.append(self.input_proj[l](src))\n",
+        "            srcs.append(m52_fp32(self.input_proj[l], src))\n",
+        "M52 backbone feature projection FP32 island",
+    )
+    replace_once(
+        model,
+        "                    src = self.input_proj[l](features[-1].tensors)\n",
+        "                    src = m52_fp32(self.input_proj[l], features[-1].tensors)\n",
+        "M52 first extra feature projection FP32 island",
+    )
+    replace_once(
+        model,
+        "                    src = self.input_proj[l](srcs[-1])\n",
+        "                    src = m52_fp32(self.input_proj[l], srcs[-1])\n",
+        "M52 remaining feature projection FP32 island",
+    )
+    replace_once(
+        model,
         "        pred_depth_map_logits, depth_pos_embed, weighted_depth, depth_pos_embed_ip = self.depth_predictor(srcs, masks[1], pos[1])\n",
+        "        self.last_backbone_feature_dtypes = [feature.tensors.dtype for feature in features]\n"
+        "        self.last_projected_feature_dtypes = [feature.dtype for feature in srcs]\n"
         "        if torch.is_autocast_enabled():\n"
         "            with torch.autocast(device_type='cuda', enabled=False):\n"
         "                depth_features = [feature.float() for feature in srcs]\n"

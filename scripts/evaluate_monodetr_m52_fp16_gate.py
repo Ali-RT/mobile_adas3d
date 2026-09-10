@@ -54,7 +54,7 @@ def main() -> None:
     gates = {key: row[key] >= floor for key, floor in MINIMUMS.items()}
     gates["pedestrian_localization_failure_rate"] = row["pedestrian_localization_failure_rate"] <= MAX_LOCALIZATION
     gates["complete_prediction_set"] = len(list(prediction.glob("*.txt"))) == 3769
-    report = {"schema_version": 1, "complete": True, "precision": "fp16_autocast_with_fp32_depth_and_deformable_attention", "source_r0": R0, "requirements": {**MINIMUMS, "pedestrian_localization_failure_rate_max": MAX_LOCALIZATION, "prediction_files": 3769}, "candidate": row, "gate_results": gates, "all_gates_passed": all(gates.values()), "compression_rung_authorized": all(gates.values()), "product_safety_qualified": False}
+    report = {"schema_version": 1, "complete": True, "precision": "fp16_autocast_with_fp32_feature_depth_and_deformable_attention", "source_r0": R0, "requirements": {**MINIMUMS, "pedestrian_localization_failure_rate_max": MAX_LOCALIZATION, "prediction_files": 3769}, "candidate": row, "gate_results": gates, "all_gates_passed": all(gates.values()), "compression_rung_authorized": all(gates.values()), "product_safety_qualified": False}
     (output / "m52_fp16_gate_comparison.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     with (output / "m52_fp16_gate_comparison.csv").open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(row) + list(gates)); writer.writeheader(); writer.writerow({**row, **gates})
