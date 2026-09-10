@@ -57,3 +57,7 @@ Change one variable per experiment:
 
 Each experiment requires immutable provenance, a complete validation run, the
 gates above, and a versioned result manifest before the next rung starts.
+
+M52 is prepared in `notebooks/MonoDETR_M52_R0_FP16_Gate_Colab.ipynb`. It uses
+CUDA FP16 autocast without changing stored R0 weights or model structure. Only
+its complete JSON comparison may authorize the next compression rung.
