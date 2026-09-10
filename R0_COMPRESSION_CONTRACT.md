@@ -58,7 +58,7 @@ Change one variable per experiment:
 Each experiment requires immutable provenance, a complete validation run, the
 gates above, and a versioned result manifest before the next rung starts.
 
-M52 is prepared in `notebooks/MonoDETR_M52_R0_FP16_Gate_Colab.ipynb`. It uses
+M52 completed through `notebooks/MonoDETR_M52_R0_FP16_Gate_Colab.ipynb`. It uses
 selective CUDA mixed precision without changing stored R0 weights or model
 structure. The backbone feature extraction, input projections that feed depth,
 depth prediction/position path, and legacy custom deformable-attention extension
@@ -67,3 +67,12 @@ only the remaining compatible transformer and prediction-head operators use FP16
 autocast. A one-batch CUDA smoke test must prove those dtype boundaries and finite
 outputs before full validation. Only the complete JSON comparison may authorize
 the next compression rung.
+
+The exact R0 epoch-185 checkpoint produced all 3,769 prediction files. M52
+Vehicle/Pedestrian moderate 3D AP_R40 was `17.6399/5.6952`, balanced mean was
+`11.6676`, and moderate BEV was `23.6395/6.6603`. Vehicle/Pedestrian nearby
+recall was `0.88215/0.68519`; Pedestrian localization-failure rate was `0.24559`.
+All nine frozen preservation gates passed, authorizing weight-only quantization
+sensitivity as the next rung. This result does not satisfy the aspirational
+Pedestrian safety target and contains no controlled FP32-versus-M52 runtime or
+memory comparison, so it does not authorize a deployment-speed claim.
