@@ -86,7 +86,7 @@ not constrain the current accuracy-development stage.
 | M49 | R2 stride-4 Pedestrian refinement gate | Complete—rejected, positive signal | Versus paired control, R2 improved Pedestrian nearby recall `+0.01190`, reduced localization failures `0.00529`, and improved Pedestrian 3D AP `+0.35580`; however, gains missed the `0.02/0.02` gates, Vehicle BEV regressed `0.18017` AP (limit `0.15`), and Pedestrian BEV regressed `0.02525`. `selected=null`; no full R2 run is authorized. |
 | M50 | R2b frozen hard-gated refinement | Complete—rejected; refinement family closed | R2b preserved R0 almost exactly and slightly improved Pedestrian 3D/BEV AP (`+0.04435/+0.04960`), but nearby recall improved only `+0.00220` and localization failures fell only `0.00132`, versus required `0.02/0.02`. `selected=null`; no full run is authorized. R1, R2, and R2b establish that this local-refinement family does not close the safety gap. |
 | M51 | Post-R2b model governance | Complete—contract frozen | `R0_COMPRESSION_CONTRACT.md` freezes R0 epoch 185/hash as the immutable parent. Candidates must retain 95% of every R0 AP metric, lose at most one absolute point of per-class nearby recall, add at most one point of Pedestrian localization failures, and evaluate all 3,769 images. Passing preserves R0 only; the unmet `0.80` Pedestrian target remains aspirational. |
-| M52 | FP16/mixed-precision R0 gate | Prepared—run next | `MonoDETR_M52_R0_FP16_Gate_Colab.ipynb` evaluates exact R0 epoch 185 using CUDA FP16 autocast with no training or architecture change. It uses an isolated checkpoint/output tree and applies every frozen 95%-AP, relative recall, localization, completeness, and provenance gate. Passing authorizes only the next compression rung, not product qualification. |
+| M52 | Selective mixed-precision R0 gate | Prepared—rerun after runtime restart | The first blanket-FP16 attempt exposed invalid discrete depth-position indices, causing native CUDA gather assertions before batch one completed. The corrected notebook keeps the depth path in FP32 and also isolates the pinned float-only custom deformable-attention extension in FP32; compatible operators remain under FP16 autocast. A one-batch CUDA smoke test precedes the complete 3,769-image gate. There is no training or architecture change. Passing authorizes only the next compression rung, not product qualification. |
 
 ## Frozen R0 reference
 
@@ -200,9 +200,11 @@ frozen; passing AP does not by itself authorize deployment.
 23. **Completed:** `R0_COMPRESSION_CONTRACT.md` freezes R0 epoch 185 as the
     immutable parent and separates relative compression preservation from the
     unmet `0.80` Pedestrian nearby-recall product target.
-24. **Prepared—run next:** run
+24. **Prepared—rerun after a Colab runtime restart:** run
     `notebooks/MonoDETR_M52_R0_FP16_Gate_Colab.ipynb` top-to-bottom on a Colab
-    GPU. It performs no training and writes `m52_fp16_gate_comparison.json/csv`.
+    GPU. Its one-batch smoke test proves FP16 graph execution, both FP32 stability
+    islands, and finite outputs before the full gate. It
+    performs no training and writes `m52_fp16_gate_comparison.json/csv`.
 25. Restore deployment-specific Core ML parity/runtime qualification only after
     the chosen parent and compression acceptance rules are frozen.
 

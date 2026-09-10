@@ -19,6 +19,17 @@ def replace_once(path: Path, old: str, new: str, label: str) -> None:
     print(f"patched {label}")
 
 
+def replace_exact_count(path: Path, old: str, new: str, count: int, label: str) -> None:
+    text = path.read_text(encoding="utf-8")
+    if text.count(new) == count:
+        print(f"already patched {label}")
+        return
+    if text.count(old) != count:
+        raise RuntimeError(f"Unexpected {label}: old={text.count(old)}, new={text.count(new)}")
+    path.write_text(text.replace(old, new), encoding="utf-8")
+    print(f"patched {label}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--monodetr-repo", type=Path, required=True)
@@ -45,6 +56,38 @@ def main() -> None:
         "            with torch.autocast(device_type='cuda', dtype=torch.float16, enabled=self.inference_precision == 'fp16_autocast'):\n"
         "                outputs = self.model(inputs, calibs, targets, img_sizes, dn_args = 0)\n",
         "M52 autocast inference",
+    )
+    model = repo / "lib/models/monodetr/monodetr.py"
+    replace_once(
+        model,
+        "        pred_depth_map_logits, depth_pos_embed, weighted_depth, depth_pos_embed_ip = self.depth_predictor(srcs, masks[1], pos[1])\n",
+        "        if torch.is_autocast_enabled():\n"
+        "            with torch.autocast(device_type='cuda', enabled=False):\n"
+        "                depth_features = [feature.float() for feature in srcs]\n"
+        "                pred_depth_map_logits, depth_pos_embed, weighted_depth, depth_pos_embed_ip = self.depth_predictor(depth_features, masks[1], pos[1].float())\n"
+        "        else:\n"
+        "            pred_depth_map_logits, depth_pos_embed, weighted_depth, depth_pos_embed_ip = self.depth_predictor(srcs, masks[1], pos[1])\n"
+        "        self.last_depth_predictor_dtype = pred_depth_map_logits.dtype\n",
+        "M52 depth-predictor FP32 island",
+    )
+    attention = repo / "lib/models/monodetr/ops/modules/ms_deform_attn.py"
+    replace_exact_count(
+        attention,
+        "        N, Len_q, _ = query.shape\n        N, Len_in, _ = input_flatten.shape\n",
+        "        if torch.is_autocast_enabled():\n"
+        "            with torch.autocast(device_type='cuda', enabled=False):\n"
+        "                return self.forward(query.float(), reference_points.float(), input_flatten.float(), input_spatial_shapes, input_level_start_index, input_padding_mask)\n"
+        "        N, Len_q, _ = query.shape\n        N, Len_in, _ = input_flatten.shape\n",
+        2,
+        "M52 deformable-attention FP32 islands",
+    )
+    replace_exact_count(
+        attention,
+        "        output = MSDeformAttnFunction.apply(\n            value, input_spatial_shapes, input_level_start_index, sampling_locations, attention_weights, self.im2col_step)\n",
+        "        self.last_kernel_dtype = value.dtype\n"
+        "        output = MSDeformAttnFunction.apply(\n            value, input_spatial_shapes, input_level_start_index, sampling_locations, attention_weights, self.im2col_step)\n",
+        2,
+        "M52 deformable-attention dtype evidence",
     )
     print("MonoDETR M52 FP16 evaluation patch ready")
 

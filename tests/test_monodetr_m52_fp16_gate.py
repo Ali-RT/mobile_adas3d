@@ -38,8 +38,27 @@ class MonoDETRM52FP16GateTests(unittest.TestCase):
     def test_isolated_fp16_evaluation_only_workflow(self):
         self.assertIn("/compression/monodetr_m52_r0_fp16_gate", self.code)
         self.assertIn("patch_monodetr_m52_fp16_eval.py", self.code)
+        self.assertIn("smoke_test_monodetr_m52_fp16.py", self.code)
         self.assertIn("evaluate_monodetr_m52_fp16_gate.py", self.code)
         self.assertNotIn("tools/train_val.py", self.code)
+
+    def test_fp32_stability_islands_are_instrumented(self):
+        source = (ROOT / "scripts/patch_monodetr_m52_fp16_eval.py").read_text(encoding="utf-8")
+        self.assertIn("torch.is_autocast_enabled()", source)
+        self.assertIn("depth_features = [feature.float() for feature in srcs]", source)
+        self.assertIn("last_depth_predictor_dtype", source)
+        self.assertIn("M52 depth-predictor FP32 island", source)
+        self.assertIn("query.float()", source)
+        self.assertIn("last_kernel_dtype", source)
+        self.assertIn("M52 deformable-attention FP32 islands", source)
+
+    def test_cuda_smoke_precedes_complete_evaluation(self):
+        smoke = self.code.index("smoke_test_monodetr_m52_fp16.py")
+        evaluation = self.code.index("evaluate_monodetr_m52_fp16_gate.py")
+        self.assertLess(smoke, evaluation)
+        self.assertIn("depth_predictor_dtype", self.code)
+        self.assertIn("deformable_attention_kernel_dtypes", self.code)
+        self.assertIn("torch.float32", self.code)
 
     def test_complete_gate_is_fail_closed(self):
         source = (ROOT / "scripts/evaluate_monodetr_m52_fp16_gate.py").read_text(encoding="utf-8")

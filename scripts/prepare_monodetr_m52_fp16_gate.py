@@ -52,9 +52,9 @@ def main() -> None:
     config_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
     manifest = {
         "schema_version": 1, "complete": True,
-        "experiment": "M52 R0 FP16 autocast evaluation-only gate",
+        "experiment": "M52 R0 selective mixed-precision evaluation-only gate",
         "training_authorized": False, "architecture_changed": False,
-        "precision": "fp16_autocast", "r0_epoch": R0_EPOCH,
+        "precision": "fp16_autocast_with_fp32_depth_and_deformable_attention", "r0_epoch": R0_EPOCH,
         "r0_checkpoint": str(source), "r0_checkpoint_sha256": R0_SHA256,
         "evaluation_checkpoint": str(checkpoint), "config": str(config_path),
         "run_dir": str(run_dir), "output_root": str(output),
