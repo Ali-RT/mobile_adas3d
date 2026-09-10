@@ -66,6 +66,11 @@ class MonoDGPM53ReferenceTests(unittest.TestCase):
         source = (ROOT / "scripts/patch_monodgp_colab_compat.py").read_text(encoding="utf-8")
         self.assertIn("value.scalar_type()", source)
         self.assertIn("active CUDA architecture", source)
+        self.assertIn("from torch.nn import Linear as _LinearWithBias", source)
+        self.assertIn(
+            "from torch import overrides as torch_overrides",
+            source,
+        )
         self.assertIn("Expected MonoDGP commit", source)
 
     def test_reference_taxonomy_is_car_only(self):

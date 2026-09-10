@@ -73,6 +73,36 @@ def main() -> None:
 '''
     replace_exactly_once(setup, old_arches, new_arches, "active CUDA architecture")
 
+    attention = repo / "lib/models/monodgp/ops/modules/ms_deform_attn.py"
+    old_linear_import = '''if float(torch.__version__.split('.')[0]) == 0 or (float(torch.__version__.split('.')[0]) == 1 and float(torch.__version__.split('.')[1])) < 9:
+    from torch.nn.modules.linear import _LinearWithBias
+else:
+    from torch.nn.modules.linear import NonDynamicallyQuantizableLinear as _LinearWithBias
+'''
+    new_linear_import = "from torch.nn import Linear as _LinearWithBias\n"
+    replace_exactly_once(
+        attention,
+        old_linear_import,
+        new_linear_import,
+        "public Linear compatibility import",
+    )
+
+    old_overrides_import = '''if float(torch.__version__.split('.')[0]) == 0 or (float(torch.__version__.split('.')[0]) == 1 and float(torch.__version__.split('.')[1])) < 7:
+    from torch._overrides import has_torch_function, handle_torch_function
+else:
+    from torch.overrides import has_torch_function, handle_torch_function
+'''
+    new_overrides_import = '''from torch import overrides as torch_overrides
+has_torch_function = torch_overrides.has_torch_function
+handle_torch_function = torch_overrides.handle_torch_function
+'''
+    replace_exactly_once(
+        attention,
+        old_overrides_import,
+        new_overrides_import,
+        "public overrides compatibility import",
+    )
+
     save_helper = repo / "lib/helpers/save_helper.py"
     old_imports = "import os\nimport torch\nimport torch.nn as nn\n"
     new_imports = '''import codecs
