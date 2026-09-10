@@ -50,7 +50,7 @@ deployment qualification remain blocked until explicitly authorized.
 Change one variable per experiment:
 
 1. M52: FP16/mixed-precision evaluation with unchanged architecture.
-2. Weight-only quantization sensitivity.
+2. Weight-only quantization sensitivity after the accuracy-parent decision.
 3. Structured width/depth/token reduction with retraining if required.
 4. QAT only after a post-training quantization baseline exists.
 5. Core ML conversion and physical-device qualification last.
@@ -72,7 +72,15 @@ The exact R0 epoch-185 checkpoint produced all 3,769 prediction files. M52
 Vehicle/Pedestrian moderate 3D AP_R40 was `17.6399/5.6952`, balanced mean was
 `11.6676`, and moderate BEV was `23.6395/6.6603`. Vehicle/Pedestrian nearby
 recall was `0.88215/0.68519`; Pedestrian localization-failure rate was `0.24559`.
-All nine frozen preservation gates passed, authorizing weight-only quantization
-sensitivity as the next rung. This result does not satisfy the aspirational
+All nine frozen preservation gates passed, making weight-only quantization an
+authorized future rung. Execution is intentionally paused while the newer
+MonoDGP accuracy challenger is qualified, so compression effort is not spent
+on a parent that may be replaced. This result does not satisfy the aspirational
 Pedestrian safety target and contains no controlled FP32-versus-M52 runtime or
 memory comparison, so it does not authorize a deployment-speed claim.
+
+M53 is therefore a separate official MonoDGP reference-reproduction gate, not
+compression of R0. If M53 passes, M54 may define a controlled two-class
+adaptation. Weight-only quantization is deferred to M55 and must still obey this
+contract if R0 remains the selected parent; a MonoDGP-derived parent requires a
+new immutable compression contract.

@@ -1,6 +1,6 @@
 # MobileADAS3D project tracker
 
-Last updated: 2026-08-29
+Last updated: 2026-09-10
 
 This is the canonical status page. Update it whenever a task changes state,
 an experiment finishes, a gate passes/fails, or the next action changes.
@@ -16,11 +16,12 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-- Current phase: **accuracy-first teacher-compatible student development**
-- Active task: run the prepared final A2f higher-resolution feature gate and
-  return its complete AP plus corrected M44 comparison.
+- Current phase: **accuracy-challenger reference qualification**
+- Active task: run the prepared M53 official MonoDGP Car-only reproducibility
+  gate and return its complete JSON/CSV report.
 - Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
 - Accuracy candidate: **MobileMonoDETR-Student-A2 epoch 130 (frozen diagnostic baseline)**
+- Accuracy challenger: **official CVPR 2025 MonoDGP checkpoint (M53 pending)**
 - S1/H1/H2 status: **frozen negative experiments; do not resume**.
 - Knowledge distillation: **completed and rejected for A1**; it did not improve
   balanced accuracy and should not be retuned or resumed.
@@ -87,7 +88,9 @@ not constrain the current accuracy-development stage.
 | M50 | R2b frozen hard-gated refinement | Complete—rejected; refinement family closed | R2b preserved R0 almost exactly and slightly improved Pedestrian 3D/BEV AP (`+0.04435/+0.04960`), but nearby recall improved only `+0.00220` and localization failures fell only `0.00132`, versus required `0.02/0.02`. `selected=null`; no full run is authorized. R1, R2, and R2b establish that this local-refinement family does not close the safety gap. |
 | M51 | Post-R2b model governance | Complete—contract frozen | `R0_COMPRESSION_CONTRACT.md` freezes R0 epoch 185/hash as the immutable parent. Candidates must retain 95% of every R0 AP metric, lose at most one absolute point of per-class nearby recall, add at most one point of Pedestrian localization failures, and evaluate all 3,769 images. Passing preserves R0 only; the unmet `0.80` Pedestrian target remains aspirational. |
 | M52 | Selective mixed-precision R0 gate | Complete—all preservation gates passed | The expanded FP32 feature/depth/custom-attention policy passed its CUDA smoke and the complete 3,769-image Chen validation. Vehicle/Pedestrian moderate 3D AP_R40 was `17.6399/5.6952`, balanced mean `11.6676`, and BEV `23.6395/6.6603`. Nearby recall was `0.88215/0.68519`; Pedestrian localization-failure rate was `0.24559`. All nine frozen AP, recall, localization, and completeness gates passed with the exact R0 checkpoint hash. This authorizes the next compression rung but does not qualify product safety. The run did not include a comparable FP32 timing/memory baseline, so no speedup claim is authorized. |
-| M53 | Weight-only quantization sensitivity | Next—design required | Evaluate a post-training weight-only quantization candidate from immutable R0, changing only weight representation. Freeze the exact quantization backend, module inclusion/exclusion policy, artifact size, runtime target, and the same M51 preservation gates before execution. Do not combine quantization with pruning, width/token reduction, QAT, or Core ML conversion in this rung. |
+| M53 | Official MonoDGP Car reference reproducibility | Prepared—run next | Pinned official MonoDGP commit `aa059a18214aebf644510e7f0793971b403f9d14` and the public checkpoint with SHA-256 `1d5f30b34b8bef49638079a8b07f05ebf11bb5f85d6a9a11c7b028c69396f05d`. `MonoDGP_M53_Official_Reference_Colab.ipynb` performs no training: it uses restricted weights-only loading, a CUDA smoke test, exact Chen-val provenance, 3,769-image inference, and requires Car 3D AP_R40 within `0.5` AP of the published `30.1314/22.7109/19.3978` easy/moderate/hard values. |
+| M54 | MonoDGP Vehicle/Pedestrian adaptation | Conditional—blocked by M53 | If and only if M53 reproduces the official Car reference, define a separate controlled two-class adaptation. Freeze class mapping, initialization, training schedule, checkpoint selection, and product AP/nearby gates before training. MonoDGP is an accuracy challenger, not yet the deployment student. |
+| M55 | Weight-only quantization sensitivity | Deferred | The M52 preservation pass remains valid, but quantization is postponed until the R0-versus-MonoDGP accuracy-parent decision is complete. Do not spend compression effort on a parent that may be replaced. |
 
 ## Frozen R0 reference
 
@@ -204,9 +207,14 @@ frozen; passing AP does not by itself authorize deployment.
 24. **Completed—passed:** M52 passed all nine frozen preservation gates over all
     3,769 validation images using the exact R0 checkpoint. This authorizes only
     the next compression rung; it does not prove safety or a runtime speedup.
-25. **Next:** define M53 as a weight-only post-training quantization sensitivity
-    gate with one backend and one immutable module policy before running it.
-26. Restore deployment-specific Core ML parity/runtime qualification only after
+25. **Prepared—run next:** M53 reproduces the official Car-only MonoDGP
+    checkpoint on the exact 3,769-image Chen validation split. It performs no
+    training and fails closed outside `0.5` AP of every published 3D result.
+26. **Conditional:** if M53 passes, define M54 as a fresh Vehicle/Pedestrian
+    MonoDGP adaptation with frozen product gates before any training begins.
+27. **Deferred:** assign weight-only quantization to M55 only after selecting
+    the accuracy parent; M52's successful preservation evidence remains valid.
+28. Restore deployment-specific Core ML parity/runtime qualification only after
     the chosen parent and compression acceptance rules are frozen.
 
 ## Decision rules

@@ -2807,4 +2807,14 @@ The run's evaluation stage took about 18 minutes 33 seconds for 236 batches, but
 
 Durable artifacts are under `/content/drive/MyDrive/mobile_adas3d_outputs/compression/monodetr_m52_r0_fp16_gate/`, including `m52_fp16_gate_comparison.json`, `m52_fp16_gate_comparison.csv`, the smoke report/log, full predictions, nearby geometry, and Pedestrian false-negative diagnostics.
 
-The next controlled rung is M53 weight-only post-training quantization sensitivity. Before implementation, freeze one backend and weight format, exact included/excluded modules, calibration requirements if any, artifact-size accounting, target runtime, and the unchanged M51 accuracy/recall/localization/completeness gates. Do not combine M53 with pruning, structured model reduction, QAT, Core ML conversion, or a new architecture.
+Weight-only post-training quantization remains authorized by M52 but is postponed until the accuracy parent is settled. It is now tracked as M55 so effort is not spent compressing R0 before comparing it with the newer MonoDGP challenger.
+
+## M53 official MonoDGP reference gate prepared (2026-09-10)
+
+M53 is an evaluation-only feasibility gate for the official CVPR 2025 MonoDGP accuracy challenger. It pins `https://github.com/PuFanqi23/MonoDGP` at commit `aa059a18214aebf644510e7f0793971b403f9d14` and the repository checkpoint with the strongest published moderate Car validation result. The downloaded artifact must have SHA-256 `1d5f30b34b8bef49638079a8b07f05ebf11bb5f85d6a9a11c7b028c69396f05d`; its published Car 3D AP_R40 is `30.1314/22.7109/19.3978` for easy/moderate/hard.
+
+The frozen native graph uses a ResNet50 backbone, four feature levels, an 80-bin depth predictor to 60 m, a region-segmentation enhancement head, decoupled 2D and 3D transformer paths, hidden dimension 256, three encoder and three decoder layers, eight attention heads, 50 inference queries, and 11 grouped training-query copies. The public checkpoint is evaluated only for its native Car class. It is an accuracy challenger—not yet the project teacher, product model, student, or deployment parent.
+
+Run `notebooks/MonoDGP_M53_Official_Reference_Colab.ipynb` top-to-bottom on a fresh Colab GPU runtime. The notebook builds an isolated source tree, limits compatibility changes to current CUDA dispatch/architecture handling and safe checkpoint loading, and never calls an unsafe unrestricted pickle loader. A restricted `weights_only=True` load and one-batch finite CUDA forward must pass before complete inference. The final gate requires the exact Chen split hashes, all 3,769 validation prediction files, and independently computed Car 3D AP_R40 within `0.5` AP of each published value.
+
+M53 does not train, merge classes, test MobileADAS3D product safety, or claim iPhone deployability. Return `m53_monodgp_reference_gate.json` or CSV. A complete pass authorizes only M54: design a separate controlled Vehicle/Pedestrian MonoDGP adaptation with frozen initialization, schedule, selection metric, and product gates. A failure blocks adaptation until the reference mismatch is explained.
