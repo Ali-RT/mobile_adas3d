@@ -83,6 +83,7 @@ class MonoDGPM53ReferenceTests(unittest.TestCase):
 
     def test_notebook_is_evaluation_only_and_fail_closed(self):
         self.assertIn("PuFanqi23/MonoDGP.git", self.code)
+        self.assertIn("lib/models/monodgp/ops/modules/ms_deform_attn.py", self.code)
         self.assertIn("prepare_monodgp_m53_reference.py", self.code)
         self.assertIn("smoke_test_monodgp_m53_reference.py", self.code)
         self.assertIn("evaluate_monodgp_m53_reference.py", self.code)
