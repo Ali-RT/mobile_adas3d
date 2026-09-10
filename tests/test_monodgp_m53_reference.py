@@ -11,6 +11,7 @@ from scripts.evaluate_monodgp_m53_reference import (
     PINNED_COMMIT,
     PUBLISHED,
     VAL_SPLIT_SHA256,
+    parse_native_car_3d_ap_r40,
 )
 from scripts.prepare_monodgp_m53_reference import (
     CHECKPOINT_FILE_ID,
@@ -55,6 +56,23 @@ class MonoDGPM53ReferenceTests(unittest.TestCase):
         self.assertEqual(PUBLISHED, {"easy": 30.1314, "moderate": 22.7109, "hard": 19.3978})
         self.assertEqual(MAX_ABS_AP_DIFFERENCE, 0.5)
 
+    def test_native_official_evaluator_is_gate_authority(self):
+        log = """Car AP_R40@0.70, 0.70, 0.70:
+bbox AP:96.4146, 91.1145, 83.8780
+bev  AP:39.8251, 29.1165, 25.1853
+3d   AP:30.1185, 22.6797, 19.3705
+aos  AP:94.49, 88.97, 81.34
+"""
+        native = parse_native_car_3d_ap_r40(log)
+        self.assertEqual(
+            native,
+            {"easy": 30.1185, "moderate": 22.6797, "hard": 19.3705},
+        )
+        for difficulty, value in native.items():
+            self.assertLessEqual(
+                abs(value - PUBLISHED[difficulty]), MAX_ABS_AP_DIFFERENCE
+            )
+
     def test_checkpoint_loading_remains_restricted(self):
         source = (ROOT / "scripts/patch_monodgp_colab_compat.py").read_text(encoding="utf-8")
         self.assertIn("torch.serialization.safe_globals", source)
@@ -97,7 +115,16 @@ class MonoDGPM53ReferenceTests(unittest.TestCase):
 
     def test_complete_gate_authorizes_only_adaptation(self):
         source = (ROOT / "scripts/evaluate_monodgp_m53_reference.py").read_text(encoding="utf-8")
-        self.assertIn("prediction_ids == set(val_ids)", source)
+        self.assertIn("prediction_ids == expected_prediction_ids", source)
+        self.assertIn(
+            '"gate_metric_source": "MonoDGP native official KITTI evaluator"',
+            source,
+        )
+        self.assertIn(
+            '"independent_metric_role": "diagnostic_not_gate_authority"',
+            source,
+        )
+        self.assertIn("Reusing complete M53 predictions", source)
         self.assertIn('"two_class_adaptation_authorized": passed', source)
         self.assertIn('"product_safety_qualified": False', source)
         self.assertIn("do not start M54 adaptation", source)
