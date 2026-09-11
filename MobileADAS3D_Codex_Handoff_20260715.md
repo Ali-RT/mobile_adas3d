@@ -2840,3 +2840,30 @@ The regenerated schema-v2 report passed every frozen M53 gate. It reused the com
 The independent MobileADAS3D diagnostic remains `29.8114/22.1628/18.7457`. It is intentionally recorded separately and is not used as the reproduction gate because MonoDGP's published figures come from its native official evaluator. The final report records `reference_reproduced=true` and `two_class_adaptation_authorized=true`.
 
 M54 is now authorized for controlled design and execution. Before training, freeze the Vehicle/Pedestrian class mapping, checkpoint initialization rules, training schedule, checkpoint-selection metric, and complete product AP/nearby gates. This authorization does not establish product safety or deployability: `product_safety_qualified=false`, and MonoDGP remains an accuracy challenger rather than the deployment student.
+
+## M54 controlled adaptation prepared (2026-09-10)
+
+The first M54 run is fully specified in `MONODGP_M54_ADAPTATION_CONTRACT.md`.
+It starts from the exact verified M53 checkpoint and preserves every model
+tensor and the complete MonoDGP architecture: ResNet50, four feature levels,
+80 depth bins, region enhancement, decoupled 2D/3D transformers, hidden size
+256, three encoder and three decoder layers, eight heads, 50 inference queries,
+11 training-query groups, and the native three-class output head.
+
+M54 maps Car/Van/Truck/Tram to native Car and product Vehicle, and maps
+Pedestrian/Person_sitting to native and product Pedestrian. Cyclist, Misc, and
+DontCare are excluded. The unused native Cyclist channel remains present for
+checkpoint compatibility and receives negative focal supervision. Training is
+GT-only—no distillation or temperature tuning—for 100 epochs at batch size 8
+and learning rate `5e-5`, with half-rate decays at epochs 40/70/90 and durable
+checkpoints every five epochs.
+
+Run `notebooks/MonoDGP_M54_Two_Class_Adaptation_Colab.ipynb` on a Colab GPU
+only through the mandatory CUDA smoke cell. It performs a real mixed-class
+forward, loss, backward, and in-memory optimizer step, checks finite outputs,
+losses, and nonzero finite gradients, and does not mutate a durable checkpoint.
+Stop at the explicit notebook barrier and return
+`/content/drive/MyDrive/mobile_adas3d_outputs/challengers/monodgp_m54/m54_training_smoke.json`.
+The 100-epoch training run is not started or authorized until this report is
+reviewed. MonoDGP remains an accuracy challenger and
+`product_safety_qualified=false`.
