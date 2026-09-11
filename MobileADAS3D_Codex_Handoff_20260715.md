@@ -2886,3 +2886,27 @@ Use the notebook's checkpoint-detection and durable training cells so a runtime
 restart resumes from the newest valid Drive checkpoint. After training, run the
 bounded complete checkpoint sweep and return `m54_product_selection.json` and
 `m54_product_checkpoint_sweep.csv`. Product safety remains unqualified.
+
+## M54 complete; epoch 100 selected (2026-09-11)
+
+The frozen 12-checkpoint sweep completed over all 3,769 Chen validation images.
+Epoch 100 ranked first under the prespecified balanced moderate 3D rule and is
+identified by checkpoint SHA-256
+`8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847`.
+Its Vehicle/Pedestrian moderate 3D AP_R40 is `19.4519/6.1749`, balanced mean
+is `12.8134`, and moderate BEV AP_R40 is `25.7751/6.7676`. Vehicle/Pedestrian
+nearby recall is `0.90993/0.72487`; Pedestrian localization-failure rate is
+`0.23765`.
+
+Every frozen R0-comparability gate passed. Relative to R0, M54 improves
+Vehicle/Pedestrian 3D AP by `+1.8171/+0.4535`, balanced 3D by `+1.1353`,
+Vehicle/Pedestrian BEV AP by `+2.0935/+0.1715`, and nearby recall by
+`+0.02746/+0.04145`; Pedestrian localization failures fall by `0.00838`.
+Epoch 80 was only `0.00222` behind in balanced 3D but failed the frozen
+Pedestrian 3D and BEV gates, so epoch 100 remains the unambiguous selection.
+
+M54 epoch 100 is the new high-capacity accuracy parent. It is not a product-
+safe or deployable model: Pedestrian nearby recall remains `0.07513` below the
+`0.80` offline target, and external-domain, calibration, runtime, memory, and
+device qualification are outstanding. The next task is to freeze an M54-based
+M55 compression contract before any weight-only quantization experiment.

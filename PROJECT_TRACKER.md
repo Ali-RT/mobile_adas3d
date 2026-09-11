@@ -16,13 +16,14 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-- Current phase: **accuracy-challenger adaptation training**
-- Active task: resume or start the authorized M54 GT-only 100-epoch run, then
-  complete the frozen checkpoint sweep and selected-checkpoint qualification.
-- Training teacher/reference: **R0 ResNet50 MonoDETR, epoch 185**
-- Accuracy candidate: **MobileMonoDETR-Student-A2 epoch 130 (frozen diagnostic baseline)**
-- Accuracy challenger: **official CVPR 2025 MonoDGP checkpoint (M53 reproduced);
-  the M54 CUDA training smoke passed and full controlled training is authorized**
+- Current phase: **accuracy parent selected; compression planning**
+- Active task: freeze M54 epoch 100 and its preservation denominators, then
+  define M55 before any quantization or deployment work.
+- Selected accuracy parent: **M54 MonoDGP epoch 100**, checkpoint SHA-256
+  `8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847`.
+- Legacy accuracy reference: **R0 ResNet50 MonoDETR, epoch 185**.
+- Deployment candidate: **MobileMonoDETR-Student-A2 epoch 130 (diagnostic only)**.
+- Open product gap: **Pedestrian nearby recall 0.72487 vs target 0.80**.
 - S1/H1/H2 status: **frozen negative experiments; do not resume**.
 - Knowledge distillation: **completed and rejected for A1**; it did not improve
   balanced accuracy and should not be retuned or resumed.
@@ -90,8 +91,8 @@ not constrain the current accuracy-development stage.
 | M51 | Post-R2b model governance | Complete—contract frozen | `R0_COMPRESSION_CONTRACT.md` freezes R0 epoch 185/hash as the immutable parent. Candidates must retain 95% of every R0 AP metric, lose at most one absolute point of per-class nearby recall, add at most one point of Pedestrian localization failures, and evaluate all 3,769 images. Passing preserves R0 only; the unmet `0.80` Pedestrian target remains aspirational. |
 | M52 | Selective mixed-precision R0 gate | Complete—all preservation gates passed | The expanded FP32 feature/depth/custom-attention policy passed its CUDA smoke and the complete 3,769-image Chen validation. Vehicle/Pedestrian moderate 3D AP_R40 was `17.6399/5.6952`, balanced mean `11.6676`, and BEV `23.6395/6.6603`. Nearby recall was `0.88215/0.68519`; Pedestrian localization-failure rate was `0.24559`. All nine frozen AP, recall, localization, and completeness gates passed with the exact R0 checkpoint hash. This authorizes the next compression rung but does not qualify product safety. The run did not include a comparable FP32 timing/memory baseline, so no speedup claim is authorized. |
 | M53 | Official MonoDGP Car reference reproducibility | Complete—reference reproduced | The schema-v2 report confirms the pinned source/checkpoint/split, all 3,769 predictions, and every provenance/completeness/tolerance gate. MonoDGP's native official evaluator produced Car 3D AP_R40 `30.1185/22.6797/19.3705`, only `0.0129/0.0312/0.0273` below published `30.1314/22.7109/19.3978`. The MobileADAS3D independent evaluator produced `29.8114/22.1628/18.7457` and remains a diagnostic, not the published-result gate authority. `reference_reproduced=true`; `two_class_adaptation_authorized=true`; `product_safety_qualified=false`. |
-| M54 | MonoDGP Vehicle/Pedestrian adaptation | CUDA smoke passed—training authorized | The real CUDA smoke ran on an NVIDIA RTX PRO 6000 Blackwell from the exact pinned source and M53 checkpoint. Its mixed batch contained 3 Vehicle and 6 Pedestrian targets; all output tensors, the 71.7326 sanity loss, and gradients were finite, and one in-memory optimizer step completed. The smoke artifact SHA-256 is `8d952441812aedaf2745bb51beba384b809f9ed846b0b9ab7ffbe122f94f951b`. The frozen GT-only 100-epoch run is authorized; accuracy remains unknown until the complete checkpoint sweep and qualification finish. |
-| M55 | Weight-only quantization sensitivity | Deferred | The M52 preservation pass remains valid, but quantization is postponed until the R0-versus-MonoDGP accuracy-parent decision is complete. Do not spend compression effort on a parent that may be replaced. |
+| M54 | MonoDGP Vehicle/Pedestrian adaptation | Complete—new accuracy parent selected | All 12 frozen checkpoints were evaluated on all 3,769 Chen validation images. Epoch 100/hash `8e79f392…e579847` ranked first and passed all eight R0-comparability gates: moderate 3D Vehicle/Pedestrian/mean `19.4519/6.1749/12.8134`, moderate BEV `25.7751/6.7676`, nearby recall `0.90993/0.72487`, and Pedestrian localization-failure rate `0.23765`. Relative to R0, gains were `+1.8171/+0.4535/+1.1353` 3D AP, `+2.0935/+0.1715` BEV AP, and `+0.02746/+0.04145` nearby recall. M54 becomes the high-capacity accuracy parent. Pedestrian recall remains `0.07513` below the separate `0.80` product target, so `product_safety_qualified=false`. |
+| M55 | Weight-only quantization sensitivity | Next—contract required | Rebase the compression experiment on frozen M54 epoch 100, not R0. Before execution, freeze relative AP/nearby/localization preservation gates, checkpoint provenance, supported-operator/export feasibility, size, latency, memory, and complete-split evaluation. M52 remains historical R0 evidence and cannot be treated as M54 qualification. |
 
 **M53 completion note:** the model and official evaluator passed after the public-API import correction. The prior JSON failed only because it compared an independent reimplementation directly with published native-evaluator values. The corrected schema-v2 finalizer reused the complete prediction set and native log, and all frozen M53 gates passed.
 
@@ -99,6 +100,12 @@ not constrain the current accuracy-development stage.
 requirement on 2026-09-11. The reported `71.7326` loss is only a finite
 forward/backward sanity value, not a validation metric or accuracy baseline.
 The controlled 100-epoch training and subsequent frozen sweep are authorized.
+**M54 result note:** epoch 100 is the only supplied checkpoint that both ranks
+first by the frozen balanced selection rule and passes every R0-comparability
+gate. It is the selected high-capacity accuracy parent. The separate offline
+product gate still fails because Pedestrian nearby recall is `0.72487 < 0.80`;
+external-domain, calibration, runtime, and device qualification remain pending.
+
 
 ## Frozen R0 reference
 
@@ -226,13 +233,15 @@ frozen; passing AP does not by itself authorize deployment.
 27. **Completed—passed:** the M54 real-CUDA mixed-class smoke used 3 Vehicle
     and 6 Pedestrian targets, produced finite outputs/loss/gradients, and
     completed one in-memory optimizer step from the exact M53 checkpoint.
-28. **Next:** in the M54 notebook, run checkpoint detection and the resumable
-    100-epoch training cell. After training completes, run the frozen checkpoint
-    sweep/qualification cell and return `m54_product_selection.json` plus CSV.
-29. **Deferred:** assign weight-only quantization to M55 only after selecting
-    the accuracy parent; M52's successful preservation evidence remains valid.
+28. **Completed—passed:** M54 epoch 100 ranked first across 12 checkpoints,
+    evaluated all 3,769 images, and passed all eight R0-comparability gates.
+    Freeze checkpoint hash `8e79f392…e579847` as the accuracy parent; retain
+    Pedestrian nearby recall `0.80` as an unmet product target.
+29. **Next:** define the M55 M54-parent compression contract before running any
+    quantization. Lock relative preservation, completeness, model-size, latency,
+    memory, export/operator, and external-qualification requirements.
 30. Restore deployment-specific Core ML parity/runtime qualification only after
-    the chosen parent and compression acceptance rules are frozen.
+    M55 establishes a viable compressed candidate.
 
 ## Decision rules
 

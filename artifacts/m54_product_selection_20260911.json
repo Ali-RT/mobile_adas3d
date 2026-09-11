@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "complete": true,
+  "experiment": "M54 controlled GT-only Vehicle/Pedestrian MonoDGP adaptation",
+  "selected_epoch": 100,
+  "selected_checkpoint": "/content/drive/MyDrive/mobile_adas3d_outputs/challengers/monodgp_m54/monodgp_m54_vehicle_pedestrian_gt/checkpoint_epoch_100.pth",
+  "selected_checkpoint_sha256": "8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847",
+  "selection_rule": "highest balanced Vehicle/Pedestrian moderate 3D AP_R40; tie Pedestrian 3D, Vehicle 3D, then balanced BEV",
+  "evaluated_epochs": [
+    5,
+    10,
+    15,
+    20,
+    30,
+    40,
+    50,
+    60,
+    70,
+    80,
+    90,
+    100
+  ],
+  "evaluated_images": 3769,
+  "metrics": {
+    "vehicle_3d_moderate": 19.451853874133846,
+    "pedestrian_3d_moderate": 6.174878930065441,
+    "mean_3d_moderate": 12.813366402099643,
+    "vehicle_bev_moderate": 25.77508716658311,
+    "pedestrian_bev_moderate": 6.767615777186105,
+    "vehicle_near_recall": 0.9099254609650843,
+    "pedestrian_near_recall": 0.7248677248677249,
+    "pedestrian_localization_failure_rate": 0.23765432098765432
+  },
+  "r0_comparable_gates": {
+    "vehicle_3d_moderate": 17.634769196266316,
+    "pedestrian_3d_moderate": 5.721371354710236,
+    "mean_3d_moderate": 11.678070275488276,
+    "vehicle_bev_moderate": 23.68156332656625,
+    "pedestrian_bev_moderate": 6.596148868813419,
+    "vehicle_near_recall": 0.8824637112593173,
+    "pedestrian_near_recall": 0.6834215167548501,
+    "pedestrian_localization_failure_rate_max": 0.24603174603174602
+  },
+  "r0_comparable_gate_results": {
+    "vehicle_3d_moderate": true,
+    "pedestrian_3d_moderate": true,
+    "mean_3d_moderate": true,
+    "vehicle_bev_moderate": true,
+    "pedestrian_bev_moderate": true,
+    "vehicle_near_recall": true,
+    "pedestrian_near_recall": true,
+    "pedestrian_localization_failure_rate": true
+  },
+  "accuracy_parent_candidate": true,
+  "offline_product_targets": {
+    "vehicle_near_recall": 0.85,
+    "pedestrian_near_recall": 0.8
+  },
+  "offline_product_target_results": {
+    "vehicle_near_recall": true,
+    "pedestrian_near_recall": false
+  },
+  "offline_product_gates_passed": false,
+  "product_safety_qualified": false,
+  "product_safety_note": "Offline KITTI gates cannot qualify deployment safety; external-domain and device-runtime qualification remain required."
+}
