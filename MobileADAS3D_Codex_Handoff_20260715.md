@@ -2910,3 +2910,42 @@ safe or deployable model: Pedestrian nearby recall remains `0.07513` below the
 `0.80` offline target, and external-domain, calibration, runtime, memory, and
 device qualification are outstanding. The next task is to freeze an M54-based
 M55 compression contract before any weight-only quantization experiment.
+
+## M55 compression feasibility workflow prepared (2026-09-11)
+
+M55 is now frozen in `MONODGP_M55_COMPRESSION_CONTRACT.md` as an
+evaluation-only feasibility task around the exact M54 epoch-100 parent. It
+performs no training, pruning, quantization, or conversion. The parent SHA-256
+remains `8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847`,
+and the Chen validation protocol remains exactly 3,769 images at score
+threshold `0.001` and TopK 50.
+
+The M54-based compression floors retain 95% of each AP denominator:
+Vehicle/Pedestrian moderate 3D AP_R40 `18.4793/5.8661`, balanced moderate 3D
+`12.1727`, and Vehicle/Pedestrian moderate BEV `24.4863/6.4292`. Vehicle and
+Pedestrian nearby recall may fall by no more than 0.01 absolute, giving floors
+`0.89993/0.71487`; Pedestrian localization-failure rate may rise by no more
+than 0.01, giving a ceiling of `0.24765`. Every future compressed candidate
+must also produce exactly 3,769 validation files.
+
+`notebooks/MonoDGP_M55_Compression_Feasibility_Colab.ipynb` is a
+self-contained GPU workflow. It validates the M54 manifest/selection/sweep,
+rebuilds the pinned custom CUDA extension, profiles one fixed validation image
+with five warmups and 100 CUDA-event-timed model-only predictions, records
+checkpoint/state/parameter size and peak CUDA memory, and emits a profiler
+FLOP value explicitly marked as a partial lower bound. It inventories unique
+Conv2d and Linear parameter bytes and records every deformable-attention
+module.
+
+The expected export audit must keep direct Core ML conversion unauthorized:
+MonoDGP uses a custom `MultiScaleDeformableAttention` CUDA autograd operator.
+That operator must be decomposed or replaced and raw output parity must pass
+before Core ML conversion. A complete M55 pass authorizes only M56, a separate
+offline weight-compression sensitivity experiment followed by the full AP,
+nearby-recall, localization, and completeness evaluation.
+
+Run the M55 notebook top-to-bottom on a Colab GPU and stop at its explicit
+barrier. Return `m55_feasibility_gate.json`,
+`m55_native_baseline_profile.json`, and `m55_operator_export_audit.json`.
+Product safety remains false because Pedestrian nearby recall is still below
+`0.80`, and external-domain/device qualification has not been performed.
