@@ -2867,3 +2867,22 @@ Stop at the explicit notebook barrier and return
 The 100-epoch training run is not started or authorized until this report is
 reviewed. MonoDGP remains an accuracy challenger and
 `product_safety_qualified=false`.
+
+## M54 CUDA training smoke passed (2026-09-11)
+
+The mandatory M54 smoke passed on an NVIDIA RTX PRO 6000 Blackwell Server
+Edition using pinned MonoDGP commit
+`aa059a18214aebf644510e7f0793971b403f9d14` and exact M53 checkpoint SHA-256
+`1d5f30b34b8bef49638079a8b07f05ebf11bb5f85d6a9a11c7b028c69396f05d`.
+The batch contained three Vehicle and six Pedestrian targets. Every reported
+output tensor was finite, total loss was finite at `71.7326431274414`, all
+gradients were finite, and one in-memory optimizer step completed.
+
+The smoke artifact SHA-256 is
+`8d952441812aedaf2745bb51beba384b809f9ed846b0b9ab7ffbe122f94f951b`.
+This value validates execution only; it is not an accuracy result and must not
+be compared with AP. The frozen GT-only 100-epoch M54 run is now authorized.
+Use the notebook's checkpoint-detection and durable training cells so a runtime
+restart resumes from the newest valid Drive checkpoint. After training, run the
+bounded complete checkpoint sweep and return `m54_product_selection.json` and
+`m54_product_checkpoint_sweep.csv`. Product safety remains unqualified.

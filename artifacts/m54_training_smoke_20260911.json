@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "complete": true,
+  "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+  "upstream_commit": "aa059a18214aebf644510e7f0793971b403f9d14",
+  "checkpoint_sha256": "1d5f30b34b8bef49638079a8b07f05ebf11bb5f85d6a9a11c7b028c69396f05d",
+  "batch_size": 2,
+  "vehicle_targets": 3,
+  "pedestrian_targets": 6,
+  "total_loss": 71.7326431274414,
+  "weighted_losses": {
+    "loss_ce_inter_0": 3.391735315322876,
+    "loss_bbox_inter_0": 0.9554558396339417,
+    "loss_giou_inter_0": 1.4163028001785278,
+    "loss_center_inter_0": 0.7020568251609802,
+    "loss_ce_inter_1": 3.3445792198181152,
+    "loss_bbox_inter_1": 0.9589329957962036,
+    "loss_giou_inter_1": 1.3882510662078857,
+    "loss_center_inter_1": 0.7647642493247986,
+    "loss_ce_inter_2": 3.408123731613159,
+    "loss_bbox_inter_2": 0.9565204977989197,
+    "loss_giou_inter_2": 1.3674044609069824,
+    "loss_center_inter_2": 0.8119174838066101,
+    "loss_ce": 3.4593844413757324,
+    "loss_bbox": 0.9925233721733093,
+    "loss_giou": 1.385293960571289,
+    "loss_depth": 3.0620663166046143,
+    "loss_dim": 2.813509225845337,
+    "loss_angle": 3.057461738586426,
+    "loss_center": 0.7994551658630371,
+    "loss_depth_map": 2.605232000350952,
+    "loss_region": 3.4874801635742188,
+    "loss_ce_0": 3.310006618499756,
+    "loss_bbox_0": 0.9847177267074585,
+    "loss_giou_0": 1.398850917816162,
+    "loss_depth_0": 3.061769485473633,
+    "loss_dim_0": 2.892172336578369,
+    "loss_angle_0": 2.68922758102417,
+    "loss_center_0": 0.8172647953033447,
+    "loss_ce_1": 3.571193218231201,
+    "loss_bbox_1": 0.9680757522583008,
+    "loss_giou_1": 1.3699970245361328,
+    "loss_depth_1": 2.9402194023132324,
+    "loss_dim_1": 2.7815349102020264,
+    "loss_angle_1": 3.0279171466827393,
+    "loss_center_1": 0.7912505865097046
+  },
+  "finite_outputs": true,
+  "finite_gradients": true,
+  "optimizer_steps": 1,
+  "output_tensors": {
+    "pred_logits": {
+      "shape": [
+        2,
+        550,
+        3
+      ],
+      "dtype": "torch.float32",
+      "finite": true
+    },
+    "pred_boxes": {
+      "shape": [
+        2,
+        550,
+        6
+      ],
+      "dtype": "torch.float32",
+      "finite": true
+    },
+    "pred_3d_dim": {
+      "shape": [
+        2,
+        550,
+        3
+      ],
+      "dtype": "torch.float32",
+      "finite": true
+    },
+    "pred_depth": {
+      "shape": [
+        2,
+        550,
+        2
+      ],
+      "dtype": "torch.float32",
+      "finite": true
+    },
+    "pred_angle": {
+      "shape": [
+        2,
+        550,
+        24
+      ],
+      "dtype": "torch.float32",
+      "finite": true
+    },
+    "pred_depth_map_logits": {
+      "shape": [
+        2,
+        81,
+        24,
+        80
+      ],
+      "dtype": "torch.float32",
+      "finite": true
+    }
+  }
+}
