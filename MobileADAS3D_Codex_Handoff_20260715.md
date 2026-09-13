@@ -3036,3 +3036,40 @@ files. The final deliverables are `m56_fp16_storage_gate.json` and
 M56 does not authorize graph replacement, Core ML conversion, or deployment.
 Those remain separate M57/M58 tasks. Product safety remains false because
 Pedestrian nearby recall is below the separate `0.80` target.
+
+## M56 FP16 parameter-storage smoke rejected (2026-09-13)
+
+The real-CUDA M56 smoke ran on the same NVIDIA RTX PRO 6000 Blackwell Server
+Edition, PyTorch 2.11.0+cu128, CUDA 12.8, and validation sample 000001 used for
+the M55 comparison. It was bound to exact M54 parent hash
+`8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847`,
+manifest hash `a9cfbd8e41ed020b4d49ee44594b81966b27601750fe4167454cbbdecffde046`,
+and FP16-storage candidate hash
+`8da64f181e5c09b17a29e09eb41b1133159313f2d09eeb1ac8218bf1d1ea4404`.
+
+All 327 eligible parameters were stored as FP16, every noneligible tensor was
+bitwise unchanged, the candidate loaded into FP32 runtime parameters, output
+structure was unchanged, outputs were finite, and the paired model-only size
+gate passed. Six of seven raw-output families passed their frozen maximum
+absolute-delta limits: logits `0.015026 <= 0.10`, boxes
+`0.001506 <= 0.01`, dimensions `0.040542 <= 0.10`, angle
+`0.087031 <= 0.10`, depth-map logits `0.005854 <= 0.10`, and region
+probabilities `0.000087 <= 0.01`.
+
+Final `pred_depth` failed: maximum absolute delta was
+`0.710739 > 0.500000`, despite a small mean delta of `0.012378`. The
+frozen maximum threshold must not be relaxed after observing the result.
+Therefore `all_smoke_gates_passed=false`,
+`full_evaluation_authorized=false`, and the 3,769-image evaluation must not
+run. M56 is rejected at the smoke barrier.
+
+Candidate model-only latency was 12.9778 ms mean and 13.0003 ms p95 versus
+M55's 12.6725/12.7235 ms, a 2.41%/2.18% regression. This confirms the expected
+absence of runtime benefit when FP16 values are loaded back into FP32.
+
+The next experiment is M56b: preserve the directly depth-sensitive
+`bbox_embed`, `dim_embed_3d`, and `depth_embed` parameters in FP32 while
+storing the remaining eligible Conv2d/Linear parameters in FP16. M56b must
+reuse the exact source, paired size accounting, CUDA sample, and every frozen
+M56 parity threshold. It remains a storage-only experiment; complete
+validation is blocked until its new CUDA smoke passes.

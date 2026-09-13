@@ -16,10 +16,10 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-- Current phase: **M56 FP16-storage workflow prepared; CUDA smoke pending**
-- Active task: run the self-contained M56 notebook through Stop point 1 and
-  review the paired artifact manifest plus real-CUDA raw-output parity report
-  before authorizing complete validation.
+- Current phase: **M56 rejected at CUDA parity gate; M56b design next**
+- Active task: freeze M56b as a selective FP16-storage experiment that keeps
+  the depth-sensitive box, dimension, and depth heads in FP32 while preserving
+  every M56 threshold and the unchanged FP32 runtime graph.
 - Selected accuracy parent: **M54 MonoDGP epoch 100**, checkpoint SHA-256
   `8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847`.
 - Legacy accuracy reference: **R0 ResNet50 MonoDETR, epoch 185**.
@@ -94,7 +94,8 @@ not constrain the current accuracy-development stage.
 | M53 | Official MonoDGP Car reference reproducibility | Complete—reference reproduced | The schema-v2 report confirms the pinned source/checkpoint/split, all 3,769 predictions, and every provenance/completeness/tolerance gate. MonoDGP's native official evaluator produced Car 3D AP_R40 `30.1185/22.6797/19.3705`, only `0.0129/0.0312/0.0273` below published `30.1314/22.7109/19.3978`. The MobileADAS3D independent evaluator produced `29.8114/22.1628/18.7457` and remains a diagnostic, not the published-result gate authority. `reference_reproduced=true`; `two_class_adaptation_authorized=true`; `product_safety_qualified=false`. |
 | M54 | MonoDGP Vehicle/Pedestrian adaptation | Complete—new accuracy parent selected | All 12 frozen checkpoints were evaluated on all 3,769 Chen validation images. Epoch 100/hash `8e79f392…e579847` ranked first and passed all eight R0-comparability gates: moderate 3D Vehicle/Pedestrian/mean `19.4519/6.1749/12.8134`, moderate BEV `25.7751/6.7676`, nearby recall `0.90993/0.72487`, and Pedestrian localization-failure rate `0.23765`. Relative to R0, gains were `+1.8171/+0.4535/+1.1353` 3D AP, `+2.0935/+0.1715` BEV AP, and `+0.02746/+0.04145` nearby recall. M54 becomes the high-capacity accuracy parent. Pedestrian recall remains `0.07513` below the separate `0.80` product target, so `product_safety_qualified=false`. |
 | M55 | M54 compression baseline and export feasibility | Complete—all feasibility gates passed | Exact M54 epoch-100/hash validation and all 19 checks passed. Untouched FP32 M54 has 42.164M parameters, 168.65 MB parameter bytes, a 495.99 MB checkpoint, and a partial 143.56 GFLOP lower bound. On RTX PRO 6000 Blackwell, batch-one 1280×384 model-only latency was 12.67 ms mean/12.72 ms p95 over 100 runs after five warmups; peak allocated/reserved CUDA memory was 492.97 MB/1.086 GB. Conv2d/Linear weights cover 156.33 MB (92.69%), authorizing M56. Direct Core ML remains unauthorized because nine custom MSDeformAttn modules require decomposition/replacement and raw-output parity. See the dated M55 artifacts. |
-| M56 | M54 FP16 parameter-storage sensitivity | Prepared—real CUDA smoke pending | The exact policy, paired FP32-control/FP16-candidate model-only artifacts, provenance checks, ≤60% model-only size-ratio gate, real-CUDA finite/raw-output parity smoke, and full 3,769-image evaluator are implemented in the self-contained M56 notebook. Runtime parameters and execution remain FP32, so no latency or memory speedup is predicted. Complete evaluation is withheld until Stop point 1 is reviewed. |
+| M56 | M54 FP16 parameter-storage sensitivity | Complete—rejected at CUDA smoke | Every provenance, storage, size, structure, finite-output, timing, and safety-claim gate passed except raw depth parity. Final `pred_depth` max absolute delta was `0.710739` versus the frozen `0.500000` limit (mean delta `0.012378`). All other output families passed. Same-environment mean/p95 latency was `12.9778/13.0003 ms` versus M55 `12.6725/12.7235 ms` (`+2.41%/+2.18%`), confirming no speed benefit. Full validation is unauthorized; do not change the M56 threshold post hoc. |
+| M56b | Selective FP16 storage with FP32 depth geometry | Next—contract/preparation required | Keep `bbox_embed`, `dim_embed_3d`, and `depth_embed` parameters in FP32 while storing the remaining eligible Conv2d/Linear parameters in FP16. Reuse the exact M56 source, paired size accounting, CUDA sample, and frozen parity limits. No full validation unless the new smoke passes. |
 | M57 | Deformable-attention export replacement | Pending | Replace or decompose the custom CUDA operator only after a viable compressed candidate exists; require raw-output parity before Core ML conversion. |
 | M58 | Core ML and physical-device qualification | Pending | Convert the selected graph, prove parity, and measure iPhone latency, memory, sustained thermal behavior, stability, and artifact integrity. |
 
@@ -128,6 +129,17 @@ provenance manifest, candidate/control hashes and sizes, a size ratio no larger
 than `0.60`, finite outputs, and bounded raw-tensor deltas on real CUDA. Only
 after review may the candidate run the frozen AP, nearby-recall, localization,
 and 3,769-file completeness gates.
+
+**M56 result note:** candidate hash `8da64f18…1ea4404` stored all 327
+eligible parameters in FP16 and loaded them into FP32 runtime parameters.
+Output structure and finiteness passed, as did logits, boxes, dimensions,
+angle, depth-map, and region-probability parity. Only final depth failed:
+maximum absolute delta `0.710739 > 0.500000`; the mean was `0.012378`.
+The same-environment candidate was also about 2.4% slower in mean latency.
+Accordingly, `all_smoke_gates_passed=false` and
+`full_evaluation_authorized=false`. The complete 3,769-image evaluation
+must not run. M56b will preserve only the directly depth-sensitive geometry
+heads in FP32; the M56 parity limits remain unchanged.
 
 
 ## Frozen R0 reference
@@ -272,12 +284,15 @@ frozen; passing AP does not by itself authorize deployment.
 31. **Completed—prepared:** M56 freezes one FP16 parameter-storage policy,
     exact M54/M55 evidence, paired model-only artifacts, a `≤0.60` size gate,
     real-CUDA raw-output parity, and complete frozen preservation evaluation.
-32. **Next:** run `notebooks/MonoDGP_M56_FP16_Parameter_Storage_Colab.ipynb`
-    through Stop point 1 and return `m56_compression_manifest.json` plus
-    `m56_fp16_storage_smoke.json`.
-33. If the smoke passes review, run the notebook's complete 3,769-image
-    evaluation and return the final gate JSON plus comparison CSV.
-34. Only after M56 passes, replace/decompose custom
+32. **Completed—rejected:** M56 passed all checks except final-depth raw parity:
+    max absolute delta `0.710739` exceeded the frozen `0.500000` limit.
+    Full validation was correctly blocked.
+33. **Next:** freeze M56b with `bbox_embed`, `dim_embed_3d`, and
+    `depth_embed` retained in FP32 and all remaining eligible Conv2d/Linear
+    parameters stored in FP16. Do not relax any M56 threshold.
+34. Run M56b only through its CUDA smoke barrier. If it passes review, run the
+    complete 3,769-image preservation evaluation.
+35. Only after a compressed candidate passes, replace/decompose custom
     deformable attention, prove raw tensor parity, and restore Core ML/iPhone
     conversion, latency, memory, sustained thermal, and artifact qualification.
 

@@ -119,3 +119,18 @@ Regardless of the M56 outcome:
 - `m56_fp16_storage_gate.json`
 - `m56_fp16_storage_comparison.csv`
 - durable preparation, smoke, inference, and evaluation logs
+
+## Frozen outcome
+
+M56 was rejected at its real-CUDA smoke barrier on 2026-09-13. Every gate
+passed except raw final-depth parity: maximum `pred_depth` absolute delta was
+`0.710739` against the frozen `0.500000` limit. The threshold is not
+changed after observing the result. Consequently the complete validation was
+not authorized, and no M56 prediction manifest, final gate, or comparison CSV
+should exist.
+
+The next controlled experiment is M56b. It may retain the directly
+depth-sensitive `bbox_embed`, `dim_embed_3d`, and `depth_embed`
+parameters in FP32 while applying the same FP16 policy elsewhere. It must use
+the same parent, sample, paired accounting, and parity thresholds. This outcome
+does not itself authorize M56b's complete validation.
