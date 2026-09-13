@@ -16,10 +16,10 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-- Current phase: **M55 compression feasibility passed; M56 design next**
-- Active task: freeze M56 as one controlled offline M54 weight-compression
-  sensitivity experiment with untouched-M55 comparison and full preservation
-  evaluation.
+- Current phase: **M56 FP16-storage workflow prepared; CUDA smoke pending**
+- Active task: run the self-contained M56 notebook through Stop point 1 and
+  review the paired artifact manifest plus real-CUDA raw-output parity report
+  before authorizing complete validation.
 - Selected accuracy parent: **M54 MonoDGP epoch 100**, checkpoint SHA-256
   `8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847`.
 - Legacy accuracy reference: **R0 ResNet50 MonoDETR, epoch 185**.
@@ -94,7 +94,7 @@ not constrain the current accuracy-development stage.
 | M53 | Official MonoDGP Car reference reproducibility | Complete—reference reproduced | The schema-v2 report confirms the pinned source/checkpoint/split, all 3,769 predictions, and every provenance/completeness/tolerance gate. MonoDGP's native official evaluator produced Car 3D AP_R40 `30.1185/22.6797/19.3705`, only `0.0129/0.0312/0.0273` below published `30.1314/22.7109/19.3978`. The MobileADAS3D independent evaluator produced `29.8114/22.1628/18.7457` and remains a diagnostic, not the published-result gate authority. `reference_reproduced=true`; `two_class_adaptation_authorized=true`; `product_safety_qualified=false`. |
 | M54 | MonoDGP Vehicle/Pedestrian adaptation | Complete—new accuracy parent selected | All 12 frozen checkpoints were evaluated on all 3,769 Chen validation images. Epoch 100/hash `8e79f392…e579847` ranked first and passed all eight R0-comparability gates: moderate 3D Vehicle/Pedestrian/mean `19.4519/6.1749/12.8134`, moderate BEV `25.7751/6.7676`, nearby recall `0.90993/0.72487`, and Pedestrian localization-failure rate `0.23765`. Relative to R0, gains were `+1.8171/+0.4535/+1.1353` 3D AP, `+2.0935/+0.1715` BEV AP, and `+0.02746/+0.04145` nearby recall. M54 becomes the high-capacity accuracy parent. Pedestrian recall remains `0.07513` below the separate `0.80` product target, so `product_safety_qualified=false`. |
 | M55 | M54 compression baseline and export feasibility | Complete—all feasibility gates passed | Exact M54 epoch-100/hash validation and all 19 checks passed. Untouched FP32 M54 has 42.164M parameters, 168.65 MB parameter bytes, a 495.99 MB checkpoint, and a partial 143.56 GFLOP lower bound. On RTX PRO 6000 Blackwell, batch-one 1280×384 model-only latency was 12.67 ms mean/12.72 ms p95 over 100 runs after five warmups; peak allocated/reserved CUDA memory was 492.97 MB/1.086 GB. Conv2d/Linear weights cover 156.33 MB (92.69%), authorizing M56. Direct Core ML remains unauthorized because nine custom MSDeformAttn modules require decomposition/replacement and raw-output parity. See the dated M55 artifacts. |
-| M56 | M54 offline weight-compression sensitivity | Next—contract/preparation required | Apply one controlled offline weight-compression policy to the exact M54 parent, compare it with the untouched M55 baseline under the same environment, then run complete AP, nearby-recall, localization, and 3,769-file preservation evaluation. No graph replacement or Core ML claim belongs in M56. |
+| M56 | M54 FP16 parameter-storage sensitivity | Prepared—real CUDA smoke pending | The exact policy, paired FP32-control/FP16-candidate model-only artifacts, provenance checks, ≤60% model-only size-ratio gate, real-CUDA finite/raw-output parity smoke, and full 3,769-image evaluator are implemented in the self-contained M56 notebook. Runtime parameters and execution remain FP32, so no latency or memory speedup is predicted. Complete evaluation is withheld until Stop point 1 is reviewed. |
 | M57 | Deformable-attention export replacement | Pending | Replace or decompose the custom CUDA operator only after a viable compressed candidate exists; require raw-output parity before Core ML conversion. |
 | M58 | Core ML and physical-device qualification | Pending | Convert the selected graph, prove parity, and measure iPhone latency, memory, sustained thermal behavior, stability, and artifact integrity. |
 
@@ -117,6 +117,17 @@ Vehicle/Pedestrian, balanced 3D `12.1727`, moderate BEV `24.4863/6.4292`,
 nearby recall `0.89993/0.71487`, and Pedestrian localization-failure ceiling
 `0.24765`. Offline Conv2d/Linear weight compression is authorized for M56;
 direct Core ML conversion and product safety are not.
+
+**M56 preparation note:** M56 stores every floating-point parameter directly
+owned by a Conv2d or Linear module as FP16 while leaving other state tensors
+unchanged. Loading the candidate into the unchanged MonoDGP graph restores
+FP32 runtime parameters; this is a storage-sensitivity experiment, not mixed
+precision execution. The paired FP32 model-only control prevents optimizer
+removal from being counted as compression. Stop point 1 requires an exact
+provenance manifest, candidate/control hashes and sizes, a size ratio no larger
+than `0.60`, finite outputs, and bounded raw-tensor deltas on real CUDA. Only
+after review may the candidate run the frozen AP, nearby-recall, localization,
+and 3,769-file completeness gates.
 
 
 ## Frozen R0 reference
@@ -258,10 +269,15 @@ frozen; passing AP does not by itself authorize deployment.
     audit. All 19 feasibility checks passed; 92.69% of parameter bytes are in
     ordinary Conv2d/Linear weights. Direct Core ML remains blocked by nine
     custom deformable-attention modules.
-31. **Next:** design M56 as one controlled offline weight-compression
-    experiment and rerun every frozen M54 preservation gate on all 3,769 images
-    against the untouched M55 baseline.
-32. Only after a viable compressed candidate exists, replace/decompose custom
+31. **Completed—prepared:** M56 freezes one FP16 parameter-storage policy,
+    exact M54/M55 evidence, paired model-only artifacts, a `≤0.60` size gate,
+    real-CUDA raw-output parity, and complete frozen preservation evaluation.
+32. **Next:** run `notebooks/MonoDGP_M56_FP16_Parameter_Storage_Colab.ipynb`
+    through Stop point 1 and return `m56_compression_manifest.json` plus
+    `m56_fp16_storage_smoke.json`.
+33. If the smoke passes review, run the notebook's complete 3,769-image
+    evaluation and return the final gate JSON plus comparison CSV.
+34. Only after M56 passes, replace/decompose custom
     deformable attention, prove raw tensor parity, and restore Core ML/iPhone
     conversion, latency, memory, sustained thermal, and artifact qualification.
 
@@ -286,6 +302,7 @@ frozen; passing AP does not by itself authorize deployment.
 - H1 active graph: `HYBRID_STUDENT_ARCHITECTURE_CONTRACT.md`
 - Accuracy-first A1 contract: `ACCURACY_FIRST_STUDENT_CONTRACT.md`
 - M54-parent compression contract: `MONODGP_M55_COMPRESSION_CONTRACT.md`
+- M56 FP16 storage contract: `MONODGP_M56_FP16_STORAGE_CONTRACT.md`
 - R0 protocol: `TWO_CLASS_REFERENCE_PROTOCOL.md`
 - Full chronological evidence: `MobileADAS3D_Codex_Handoff_20260715.md`
 - Current status and next task: this file

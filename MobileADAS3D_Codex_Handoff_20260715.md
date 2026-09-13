@@ -2989,3 +2989,50 @@ controlled offline weight-compression policy on the exact M54 parent, compared
 with the untouched M55 baseline and evaluated against every frozen AP, recall,
 localization, and 3,769-file completeness gate. M56 must not include graph
 replacement, Core ML conversion, or a product-safety claim.
+
+## M56 FP16 parameter-storage workflow prepared (2026-09-13)
+
+M56 is frozen as the lowest-risk offline compression rung. It changes storage
+only: every floating-point parameter directly owned by a `Conv2d` or
+`Linear` module is serialized in FP16. All other state tensors and buffers
+remain unchanged. The normal MonoDGP model is still constructed in FP32, and
+loading the candidate copies the stored values into FP32 runtime parameters.
+M56 therefore predicts no execution-speed or runtime-memory improvement and
+does not change the architecture, operators, activations, post-processing, or
+training.
+
+The preparation workflow validates the exact M54 epoch-100 checkpoint and the
+three reviewed M55 artifact hashes. It rebuilds the pinned upstream MonoDGP
+commit, reproduces the frozen 156,331,452 eligible Conv2d/Linear parameter
+bytes, and writes two paired model-only checkpoints with the official
+MonoDGP checkpoint keys: an FP32 control and the FP16-storage candidate.
+Optimizer removal is identical in both artifacts and cannot be misreported as
+compression. The candidate must be no larger than 60% of the paired FP32
+model-only artifact.
+
+The self-contained workflow is
+`notebooks/MonoDGP_M56_FP16_Parameter_Storage_Colab.ipynb`. Run it on a
+Colab GPU only through **Stop point 1**. The mandatory real-CUDA smoke checks
+stored dtypes, exact noneligible-state equality, FP32 runtime parameters,
+finite outputs, raw output structure, and bounded deltas against the paired
+FP32 control. It also records same-environment timing and memory, but those
+measurements are descriptive because storage-only conversion is not expected
+to accelerate the unchanged FP32 graph.
+
+Return these two files after Stop point 1:
+
+- `/content/drive/MyDrive/mobile_adas3d_outputs/compression/monodgp_m56_fp16_storage/m56_compression_manifest.json`
+- `/content/drive/MyDrive/mobile_adas3d_outputs/compression/monodgp_m56_fp16_storage/m56_fp16_storage_smoke.json`
+
+Do not run the complete evaluation until the smoke is reviewed. If it passes,
+the notebook evaluates the candidate on all 3,769 Chen validation images and
+enforces every frozen M54 preservation threshold: Vehicle/Pedestrian moderate
+3D AP_R40 `18.4793/5.8661`, balanced 3D `12.1727`, moderate BEV
+`24.4863/6.4292`, nearby recall `0.89993/0.71487`, Pedestrian
+localization-failure rate at most `0.24765`, and exactly 3,769 prediction
+files. The final deliverables are `m56_fp16_storage_gate.json` and
+`m56_fp16_storage_comparison.csv`.
+
+M56 does not authorize graph replacement, Core ML conversion, or deployment.
+Those remain separate M57/M58 tasks. Product safety remains false because
+Pedestrian nearby recall is below the separate `0.80` target.
