@@ -2949,3 +2949,43 @@ barrier. Return `m55_feasibility_gate.json`,
 `m55_native_baseline_profile.json`, and `m55_operator_export_audit.json`.
 Product safety remains false because Pedestrian nearby recall is still below
 `0.80`, and external-domain/device qualification has not been performed.
+
+## M55 compression feasibility passed (2026-09-13)
+
+The returned M55 gate, native profile, and operator-audit reports were checked
+against the frozen contract. Their bindings are internally consistent: the
+profile SHA-256 is
+`8ef15616614c9852ed6b51f171b69a7a0f6994a5a04b79789f0ebbdb1a3d0751`,
+the audit SHA-256 is
+`798746036e50d37729adca3e2ef9a966a65386ab000f97feb516962b3e1ee1a3`,
+and both record the exact M54 parent checkpoint SHA-256
+`8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847`.
+All 19 feasibility checks passed.
+
+The untouched FP32 M54 parent has 42,163,648 parameters, 168.65 MB of
+parameter tensors, 173.34 MB of state-dict tensors, and a 495.99 MB checkpoint.
+Its profiled compute is a partial 143.56 GFLOP lower bound because custom
+deformable-attention CUDA kernels are not counted. On an NVIDIA RTX PRO 6000
+Blackwell Server Edition, batch-one 1280×384 model-only latency over five
+warmups plus 100 CUDA-event-timed predictions was 12.67 ms mean, 12.67 ms
+median, and 12.72 ms p95. Peak allocated/reserved CUDA memory was 492.97 MB
+and 1.086 GB. This is a same-environment GPU baseline, not a device-latency
+claim.
+
+Conv2d and Linear weights cover 156,331,452 parameter bytes (92.69%), so the
+gate sets `offline_weight_compression_authorized=true`. Direct Core ML export
+remains unauthorized: the graph contains nine custom `MSDeformAttn` modules,
+and the calibration matrix/image size are dynamic inputs while product
+post-processing lies outside the raw graph. M57 must replace or decompose the
+custom operator and prove raw-output parity before conversion. Product safety
+also remains false because M54 Pedestrian nearby recall is `0.72487`, below
+the separate `0.80` target.
+
+Reviewed copies are stored as
+`artifacts/m55_feasibility_gate_20260913.json`,
+`artifacts/m55_native_baseline_profile_20260913.json`, and
+`artifacts/m55_operator_export_audit_20260913.json`. The next task is M56: one
+controlled offline weight-compression policy on the exact M54 parent, compared
+with the untouched M55 baseline and evaluated against every frozen AP, recall,
+localization, and 3,769-file completeness gate. M56 must not include graph
+replacement, Core ML conversion, or a product-safety claim.

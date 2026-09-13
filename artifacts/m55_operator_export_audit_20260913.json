@@ -1,0 +1,113 @@
+{
+  "module_type_counts": {
+    "Backbone": 1,
+    "Bottleneck": 16,
+    "Conv2d": 83,
+    "ConvTranspose2d": 3,
+    "DepthAwareDecoder": 1,
+    "DepthAwareDecoderLayer": 3,
+    "DepthPredictor": 1,
+    "Det2DTransformer": 1,
+    "Det3DTransformer": 1,
+    "Dropout": 39,
+    "Embedding": 2,
+    "FrozenBatchNorm2d": 53,
+    "GroupNorm": 13,
+    "IntermediateLayerGetter": 1,
+    "Joiner": 1,
+    "LayerNorm": 29,
+    "Linear": 97,
+    "MLP": 16,
+    "MSDeformAttn": 9,
+    "MaxPool2d": 1,
+    "ModuleList": 30,
+    "MonoDGP": 1,
+    "MultiheadAttention": 10,
+    "NonDynamicallyQuantizableLinear": 10,
+    "PositionEmbeddingSine": 1,
+    "ReLU": 23,
+    "RegionSegHead": 1,
+    "SEBlock": 4,
+    "Sequential": 24,
+    "TransformerDecoder": 1,
+    "TransformerDecoderLayer": 3,
+    "TransformerEncoder": 1,
+    "TransformerEncoderLayer": 1,
+    "Upsample": 1,
+    "VisualEncoder": 1,
+    "VisualEncoderLayer": 3
+  },
+  "ordinary_weight_operator_families": [
+    "Conv2d",
+    "Linear"
+  ],
+  "eligible_parameter_bytes_by_family": {
+    "Conv2d": 134724948,
+    "Linear": 21606504
+  },
+  "eligible_parameter_bytes": 156331452,
+  "eligible_parameter_fraction": 0.926932674326472,
+  "custom_deformable_attention_modules": [
+    {
+      "name": "det2d_transformer.encoder.layers.0.self_attn",
+      "class_name": "MSDeformAttn",
+      "module": "lib.models.monodgp.ops.modules.ms_deform_attn"
+    },
+    {
+      "name": "det2d_transformer.encoder.layers.1.self_attn",
+      "class_name": "MSDeformAttn",
+      "module": "lib.models.monodgp.ops.modules.ms_deform_attn"
+    },
+    {
+      "name": "det2d_transformer.encoder.layers.2.self_attn",
+      "class_name": "MSDeformAttn",
+      "module": "lib.models.monodgp.ops.modules.ms_deform_attn"
+    },
+    {
+      "name": "det2d_transformer.decoder.layers.0.cross_attn",
+      "class_name": "MSDeformAttn",
+      "module": "lib.models.monodgp.ops.modules.ms_deform_attn"
+    },
+    {
+      "name": "det2d_transformer.decoder.layers.1.cross_attn",
+      "class_name": "MSDeformAttn",
+      "module": "lib.models.monodgp.ops.modules.ms_deform_attn"
+    },
+    {
+      "name": "det2d_transformer.decoder.layers.2.cross_attn",
+      "class_name": "MSDeformAttn",
+      "module": "lib.models.monodgp.ops.modules.ms_deform_attn"
+    },
+    {
+      "name": "det3d_transformer.decoder.layers.0.cross_attn",
+      "class_name": "MSDeformAttn",
+      "module": "lib.models.monodgp.ops.modules.ms_deform_attn"
+    },
+    {
+      "name": "det3d_transformer.decoder.layers.1.cross_attn",
+      "class_name": "MSDeformAttn",
+      "module": "lib.models.monodgp.ops.modules.ms_deform_attn"
+    },
+    {
+      "name": "det3d_transformer.decoder.layers.2.cross_attn",
+      "class_name": "MSDeformAttn",
+      "module": "lib.models.monodgp.ops.modules.ms_deform_attn"
+    }
+  ],
+  "schema_version": 1,
+  "complete": true,
+  "experiment": "M55 MonoDGP weight-compression and export operator audit",
+  "checkpoint_sha256": "8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847",
+  "static_graph_unchanged": true,
+  "custom_cuda_extension_required": true,
+  "direct_coreml_export_ready": false,
+  "direct_coreml_conversion_authorized": false,
+  "offline_weight_compression_scope_available": true,
+  "known_export_blockers": [
+    "custom MultiScaleDeformableAttention CUDA autograd operator requires decomposition or replacement",
+    "calibration matrix and image size are dynamic model inputs and require explicit parity coverage",
+    "KITTI decoding and product post-processing are outside the raw network graph"
+  ],
+  "required_remediation": "replace/decompose custom deformable attention, then prove raw tensor parity before Core ML conversion",
+  "product_safety_qualified": false
+}

@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "complete": true,
+  "experiment": "M55 M54-parent compression baseline and export feasibility",
+  "parent_epoch": 100,
+  "parent_checkpoint_sha256": "8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847",
+  "parent_metrics": {
+    "vehicle_3d_moderate": 19.451853874133846,
+    "pedestrian_3d_moderate": 6.174878930065441,
+    "mean_3d_moderate": 12.813366402099643,
+    "vehicle_bev_moderate": 25.77508716658311,
+    "pedestrian_bev_moderate": 6.767615777186105,
+    "vehicle_near_recall": 0.9099254609650843,
+    "pedestrian_near_recall": 0.7248677248677249,
+    "pedestrian_localization_failure_rate": 0.23765432098765432
+  },
+  "compression_preservation_gates": {
+    "vehicle_3d_moderate": 18.47926118042715,
+    "pedestrian_3d_moderate": 5.866134983562169,
+    "mean_3d_moderate": 12.17269808199466,
+    "vehicle_bev_moderate": 24.48633280825395,
+    "pedestrian_bev_moderate": 6.429234988326799,
+    "vehicle_near_recall": 0.8999254609650843,
+    "pedestrian_near_recall": 0.7148677248677249,
+    "pedestrian_localization_failure_rate_max": 0.24765432098765433,
+    "prediction_files": 3769
+  },
+  "gate_results": {
+    "manifest_complete": true,
+    "no_training_or_compression": true,
+    "parent_checkpoint_sha256": true,
+    "checkpoint_payload_epoch": true,
+    "parent_metrics_frozen": true,
+    "preservation_gates_frozen": true,
+    "profile_complete": true,
+    "manifest_profile_binding": true,
+    "runtime_config_binding": true,
+    "cuda_device_recorded": true,
+    "finite_required_outputs": true,
+    "five_warmups_100_predictions": true,
+    "latency_summary_finite": true,
+    "model_size_recorded": true,
+    "cuda_memory_recorded": true,
+    "partial_compute_accounting_documented": true,
+    "operator_audit_complete": true,
+    "ordinary_weight_scope_available": true,
+    "custom_attention_blocker_documented": true
+  },
+  "all_feasibility_gates_passed": true,
+  "offline_weight_compression_authorized": true,
+  "direct_coreml_conversion_authorized": false,
+  "direct_coreml_blocker": "custom MultiScaleDeformableAttention must be decomposed or replaced with raw-output parity",
+  "latency_baseline": {
+    "clock": "CUDA events with synchronization",
+    "warmup_runs": 5,
+    "timed_runs": 100,
+    "mean_ms": 12.672512626647949,
+    "median_ms": 12.668480396270752,
+    "p95_ms": 12.723516464233398,
+    "min_ms": 12.628255844116211,
+    "max_ms": 12.81158447265625
+  },
+  "parameter_inventory": {
+    "total_parameters": 42163648,
+    "trainable_parameters": 41941167,
+    "parameter_bytes": 168654592,
+    "state_dict_tensor_bytes": 173339584,
+    "parameter_megabytes_decimal": 168.654592,
+    "state_dict_megabytes_decimal": 173.339584,
+    "parameter_bytes_by_dtype": {
+      "torch.float32": 168654592
+    },
+    "parameter_bytes_by_top_level_component": {
+      "backbone": 93819648,
+      "input_proj": 22556672,
+      "det2d_transformer": 14009448,
+      "region_head": 13823248,
+      "det3d_transformer": 10682880,
+      "depth_predictor": 9346696,
+      "angle_embed": 1151360,
+      "query_embed": 1126400,
+      "dim_embed_3d": 1065008,
+      "depth_embed": 1060896,
+      "class_embed": 12336
+    }
+  },
+  "weight_compression_scope": {
+    "families": [
+      "Conv2d",
+      "Linear"
+    ],
+    "eligible_parameter_bytes": 156331452,
+    "eligible_parameter_fraction": 0.926932674326472
+  },
+  "compute_profile": {
+    "complete": true,
+    "partial_lower_bound": true,
+    "profiled_flops": 143561989402,
+    "profiled_gflops": 143.561989402,
+    "note": "Custom deformable-attention CUDA kernels are not FLOP-accounted."
+  },
+  "product_safety_qualified": false,
+  "unmet_product_target": {
+    "metric": "pedestrian_near_recall",
+    "parent": 0.7248677248677249,
+    "target": 0.8
+  },
+  "next_step_if_passed": "M56 controlled offline weight-compression sensitivity with complete M54 preservation evaluation",
+  "artifacts": {
+    "manifest": "/content/drive/MyDrive/mobile_adas3d_outputs/compression/monodgp_m55_feasibility/m55_feasibility_manifest.json",
+    "profile": "/content/drive/MyDrive/mobile_adas3d_outputs/compression/monodgp_m55_feasibility/m55_native_baseline_profile.json",
+    "profile_sha256": "8ef15616614c9852ed6b51f171b69a7a0f6994a5a04b79789f0ebbdb1a3d0751",
+    "operator_audit": "/content/drive/MyDrive/mobile_adas3d_outputs/compression/monodgp_m55_feasibility/m55_operator_export_audit.json",
+    "operator_audit_sha256": "798746036e50d37729adca3e2ef9a966a65386ab000f97feb516962b3e1ee1a3",
+    "latency_csv": "/content/drive/MyDrive/mobile_adas3d_outputs/compression/monodgp_m55_feasibility/m55_native_baseline_latency.csv",
+    "latency_csv_sha256": "39d38f5da0c37eb3db6e41c7cecbbefc19bc5fe1814df2ce869324bdfb99f977"
+  }
+}

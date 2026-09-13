@@ -1,6 +1,6 @@
 # MonoDGP M55 Compression Feasibility Contract
 
-Status: frozen before the first M54 compression experiment.
+Status: complete; all feasibility gates passed on 2026-09-13.
 
 ## Purpose
 
@@ -122,3 +122,32 @@ nearby-recall, localization, and prediction-completeness gates above.
 
 The first files to return are `m55_feasibility_gate.json`,
 `m55_native_baseline_profile.json`, and `m55_operator_export_audit.json`.
+
+## Execution result (2026-09-13)
+
+All 19 M55 feasibility checks passed against the exact M54 epoch-100
+checkpoint and SHA-256. The untouched FP32 parent contains 42,163,648
+parameters (168.65 MB of parameter tensors; 173.34 MB state-dict tensors) and
+the serialized checkpoint is 495.99 MB. The profiler recorded a partial
+143.56 GFLOP lower bound; custom deformable-attention kernels are explicitly
+excluded from that count.
+
+On an NVIDIA RTX PRO 6000 Blackwell Server Edition with CUDA 12.8 and PyTorch
+2.11.0, batch-one 1280×384 model-only inference measured 12.67 ms mean,
+12.67 ms median, and 12.72 ms p95 over 100 CUDA-event-timed runs after five
+warmups. Peak allocated/reserved CUDA memory was 492.97 MB/1.086 GB. These are
+environment-specific baseline values, not iPhone claims.
+
+Ordinary Conv2d and Linear weights account for 156,331,452 bytes, or 92.69%
+of all parameter bytes, so `offline_weight_compression_authorized=true` for a
+separate M56 experiment. The audit found nine custom `MSDeformAttn` modules;
+therefore `direct_coreml_conversion_authorized=false`. Direct export still
+requires deformable-attention decomposition/replacement and raw-output parity.
+Product safety remains false because Pedestrian nearby recall is 0.72487,
+below the 0.80 target.
+
+Durable review copies:
+
+- `artifacts/m55_feasibility_gate_20260913.json`
+- `artifacts/m55_native_baseline_profile_20260913.json`
+- `artifacts/m55_operator_export_audit_20260913.json`

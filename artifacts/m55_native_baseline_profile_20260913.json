@@ -1,0 +1,364 @@
+{
+  "schema_version": 1,
+  "complete": true,
+  "experiment": "M55 untouched M54 native CUDA baseline",
+  "training_performed": false,
+  "compression_performed": false,
+  "manifest": "/content/drive/MyDrive/mobile_adas3d_outputs/compression/monodgp_m55_feasibility/m55_feasibility_manifest.json",
+  "manifest_sha256": "6b4a811cb8784f80ee96a1ac04b485f02f83498a68ebc2f865a30a8a83a8d823",
+  "upstream_commit": "aa059a18214aebf644510e7f0793971b403f9d14",
+  "checkpoint": "/content/drive/MyDrive/mobile_adas3d_outputs/challengers/monodgp_m54/monodgp_m54_vehicle_pedestrian_gt/checkpoint_epoch_100.pth",
+  "checkpoint_sha256": "8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847",
+  "checkpoint_epoch": 100,
+  "checkpoint_bytes": 495990257,
+  "runtime_config": "/content/drive/MyDrive/mobile_adas3d_outputs/compression/monodgp_m55_feasibility/monodgp_m55_profile.yaml",
+  "runtime_config_sha256": "cd3db43e85764f8049533a348a2f09e5ebefb6498fa4a07ce06265665a844d81",
+  "sample_id": "000001",
+  "batch_size": 1,
+  "software": {
+    "python": "3.13.15",
+    "torch": "2.11.0+cu128",
+    "cuda_runtime": "12.8"
+  },
+  "device": {
+    "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+    "capability": [
+      12,
+      0
+    ],
+    "total_memory_bytes": 101974081536
+  },
+  "inputs": {
+    "image_shape": [
+      1,
+      3,
+      384,
+      1280
+    ],
+    "image_dtype": "torch.float32",
+    "calibration_shape": [
+      1,
+      3,
+      4
+    ],
+    "image_size_shape": [
+      1,
+      2
+    ]
+  },
+  "outputs": {
+    "pred_logits": {
+      "shape": [
+        1,
+        50,
+        3
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    },
+    "pred_boxes": {
+      "shape": [
+        1,
+        50,
+        6
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    },
+    "pred_3d_dim": {
+      "shape": [
+        1,
+        50,
+        3
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    },
+    "pred_depth": {
+      "shape": [
+        1,
+        50,
+        2
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    },
+    "pred_angle": {
+      "shape": [
+        1,
+        50,
+        24
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    },
+    "pred_depth_map_logits": {
+      "shape": [
+        1,
+        81,
+        24,
+        80
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    },
+    "pred_region_prob[0]": {
+      "shape": [
+        1,
+        1,
+        48,
+        160
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    },
+    "pred_region_prob[1]": {
+      "shape": [
+        1,
+        1,
+        24,
+        80
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    },
+    "pred_region_prob[2]": {
+      "shape": [
+        1,
+        1,
+        12,
+        40
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    },
+    "pred_region_prob[3]": {
+      "shape": [
+        1,
+        1,
+        6,
+        20
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    },
+    "inter_outputs[0].pred_logits": {
+      "shape": [
+        1,
+        50,
+        3
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    },
+    "inter_outputs[0].pred_boxes": {
+      "shape": [
+        1,
+        50,
+        6
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    },
+    "inter_outputs[1].pred_logits": {
+      "shape": [
+        1,
+        50,
+        3
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    },
+    "inter_outputs[1].pred_boxes": {
+      "shape": [
+        1,
+        50,
+        6
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    },
+    "inter_outputs[2].pred_logits": {
+      "shape": [
+        1,
+        50,
+        3
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    },
+    "inter_outputs[2].pred_boxes": {
+      "shape": [
+        1,
+        50,
+        6
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    },
+    "aux_outputs[0].pred_logits": {
+      "shape": [
+        1,
+        50,
+        3
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    },
+    "aux_outputs[0].pred_boxes": {
+      "shape": [
+        1,
+        50,
+        6
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    },
+    "aux_outputs[0].pred_3d_dim": {
+      "shape": [
+        1,
+        50,
+        3
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    },
+    "aux_outputs[0].pred_angle": {
+      "shape": [
+        1,
+        50,
+        24
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    },
+    "aux_outputs[0].pred_depth": {
+      "shape": [
+        1,
+        50,
+        2
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    },
+    "aux_outputs[1].pred_logits": {
+      "shape": [
+        1,
+        50,
+        3
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    },
+    "aux_outputs[1].pred_boxes": {
+      "shape": [
+        1,
+        50,
+        6
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    },
+    "aux_outputs[1].pred_3d_dim": {
+      "shape": [
+        1,
+        50,
+        3
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    },
+    "aux_outputs[1].pred_angle": {
+      "shape": [
+        1,
+        50,
+        24
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    },
+    "aux_outputs[1].pred_depth": {
+      "shape": [
+        1,
+        50,
+        2
+      ],
+      "dtype": "torch.float32",
+      "device": "cuda:0",
+      "finite": true
+    }
+  },
+  "finite_outputs": true,
+  "parameter_inventory": {
+    "total_parameters": 42163648,
+    "trainable_parameters": 41941167,
+    "parameter_bytes": 168654592,
+    "state_dict_tensor_bytes": 173339584,
+    "parameter_megabytes_decimal": 168.654592,
+    "state_dict_megabytes_decimal": 173.339584,
+    "parameter_bytes_by_dtype": {
+      "torch.float32": 168654592
+    },
+    "parameter_bytes_by_top_level_component": {
+      "backbone": 93819648,
+      "input_proj": 22556672,
+      "det2d_transformer": 14009448,
+      "region_head": 13823248,
+      "det3d_transformer": 10682880,
+      "depth_predictor": 9346696,
+      "angle_embed": 1151360,
+      "query_embed": 1126400,
+      "dim_embed_3d": 1065008,
+      "depth_embed": 1060896,
+      "class_embed": 12336
+    }
+  },
+  "latency": {
+    "clock": "CUDA events with synchronization",
+    "warmup_runs": 5,
+    "timed_runs": 100,
+    "mean_ms": 12.672512626647949,
+    "median_ms": 12.668480396270752,
+    "p95_ms": 12.723516464233398,
+    "min_ms": 12.628255844116211,
+    "max_ms": 12.81158447265625
+  },
+  "memory": {
+    "loaded_allocated_bytes": 175000576,
+    "loaded_reserved_bytes": 681574400,
+    "peak_allocated_bytes": 492971520,
+    "peak_reserved_bytes": 1086324736
+  },
+  "compute": {
+    "complete": true,
+    "partial_lower_bound": true,
+    "profiled_flops": 143561989402,
+    "profiled_gflops": 143.561989402,
+    "note": "Custom deformable-attention CUDA kernels are not FLOP-accounted."
+  }
+}
