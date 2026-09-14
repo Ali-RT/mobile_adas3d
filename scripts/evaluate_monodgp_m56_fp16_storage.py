@@ -102,6 +102,8 @@ def main() -> None:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--product-config", default="configs/kitti_mobileadas3d_s1.yaml")
     parser.add_argument("--profile", default="colab_drive")
+    parser.add_argument("--result-prefix", default="m56_fp16_storage")
+    parser.add_argument("--source-name", default="MonoDGP_M56_FP16_parameter_storage")
     args = parser.parse_args()
 
     mobile = args.mobile_repo.resolve()
@@ -109,6 +111,11 @@ def main() -> None:
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
     log_dir = output / "logs"
+    result_prefix = args.result_prefix
+    if not result_prefix or any(
+        character not in "abcdefghijklmnopqrstuvwxyz0123456789_" for character in result_prefix
+    ):
+        raise ValueError("--result-prefix must use lowercase letters, digits, and underscores")
 
     manifest_path = args.manifest.resolve()
     smoke_path = args.smoke.resolve()
@@ -122,19 +129,26 @@ def main() -> None:
         or smoke.get("all_smoke_gates_passed") is not True
         or smoke.get("full_evaluation_authorized") is not True
         or smoke.get("manifest_sha256") != sha256_file(manifest_path)
+        or smoke.get("source_checkpoint_sha256") != PARENT_CHECKPOINT_SHA256
+        or smoke.get("candidate_checkpoint_sha256")
+        != manifest.get("candidate_checkpoint_sha256")
+        or smoke.get("direct_coreml_conversion_authorized") is not False
+        or smoke.get("product_safety_qualified") is not False
     ):
-        raise RuntimeError("M56 full evaluation is not authorized by the exact smoke/manifest pair")
+        raise RuntimeError(
+            "Full evaluation is not authorized by the exact smoke/manifest pair"
+        )
 
     candidate = Path(manifest["candidate_checkpoint"]).resolve()
     run_dir = Path(manifest["candidate_run_dir"]).resolve()
     runtime_config = Path(manifest["runtime_config"]).resolve()
     if not candidate.is_file() or sha256_file(candidate) != manifest["candidate_checkpoint_sha256"]:
-        raise RuntimeError("M56 candidate checkpoint is missing or changed")
+        raise RuntimeError("Candidate checkpoint is missing or changed")
     if not runtime_config.is_file() or sha256_file(runtime_config) != manifest["runtime_config_sha256"]:
-        raise RuntimeError("M56 runtime config is missing or changed")
+        raise RuntimeError("Runtime config is missing or changed")
 
     prediction_dir = run_dir / "outputs/data"
-    prediction_manifest_path = output / "m56_prediction_manifest.json"
+    prediction_manifest_path = output / f"{result_prefix}_prediction_manifest.json"
     reuse_predictions = False
     prediction_files = list(prediction_dir.glob("*.txt")) if prediction_dir.is_dir() else []
     if len(prediction_files) == 3769 and prediction_manifest_path.is_file():
@@ -148,17 +162,19 @@ def main() -> None:
             and prediction_manifest.get("prediction_tree_sha256") == current_tree
         )
     if reuse_predictions:
-        print("Reusing the complete checkpoint-bound M56 prediction set.", flush=True)
+        print("Reusing the complete checkpoint-bound prediction set.", flush=True)
     else:
         shutil.rmtree(prediction_dir, ignore_errors=True)
         run_logged(
             [sys.executable, "-u", "tools/train_val.py", "--config", runtime_config, "--evaluate_only"],
             monodgp,
-            log_dir / "m56_candidate_inference.log",
+            log_dir / f"{result_prefix}_candidate_inference.log",
         )
         prediction_files = list(prediction_dir.glob("*.txt"))
         if len(prediction_files) != 3769:
-            raise RuntimeError(f"M56 produced {len(prediction_files)}/3769 prediction files")
+            raise RuntimeError(
+                f"Candidate produced {len(prediction_files)}/3769 prediction files"
+            )
         prediction_manifest = {
             "schema_version": 1,
             "complete": True,
@@ -192,12 +208,12 @@ def main() -> None:
             "Vehicle",
             "Pedestrian",
             "--source-name",
-            "MonoDGP_M56_FP16_parameter_storage",
+            args.source_name,
             "--output-dir",
             product_dir,
         ],
         mobile,
-        log_dir / "m56_product_ap.log",
+        log_dir / f"{result_prefix}_product_ap.log",
     )
     nearby_dir = output / "nearby_geometry"
     run_logged(
@@ -225,7 +241,7 @@ def main() -> None:
             "0.5",
         ],
         mobile,
-        log_dir / "m56_nearby_geometry.log",
+        log_dir / f"{result_prefix}_nearby_geometry.log",
     )
     miss_dir = output / "pedestrian_false_negatives"
     run_logged(
@@ -255,7 +271,7 @@ def main() -> None:
             "0.1",
         ],
         mobile,
-        log_dir / "m56_pedestrian_false_negatives.log",
+        log_dir / f"{result_prefix}_pedestrian_false_negatives.log",
     )
 
     ap = json.loads((product_dir / "kitti_r40_summary.json").read_text(encoding="utf-8"))
@@ -284,7 +300,7 @@ def main() -> None:
     report = {
         "schema_version": 1,
         "complete": True,
-        "experiment": "M56 M54 FP16 Conv2d/Linear parameter-storage sensitivity",
+        "experiment": manifest.get("experiment", args.source_name),
         "parent_checkpoint_sha256": PARENT_CHECKPOINT_SHA256,
         "candidate_checkpoint": str(candidate),
         "candidate_checkpoint_sha256": manifest["candidate_checkpoint_sha256"],
@@ -308,7 +324,7 @@ def main() -> None:
             "model_only_checkpoint_savings_bytes"
         ],
         "m55_baseline_latency": manifest["m55_baseline_latency"],
-        "m56_candidate_latency": smoke["latency"],
+        "candidate_latency": smoke["latency"],
         "runtime_comparison": smoke["m55_latency_comparison"],
         "offline_compression_candidate_selected": all_passed,
         "next_step_if_passed": (
@@ -333,10 +349,10 @@ def main() -> None:
             ),
         },
     }
-    report_path = output / "m56_fp16_storage_gate.json"
+    report_path = output / f"{result_prefix}_gate.json"
     report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 
-    comparison_path = output / "m56_fp16_storage_comparison.csv"
+    comparison_path = output / f"{result_prefix}_comparison.csv"
     with comparison_path.open("w", newline="", encoding="utf-8") as handle:
         fieldnames = ["metric", "parent", "requirement", "candidate", "passed"]
         writer = csv.DictWriter(handle, fieldnames=fieldnames)
@@ -368,7 +384,7 @@ def main() -> None:
     print(json.dumps(report, indent=2))
     print("Comparison CSV:", comparison_path)
     if not all_passed:
-        raise RuntimeError("M56 preservation gate failed; compressed candidate is rejected")
+        raise RuntimeError("Preservation gate failed; compressed candidate is rejected")
 
 
 if __name__ == "__main__":

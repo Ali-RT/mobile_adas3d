@@ -72,6 +72,85 @@ def output_kind(path: str) -> str | None:
     return None
 
 
+def validate_candidate_storage(
+    source_state: dict,
+    candidate_state: dict,
+    fp16_names: set[str],
+    fp32_preserved_names: set[str],
+    torch_module,
+) -> dict[str, Any]:
+    exact_keys = set(source_state) == set(candidate_state)
+    disjoint = not (fp16_names & fp32_preserved_names)
+    known_policy_names = fp16_names | fp32_preserved_names
+    policy_names_present = known_policy_names <= set(source_state)
+    stored_fp16 = [
+        name
+        for name in fp16_names
+        if isinstance(candidate_state.get(name), torch_module.Tensor)
+        and candidate_state[name].dtype == torch_module.float16
+    ]
+    preserved_fp32_exact = [
+        name
+        for name in fp32_preserved_names
+        if isinstance(source_state.get(name), torch_module.Tensor)
+        and isinstance(candidate_state.get(name), torch_module.Tensor)
+        and candidate_state[name].dtype == torch_module.float32
+        and torch_module.equal(source_state[name], candidate_state[name])
+    ]
+    unchanged_names = set(source_state) - fp16_names
+    unchanged_equal = exact_keys and all(
+        (
+            isinstance(source_state[name], torch_module.Tensor)
+            and isinstance(candidate_state.get(name), torch_module.Tensor)
+            and torch_module.equal(source_state[name], candidate_state[name])
+        )
+        or (
+            not isinstance(source_state[name], torch_module.Tensor)
+            and source_state[name] == candidate_state.get(name)
+        )
+        for name in unchanged_names
+    )
+    return {
+        "exact_state_dict_keys": exact_keys,
+        "policy_sets_disjoint": disjoint,
+        "policy_names_present": policy_names_present,
+        "stored_fp16_names": stored_fp16,
+        "all_policy_fp16_names_stored_fp16": len(stored_fp16) == len(fp16_names),
+        "preserved_fp32_exact_names": preserved_fp32_exact,
+        "all_policy_fp32_names_exact": (
+            len(preserved_fp32_exact) == len(fp32_preserved_names)
+        ),
+        "all_uncompressed_state_unchanged": unchanged_equal,
+    }
+
+
+def summarize_depth_channels(baseline: dict, candidate: dict) -> dict:
+    channel_maxima = [0.0, 0.0]
+    channel_means: list[list[float]] = [[], []]
+    tensors = 0
+    for name in sorted(set(baseline) & set(candidate)):
+        if output_kind(name) != "pred_depth" or baseline[name].shape[-1] != 2:
+            continue
+        difference = (candidate[name].float() - baseline[name].float()).abs()
+        tensors += 1
+        for index in range(2):
+            values = difference[..., index]
+            channel_maxima[index] = max(channel_maxima[index], float(values.max().item()))
+            channel_means[index].append(float(values.mean().item()))
+    labels = ("depth_m", "log_variance")
+    summary = {
+        labels[index]: {
+            "max_abs": channel_maxima[index],
+            "mean_abs_across_tensors": (
+                statistics.fmean(channel_means[index]) if channel_means[index] else None
+            ),
+        }
+        for index in range(2)
+    }
+    summary["tensors"] = tensors
+    return summary
+
+
 class Logger:
     def info(self, message):
         print(message, flush=True)
@@ -79,7 +158,7 @@ class Logger:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Run M56 FP16-storage raw-output parity and CUDA profile smoke."
+        description="Run M56-family FP16-storage raw-output parity and CUDA profile smoke."
     )
     parser.add_argument("--monodgp-repo", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)
@@ -109,7 +188,7 @@ def main() -> None:
         or manifest.get("graph_changed") is not False
         or manifest.get("parent_checkpoint_sha256") != PARENT_CHECKPOINT_SHA256
     ):
-        raise RuntimeError("Invalid or unauthorized M56 manifest")
+        raise RuntimeError("Invalid or unauthorized M56-family manifest")
 
     m55_profile_path = args.m55_profile.resolve()
     if (
@@ -117,18 +196,18 @@ def main() -> None:
         or sha256_file(m55_profile_path) != M55_PROFILE_SHA256
         or sha256_file(m55_profile_path) != manifest.get("m55_profile_sha256")
     ):
-        raise RuntimeError("M56 smoke is not bound to the frozen M55 profile")
+        raise RuntimeError("Smoke test is not bound to the frozen M55 profile")
     m55_profile = json.loads(m55_profile_path.read_text(encoding="utf-8"))
 
     source = Path(manifest["parent_checkpoint"]).resolve()
     candidate = Path(manifest["candidate_checkpoint"]).resolve()
     runtime_config = Path(manifest["runtime_config"]).resolve()
     if sha256_file(source) != PARENT_CHECKPOINT_SHA256:
-        raise RuntimeError("M56 source checkpoint changed")
+        raise RuntimeError("Source checkpoint changed")
     if sha256_file(candidate) != manifest["candidate_checkpoint_sha256"]:
-        raise RuntimeError("M56 compressed checkpoint changed")
+        raise RuntimeError("Compressed checkpoint changed")
     if sha256_file(runtime_config) != manifest["runtime_config_sha256"]:
-        raise RuntimeError("M56 runtime config changed")
+        raise RuntimeError("Runtime config changed")
 
     sys.path.insert(0, str(repo))
     from lib.helpers.dataloader_helper import build_dataloader
@@ -147,17 +226,49 @@ def main() -> None:
     candidate_state = candidate_payload.get("model_state", {})
     source_payload = load_checkpoint_safely(source, torch.device("cpu"))
     source_state = source_payload.get("model_state", {})
-    stored_fp16 = [
-        name for name in eligible_names
-        if isinstance(candidate_state.get(name), torch.Tensor)
-        and candidate_state[name].dtype == torch.float16
-    ]
-    noneligible_equal = all(
-        name in candidate_state
-        and isinstance(value, torch.Tensor)
-        and torch.equal(value, candidate_state[name])
-        for name, value in source_state.items()
-        if isinstance(value, torch.Tensor) and name not in eligible_names
+    explicit_fp16_names = manifest.get("fp16_parameter_state_names")
+    if explicit_fp16_names is None:
+        explicit_policy_reproduced = True
+        policy_name_hashes_match = True
+        fp16_names = set(eligible_names)
+        fp32_preserved_names: set[str] = set()
+        storage_policy_mode = "M56 canonical eligible parameter names"
+    else:
+        explicit_fp32_names = manifest.get("fp32_preserved_parameter_state_names")
+        if not isinstance(explicit_fp16_names, list) or not isinstance(
+            explicit_fp32_names, list
+        ):
+            raise RuntimeError("Explicit FP16 and FP32 parameter policies must be lists")
+        fp16_names = set(explicit_fp16_names)
+        fp32_preserved_names = set(explicit_fp32_names)
+        try:
+            from scripts.prepare_monodgp_m56b_selective_fp16_storage import (
+                collect_alias_aware_storage_policy,
+            )
+        except ModuleNotFoundError:
+            from prepare_monodgp_m56b_selective_fp16_storage import (
+                collect_alias_aware_storage_policy,
+            )
+        expected_fp16, expected_fp32, _ = collect_alias_aware_storage_policy(
+            model, torch
+        )
+        explicit_policy_reproduced = (
+            fp16_names == set(expected_fp16)
+            and fp32_preserved_names == set(expected_fp32)
+        )
+        policy_name_hashes_match = (
+            manifest.get("fp16_parameter_state_names_sha256")
+            == hashlib.sha256("\n".join(sorted(fp16_names)).encode("utf-8")).hexdigest()
+            and manifest.get("fp32_preserved_parameter_state_names_sha256")
+            == hashlib.sha256("\n".join(sorted(fp32_preserved_names)).encode("utf-8")).hexdigest()
+        )
+        storage_policy_mode = "explicit alias-consistent selective storage"
+    storage_checks = validate_candidate_storage(
+        source_state,
+        candidate_state,
+        fp16_names,
+        fp32_preserved_names,
+        torch,
     )
 
     inputs, calibs, _, info = next(iter(validation_loader))
@@ -227,6 +338,7 @@ def main() -> None:
         }
         for name in PARITY_LIMITS
     }
+    depth_channel_summary = summarize_depth_channels(baseline_flat, candidate_flat)
     raw_output_parity = same_structure and all(row["passed"] for row in parity_summary.values())
 
     torch.cuda.synchronize()
@@ -306,8 +418,20 @@ def main() -> None:
             sha256_file(candidate) == manifest["candidate_checkpoint_sha256"]
         ),
         "candidate_payload_epoch": int(candidate_epoch) == 100,
-        "all_eligible_parameters_stored_fp16": len(stored_fp16) == len(eligible_names),
-        "noneligible_tensors_bitwise_unchanged": noneligible_equal,
+        "exact_state_dict_keys": storage_checks["exact_state_dict_keys"],
+        "storage_policy_sets_disjoint": storage_checks["policy_sets_disjoint"],
+        "storage_policy_names_present": storage_checks["policy_names_present"],
+        "explicit_storage_policy_reproduced": explicit_policy_reproduced,
+        "storage_policy_name_hashes_match": policy_name_hashes_match,
+        "all_policy_fp16_parameters_stored_fp16": storage_checks[
+            "all_policy_fp16_names_stored_fp16"
+        ],
+        "all_policy_fp32_parameters_exact": storage_checks[
+            "all_policy_fp32_names_exact"
+        ],
+        "all_uncompressed_tensors_bitwise_unchanged": storage_checks[
+            "all_uncompressed_state_unchanged"
+        ],
         "candidate_runtime_parameters_fp32": runtime_fp32,
         "output_structure_unchanged": same_structure,
         "finite_candidate_outputs": finite_outputs,
@@ -329,7 +453,7 @@ def main() -> None:
     report = {
         "schema_version": 1,
         "complete": True,
-        "experiment": "M56 FP16 parameter-storage CUDA parity and profile smoke",
+        "experiment": f"{manifest.get('experiment', 'M56-family')} CUDA parity and profile smoke",
         "manifest": str(manifest_path),
         "manifest_sha256": sha256_file(manifest_path),
         "source_checkpoint_sha256": PARENT_CHECKPOINT_SHA256,
@@ -338,11 +462,21 @@ def main() -> None:
         "sample_id": f"{sample_id:06d}",
         "device": {"name": device_name},
         "software": software,
-        "stored_eligible_parameter_count": len(stored_fp16),
-        "expected_eligible_parameter_count": len(eligible_names),
+        "storage_policy_mode": storage_policy_mode,
+        "stored_fp16_parameter_state_name_count": len(
+            storage_checks["stored_fp16_names"]
+        ),
+        "expected_fp16_parameter_state_name_count": len(fp16_names),
+        "preserved_fp32_parameter_state_name_count": len(
+            storage_checks["preserved_fp32_exact_names"]
+        ),
+        "expected_preserved_fp32_parameter_state_name_count": len(
+            fp32_preserved_names
+        ),
         "runtime_precision": "FP32 after checkpoint load",
         "parity_limits": PARITY_LIMITS,
         "parity_summary": parity_summary,
+        "pred_depth_channel_summary": depth_channel_summary,
         "parity_by_tensor": parity_by_tensor,
         "latency": latency,
         "memory": memory,
@@ -359,7 +493,7 @@ def main() -> None:
     output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report, indent=2))
     if not report["all_smoke_gates_passed"]:
-        raise RuntimeError("M56 smoke gate failed; do not run full validation")
+        raise RuntimeError("FP16-storage smoke gate failed; do not run full validation")
 
 
 if __name__ == "__main__":

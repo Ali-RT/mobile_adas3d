@@ -3073,3 +3073,43 @@ storing the remaining eligible Conv2d/Linear parameters in FP16. M56b must
 reuse the exact source, paired size accounting, CUDA sample, and every frozen
 M56 parity threshold. It remains a storage-only experiment; complete
 validation is blocked until its new CUDA smoke passes.
+
+## M56b selective FP16-storage workflow prepared (2026-09-13)
+
+M56b is frozen in `MONODGP_M56B_SELECTIVE_FP16_STORAGE_CONTRACT.md` as one
+mechanistic response to M56's isolated final-depth parity failure. It uses the
+same M54 epoch-100 parent, M55 evidence, rejected M56 manifest, paired
+model-only accounting, CUDA sample, and raw-output thresholds. No M56 limit
+was relaxed after seeing its result.
+
+The storage policy retains all parameter aliases associated with
+`bbox_embed`, `dim_embed_3d`, and `depth_embed` in FP32. Every remaining
+eligible Conv2d/Linear parameter alias is stored as FP16, while all
+noneligible tensors remain bitwise unchanged. The policy groups names by
+parameter identity because MonoDGP shares prediction modules across decoder
+layers; if one alias is protected, every alias of that shared tensor is
+protected. Loading still produces an unchanged FP32 runtime graph, so M56b
+does not claim speed or runtime-memory improvement.
+
+The standalone workflow is
+`notebooks/MonoDGP_M56B_Selective_FP16_Storage_Colab.ipynb`. Run it on a CUDA
+GPU from the first cell through **Stop point 1**. Preparation fails closed
+unless it reproduces the exact M55 eligible-byte inventory and exact rejected
+M56 evidence. The smoke checks explicit stored-dtype lists, FP32-head
+bitwise equality, every other unchanged tensor, runtime FP32 parameters,
+output paths/shapes/finiteness, the unchanged seven-family parity limits,
+separate depth-value and uncertainty channels, the paired size ratio, and
+five warmups plus 100 timed predictions.
+
+Return these two files after Stop point 1:
+
+- `/content/drive/MyDrive/mobile_adas3d_outputs/compression/monodgp_m56b_selective_fp16_storage/m56b_compression_manifest.json`
+- `/content/drive/MyDrive/mobile_adas3d_outputs/compression/monodgp_m56b_selective_fp16_storage/m56b_selective_fp16_storage_smoke.json`
+
+Do not run the complete evaluation cell until both are reviewed. If every
+smoke gate passes, that cell runs all 3,769 Chen-validation images and writes
+`m56b_selective_fp16_storage_gate.json` plus
+`m56b_selective_fp16_storage_comparison.csv`, enforcing all frozen M54 AP,
+nearby-recall, localization, and completeness thresholds. A pass selects only
+an offline compressed checkpoint and permits separate M57 operator work.
+Core ML conversion and product-safety qualification remain unauthorized.
