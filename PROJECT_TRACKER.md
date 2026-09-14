@@ -16,10 +16,10 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-- Current phase: **M56d selected; M57 operator replacement is next**
-- Active task: freeze M57 as a controlled deformable-attention
-  decomposition/replacement experiment. Require raw-output parity before any
-  Core ML conversion or device claim.
+- Current phase: **M57 prepared; CUDA parity evidence required**
+- Active task: run `MonoDGP_M57_Deformable_Attention_Colab.ipynb` through
+  Stop point 1 and return its manifest and smoke report. Complete validation
+  and Core ML conversion remain blocked until that exact evidence passes.
 - Selected accuracy parent: **M54 MonoDGP epoch 100**, checkpoint SHA-256
   `8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847`.
 - Legacy accuracy reference: **R0 ResNet50 MonoDETR, epoch 185**.
@@ -98,7 +98,7 @@ not constrain the current accuracy-development stage.
 | M56b | Selective FP16 storage with FP32 depth geometry | Complete—rejected at CUDA smoke | Exact source/evidence, storage, alias, size, structure, finite-output, and all non-depth parity checks passed. Final `pred_depth` max absolute delta was `0.709734` versus the unchanged `0.500000` limit; decoded depth caused the failure while the log-variance channel delta was only `0.007577`. Mean/p95 latency was `12.6467/12.6813 ms`, effectively unchanged from M55. Full validation was correctly blocked. |
 | M56c | Grouped FP16 parameter-sensitivity diagnosis | Complete—2D transformer isolated | All 16 policies and every diagnostic-integrity gate passed. `det2d_transformer` was the only singleton failure (`pred_depth=0.568808`). Holding it in FP32 while rounding every other eligible group passed all output limits (`pred_depth=0.030006`) at projected parameter-size ratio `0.564627`. Backbone/input-projection holds also rescued parity but at worse ratios `0.814675/0.603382`. No candidate or full evaluation was produced. |
 | M56d | FP16 storage with complete 2D transformer in FP32 | Complete—offline compressed checkpoint selected | The candidate is 98,048,696 bytes versus 173,610,189 bytes for the paired FP32 model-only artifact (`0.564763` ratio; 75,561,493 bytes saved). Every smoke gate and all nine complete-validation preservation gates passed on 3,769/3,769 images. Moderate 3D Vehicle/Pedestrian/mean was `19.4666/6.1848/12.8257`; BEV was `25.7349/6.7651`; nearby recall was `0.90993/0.72399`; Pedestrian localization-failure rate was `0.23854`. This selects an offline storage artifact only. |
-| M57 | Deformable-attention export replacement | Next—contract and parity gate required | Replace or decompose the nine custom MSDeformAttn modules while keeping the selected M56d checkpoint and frozen decoding/evaluation protocol. Prove output-structure and raw-tensor parity before Core ML conversion. |
+| M57 | Deformable-attention export replacement | Prepared—CUDA parity smoke pending | One opt-in rank-five `grid_sample` path targets the exact nine MSDeformAttn modules while native CUDA remains the default. Stop point 1 requires per-module parity on captured native inputs, three signature traces with no custom operator, complete raw-output parity, zero native calls from the portable path, and same-environment 5/100 timing. No training, full validation, or Core ML conversion is authorized yet. |
 | M58 | Core ML and physical-device qualification | Pending | Convert the selected graph, prove parity, and measure iPhone latency, memory, sustained thermal behavior, stability, and artifact integrity. |
 
 **M53 completion note:** the model and official evaluator passed after the public-API import correction. The prior JSON failed only because it compared an independent reimplementation directly with published native-evaluator values. The corrected schema-v2 finalizer reused the complete prediction set and native log, and all frozen M53 gates passed.
@@ -376,9 +376,11 @@ frozen; passing AP does not by itself authorize deployment.
     at projected ratio `0.564627`.
 37. **Completed—selected:** M56d passed its CUDA smoke and every frozen
     preservation gate over 3,769 images at model-only size ratio `0.564763`.
-38. **Next:** freeze and run M57 to replace/decompose custom deformable
-    attention, with output-structure and raw-tensor parity as the first stop.
-39. Only after M57 passes may Core ML conversion resume, followed by physical
+38. **Completed—prepared:** M57 adds an opt-in rank-five `grid_sample`
+    decomposition while native CUDA remains the unchanged default path.
+39. **Next:** run the M57 first stop and return the exact manifest and smoke.
+    Do not run complete validation or Core ML conversion before review.
+40. Only after M57 passes may Core ML conversion resume, followed by physical
     iPhone latency, memory, sustained thermal, and artifact qualification.
 
 ## Decision rules
@@ -406,6 +408,7 @@ frozen; passing AP does not by itself authorize deployment.
 - M56b selective FP16 contract: `MONODGP_M56B_SELECTIVE_FP16_STORAGE_CONTRACT.md`
 - M56c grouped sensitivity contract: `MONODGP_M56C_GROUP_SENSITIVITY_CONTRACT.md`
 - M56d det2d-FP32 storage contract: `MONODGP_M56D_DET2D_FP32_STORAGE_CONTRACT.md`
+- M57 portable deformable-attention contract: `MONODGP_M57_DEFORMABLE_ATTENTION_CONTRACT.md`
 - R0 protocol: `TWO_CLASS_REFERENCE_PROTOCOL.md`
 - Full chronological evidence: `MobileADAS3D_Codex_Handoff_20260715.md`
 - Current status and next task: this file

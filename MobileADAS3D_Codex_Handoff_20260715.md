@@ -3260,3 +3260,31 @@ and product safety remains false because Pedestrian nearby recall is still
 below `0.80`. The next controlled task is M57: replace or decompose deformable
 attention and require output-structure plus raw-tensor parity before any Core
 ML conversion.
+
+## M57 portable deformable-attention workflow prepared (2026-09-14)
+
+M57 is frozen in `MONODGP_M57_DEFORMABLE_ATTENTION_CONTRACT.md`. It retains
+the selected M56d checkpoint and all learned projections, decoding, taxonomy,
+input geometry, and evaluation rules. Native CUDA remains the default. Setting
+`MONODGP_PORTABLE_DEFORM_ATTN=1` opts the exact nine `MSDeformAttn` modules
+into a rank-five `[N,Q,H,L*P,2]` decomposition built from four ordinary
+bilinear `grid_sample` calls and a weighted sum.
+
+The first-stop smoke runs both paths in one CUDA process. It captures the
+native input/output of all nine modules, reruns each portable module on its
+identical input with a `1e-3` maximum-absolute-delta gate, traces all three
+observed query/reference signatures, and rejects any trace containing the
+custom extension. It then forbids the native extension, runs the complete
+portable model, applies the unchanged M56-family raw-output limits, and records
+same-environment 5-warmup/100-run timing for both paths. Timing is diagnostic
+at this rung, not an acceptance gate.
+
+Run `notebooks/MonoDGP_M57_Deformable_Attention_Colab.ipynb` on CUDA through
+**Stop point 1** and return:
+
+- `/content/drive/MyDrive/mobile_adas3d_outputs/compression/monodgp_m57_deformable_attention/m57_deformable_attention_manifest.json`
+- `/content/drive/MyDrive/mobile_adas3d_outputs/compression/monodgp_m57_deformable_attention/m57_deformable_attention_smoke.json`
+
+Do not run a complete 3,769-image portable evaluation or Core ML conversion
+until this exact pair is reviewed. M57 performs no training or weight changes.
+Product safety remains false because Pedestrian nearby recall is below `0.80`.
