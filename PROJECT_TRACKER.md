@@ -16,10 +16,10 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-- Current phase: **M56d prepared; real-CUDA smoke evidence required**
-- Active task: run `MonoDGP_M56D_Det2D_FP32_Storage_Colab.ipynb` through
-  Stop point 1 and return its manifest and smoke report. Complete validation
-  remains blocked until that exact evidence pair passes review.
+- Current phase: **M56d selected; M57 operator replacement is next**
+- Active task: freeze M57 as a controlled deformable-attention
+  decomposition/replacement experiment. Require raw-output parity before any
+  Core ML conversion or device claim.
 - Selected accuracy parent: **M54 MonoDGP epoch 100**, checkpoint SHA-256
   `8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847`.
 - Legacy accuracy reference: **R0 ResNet50 MonoDETR, epoch 185**.
@@ -97,8 +97,8 @@ not constrain the current accuracy-development stage.
 | M56 | M54 FP16 parameter-storage sensitivity | Complete—rejected at CUDA smoke | Every provenance, storage, size, structure, finite-output, timing, and safety-claim gate passed except raw depth parity. Final `pred_depth` max absolute delta was `0.710739` versus the frozen `0.500000` limit (mean delta `0.012378`). All other output families passed. Same-environment mean/p95 latency was `12.9778/13.0003 ms` versus M55 `12.6725/12.7235 ms` (`+2.41%/+2.18%`), confirming no speed benefit. Full validation is unauthorized; do not change the M56 threshold post hoc. |
 | M56b | Selective FP16 storage with FP32 depth geometry | Complete—rejected at CUDA smoke | Exact source/evidence, storage, alias, size, structure, finite-output, and all non-depth parity checks passed. Final `pred_depth` max absolute delta was `0.709734` versus the unchanged `0.500000` limit; decoded depth caused the failure while the log-variance channel delta was only `0.007577`. Mean/p95 latency was `12.6467/12.6813 ms`, effectively unchanged from M55. Full validation was correctly blocked. |
 | M56c | Grouped FP16 parameter-sensitivity diagnosis | Complete—2D transformer isolated | All 16 policies and every diagnostic-integrity gate passed. `det2d_transformer` was the only singleton failure (`pred_depth=0.568808`). Holding it in FP32 while rounding every other eligible group passed all output limits (`pred_depth=0.030006`) at projected parameter-size ratio `0.564627`. Backbone/input-projection holds also rescued parity but at worse ratios `0.814675/0.603382`. No candidate or full evaluation was produced. |
-| M56d | FP16 storage with complete 2D transformer in FP32 | Prepared—CUDA smoke pending | One exact M56c-selected candidate: preserve all 80 `det2d_transformer` parameter aliases/9,476,104 bytes in FP32 and store 295 aliases representing 146,855,348 eligible bytes elsewhere in FP16. The paired model-only artifact, unchanged raw-output limits, `≤0.60` size gate, 5/100 CUDA timing, and full-validation barrier are frozen. |
-| M57 | Deformable-attention export replacement | Pending | Replace or decompose the custom CUDA operator only after a viable compressed candidate exists; require raw-output parity before Core ML conversion. |
+| M56d | FP16 storage with complete 2D transformer in FP32 | Complete—offline compressed checkpoint selected | The candidate is 98,048,696 bytes versus 173,610,189 bytes for the paired FP32 model-only artifact (`0.564763` ratio; 75,561,493 bytes saved). Every smoke gate and all nine complete-validation preservation gates passed on 3,769/3,769 images. Moderate 3D Vehicle/Pedestrian/mean was `19.4666/6.1848/12.8257`; BEV was `25.7349/6.7651`; nearby recall was `0.90993/0.72399`; Pedestrian localization-failure rate was `0.23854`. This selects an offline storage artifact only. |
+| M57 | Deformable-attention export replacement | Next—contract and parity gate required | Replace or decompose the nine custom MSDeformAttn modules while keeping the selected M56d checkpoint and frozen decoding/evaluation protocol. Prove output-structure and raw-tensor parity before Core ML conversion. |
 | M58 | Core ML and physical-device qualification | Pending | Convert the selected graph, prove parity, and measure iPhone latency, memory, sustained thermal behavior, stability, and artifact integrity. |
 
 **M53 completion note:** the model and official evaluator passed after the public-API import correction. The prior JSON failed only because it compared an independent reimplementation directly with published native-evaluator values. The corrected schema-v2 finalizer reused the complete prediction set and native log, and all frozen M53 gates passed.
@@ -199,6 +199,22 @@ independently reproduces the policy, enforces every unchanged M56 parity limit
 and the `≤0.60` size gate, and records 5/100 CUDA timing. Complete 3,769-image
 validation remains locked until the exact manifest and smoke report are
 reviewed.
+
+**M56d result note:** manifest and smoke SHA-256 values are respectively
+`ce2cf03c37530f924f75f0f44ea94fe233d8aac916c5c51fb26cd8bfa84d0bc0`
+and `56678d529fda787441f842453e5f198c3d5017b4a0d8cb82373110713f737f87`.
+The full gate JSON and comparison CSV SHA-256 values are
+`4012d800c3972e15922ca0d3dd530cad8437f575f433d93b3708182a062227ad`
+and `d64529315414d841f2658f69442722c2548e783a375f5bfcb9a46bdb2937c95f`.
+Every preparation and smoke check passed. Complete evaluation produced
+3,769/3,769 prediction files
+and all nine preservation checks passed. Candidate-minus-parent changes were
+`+0.01475/+0.00990/+0.01233` for Vehicle/Pedestrian/mean moderate 3D AP,
+`-0.04017/-0.00256` for Vehicle/Pedestrian moderate BEV AP, `0/-0.000882`
+for nearby recall, and `+0.000882` for Pedestrian localization-failure rate.
+The checkpoint-size reduction is real, while the cross-environment latency
+comparison is informational only. Direct Core ML conversion and product
+safety remain unauthorized.
 
 
 ## Frozen R0 reference
@@ -358,13 +374,12 @@ frozen; passing AP does not by itself authorize deployment.
 36. **Completed—isolated:** all 16 M56c rows completed. The 2D transformer was
     the only singleton failure, while holding it in FP32 passed all raw limits
     at projected ratio `0.564627`.
-37. **Completed—prepared:** M56d freezes one alias-consistent candidate with
-    `det2d_transformer` in FP32 and every other eligible group in FP16.
-38. **Next:** run M56d through Stop point 1 and return its manifest and smoke
-    report. Do not run complete validation until they are reviewed.
-39. Only after a compressed candidate passes, replace/decompose custom
-    deformable attention, prove raw tensor parity, and restore Core ML/iPhone
-    conversion, latency, memory, sustained thermal, and artifact qualification.
+37. **Completed—selected:** M56d passed its CUDA smoke and every frozen
+    preservation gate over 3,769 images at model-only size ratio `0.564763`.
+38. **Next:** freeze and run M57 to replace/decompose custom deformable
+    attention, with output-structure and raw-tensor parity as the first stop.
+39. Only after M57 passes may Core ML conversion resume, followed by physical
+    iPhone latency, memory, sustained thermal, and artifact qualification.
 
 ## Decision rules
 

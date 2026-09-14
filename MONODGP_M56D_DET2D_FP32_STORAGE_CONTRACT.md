@@ -1,6 +1,6 @@
 # MonoDGP M56d Det2D-Transformer-FP32 Storage Contract
 
-Status: frozen before M56d execution.
+Status: complete; offline compressed checkpoint selected on 2026-09-14.
 
 ## Purpose
 
@@ -134,3 +134,34 @@ Only after an approved complete evaluation:
 - `m56d_det2d_fp32_gate.json`
 - `m56d_det2d_fp32_comparison.csv`
 - checkpoint-bound prediction manifest and durable evaluation logs
+
+## Frozen outcome
+
+The exact M56d manifest and CUDA smoke passed every required check. The
+candidate model-only checkpoint is `98,048,696` bytes versus `173,610,189`
+bytes for the paired FP32 artifact, a `0.5647635` ratio and `75,561,493` bytes
+saved. The smoke retained the unchanged output structure and passed all seven
+raw-output limits; final decoded-depth maximum absolute delta was `0.326031 m`
+against the `0.50 m` limit.
+
+Complete Chen validation produced all `3,769/3,769` prediction files and
+passed every frozen preservation gate:
+
+| Metric | Parent | M56d | Change |
+| --- | ---: | ---: | ---: |
+| Vehicle moderate 3D AP_R40 | 19.4519 | 19.4666 | +0.0148 |
+| Pedestrian moderate 3D AP_R40 | 6.1749 | 6.1848 | +0.0099 |
+| Balanced moderate 3D mean | 12.8134 | 12.8257 | +0.0123 |
+| Vehicle moderate BEV AP_R40 | 25.7751 | 25.7349 | -0.0402 |
+| Pedestrian moderate BEV AP_R40 | 6.7676 | 6.7651 | -0.0026 |
+| Vehicle nearby recall | 0.90993 | 0.90993 | 0.00000 |
+| Pedestrian nearby recall | 0.72487 | 0.72399 | -0.00088 |
+| Pedestrian localization-failure rate | 0.23765 | 0.23854 | +0.00088 |
+
+The negligible signed metric differences are expected consequences of FP16
+checkpoint rounding and satisfy all predeclared tolerances. M56d is selected
+as the offline compressed artifact. Its runtime still restores FP32 weights,
+so it establishes no speed or runtime-memory benefit. The reported M55/M56d
+timings used non-comparable environments and cannot support a regression or
+speedup claim. M57 must address the custom deformable-attention export blocker;
+direct Core ML conversion and product-safety qualification remain false.

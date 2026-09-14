@@ -3231,3 +3231,32 @@ If the smoke passes, the already-wired continuation evaluates all 3,769 Chen
 validation images and writes `m56d_det2d_fp32_gate.json` and
 `m56d_det2d_fp32_comparison.csv`. A full pass selects only an offline storage
 artifact. Core ML conversion and product-safety qualification remain false.
+
+## M56d selected after complete validation (2026-09-14)
+
+The exact M56d manifest and smoke were reviewed and authorized the complete
+evaluation. The model-only candidate is `98,048,696` bytes versus
+`173,610,189` bytes for the paired FP32 artifact, a `0.5647635` ratio and
+`75,561,493` bytes saved. All preparation and smoke gates passed, including
+the unchanged seven-family raw-output limits. Final decoded-depth maximum
+absolute delta was `0.326031 m` versus the frozen `0.50 m` limit.
+
+The full run produced all 3,769 prediction files and passed every preservation
+gate. Parent to candidate metrics were:
+
+- Vehicle moderate 3D AP_R40: `19.4519 -> 19.4666`;
+- Pedestrian moderate 3D AP_R40: `6.1749 -> 6.1848`;
+- balanced moderate 3D mean: `12.8134 -> 12.8257`;
+- Vehicle moderate BEV AP_R40: `25.7751 -> 25.7349`;
+- Pedestrian moderate BEV AP_R40: `6.7676 -> 6.7651`;
+- Vehicle/Pedestrian nearby recall: `0.90993/0.72487 -> 0.90993/0.72399`;
+- Pedestrian localization-failure rate: `0.23765 -> 0.23854`.
+
+M56d is now the selected offline compressed checkpoint. It restores FP32
+runtime weights, so no execution-speed or runtime-memory improvement is
+claimed. Its A100 timing is not comparable with the M55 baseline environment.
+Direct Core ML conversion remains blocked by nine custom MSDeformAttn modules,
+and product safety remains false because Pedestrian nearby recall is still
+below `0.80`. The next controlled task is M57: replace or decompose deformable
+attention and require output-structure plus raw-tensor parity before any Core
+ML conversion.
