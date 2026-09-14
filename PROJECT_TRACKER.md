@@ -1,6 +1,6 @@
 # MobileADAS3D project tracker
 
-Last updated: 2026-09-13
+Last updated: 2026-09-14
 
 This is the canonical status page. Update it whenever a task changes state,
 an experiment finishes, a gate passes/fails, or the next action changes.
@@ -16,11 +16,10 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-- Current phase: **M56c prepared; grouped real-CUDA sensitivity evidence required**
-- Active task: run `MonoDGP_M56C_Grouped_FP16_Sensitivity_Colab.ipynb`
-  through its final stop and return the manifest, grouped diagnostic JSON,
-  and grouped diagnostic CSV. M56c performs no full-split evaluation and
-  retains no candidate checkpoint.
+- Current phase: **M56d prepared; real-CUDA smoke evidence required**
+- Active task: run `MonoDGP_M56D_Det2D_FP32_Storage_Colab.ipynb` through
+  Stop point 1 and return its manifest and smoke report. Complete validation
+  remains blocked until that exact evidence pair passes review.
 - Selected accuracy parent: **M54 MonoDGP epoch 100**, checkpoint SHA-256
   `8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847`.
 - Legacy accuracy reference: **R0 ResNet50 MonoDETR, epoch 185**.
@@ -97,7 +96,8 @@ not constrain the current accuracy-development stage.
 | M55 | M54 compression baseline and export feasibility | Complete—all feasibility gates passed | Exact M54 epoch-100/hash validation and all 19 checks passed. Untouched FP32 M54 has 42.164M parameters, 168.65 MB parameter bytes, a 495.99 MB checkpoint, and a partial 143.56 GFLOP lower bound. On RTX PRO 6000 Blackwell, batch-one 1280×384 model-only latency was 12.67 ms mean/12.72 ms p95 over 100 runs after five warmups; peak allocated/reserved CUDA memory was 492.97 MB/1.086 GB. Conv2d/Linear weights cover 156.33 MB (92.69%), authorizing M56. Direct Core ML remains unauthorized because nine custom MSDeformAttn modules require decomposition/replacement and raw-output parity. See the dated M55 artifacts. |
 | M56 | M54 FP16 parameter-storage sensitivity | Complete—rejected at CUDA smoke | Every provenance, storage, size, structure, finite-output, timing, and safety-claim gate passed except raw depth parity. Final `pred_depth` max absolute delta was `0.710739` versus the frozen `0.500000` limit (mean delta `0.012378`). All other output families passed. Same-environment mean/p95 latency was `12.9778/13.0003 ms` versus M55 `12.6725/12.7235 ms` (`+2.41%/+2.18%`), confirming no speed benefit. Full validation is unauthorized; do not change the M56 threshold post hoc. |
 | M56b | Selective FP16 storage with FP32 depth geometry | Complete—rejected at CUDA smoke | Exact source/evidence, storage, alias, size, structure, finite-output, and all non-depth parity checks passed. Final `pred_depth` max absolute delta was `0.709734` versus the unchanged `0.500000` limit; decoded depth caused the failure while the log-variance channel delta was only `0.007577`. Mean/p95 latency was `12.6467/12.6813 ms`, effectively unchanged from M55. Full validation was correctly blocked. |
-| M56c | Grouped FP16 parameter-sensitivity diagnosis | Prepared—CUDA diagnostic pending | The frozen matrix measures eight exact alias-consistent module groups with one-group-only and all-except-one policies, plus exact M56b and all-eligible references, on the same CUDA sample and unchanged parity thresholds. Candidate states exist only in memory. The task identifies which group causes or rescues depth parity; it cannot select a model or authorize full validation. |
+| M56c | Grouped FP16 parameter-sensitivity diagnosis | Complete—2D transformer isolated | All 16 policies and every diagnostic-integrity gate passed. `det2d_transformer` was the only singleton failure (`pred_depth=0.568808`). Holding it in FP32 while rounding every other eligible group passed all output limits (`pred_depth=0.030006`) at projected parameter-size ratio `0.564627`. Backbone/input-projection holds also rescued parity but at worse ratios `0.814675/0.603382`. No candidate or full evaluation was produced. |
+| M56d | FP16 storage with complete 2D transformer in FP32 | Prepared—CUDA smoke pending | One exact M56c-selected candidate: preserve all 80 `det2d_transformer` parameter aliases/9,476,104 bytes in FP32 and store 295 aliases representing 146,855,348 eligible bytes elsewhere in FP16. The paired model-only artifact, unchanged raw-output limits, `≤0.60` size gate, 5/100 CUDA timing, and full-validation barrier are frozen. |
 | M57 | Deformable-attention export replacement | Pending | Replace or decompose the custom CUDA operator only after a viable compressed candidate exists; require raw-output parity before Core ML conversion. |
 | M58 | Core ML and physical-device qualification | Pending | Convert the selected graph, prove parity, and measure iPhone latency, memory, sustained thermal behavior, stability, and artifact integrity. |
 
@@ -179,6 +179,26 @@ States are rounded and loaded transiently in memory; no candidate checkpoint,
 timing claim, full-split evaluation, model selection, or deployment claim is
 allowed. The result must reproduce M56b's isolated depth failure within
 `0.01 m` and report singleton failures plus complement rescues.
+
+**M56c result note:** exact manifest/JSON/CSV hashes are respectively
+`0c501fa2…417796`, `7f1ca25e…321ba1`, and `8d9eea64…2c5abe`.
+All 16 rows ran and all diagnostic-integrity gates passed. Rounding only the
+2D transformer failed final-depth parity at `0.568808 > 0.50`; holding the
+complete group in FP32 while rounding all other eligible groups passed every
+raw-output limit with final-depth delta `0.030006` and projected size ratio
+`0.564627`. This is both the strongest rescue and the smallest passing
+complement. M56c performed no training, retained no candidate checkpoint, and
+did not authorize complete validation.
+
+**M56d preparation note:** M56d freezes that single evidence-selected policy.
+All 80 aliases/unique parameters owned by `det2d_transformer` remain FP32;
+295 aliases representing 247 unique parameters and 146,855,348 original FP32
+bytes outside it are stored as FP16. Shared aliases are classified by unique
+parameter identity. Stop point 1 regenerates paired model-only artifacts,
+independently reproduces the policy, enforces every unchanged M56 parity limit
+and the `≤0.60` size gate, and records 5/100 CUDA timing. Complete 3,769-image
+validation remains locked until the exact manifest and smoke report are
+reviewed.
 
 
 ## Frozen R0 reference
@@ -335,9 +355,14 @@ frozen; passing AP does not by itself authorize deployment.
 35. **Completed—prepared:** M56c freezes the exact alias-consistent eight-group
     sensitivity matrix, exact M55/M56/M56b evidence, the same CUDA sample, and
     unchanged M56 parity thresholds without retaining candidate checkpoints.
-36. **Next:** run every cell in the M56c notebook and return its manifest,
-    grouped diagnostic JSON, and CSV. Do not run a 3,769-image evaluation.
-37. Only after a separately frozen compressed candidate passes, replace/decompose custom
+36. **Completed—isolated:** all 16 M56c rows completed. The 2D transformer was
+    the only singleton failure, while holding it in FP32 passed all raw limits
+    at projected ratio `0.564627`.
+37. **Completed—prepared:** M56d freezes one alias-consistent candidate with
+    `det2d_transformer` in FP32 and every other eligible group in FP16.
+38. **Next:** run M56d through Stop point 1 and return its manifest and smoke
+    report. Do not run complete validation until they are reviewed.
+39. Only after a compressed candidate passes, replace/decompose custom
     deformable attention, prove raw tensor parity, and restore Core ML/iPhone
     conversion, latency, memory, sustained thermal, and artifact qualification.
 
@@ -365,6 +390,7 @@ frozen; passing AP does not by itself authorize deployment.
 - M56 FP16 storage contract: `MONODGP_M56_FP16_STORAGE_CONTRACT.md`
 - M56b selective FP16 contract: `MONODGP_M56B_SELECTIVE_FP16_STORAGE_CONTRACT.md`
 - M56c grouped sensitivity contract: `MONODGP_M56C_GROUP_SENSITIVITY_CONTRACT.md`
+- M56d det2d-FP32 storage contract: `MONODGP_M56D_DET2D_FP32_STORAGE_CONTRACT.md`
 - R0 protocol: `TWO_CLASS_REFERENCE_PROTOCOL.md`
 - Full chronological evidence: `MobileADAS3D_Codex_Handoff_20260715.md`
 - Current status and next task: this file

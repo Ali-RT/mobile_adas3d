@@ -128,3 +128,24 @@ safety remain false.
 - `m56c_group_sensitivity.csv`
 - `colab_logs/m56c_prepare.log`
 - `colab_logs/m56c_group_sensitivity.log`
+
+## Frozen outcome
+
+M56c completed all 16 policies on 2026-09-14 and passed every diagnostic
+integrity gate. The exact artifact hashes are:
+
+- manifest: `0c501fa2e0f13e8ad952e492ef44d45a93fa72d3655e15ee4dfca5ae77417796`;
+- diagnostic JSON: `7f1ca25ec2270642c508bb36a8e109bdcf8cdf09d8b05d5749a23a0129321ba1`;
+- diagnostic CSV: `8d9eea64c0bf67eb7f4b597e76344d67ceb5e5a392074259050fa51ae32c5abe`.
+
+`det2d_transformer` was the only group to fail in isolation, with final-depth
+maximum delta `0.5688076 > 0.50`. Holding that group in FP32 while rounding all
+other eligible groups passed every output limit, reduced the depth delta to
+`0.0300064`, and projected a parameter-size ratio of `0.5646269`. Holding the
+backbone or input projection also rescued parity but yielded worse projected
+ratios of `0.814675` and `0.603382`.
+
+M56d is therefore the single authorized follow-up policy: preserve the entire
+alias-consistent 2D transformer in FP32 and store all remaining eligible
+Conv2d/Linear parameters in FP16. M56c itself selected no checkpoint and ran
+no complete validation.

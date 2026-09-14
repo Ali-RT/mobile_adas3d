@@ -124,6 +124,44 @@ def validate_candidate_storage(
     }
 
 
+def reproduce_explicit_storage_policy(model, manifest: dict, torch_module):
+    policy_id = manifest.get("compression_policy", {}).get("policy_id")
+    if policy_id == "m56d_det2d_transformer_fp32":
+        try:
+            from scripts.prepare_monodgp_m56c_group_sensitivity import (
+                collect_grouped_storage_policy,
+            )
+        except ModuleNotFoundError:
+            from prepare_monodgp_m56c_group_sensitivity import (
+                collect_grouped_storage_policy,
+            )
+        grouped, _, _ = collect_grouped_storage_policy(model, torch_module)
+        expected_fp32 = set(grouped["det2d_transformer"])
+        expected_fp16 = {
+            alias
+            for group_name, aliases in grouped.items()
+            if group_name != "det2d_transformer"
+            for alias in aliases
+        }
+        mode = "explicit alias-consistent det2d-transformer-FP32 storage"
+    elif policy_id in (None, "m56b_geometry_heads_fp32"):
+        try:
+            from scripts.prepare_monodgp_m56b_selective_fp16_storage import (
+                collect_alias_aware_storage_policy,
+            )
+        except ModuleNotFoundError:
+            from prepare_monodgp_m56b_selective_fp16_storage import (
+                collect_alias_aware_storage_policy,
+            )
+        fp16, fp32, _ = collect_alias_aware_storage_policy(model, torch_module)
+        expected_fp16 = set(fp16)
+        expected_fp32 = set(fp32)
+        mode = "explicit alias-consistent selective storage"
+    else:
+        raise RuntimeError(f"Unsupported explicit M56 storage policy: {policy_id}")
+    return expected_fp16, expected_fp32, mode
+
+
 def summarize_depth_channels(baseline: dict, candidate: dict) -> dict:
     channel_maxima = [0.0, 0.0]
     channel_means: list[list[float]] = [[], []]
@@ -241,20 +279,12 @@ def main() -> None:
             raise RuntimeError("Explicit FP16 and FP32 parameter policies must be lists")
         fp16_names = set(explicit_fp16_names)
         fp32_preserved_names = set(explicit_fp32_names)
-        try:
-            from scripts.prepare_monodgp_m56b_selective_fp16_storage import (
-                collect_alias_aware_storage_policy,
-            )
-        except ModuleNotFoundError:
-            from prepare_monodgp_m56b_selective_fp16_storage import (
-                collect_alias_aware_storage_policy,
-            )
-        expected_fp16, expected_fp32, _ = collect_alias_aware_storage_policy(
-            model, torch
+        expected_fp16, expected_fp32, storage_policy_mode = (
+            reproduce_explicit_storage_policy(model, manifest, torch)
         )
         explicit_policy_reproduced = (
-            fp16_names == set(expected_fp16)
-            and fp32_preserved_names == set(expected_fp32)
+            fp16_names == expected_fp16
+            and fp32_preserved_names == expected_fp32
         )
         policy_name_hashes_match = (
             manifest.get("fp16_parameter_state_names_sha256")
@@ -262,7 +292,6 @@ def main() -> None:
             and manifest.get("fp32_preserved_parameter_state_names_sha256")
             == hashlib.sha256("\n".join(sorted(fp32_preserved_names)).encode("utf-8")).hexdigest()
         )
-        storage_policy_mode = "explicit alias-consistent selective storage"
     storage_checks = validate_candidate_storage(
         source_state,
         candidate_state,

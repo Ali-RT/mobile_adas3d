@@ -3174,3 +3174,60 @@ runtime. Return these three files:
 The notebook deliberately has no complete-evaluation cell. A later compressed
 candidate is permitted only after the M56c evidence is reviewed and a separate
 versioned policy contract is frozen.
+
+## M56c grouped FP16 sensitivity completed (2026-09-14)
+
+The exact returned artifacts passed their frozen hashes and all M56c
+diagnostic-integrity checks:
+
+- manifest SHA-256:
+  `0c501fa2e0f13e8ad952e492ef44d45a93fa72d3655e15ee4dfca5ae77417796`;
+- diagnostic JSON SHA-256:
+  `7f1ca25ec2270642c508bb36a8e109bdcf8cdf09d8b05d5749a23a0129321ba1`;
+- diagnostic CSV SHA-256:
+  `8d9eea64c0bf67eb7f4b597e76344d67ceb5e5a392074259050fa51ae32c5abe`.
+
+All 16 matrix rows executed. The complete `det2d_transformer` was the only
+group to fail by itself: `only_det2d_transformer` produced final-depth maximum
+delta `0.5688076`, above the unchanged `0.50` limit. The matching complement,
+`all_except_det2d_transformer`, retained that group in FP32 and stored every
+other eligible group in FP16. It passed all seven output-family limits:
+logits `0.002857`, boxes `0.000126`, dimensions `0.004906`, final depth
+`0.030006`, angle `0.005983`, depth-map logits `0.005854`, and region
+probability `0.000087`.
+
+The selected complement covers 295 state aliases representing 247 unique
+parameters and `146,855,348` original FP32 bytes. Its projected parameter-size
+ratio is `0.5646269`. Holding the backbone or input projection in FP32 also
+rescued parity, but their projected ratios were worse at `0.814675` and
+`0.603382`. M56c therefore isolates the 2D transformer hold as the only
+appropriate next rung. M56c itself performed no training, retained no
+candidate checkpoint, and authorized no complete evaluation.
+
+## M56d det2d-transformer-FP32 workflow prepared (2026-09-14)
+
+M56d is frozen in `MONODGP_M56D_DET2D_FP32_STORAGE_CONTRACT.md` as one
+candidate, not a sweep. Every alias of the 80 unique parameters directly owned
+by `det2d_transformer` remains in FP32 storage, totaling `9,476,104` original
+bytes. All 295 aliases representing 247 unique Conv2d/Linear parameters
+outside that group are stored in FP16. Noneligible tensors remain bitwise
+unchanged. The model graph and runtime parameters remain FP32.
+
+The preparation script checks the exact three M56c hashes and their semantic
+contents, reconstructs the group policy independently from the pinned
+MonoDGP graph, regenerates paired model-only artifacts, and enforces the
+unchanged `≤0.60` size limit. The real-CUDA smoke repeats exact storage,
+structure, finiteness, seven-family raw-output parity, separate depth-channel,
+and 5-warmup/100-run timing checks.
+
+Run `notebooks/MonoDGP_M56D_Det2D_FP32_Storage_Colab.ipynb` on a CUDA runtime
+from the first cell through **Stop point 1**. Return:
+
+- `/content/drive/MyDrive/mobile_adas3d_outputs/compression/monodgp_m56d_det2d_fp32_storage/m56d_compression_manifest.json`
+- `/content/drive/MyDrive/mobile_adas3d_outputs/compression/monodgp_m56d_det2d_fp32_storage/m56d_det2d_fp32_smoke.json`
+
+Do not run the complete validation cell until those exact files are reviewed.
+If the smoke passes, the already-wired continuation evaluates all 3,769 Chen
+validation images and writes `m56d_det2d_fp32_gate.json` and
+`m56d_det2d_fp32_comparison.csv`. A full pass selects only an offline storage
+artifact. Core ML conversion and product-safety qualification remain false.
