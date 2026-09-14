@@ -142,3 +142,19 @@ Only after an approved smoke pass:
 - `m56b_selective_fp16_storage_gate.json`
 - `m56b_selective_fp16_storage_comparison.csv`
 - durable inference and evaluation logs
+
+## Frozen outcome
+
+M56b was rejected at its CUDA smoke barrier on 2026-09-13. All provenance,
+storage-policy, size, structure, finite-output, and runtime checks passed, but
+final `pred_depth` reached a maximum absolute delta of `0.7097339630126953`
+metres against the unchanged `0.50` limit. The decoded-depth channel accounted
+for the failure; log-variance drift remained only `0.007577`. Preserving the
+three direct geometry-head families therefore did not materially change M56's
+`0.710739` depth failure.
+
+Complete validation remains unauthorized. M56c is the next bounded diagnostic:
+it isolates backbone, input projection, region, depth-predictor, 2D-transformer,
+3D-transformer, and prediction-head parameter groups with singleton and
+leave-one-group-FP32 tests. It must not select a model or run the complete Chen
+validation split.

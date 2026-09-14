@@ -3113,3 +3113,64 @@ smoke gate passes, that cell runs all 3,769 Chen-validation images and writes
 nearby-recall, localization, and completeness thresholds. A pass selects only
 an offline compressed checkpoint and permits separate M57 operator work.
 Core ML conversion and product-safety qualification remain unauthorized.
+
+## M56b selective FP16-storage smoke rejected (2026-09-13)
+
+The reviewed M56b CUDA smoke was bound to exact M54 parent hash
+`8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847`,
+manifest hash
+`6251abd0ca2eb39b4d1376b9efb836221565a38b4359801efb5e2318f1a2f4ef`,
+smoke hash
+`c9510f67588a4998c1f84e2c309c98c3def3931627874200662fac92690fd8d8`,
+and candidate hash
+`ea2d32db0836dc35d226ec17072f445368d79d4d36dbb864b4759e89c8a190f4`.
+
+All aliases of `bbox_embed`, `dim_embed_3d`, and `depth_embed` remained in
+FP32; 271 remaining eligible parameter identities were stored in FP16. Every
+provenance, storage, alias, paired-size, structure, finite-output, and
+non-depth parity gate passed. Final `pred_depth` was the sole failure: maximum
+absolute delta `0.709734 > 0.500000`. The decoded-depth channel caused the
+failure; the uncertainty/log-variance channel delta was only `0.007577`.
+Mean/p95 latency was `12.6467/12.6813 ms` versus the M55 FP32 baseline
+`12.6725/12.7235 ms`, so there is no speed claim.
+
+Accordingly, `full_evaluation_authorized=false`. Do not run the complete
+3,769-image evaluation and do not relax the frozen depth threshold. M56b is a
+closed, rejected compression rung.
+
+## M56c grouped FP16 sensitivity workflow prepared (2026-09-13)
+
+M56c replaces further guesswork with a bounded diagnostic matrix. It uses the
+same M54 parent, exact M55/M56/M56b evidence, sample 000001, and all unchanged
+M56 raw-output thresholds. Eligible Conv2d/Linear parameters are grouped by
+shared parameter identity into:
+
+- `backbone`
+- `input_projection`
+- `region_head`
+- `depth_predictor`
+- `det2d_transformer`
+- `det3d_transformer`
+- `prediction_heads`
+- `other_eligible`
+
+The workflow evaluates two references—alias-consistent all-eligible FP16 and
+the exact M56b selective policy—then each nonempty group alone and each
+all-except-one complement. Candidate tensors are rounded and loaded only in
+memory. No duplicated candidate checkpoints are written to Drive. M56c also
+does not time candidates, select a model, run the full validation split, or
+authorize deployment. It must reproduce M56b's isolated depth failure within
+`0.01 m` and report the singleton failures and complement rescues that isolate
+the sensitive group or interaction.
+
+Run every cell in
+`notebooks/MonoDGP_M56C_Grouped_FP16_Sensitivity_Colab.ipynb` on a CUDA
+runtime. Return these three files:
+
+- `/content/drive/MyDrive/mobile_adas3d_outputs/compression/monodgp_m56c_group_sensitivity/m56c_group_sensitivity_manifest.json`
+- `/content/drive/MyDrive/mobile_adas3d_outputs/compression/monodgp_m56c_group_sensitivity/m56c_group_sensitivity.json`
+- `/content/drive/MyDrive/mobile_adas3d_outputs/compression/monodgp_m56c_group_sensitivity/m56c_group_sensitivity.csv`
+
+The notebook deliberately has no complete-evaluation cell. A later compressed
+candidate is permitted only after the M56c evidence is reviewed and a separate
+versioned policy contract is frozen.
