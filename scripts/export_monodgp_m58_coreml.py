@@ -68,7 +68,7 @@ INPUT_SHAPES = {
     "calibration": [1, 3, 4],
     "image_size": [1, 2],
 }
-OUTPUT_NAMES = (
+SEMANTIC_OUTPUT_NAMES = (
     "pred_logits",
     "pred_boxes",
     "pred_3d_dim",
@@ -77,6 +77,20 @@ OUTPUT_NAMES = (
     "pred_depth_map_logits",
     "pred_region_prob",
 )
+REGION_OUTPUT_NAMES = tuple(f"pred_region_prob_{index}" for index in range(4))
+OUTPUT_NAMES = SEMANTIC_OUTPUT_NAMES[:-1] + REGION_OUTPUT_NAMES
+EXPECTED_OUTPUT_SHAPES = {
+    "pred_logits": [1, 50, 3],
+    "pred_boxes": [1, 50, 6],
+    "pred_3d_dim": [1, 50, 3],
+    "pred_depth": [1, 50, 2],
+    "pred_angle": [1, 50, 24],
+    "pred_depth_map_logits": [1, 81, 24, 80],
+    "pred_region_prob_0": [1, 1, 48, 160],
+    "pred_region_prob_1": [1, 1, 24, 80],
+    "pred_region_prob_2": [1, 1, 12, 40],
+    "pred_region_prob_3": [1, 1, 6, 20],
+}
 
 
 class Logger:
@@ -174,19 +188,68 @@ def validate_m57_complete_evidence(
     return manifest, smoke, gate, rows
 
 
+def flatten_export_outputs(values) -> tuple:
+    primary = tuple(values[name] for name in SEMANTIC_OUTPUT_NAMES[:-1])
+    region_probabilities = values["pred_region_prob"]
+    regions = tuple(
+        region_probabilities[index] for index in range(len(REGION_OUTPUT_NAMES))
+    )
+    return primary + regions
+
+
+def output_family(name: str) -> str:
+    if name in REGION_OUTPUT_NAMES:
+        return "pred_region_prob"
+    return name
+
+
+def validate_export_outputs(values, torch_module) -> tuple:
+    region_probabilities = values.get("pred_region_prob")
+    if not isinstance(region_probabilities, (list, tuple)):
+        raise RuntimeError("pred_region_prob must be a four-tensor sequence")
+    if len(region_probabilities) != len(REGION_OUTPUT_NAMES):
+        raise RuntimeError(
+            "Expected four pred_region_prob tensors, found "
+            f"{len(region_probabilities)}"
+        )
+    flattened = flatten_export_outputs(values)
+    for name, value in zip(OUTPUT_NAMES, flattened):
+        if not isinstance(value, torch_module.Tensor):
+            raise RuntimeError(f"M58 output {name} is not a tensor")
+        shape = list(value.shape)
+        if shape != EXPECTED_OUTPUT_SHAPES[name]:
+            raise RuntimeError(
+                f"M58 output {name} shape changed: expected "
+                f"{EXPECTED_OUTPUT_SHAPES[name]}, found {shape}"
+            )
+    return flattened
+
+
 def compare_outputs(reference, candidate) -> dict[str, dict[str, Any]]:
+    if len(reference) != len(OUTPUT_NAMES) or len(candidate) != len(OUTPUT_NAMES):
+        raise RuntimeError(
+            f"Expected {len(OUTPUT_NAMES)} flattened outputs; found "
+            f"{len(reference)} reference and {len(candidate)} candidate outputs"
+        )
     comparison: dict[str, dict[str, Any]] = {}
     for name, expected, actual in zip(OUTPUT_NAMES, reference, candidate):
+        if actual.shape != expected.shape:
+            raise RuntimeError(
+                f"M58 traced output {name} shape changed: "
+                f"{list(expected.shape)} versus {list(actual.shape)}"
+            )
         difference = (actual.float() - expected.float()).abs()
         maximum = float(difference.max().item()) if difference.numel() else 0.0
         mean = float(difference.mean().item()) if difference.numel() else 0.0
+        family = output_family(name)
         comparison[name] = {
+            "semantic_family": family,
             "shape": list(expected.shape),
             "max_abs": maximum,
             "mean_abs": mean,
-            "limit_max_abs": PARITY_LIMITS[name],
+            "limit_max_abs": PARITY_LIMITS[family],
             "finite": bool(actual.isfinite().all().item()),
-            "passed": math.isfinite(maximum) and maximum <= PARITY_LIMITS[name],
+            "passed": math.isfinite(maximum) and maximum <= PARITY_LIMITS[family],
         }
     return comparison
 
@@ -227,7 +290,9 @@ def main() -> None:
         "m57_gate_sha256": M57_GATE_SHA256,
         "m57_comparison_sha256": M57_COMPARISON_SHA256,
         "input_shapes": INPUT_SHAPES,
+        "semantic_output_names": list(SEMANTIC_OUTPUT_NAMES),
         "output_names": list(OUTPUT_NAMES),
+        "expected_output_shapes": EXPECTED_OUTPUT_SHAPES,
         "minimum_deployment_target": MINIMUM_DEPLOYMENT_TARGET,
         "compute_precision": COMPUTE_PRECISION,
         "experimental_coreml_conversion_performed": False,
@@ -317,7 +382,7 @@ def main() -> None:
                 values = self.wrapped(
                     image, calibration, None, image_size, dn_args=0
                 )
-                return tuple(values[name] for name in OUTPUT_NAMES)
+                return flatten_export_outputs(values)
 
         inputs, calibs, _, info = next(iter(validation_loader))
         image = inputs.float().cpu()
@@ -334,7 +399,10 @@ def main() -> None:
         sample_id = int(sample_value.item()) if hasattr(sample_value, "item") else int(sample_value)
         wrapper = ExportWrapper(model).eval()
         with torch.inference_mode():
-            reference = wrapper(image, calibration, image_size)
+            source_outputs = model(
+                image, calibration, None, image_size, dn_args=0
+            )
+            reference = validate_export_outputs(source_outputs, torch)
             traced = torch.jit.trace(
                 wrapper,
                 (image, calibration, image_size),

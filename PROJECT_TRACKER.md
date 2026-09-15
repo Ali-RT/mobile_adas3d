@@ -16,8 +16,8 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-- Current phase: **M58 Stop point 1 prepared; experimental conversion ready**
-- Active task: run `MonoDGP_M58_CoreML_Conversion_Colab.ipynb` through the
+- Current phase: **M58 Stop point 1 corrected; experimental conversion rerun ready**
+- Active task: rerun `MonoDGP_M58_CoreML_Conversion_Colab.ipynb` through the
   fixed-shape FP32 conversion stop and return `m58_coreml_export_gate.json`.
   Core ML runtime parity, physical-device qualification, and deployment remain
   separate decisions.
@@ -100,7 +100,7 @@ not constrain the current accuracy-development stage.
 | M56c | Grouped FP16 parameter-sensitivity diagnosis | Complete—2D transformer isolated | All 16 policies and every diagnostic-integrity gate passed. `det2d_transformer` was the only singleton failure (`pred_depth=0.568808`). Holding it in FP32 while rounding every other eligible group passed all output limits (`pred_depth=0.030006`) at projected parameter-size ratio `0.564627`. Backbone/input-projection holds also rescued parity but at worse ratios `0.814675/0.603382`. No candidate or full evaluation was produced. |
 | M56d | FP16 storage with complete 2D transformer in FP32 | Complete—offline compressed checkpoint selected | The candidate is 98,048,696 bytes versus 173,610,189 bytes for the paired FP32 model-only artifact (`0.564763` ratio; 75,561,493 bytes saved). Every smoke gate and all nine complete-validation preservation gates passed on 3,769/3,769 images. Moderate 3D Vehicle/Pedestrian/mean was `19.4666/6.1848/12.8257`; BEV was `25.7349/6.7651`; nearby recall was `0.90993/0.72399`; Pedestrian localization-failure rate was `0.23854`. This selects an offline storage artifact only. |
 | M57 | Deformable-attention export replacement | Complete—portable operator selected | Exact manifest/smoke hashes `7c475779…313`/`2a96cffd…3b0` passed nine module checks, three traces, and raw-output parity with zero native-extension calls. Complete validation produced 3,769/3,769 files, all nine preservation gates passed, and every metric exactly matched M56d at reported precision. A100 portable CUDA inference was ~1.24× slower and used ~52% more peak allocated memory. The next fixed-shape Core ML parity experiment is authorized; direct conversion, deployment, and product-safety qualification are not. |
-| M58 | Fixed-shape Core ML conversion/parity, then physical-device qualification | Stop point 1 prepared—conversion pending | The self-contained Colab workflow binds the exact M56d checkpoint and all four reviewed M57 artifacts, traces the seven-output FP32 graph at `1x3x384x1280`, and attempts an iOS 17 ML Program conversion with `coremltools==9.0`. It fails closed on provenance, trace parity, native/custom operators, or missing artifacts. A pass authorizes macOS prediction parity only—not device testing or deployment. |
+| M58 | Fixed-shape Core ML conversion/parity, then physical-device qualification | Stop point 1 corrected—conversion rerun pending | The first run reached the portable model and TorchScript trace but stopped before Core ML conversion because the exporter treated the four-tensor `pred_region_prob` pyramid as one tensor. The corrected signature losslessly flattens the seven semantic output families into ten named tensors, with exact frozen shapes and unchanged parity limits. The self-contained workflow still binds the exact M56d checkpoint and all four reviewed M57 artifacts and targets an iOS 17 FP32 ML Program with `coremltools==9.0`. A pass authorizes macOS prediction parity only—not device testing or deployment. |
 
 **M53 completion note:** the model and official evaluator passed after the public-API import correction. The prior JSON failed only because it compared an independent reimplementation directly with published native-evaluator values. The corrected schema-v2 finalizer reused the complete prediction set and native log, and all frozen M53 gates passed.
 
@@ -381,7 +381,7 @@ frozen; passing AP does not by itself authorize deployment.
     decomposition while native CUDA remains the unchanged default path. Both
     stop points passed; the complete 3,769-image run preserved all nine metrics
     exactly at reported precision.
-39. **Prepared—run next:** execute
+39. **Corrected—rerun next:** execute
     `MonoDGP_M58_CoreML_Conversion_Colab.ipynb` and return
     `m58_coreml_export_gate.json`.
 40. If Stop point 1 passes, require macOS PyTorch/Core ML raw and decoded

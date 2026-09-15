@@ -3352,8 +3352,9 @@ comparison CSV. The first conversion uses the unchanged FP32 runtime semantics
 to isolate graph compatibility from later precision compression.
 
 The fixed interface is image `1x3x384x1280`, calibration `1x3x4`, and
-image-size `1x2`. The graph returns the seven main MonoDGP tensors while
-post-processing remains outside the model. The Colab workflow traces one real
+image-size `1x2`. The graph preserves seven semantic MonoDGP output families
+as ten named tensors: six direct outputs plus all four `pred_region_prob`
+pyramid levels. Post-processing remains outside the model. The Colab workflow traces one real
 Chen validation sample, checks the unchanged M56-family raw-output tolerances,
 and converts to an iOS 17 FP32 ML Program with `coremltools==9.0` and
 `skip_model_load=True`. It requires MIL `resample` and rejects custom
@@ -3365,3 +3366,16 @@ Run every cell in
 reference I/O stay in Google Drive. A pass authorizes only a separate macOS
 Core ML prediction-parity step. It does not authorize physical-device testing,
 FP16 conversion, quantization, deployment, or product safety.
+
+### M58 first-attempt interface correction (2026-09-15)
+
+The first Colab attempt loaded the exact checkpoint and reached the portable
+TorchScript trace, then stopped before Core ML conversion with
+`AttributeError: 'list' object has no attribute 'float'`. This was an exporter
+contract bug, not a checkpoint, model, GPU, or Core ML failure. MonoDGP emits
+`pred_region_prob` as four feature-pyramid tensors, matching the frozen M55
+inventory. The corrected exporter flattens those four tensors without dropping
+any level, freezes all ten tensor shapes, applies the unchanged
+`pred_region_prob` parity limit to every level, and rejects any future
+structure change. Rerun the same notebook from the top; no training or cache
+regeneration is required.

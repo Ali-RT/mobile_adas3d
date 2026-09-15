@@ -42,10 +42,13 @@ The traced graph has three FP32 tensor inputs:
 | `calibration` | `1 x 3 x 4` |
 | `image_size` | `1 x 2` |
 
-The graph emits the seven main MonoDGP tensors: `pred_logits`,
+The graph preserves seven semantic MonoDGP output families: `pred_logits`,
 `pred_boxes`, `pred_3d_dim`, `pred_depth`, `pred_angle`,
-`pred_depth_map_logits`, and `pred_region_prob`. Post-processing stays
-outside the graph.
+`pred_depth_map_logits`, and `pred_region_prob`. The first six are individual
+tensors. `pred_region_prob` is the model's four-level feature pyramid and is
+therefore exported losslessly as `pred_region_prob_0` through
+`pred_region_prob_3`. The Core ML signature has ten tensors in total;
+post-processing stays outside the graph.
 
 The conversion target is an FP32 ML Program with minimum deployment target
 iOS 17, using `coremltools==9.0`. The conversion uses a traced TorchScript
@@ -60,7 +63,7 @@ The gate requires:
 
 1. exact reviewed M57 evidence and exact M56d checkpoint;
 2. all nine portable attention modules and zero native CUDA calls;
-3. the exact fixed input and output signatures above;
+3. the exact fixed input and ten-tensor output signatures above;
 4. finite reference outputs and traced-output parity within the unchanged
    M56-family raw-output limits;
 5. a trace containing `aten::grid_sampler` with no custom attention node;
@@ -76,8 +79,9 @@ the same JSON and the durable log; the report records the exception.
 ## Later barriers
 
 A Stop point 1 pass authorizes only a macOS Core ML prediction-parity run using
-the exact package and reference I/O hashes. That run must compare all seven raw
-outputs and decoded detections on the same samples.
+the exact package and reference I/O hashes. That run must compare all ten raw
+tensors across the seven semantic output families, plus decoded detections on
+the same samples.
 
 Only after macOS parity passes may physical-iPhone latency, peak memory,
 sustained thermal behavior, stability, and artifact-integrity testing begin.

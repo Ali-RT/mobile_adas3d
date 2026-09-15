@@ -6,12 +6,17 @@ from pathlib import Path
 from scripts.export_monodgp_m58_coreml import (
     COMPUTE_PRECISION,
     COREMLTOOLS_VERSION,
+    EXPECTED_OUTPUT_SHAPES,
     INPUT_SHAPES,
     M57_COMPARISON_SHA256,
     M57_GATE_SHA256,
     M57_PREDICTION_TREE_SHA256,
     MINIMUM_DEPLOYMENT_TARGET,
     OUTPUT_NAMES,
+    REGION_OUTPUT_NAMES,
+    SEMANTIC_OUTPUT_NAMES,
+    flatten_export_outputs,
+    output_family,
 )
 
 
@@ -24,13 +29,32 @@ class MonoDGPM58CoreMLConversionTests(unittest.TestCase):
         self.assertEqual(MINIMUM_DEPLOYMENT_TARGET, "iOS17")
         self.assertEqual(COMPUTE_PRECISION, "FLOAT32")
         self.assertEqual(INPUT_SHAPES["image"], [1, 3, 384, 1280])
-        self.assertEqual(len(OUTPUT_NAMES), 7)
+        self.assertEqual(len(SEMANTIC_OUTPUT_NAMES), 7)
+        self.assertEqual(len(REGION_OUTPUT_NAMES), 4)
+        self.assertEqual(len(OUTPUT_NAMES), 10)
+        self.assertEqual(set(OUTPUT_NAMES), set(EXPECTED_OUTPUT_SHAPES))
         for value in (
             M57_GATE_SHA256,
             M57_COMPARISON_SHA256,
             M57_PREDICTION_TREE_SHA256,
         ):
             self.assertEqual(len(value), 64)
+
+    def test_region_probability_pyramid_is_flattened_without_loss(self):
+        values = {name: name for name in SEMANTIC_OUTPUT_NAMES[:-1]}
+        values["pred_region_prob"] = [
+            "region_0",
+            "region_1",
+            "region_2",
+            "region_3",
+        ]
+        flattened = flatten_export_outputs(values)
+        self.assertEqual(len(flattened), 10)
+        self.assertEqual(flattened[-4:], tuple(values["pred_region_prob"]))
+        self.assertEqual(
+            [output_family(name) for name in REGION_OUTPUT_NAMES],
+            ["pred_region_prob"] * 4,
+        )
 
     def test_export_is_fixed_fp32_and_fail_closed(self):
         source = (ROOT / "scripts/export_monodgp_m58_coreml.py").read_text()
@@ -41,6 +65,7 @@ class MonoDGPM58CoreMLConversionTests(unittest.TestCase):
         self.assertIn("skip_model_load=True", source)
         self.assertIn('counts["resample"] > 0', source)
         self.assertIn('counts["custom"] == 0', source)
+        self.assertIn("validate_export_outputs(source_outputs, torch)", source)
         self.assertIn('"deployment_authorized": False', source)
         self.assertIn('"product_safety_qualified": False', source)
         self.assertIn('"conversion_error"', source)
