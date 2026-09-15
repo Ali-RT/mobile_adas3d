@@ -60,6 +60,7 @@ M57_COMPARISON_SHA256 = "687b15cd4a044981f4e00fa038f2fc5e7053cee692e13bfdb85fe2f
 M57_PREDICTION_TREE_SHA256 = (
     "b550362a6f0ba77667b69cf2a15a457c419c1e0db4751e2704228a762841ca05"
 )
+M58_COREML_PATCH_MARKER = "self.m58_coreml_export_compat"
 COREMLTOOLS_VERSION = "9.0"
 MINIMUM_DEPLOYMENT_TARGET = "iOS17"
 COMPUTE_PRECISION = "FLOAT32"
@@ -316,6 +317,11 @@ def main() -> None:
             text=True,
         ).stdout.strip()
         attention_source = repo / "lib/models/monodgp/ops/modules/ms_deform_attn.py"
+        coreml_sources = (
+            repo / "lib/models/monodgp/det2d_transformer.py",
+            repo / "lib/models/monodgp/det3d_transformer.py",
+            repo / "lib/models/monodgp/monodgp.py",
+        )
         checkpoint = Path(manifest["checkpoint"]).resolve()
         runtime_config = Path(manifest["runtime_config"]).resolve()
         val_split = args.split_dir.resolve() / "val.txt"
@@ -323,6 +329,11 @@ def main() -> None:
         if (
             commit != PINNED_COMMIT
             or sha256_file(attention_source) != M57_PATCHED_SOURCE_SHA256
+            or any(
+                M58_COREML_PATCH_MARKER
+                not in path.read_text(encoding="utf-8")
+                for path in coreml_sources
+            )
             or sha256_file(checkpoint) != M56D_CANDIDATE_SHA256
             or sha256_file(runtime_config) != M56D_RUNTIME_CONFIG_SHA256
             or dataset != Path(manifest["dataset_root"]).resolve()
@@ -361,6 +372,11 @@ def main() -> None:
             raise RuntimeError(f"Unexpected M58 attention module set: {tuple(modules)}")
         for module in modules.values():
             module.use_portable_deform_attn = True
+        if not hasattr(model, "m58_coreml_export_compat"):
+            raise RuntimeError("M58 Core ML source patch marker is missing")
+        model.m58_coreml_export_compat = True
+        model.det2d_transformer.decoder.m58_coreml_export_compat = True
+        model.det3d_transformer.decoder.m58_coreml_export_compat = True
 
         native_calls = 0
 
@@ -467,6 +483,11 @@ def main() -> None:
                 sha256_file(runtime_config) == M56D_RUNTIME_CONFIG_SHA256
             ),
             "portable_attention_modules_exact": tuple(modules) == EXPECTED_MODULES,
+            "coreml_inplace_update_patch": all(
+                M58_COREML_PATCH_MARKER
+                in path.read_text(encoding="utf-8")
+                for path in coreml_sources
+            ),
             "portable_path_avoids_native_cuda": native_calls == 0,
             "fixed_input_signature": actual_shapes == INPUT_SHAPES,
             "all_reference_outputs_finite": all(

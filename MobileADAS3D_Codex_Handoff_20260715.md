@@ -3379,3 +3379,8 @@ any level, freezes all ten tensor shapes, applies the unchanged
 `pred_region_prob` parity limit to every level, and rejects any future
 structure change. Rerun the same notebook from the top; no training or cache
 regeneration is required.
+
+
+### M58 MIL conversion correction (2026-09-15)
+
+The Core ML converter rejected a sliced in-place reference update with a partial `[1,50,2]` assignment into `[1,50,6]`. M58 now applies an export-only concatenation patch to the 2D decoder, 3D decoder, and final heads before tracing.
