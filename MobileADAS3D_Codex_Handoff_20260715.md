@@ -3323,3 +3323,23 @@ Return `m57_portable_attention_gate.json` and
 `m57_portable_attention_comparison.csv`. No training or Core ML conversion
 occurs. Full-model Core ML conversion remains blocked until this second stop
 passes.
+
+### M57 complete portable validation passed (2026-09-15)
+
+The reviewed gate JSON and comparison CSV SHA-256 values are
+`63f2b71d1f5be69bad31907db229f79e39fb17c033ba43999c6fdfe1df3b97a7`
+and `687b15cd4a044981f4e00fa038f2fc5e7053cee692e13bfdb85fe2f90656412d`.
+The portable prediction-tree SHA-256 is
+`b550362a6f0ba77667b69cf2a15a457c419c1e0db4751e2704228a762841ca05d`.
+The complete run produced 3,769/3,769 prediction files and passed all nine
+frozen preservation gates. The comparison CSV independently agrees with the
+gate JSON: every candidate-minus-M56d metric delta is zero at the reported
+precision. Moderate 3D Vehicle/Pedestrian/mean AP_R40 is
+`19.4666/6.1848/12.8257`; moderate BEV is `25.7349/6.7651`;
+nearby Vehicle/Pedestrian recall is `0.90993/0.72399`; Pedestrian
+localization-failure rate is `0.23854`.
+
+Decision: select the M57 portable deformable-attention operator and authorize
+only a separate M58 fixed-shape Core ML conversion/parity gate. No training or
+weight change occurred. Direct Core ML conversion, deployment, and product
+safety remain unauthorized; nearby Pedestrian recall is still below `0.80`.

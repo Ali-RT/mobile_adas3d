@@ -1,6 +1,6 @@
 # MonoDGP M57 Portable Deformable-Attention Contract
 
-Status: Stop point 1 passed; complete portable-path validation authorized.
+Status: complete; portable operator candidate selected.
 
 ## Purpose
 
@@ -120,15 +120,31 @@ not Core ML or iPhone projections.
 
 ## Continuation barrier
 
-The exact pair above has passed review. M57 may now run a complete 3,769-image
-portable-path validation against all M54/M56d preservation gates using
-`MonoDGP_M57_Complete_Validation_Colab.ipynb`. The smoke field
+The exact manifest/smoke pair above passed review and authorized a complete 3,769-image
+portable-path validation against all M54/M56d preservation gates
+using `MonoDGP_M57_Complete_Validation_Colab.ipynb`. The smoke field
 `coreml_microkernel_conversion_authorized=true` records operator
 traceability only; it does not authorize full-model conversion. Only after the
 complete validation passes may a separate fixed-shape Core ML conversion gate
 begin.
 
-Even a full M57 pass does not authorize deployment. Physical-device latency,
-memory, thermal stability, artifact integrity, decoded parity, and external
-validation remain later gates. Pedestrian nearby recall also remains below the
-separate `0.80` product target.
+## Stop point 2: complete validation result
+
+The reviewed gate JSON and comparison CSV SHA-256 values are
+`63f2b71d1f5be69bad31907db229f79e39fb17c033ba43999c6fdfe1df3b97a7`
+and `687b15cd4a044981f4e00fa038f2fc5e7053cee692e13bfdb85fe2f90656412d`.
+The portable prediction-tree SHA-256 is
+`b550362a6f0ba77667b69cf2a15a457c419c1e0db4751e2704228a762841ca05d`.
+All 3,769 prediction files were present and all nine preservation gates
+passed. Every portable result equaled M56d at the reported precision: moderate
+3D Vehicle/Pedestrian/mean AP_R40 was `19.4666/6.1848/12.8257`, moderate BEV
+was `25.7349/6.7651`, nearby Vehicle/Pedestrian recall was
+`0.90993/0.72399`, and Pedestrian localization-failure rate was `0.23854`.
+M57 therefore selects the opt-in rank-five `grid_sample` operator candidate
+and authorizes a separate fixed-shape Core ML conversion/parity experiment.
+It performed no training and changed no weights.
+
+This M57 pass does not authorize direct conversion or deployment.
+Physical-device latency, memory, thermal stability, artifact integrity,
+decoded parity, and external validation remain later gates. Pedestrian nearby
+recall also remains below the separate `0.80` product target.

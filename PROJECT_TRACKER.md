@@ -16,10 +16,11 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-- Current phase: **M57 Stop point 1 passed; complete validation ready**
-- Active task: run `MonoDGP_M57_Complete_Validation_Colab.ipynb` through
-  Stop point 2 and return its gate JSON and comparison CSV. Core ML conversion
-  remains blocked until the complete 3,769-image preservation gate passes.
+- Current phase: **M57 complete; portable operator candidate selected**
+- Active task: freeze and prepare the separate **M58 fixed-shape Core ML
+  conversion/parity gate** against the exact selected M56d checkpoint and M57
+  operator. Conversion, physical-device qualification, and deployment remain
+  separate decisions.
 - Selected accuracy parent: **M54 MonoDGP epoch 100**, checkpoint SHA-256
   `8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847`.
 - Legacy accuracy reference: **R0 ResNet50 MonoDETR, epoch 185**.
@@ -98,8 +99,8 @@ not constrain the current accuracy-development stage.
 | M56b | Selective FP16 storage with FP32 depth geometry | Complete—rejected at CUDA smoke | Exact source/evidence, storage, alias, size, structure, finite-output, and all non-depth parity checks passed. Final `pred_depth` max absolute delta was `0.709734` versus the unchanged `0.500000` limit; decoded depth caused the failure while the log-variance channel delta was only `0.007577`. Mean/p95 latency was `12.6467/12.6813 ms`, effectively unchanged from M55. Full validation was correctly blocked. |
 | M56c | Grouped FP16 parameter-sensitivity diagnosis | Complete—2D transformer isolated | All 16 policies and every diagnostic-integrity gate passed. `det2d_transformer` was the only singleton failure (`pred_depth=0.568808`). Holding it in FP32 while rounding every other eligible group passed all output limits (`pred_depth=0.030006`) at projected parameter-size ratio `0.564627`. Backbone/input-projection holds also rescued parity but at worse ratios `0.814675/0.603382`. No candidate or full evaluation was produced. |
 | M56d | FP16 storage with complete 2D transformer in FP32 | Complete—offline compressed checkpoint selected | The candidate is 98,048,696 bytes versus 173,610,189 bytes for the paired FP32 model-only artifact (`0.564763` ratio; 75,561,493 bytes saved). Every smoke gate and all nine complete-validation preservation gates passed on 3,769/3,769 images. Moderate 3D Vehicle/Pedestrian/mean was `19.4666/6.1848/12.8257`; BEV was `25.7349/6.7651`; nearby recall was `0.90993/0.72399`; Pedestrian localization-failure rate was `0.23854`. This selects an offline storage artifact only. |
-| M57 | Deformable-attention export replacement | Stop point 1 passed—full validation pending | Exact manifest/smoke hashes `7c475779…313`/`2a96cffd…3b0` passed. All nine module checks, all three traces, and all raw outputs passed; portable inference made zero native-extension calls. On A100 it was ~1.24× slower and used ~52% more peak allocated CUDA memory than native. The 3,769-image portable preservation run is authorized; Core ML and deployment are not. |
-| M58 | Core ML and physical-device qualification | Pending | Convert the selected graph, prove parity, and measure iPhone latency, memory, sustained thermal behavior, stability, and artifact integrity. |
+| M57 | Deformable-attention export replacement | Complete—portable operator selected | Exact manifest/smoke hashes `7c475779…313`/`2a96cffd…3b0` passed nine module checks, three traces, and raw-output parity with zero native-extension calls. Complete validation produced 3,769/3,769 files, all nine preservation gates passed, and every metric exactly matched M56d at reported precision. A100 portable CUDA inference was ~1.24× slower and used ~52% more peak allocated memory. The next fixed-shape Core ML parity experiment is authorized; direct conversion, deployment, and product-safety qualification are not. |
+| M58 | Fixed-shape Core ML conversion/parity, then physical-device qualification | Pending—gate preparation authorized | Freeze input signatures and the exact M56d/M57 graph; prove raw and decoded PyTorch/Core ML parity before separate iPhone latency, memory, sustained thermal behavior, stability, and artifact-integrity gates. |
 
 **M53 completion note:** the model and official evaluator passed after the public-API import correction. The prior JSON failed only because it compared an independent reimplementation directly with published native-evaluator values. The corrected schema-v2 finalizer reused the complete prediction set and native log, and all frozen M53 gates passed.
 
@@ -376,12 +377,13 @@ frozen; passing AP does not by itself authorize deployment.
     at projected ratio `0.564627`.
 37. **Completed—selected:** M56d passed its CUDA smoke and every frozen
     preservation gate over 3,769 images at model-only size ratio `0.564763`.
-38. **Completed—parity passed:** M57 adds an opt-in rank-five `grid_sample`
-    decomposition while native CUDA remains the unchanged default path. The
-    exact reviewed manifest/smoke pair passed every Stop point 1 gate.
-39. **Next:** run `MonoDGP_M57_Complete_Validation_Colab.ipynb` and return
-    `m57_portable_attention_gate.json` plus its comparison CSV.
-40. Only after the complete M57 gate passes may Core ML conversion resume, followed by physical
+38. **Completed—operator selected:** M57 adds an opt-in rank-five `grid_sample`
+    decomposition while native CUDA remains the unchanged default path. Both
+    stop points passed; the complete 3,769-image run preserved all nine metrics
+    exactly at reported precision.
+39. **Next:** freeze M58 fixed-shape Core ML conversion/parity requirements,
+    then test export of the exact selected M56d checkpoint with the M57 operator.
+40. Require PyTorch/Core ML raw and decoded parity before separate physical
     iPhone latency, memory, sustained thermal, and artifact qualification.
 
 ## Decision rules

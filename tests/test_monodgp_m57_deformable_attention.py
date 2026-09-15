@@ -132,7 +132,7 @@ class MonoDGPM57Tests(unittest.TestCase):
 
     def test_contract_freezes_first_stop(self):
         contract = (ROOT / "MONODGP_M57_DEFORMABLE_ATTENTION_CONTRACT.md").read_text()
-        self.assertIn("Status: Stop point 1 passed", contract)
+        self.assertIn("Status: complete; portable operator candidate selected", contract)
         self.assertIn("maximum absolute delta no greater than `1e-3`", contract)
         self.assertIn("complete 3,769-image", contract)
         self.assertIn("portable-path validation", contract)
