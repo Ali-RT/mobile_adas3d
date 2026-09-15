@@ -3288,3 +3288,16 @@ Run `notebooks/MonoDGP_M57_Deformable_Attention_Colab.ipynb` on CUDA through
 Do not run a complete 3,769-image portable evaluation or Core ML conversion
 until this exact pair is reviewed. M57 performs no training or weight changes.
 Product safety remains false because Pedestrian nearby recall is below `0.80`.
+
+### M57 fresh-runtime recovery correction (2026-09-15)
+
+The first M57 preparation attempt correctly rejected a missing runtime YAML.
+M56d had recorded that file under the ephemeral path
+`/content/MonoDGP_M56D/configs/monodgp_m56d_det2d_fp32_storage.yaml`, which is
+not preserved across Colab restarts. The exact YAML is now checked in as
+`configs/monodgp_m56d_runtime_frozen.yaml` with the identical reviewed SHA-256
+`4ad6d50241e5a6dd552e5d8b9c043241a11377c26c59b84ab3d2f7f58c7a42af`.
+M57 accepts the durable path only after both the M56d-recorded hash and the
+actual file hash match that constant. The notebook also recreates the exact
+historical `/content/monodgp_kitti_m56d` dataset alias used inside the frozen
+YAML. No model, weight, decoding, or evaluation rule changed.

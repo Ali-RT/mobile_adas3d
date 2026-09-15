@@ -27,6 +27,7 @@ M56D_SMOKE_SHA256 = "56678d529fda787441f842453e5f198c3d5017b4a0d8cb82373110713f7
 M56D_GATE_SHA256 = "4012d800c3972e15922ca0d3dd530cad8437f575f433d93b3708182a062227ad"
 M56D_COMPARISON_SHA256 = "d64529315414d841f2658f69442722c2548e783a375f5bfcb9a46bdb2937c95f"
 M56D_CANDIDATE_SHA256 = "7d18883d6f998e7616beaa45b92d348b22728f3fad87a891618b5ce5a1cde17c"
+M56D_RUNTIME_CONFIG_SHA256 = "4ad6d50241e5a6dd552e5d8b9c043241a11377c26c59b84ab3d2f7f58c7a42af"
 M57_PATCHED_SOURCE_SHA256 = "517cbdb0ab3686f8f708f633c816b971ed1ed99d0be270d7d8d27bc1195f3fbd"
 M56D_POLICY_ID = "m56d_det2d_transformer_fp32"
 M57_POLICY_ID = "m57_rank5_grid_sample_decomposition"
@@ -146,6 +147,14 @@ def main() -> None:
     parser.add_argument("--m56d-smoke", type=Path, required=True)
     parser.add_argument("--m56d-gate", type=Path, required=True)
     parser.add_argument("--m56d-comparison", type=Path, required=True)
+    parser.add_argument(
+        "--runtime-config",
+        type=Path,
+        help=(
+            "Hash-identical durable copy of the M56d runtime YAML. "
+            "Defaults to the historical path recorded in the M56d manifest."
+        ),
+    )
     parser.add_argument("--output-root", type=Path, required=True)
     args = parser.parse_args()
 
@@ -172,13 +181,19 @@ def main() -> None:
         args.m56d_comparison.resolve(),
     )
     checkpoint = Path(m56d_manifest["candidate_checkpoint"]).resolve()
-    runtime_config = Path(m56d_manifest["runtime_config"]).resolve()
+    recorded_runtime_config = Path(m56d_manifest["runtime_config"]).resolve()
+    runtime_config = (
+        args.runtime_config.resolve()
+        if args.runtime_config is not None
+        else recorded_runtime_config
+    )
     attention_source = repo / "lib/models/monodgp/ops/modules/ms_deform_attn.py"
     if not checkpoint.is_file() or sha256_file(checkpoint) != M56D_CANDIDATE_SHA256:
         raise RuntimeError("Selected M56d checkpoint is missing or changed")
     if (
         not runtime_config.is_file()
-        or sha256_file(runtime_config) != m56d_manifest["runtime_config_sha256"]
+        or m56d_manifest["runtime_config_sha256"] != M56D_RUNTIME_CONFIG_SHA256
+        or sha256_file(runtime_config) != M56D_RUNTIME_CONFIG_SHA256
     ):
         raise RuntimeError("M56d runtime config is missing or changed")
     if (
@@ -231,7 +246,7 @@ def main() -> None:
         "m56d_comparison_sha256": sha256_file(args.m56d_comparison.resolve()) == M56D_COMPARISON_SHA256,
         "m56d_selected": m56d_gate.get("offline_compression_candidate_selected") is True,
         "candidate_checkpoint_sha256": sha256_file(checkpoint) == M56D_CANDIDATE_SHA256,
-        "runtime_config_sha256": sha256_file(runtime_config) == m56d_manifest["runtime_config_sha256"],
+        "runtime_config_sha256": sha256_file(runtime_config) == M56D_RUNTIME_CONFIG_SHA256,
         "pinned_upstream_commit": commit == PINNED_COMMIT,
         "exact_patched_source_sha256": sha256_file(attention_source) == M57_PATCHED_SOURCE_SHA256,
         "exact_patched_file_set": patched_files == EXPECTED_PATCHED_FILES,
@@ -280,7 +295,8 @@ def main() -> None:
         "checkpoint_epoch": 100,
         "m56d_metrics": EXPECTED_M56D_METRICS,
         "runtime_config": str(runtime_config),
-        "runtime_config_sha256": m56d_manifest["runtime_config_sha256"],
+        "runtime_config_sha256": M56D_RUNTIME_CONFIG_SHA256,
+        "m56d_recorded_runtime_config": str(recorded_runtime_config),
         "dataset_root": m56d_manifest["dataset_root"],
         "split_protocol": "chen_3712_3769",
         "preparation_gate_results": preparation_gates,

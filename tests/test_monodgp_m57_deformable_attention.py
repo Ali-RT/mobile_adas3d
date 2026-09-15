@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import unittest
 from pathlib import Path
@@ -15,6 +16,7 @@ from scripts.prepare_monodgp_m57_deformable_attention import (
     M56D_COMPARISON_SHA256,
     M56D_GATE_SHA256,
     M56D_MANIFEST_SHA256,
+    M56D_RUNTIME_CONFIG_SHA256,
     M56D_SMOKE_SHA256,
     M57_PATCHED_SOURCE_SHA256,
 )
@@ -85,11 +87,17 @@ class MonoDGPM57Tests(unittest.TestCase):
             M56D_GATE_SHA256,
             M56D_COMPARISON_SHA256,
             M56D_CANDIDATE_SHA256,
+            M56D_RUNTIME_CONFIG_SHA256,
             M57_PATCHED_SOURCE_SHA256,
         )
         self.assertTrue(all(len(value) == 64 for value in values))
         self.assertEqual(len(EXPECTED_MODULES), 9)
         self.assertEqual(len(set(EXPECTED_MODULES)), 9)
+        runtime_config = ROOT / "configs/monodgp_m56d_runtime_frozen.yaml"
+        self.assertEqual(
+            hashlib.sha256(runtime_config.read_bytes()).hexdigest(),
+            M56D_RUNTIME_CONFIG_SHA256,
+        )
 
     def test_prepare_fails_closed(self):
         source = (ROOT / "scripts/prepare_monodgp_m57_deformable_attention.py").read_text()
@@ -98,6 +106,7 @@ class MonoDGPM57Tests(unittest.TestCase):
             "M56D_SMOKE_SHA256",
             "M56D_GATE_SHA256",
             "M56D_COMPARISON_SHA256",
+            "M56D_RUNTIME_CONFIG_SHA256",
             "M57_PATCHED_SOURCE_SHA256",
             "EXPECTED_PATCHED_FILES",
         ):
@@ -141,6 +150,9 @@ class MonoDGPM57Tests(unittest.TestCase):
         self.assertIn("smoke_test_monodgp_m57_deformable_attention.py", code)
         self.assertIn("m57_deformable_attention_manifest.json", code)
         self.assertIn("m57_deformable_attention_smoke.json", code)
+        self.assertIn("monodgp_m56d_runtime_frozen.yaml", code)
+        self.assertIn("'--runtime-config',M56D_RUNTIME_CONFIG", code)
+        self.assertIn("DATASET_ROOT=Path('/content/monodgp_kitti_m56d')", code)
         self.assertNotIn("evaluate_only", code)
         self.assertIn("Stop point 1", code)
 

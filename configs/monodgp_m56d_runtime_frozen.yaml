@@ -1,0 +1,110 @@
+random_seed: 444
+dataset:
+  type: KITTI
+  root_dir: /content/monodgp_kitti_m56d
+  train_split: train
+  test_split: val
+  batch_size: 1
+  use_3d_center: true
+  class_merging: false
+  use_dontcare: false
+  bbox2d_type: anno
+  meanshape: false
+  writelist:
+  - Car
+  - Pedestrian
+  clip_2d: false
+  aug_pd: false
+  aug_crop: false
+  random_flip: 0.0
+  random_crop: 0.0
+  random_mixup3d: 0.0
+  scale: 0.05
+  shift: 0.05
+  depth_scale: normal
+  class_mapping:
+    Car: Car
+    Van: Car
+    Truck: Car
+    Tram: Car
+    Pedestrian: Pedestrian
+    Person_sitting: Pedestrian
+model_name: monodgp_m56d_det2d_fp32_storage
+model:
+  num_classes: 3
+  return_intermediate_dec: true
+  device: cuda
+  backbone: resnet50
+  train_backbone: true
+  num_feature_levels: 4
+  dilation: false
+  position_embedding: sine
+  masks: false
+  mode: LID
+  num_depth_bins: 80
+  depth_min: 1e-3
+  depth_max: 60.0
+  with_box_refine: true
+  use_dn: false
+  init_box: false
+  enc_layers: 3
+  dec_layers: 3
+  hidden_dim: 256
+  dim_feedforward: 256
+  dropout: 0.1
+  nheads: 8
+  num_queries: 50
+  group_num: 11
+  enc_n_points: 4
+  dec_n_points: 4
+  scalar: 5
+  label_noise_scale: 0.2
+  box_noise_scale: 0.4
+  num_patterns: 0
+  aux_loss: true
+  cls_loss_coef: 2
+  focal_alpha: 0.25
+  bbox_loss_coef: 5
+  giou_loss_coef: 2
+  3dcenter_loss_coef: 10
+  dim_loss_coef: 1
+  angle_loss_coef: 1
+  depth_loss_coef: 1
+  depth_map_loss_coef: 1
+  region_loss_coef: 1
+  set_cost_class: 2
+  set_cost_bbox: 5
+  set_cost_giou: 2
+  set_cost_3dcenter: 10
+optimizer:
+  type: adamw
+  lr: 0.0002
+  weight_decay: 0.0001
+lr_scheduler:
+  type: step
+  warmup: false
+  decay_rate: 0.5
+  decay_list:
+  - 85
+  - 125
+  - 165
+  - 205
+trainer:
+  max_epoch: 0
+  gpu_ids: '1'
+  save_frequency: 1
+  save_path: ../drive/MyDrive/mobile_adas3d_outputs/compression/monodgp_m56d_det2d_fp32_storage
+  save_all: true
+  use_dn: false
+  scalar: 5
+  label_noise_scale: 0.2
+  box_noise_scale: 0.4
+  num_patterns: 0
+  pretrain_model: null
+  resume_model: false
+tester:
+  type: KITTI
+  mode: single
+  checkpoint: 100
+  threshold: 0.001
+  topk: 50

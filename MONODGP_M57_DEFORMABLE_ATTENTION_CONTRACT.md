@@ -27,11 +27,15 @@ Passing it cannot qualify Core ML, iPhone performance, or safety.
   `4012d800c3972e15922ca0d3dd530cad8437f575f433d93b3708182a062227ad`.
 - M56d comparison CSV SHA-256:
   `d64529315414d841f2658f69442722c2548e783a375f5bfcb9a46bdb2937c95f`.
+- M56d runtime-config SHA-256:
+  `4ad6d50241e5a6dd552e5d8b9c043241a11377c26c59b84ab3d2f7f58c7a42af`.
 - Validation sample: first Chen validation image, `000001`.
 - Static feature geometry: `48x160`, `24x80`, `12x40`, and `6x20`.
 
 Preparation fails closed if any artifact, hash, source file, module inventory,
 checkpoint, runtime config, split, or default execution mode changes.
+The durable checked-in runtime YAML is allowed to replace the ephemeral
+absolute path recorded by M56d only when its SHA-256 is exactly identical.
 
 ## Replacement boundary
 
