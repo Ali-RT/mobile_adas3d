@@ -3330,7 +3330,7 @@ The reviewed gate JSON and comparison CSV SHA-256 values are
 `63f2b71d1f5be69bad31907db229f79e39fb17c033ba43999c6fdfe1df3b97a7`
 and `687b15cd4a044981f4e00fa038f2fc5e7053cee692e13bfdb85fe2f90656412d`.
 The portable prediction-tree SHA-256 is
-`b550362a6f0ba77667b69cf2a15a457c419c1e0db4751e2704228a762841ca05d`.
+`b550362a6f0ba77667b69cf2a15a457c419c1e0db4751e2704228a762841ca05`.
 The complete run produced 3,769/3,769 prediction files and passed all nine
 frozen preservation gates. The comparison CSV independently agrees with the
 gate JSON: every candidate-minus-M56d metric delta is zero at the reported
@@ -3343,3 +3343,25 @@ Decision: select the M57 portable deformable-attention operator and authorize
 only a separate M58 fixed-shape Core ML conversion/parity gate. No training or
 weight change occurred. Direct Core ML conversion, deployment, and product
 safety remain unauthorized; nearby Pedestrian recall is still below `0.80`.
+
+### M58 fixed-shape Core ML conversion gate prepared (2026-09-15)
+
+M58 is frozen in `MONODGP_M58_COREML_CONVERSION_CONTRACT.md`. It binds the
+exact M56d checkpoint and the reviewed M57 manifest, smoke, complete gate, and
+comparison CSV. The first conversion uses the unchanged FP32 runtime semantics
+to isolate graph compatibility from later precision compression.
+
+The fixed interface is image `1x3x384x1280`, calibration `1x3x4`, and
+image-size `1x2`. The graph returns the seven main MonoDGP tensors while
+post-processing remains outside the model. The Colab workflow traces one real
+Chen validation sample, checks the unchanged M56-family raw-output tolerances,
+and converts to an iOS 17 FP32 ML Program with `coremltools==9.0` and
+`skip_model_load=True`. It requires MIL `resample` and rejects custom
+operators.
+
+Run every cell in
+`notebooks/MonoDGP_M58_CoreML_Conversion_Colab.ipynb` and return
+`m58_coreml_export_gate.json`. The generated package, ZIP, TorchScript, and
+reference I/O stay in Google Drive. A pass authorizes only a separate macOS
+Core ML prediction-parity step. It does not authorize physical-device testing,
+FP16 conversion, quantization, deployment, or product safety.

@@ -134,7 +134,7 @@ The reviewed gate JSON and comparison CSV SHA-256 values are
 `63f2b71d1f5be69bad31907db229f79e39fb17c033ba43999c6fdfe1df3b97a7`
 and `687b15cd4a044981f4e00fa038f2fc5e7053cee692e13bfdb85fe2f90656412d`.
 The portable prediction-tree SHA-256 is
-`b550362a6f0ba77667b69cf2a15a457c419c1e0db4751e2704228a762841ca05d`.
+`b550362a6f0ba77667b69cf2a15a457c419c1e0db4751e2704228a762841ca05`.
 All 3,769 prediction files were present and all nine preservation gates
 passed. Every portable result equaled M56d at the reported precision: moderate
 3D Vehicle/Pedestrian/mean AP_R40 was `19.4666/6.1848/12.8257`, moderate BEV
