@@ -3301,3 +3301,25 @@ M57 accepts the durable path only after both the M56d-recorded hash and the
 actual file hash match that constant. The notebook also recreates the exact
 historical `/content/monodgp_kitti_m56d` dataset alias used inside the frozen
 YAML. No model, weight, decoding, or evaluation rule changed.
+
+### M57 Stop point 1 passed (2026-09-15)
+
+The reviewed M57 manifest and smoke SHA-256 values are
+`7c4757798dfff4d95053912730faff4c5d7a4626ff41a539ad87b2f9193eb313`
+and `2a96cffd8e1e6b77f2c547c2b94dca4bde2e72bf4185d853ee7bca71ed28b3b0`.
+All preparation, nine-module parity, three-signature trace, full-output,
+finiteness, FP32-runtime, and zero-portable-native-call checks passed. The
+largest module delta was `3.11e-6`; final depth delta was `9.16e-5 m`.
+
+Same-process A100 native/portable mean latency was `37.92/47.00 ms` and p95
+was `38.53/48.30 ms`; portable peak allocated CUDA memory was
+`991,836,160` versus `653,408,256` bytes. These figures prove the fallback
+is less efficient on CUDA but do not predict Core ML behavior.
+
+Run every cell in
+`notebooks/MonoDGP_M57_Complete_Validation_Colab.ipynb`. It reuses the exact
+reviewed evidence and runs the portable path over all 3,769 validation images.
+Return `m57_portable_attention_gate.json` and
+`m57_portable_attention_comparison.csv`. No training or Core ML conversion
+occurs. Full-model Core ML conversion remains blocked until this second stop
+passes.

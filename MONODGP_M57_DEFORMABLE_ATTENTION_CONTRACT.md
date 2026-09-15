@@ -1,6 +1,6 @@
 # MonoDGP M57 Portable Deformable-Attention Contract
 
-Status: frozen before M57 execution.
+Status: Stop point 1 passed; complete portable-path validation authorized.
 
 ## Purpose
 
@@ -97,11 +97,36 @@ Stop and return:
 - `m57_deformable_attention_manifest.json`
 - `m57_deformable_attention_smoke.json`
 
+## Reviewed stop-point evidence
+
+The exact returned manifest and smoke report passed review:
+
+- manifest SHA-256:
+  `7c4757798dfff4d95053912730faff4c5d7a4626ff41a539ad87b2f9193eb313`;
+- smoke SHA-256:
+  `2a96cffd8e1e6b77f2c547c2b94dca4bde2e72bf4185d853ee7bca71ed28b3b0`.
+
+All nine module comparisons, all three trace signatures, every raw-output
+family, output finiteness/structure, FP32 runtime parameters, and the zero
+portable native-call requirement passed. The largest local module delta was
+`3.11e-6` against `1e-3`; final depth delta was `9.16e-5 m` against
+`0.50 m`.
+
+On the same A100 process, the native/portable mean latency was
+`37.92/47.00 ms` and p95 was `38.53/48.30 ms`. The portable path was
+about `1.24x` slower and peak allocated CUDA memory increased from
+`653,408,256` to `991,836,160` bytes. These are diagnostic CUDA results,
+not Core ML or iPhone projections.
+
 ## Continuation barrier
 
-Only after the exact manifest and smoke pass review may M57 run a complete
-3,769-image portable-path validation against all M54/M56d preservation gates.
-Only after that pass may a separate fixed-shape Core ML conversion gate begin.
+The exact pair above has passed review. M57 may now run a complete 3,769-image
+portable-path validation against all M54/M56d preservation gates using
+`MonoDGP_M57_Complete_Validation_Colab.ipynb`. The smoke field
+`coreml_microkernel_conversion_authorized=true` records operator
+traceability only; it does not authorize full-model conversion. Only after the
+complete validation passes may a separate fixed-shape Core ML conversion gate
+begin.
 
 Even a full M57 pass does not authorize deployment. Physical-device latency,
 memory, thermal stability, artifact integrity, decoded parity, and external

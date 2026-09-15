@@ -132,9 +132,10 @@ class MonoDGPM57Tests(unittest.TestCase):
 
     def test_contract_freezes_first_stop(self):
         contract = (ROOT / "MONODGP_M57_DEFORMABLE_ATTENTION_CONTRACT.md").read_text()
-        self.assertIn("Status: frozen before M57 execution", contract)
+        self.assertIn("Status: Stop point 1 passed", contract)
         self.assertIn("maximum absolute delta no greater than `1e-3`", contract)
-        self.assertIn("3,769-image portable-path validation", contract)
+        self.assertIn("complete 3,769-image", contract)
+        self.assertIn("portable-path validation", contract)
         self.assertIn("Physical-device latency", contract)
 
     def test_notebook_is_standalone_and_stops_after_smoke(self):
