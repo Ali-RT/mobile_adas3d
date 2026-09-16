@@ -3371,14 +3371,18 @@ messages are warnings only. This pass authorizes M59 macOS prediction parity;
 it does not authorize physical-device testing, FP16 conversion, quantization,
 deployment, or product safety.
 
-### M59 macOS Core ML prediction parity prepared (2026-09-15)
+### M59 macOS Core ML prediction parity rejected (2026-09-15)
 
-Run `scripts/validate_monodgp_m58_macos_parity.py` on a Mac with the exact
-M58 `.mlpackage`, `m58_reference_io.npz`, and `m58_coreml_export_gate.json`.
-The validator compares all ten raw tensors under the unchanged M56 limits and
-the deterministic top-50 decoded candidates. It writes
-`m58_macos_coreml_parity.json`; only a complete pass can authorize a later
-iPhone runtime/thermal test or a separate FP16/quantization experiment.
+The exact package was executed on macOS 26.6.2 using Core ML Tools 9.0 and ALL
+compute units. Prediction completed in `8.50 s`, but the gate rejected the
+runtime output: maximum deltas were `0.2009` logits, `0.0262` boxes, `0.6534`
+dimensions, `9.4795` depth, and `1.0098` angle against unchanged M56 limits.
+Depth-map logits and all four region-pyramid outputs passed. The decoded
+top-50 candidates had a `39.6842` maximum delta and seven class-rank changes.
+The CPU_ONLY retry remained in macOS AOT compilation and was stopped after a
+bounded wait. Report: `m58_macos_coreml_parity_20260915.json`. No iPhone,
+FP16, quantization, deployment, or product-safety work is authorized until
+the numerical drift is explained and a revised parity gate passes.
 
 ### M58 first-attempt interface correction (2026-09-15)
 

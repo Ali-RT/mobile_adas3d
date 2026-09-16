@@ -16,11 +16,10 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-- Current phase: **M58 Stop point 1 passed; M59 macOS parity pending**
-- Active task: run `scripts/validate_monodgp_m58_macos_parity.py` on macOS with
-  the exact M58 `.mlpackage`, `m58_reference_io.npz`, and export gate. Physical-
-  device qualification, FP16/quantization, and deployment remain separate
-  decisions.
+- Current phase: **M59 macOS parity rejected; runtime drift investigation**
+- Active task: diagnose the Core ML runtime numerical drift before any device,
+  FP16, quantization, or deployment test. The completed ALL-units run is saved
+  as `m58_macos_coreml_parity_20260915.json` in Downloads.
 - Selected accuracy parent: **M54 MonoDGP epoch 100**, checkpoint SHA-256
   `8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847`.
 - Legacy accuracy reference: **R0 ResNet50 MonoDETR, epoch 185**.
@@ -101,7 +100,7 @@ not constrain the current accuracy-development stage.
 | M56d | FP16 storage with complete 2D transformer in FP32 | Complete—offline compressed checkpoint selected | The candidate is 98,048,696 bytes versus 173,610,189 bytes for the paired FP32 model-only artifact (`0.564763` ratio; 75,561,493 bytes saved). Every smoke gate and all nine complete-validation preservation gates passed on 3,769/3,769 images. Moderate 3D Vehicle/Pedestrian/mean was `19.4666/6.1848/12.8257`; BEV was `25.7349/6.7651`; nearby recall was `0.90993/0.72399`; Pedestrian localization-failure rate was `0.23854`. This selects an offline storage artifact only. |
 | M57 | Deformable-attention export replacement | Complete—portable operator selected | Exact manifest/smoke hashes `7c475779…313`/`2a96cffd…3b0` passed nine module checks, three traces, and raw-output parity with zero native-extension calls. Complete validation produced 3,769/3,769 files, all nine preservation gates passed, and every metric exactly matched M56d at reported precision. A100 portable CUDA inference was ~1.24× slower and used ~52% more peak allocated memory. The next fixed-shape Core ML parity experiment is authorized; direct conversion, deployment, and product-safety qualification are not. |
 | M58 | Fixed-shape FP32 Core ML conversion | Complete—Stop point 1 passed | The corrected workflow produced the iOS 17 FP32 ML Program, TorchScript, reference I/O, and ZIP. All export gates passed: exact M56d/M57 provenance, ten-output interface, trace parity, `grid_sampler`, MIL `resample`, and zero custom MIL operators. The report sets `macos_coreml_prediction_parity_authorized=true`; physical-device testing, FP16/quantization, deployment, and product safety remain false. |
-| M59 | macOS Core ML raw and decoded-candidate parity | Pending | `scripts/validate_monodgp_m58_macos_parity.py` loads the exact `.mlpackage`, export gate, and reference I/O, compares all ten outputs using unchanged M56 limits, and checks deterministic top-50 decoded candidates. A pass is required before any iPhone runtime or precision-compression experiment. |
+| M59 | macOS Core ML raw and decoded-candidate parity | Complete—rejected | The package executed on macOS 26.6.2 with Core ML Tools 9.0 and ALL compute units in `8.50 s`, but the gate failed: logits/boxes/dimensions/depth/angle exceeded unchanged M56 limits (`0.2009/0.0262/0.6534/9.4795/1.0098` max deltas), and decoded candidates reached `39.6842` max delta with 7/50 class-rank changes. Depth-map and all four region outputs passed. CPU_ONLY compilation did not finish within the bounded retry. No iPhone, FP16, quantization, or product-safety work is authorized. |
 
 **M53 completion note:** the model and official evaluator passed after the public-API import correction. The prior JSON failed only because it compared an independent reimplementation directly with published native-evaluator values. The corrected schema-v2 finalizer reused the complete prediction set and native log, and all frozen M53 gates passed.
 
