@@ -16,10 +16,12 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-- Current phase: **M59 macOS parity rejected; runtime drift investigation**
-- Active task: diagnose the Core ML runtime numerical drift before any device,
-  FP16, quantization, or deployment test. The completed ALL-units run is saved
-  as `m58_macos_coreml_parity_20260915.json` in Downloads.
+- Current phase: **M59 rejected; M59b intermediate-tensor diagnostic prepared**
+- Active task: run the separate M59b Colab export, then execute its diagnostic
+  package on macOS to locate the first Core ML runtime divergence. No device,
+  FP16, quantization, or deployment test is authorized. The completed M59
+  ALL-units run is saved as `m58_macos_coreml_parity_20260915.json` in
+  Downloads.
 - Selected accuracy parent: **M54 MonoDGP epoch 100**, checkpoint SHA-256
   `8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847`.
 - Legacy accuracy reference: **R0 ResNet50 MonoDETR, epoch 185**.
@@ -101,6 +103,7 @@ not constrain the current accuracy-development stage.
 | M57 | Deformable-attention export replacement | Complete—portable operator selected | Exact manifest/smoke hashes `7c475779…313`/`2a96cffd…3b0` passed nine module checks, three traces, and raw-output parity with zero native-extension calls. Complete validation produced 3,769/3,769 files, all nine preservation gates passed, and every metric exactly matched M56d at reported precision. A100 portable CUDA inference was ~1.24× slower and used ~52% more peak allocated memory. The next fixed-shape Core ML parity experiment is authorized; direct conversion, deployment, and product-safety qualification are not. |
 | M58 | Fixed-shape FP32 Core ML conversion | Complete—Stop point 1 passed | The corrected workflow produced the iOS 17 FP32 ML Program, TorchScript, reference I/O, and ZIP. All export gates passed: exact M56d/M57 provenance, ten-output interface, trace parity, `grid_sampler`, MIL `resample`, and zero custom MIL operators. The report sets `macos_coreml_prediction_parity_authorized=true`; physical-device testing, FP16/quantization, deployment, and product safety remain false. |
 | M59 | macOS Core ML raw and decoded-candidate parity | Complete—rejected | The package executed on macOS 26.6.2 with Core ML Tools 9.0 and ALL compute units in `8.50 s`, but the gate failed: logits/boxes/dimensions/depth/angle exceeded unchanged M56 limits (`0.2009/0.0262/0.6534/9.4795/1.0098` max deltas), and decoded candidates reached `39.6842` max delta with 7/50 class-rank changes. Depth-map and all four region outputs passed. CPU_ONLY compilation did not finish within the bounded retry. No iPhone, FP16, quantization, or product-safety work is authorized. |
+| M59b | Core ML intermediate-tensor diagnostic | Prepared—run Colab then macOS | The separate diagnostic exporter returns backbone/projection, region/depth, 2D-query, 3D-query, raw-head, and final-output tensors in causal order. It reuses exact M58/M57 provenance, keeps the product package unchanged, and reports `first_diverging_tensor` with a `1e-3` probe limit. No device, FP16, quantization, or product-safety work is authorized. |
 
 **M53 completion note:** the model and official evaluator passed after the public-API import correction. The prior JSON failed only because it compared an independent reimplementation directly with published native-evaluator values. The corrected schema-v2 finalizer reused the complete prediction set and native log, and all frozen M53 gates passed.
 
@@ -381,12 +384,13 @@ frozen; passing AP does not by itself authorize deployment.
     decomposition while native CUDA remains the unchanged default path. Both
     stop points passed; the complete 3,769-image run preserved all nine metrics
     exactly at reported precision.
-39. **Corrected—rerun next:** execute
-    `MonoDGP_M58_CoreML_Conversion_Colab.ipynb` and return
-    `m58_coreml_export_gate.json`.
-40. If Stop point 1 passes, require macOS PyTorch/Core ML raw and decoded
-    parity before separate physical
-    iPhone latency, memory, sustained thermal, and artifact qualification.
+39. **Prepared—run next:** execute
+    `MonoDGP_M59b_CoreML_Intermediate_Diagnostic_Colab.ipynb` and return
+    `m59b_coreml_diagnostic_export_gate.json`, the diagnostic reference I/O,
+    and the package/ZIP.
+40. Run `scripts/validate_monodgp_m59b_macos_diagnostics.py` on macOS and
+    report `first_diverging_tensor`. Do not begin device, FP16, quantization,
+    or deployment work until the numerical drift is explained.
 
 ## Decision rules
 
@@ -415,6 +419,7 @@ frozen; passing AP does not by itself authorize deployment.
 - M56d det2d-FP32 storage contract: `MONODGP_M56D_DET2D_FP32_STORAGE_CONTRACT.md`
 - M57 portable deformable-attention contract: `MONODGP_M57_DEFORMABLE_ATTENTION_CONTRACT.md`
 - M58 fixed-shape Core ML contract: `MONODGP_M58_COREML_CONVERSION_CONTRACT.md`
+- M59b intermediate-tensor diagnostic contract: `MONODGP_M59B_COREML_DIAGNOSTIC_CONTRACT.md`
 - R0 protocol: `TWO_CLASS_REFERENCE_PROTOCOL.md`
 - Full chronological evidence: `MobileADAS3D_Codex_Handoff_20260715.md`
 - Current status and next task: this file

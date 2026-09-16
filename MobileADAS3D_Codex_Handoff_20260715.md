@@ -3384,6 +3384,28 @@ bounded wait. Report: `m58_macos_coreml_parity_20260915.json`. No iPhone,
 FP16, quantization, deployment, or product-safety work is authorized until
 the numerical drift is explained and a revised parity gate passes.
 
+### M59b intermediate-tensor diagnostic prepared (2026-09-15)
+
+M59b is the controlled follow-up to the rejected M59 runtime-parity gate. The
+M58 product package is left unchanged. The new exporter
+`scripts/export_monodgp_m59b_coreml_diagnostics.py` reuses the exact M56d/M57/M58
+provenance and creates a separate FP32 ML Program whose outputs are causal
+diagnostic taps: backbone features and positions, input projections,
+region/depth tensors, the final 2D and 3D transformer query states, raw
+prediction heads, and final outputs. Its output order is frozen in the export
+gate so the macOS validator can report `first_diverging_tensor` rather than
+only reporting a final-output mismatch.
+
+The reproducible Colab entry point is
+`notebooks/MonoDGP_M59b_CoreML_Intermediate_Diagnostic_Colab.ipynb`; it returns
+`m59b_coreml_diagnostic_export_gate.json`,
+`m59b_diagnostic_reference_io.npz`, and a separate diagnostic `.mlpackage`/ZIP.
+Run `scripts/validate_monodgp_m59b_macos_diagnostics.py` on macOS after copying
+those artifacts. A failed diagnostic is still useful because its first failed
+tap identifies the next implementation boundary. No iPhone, FP16,
+quantization, deployment, or product-safety experiment is authorized until a
+revised raw-output parity gate passes.
+
 ### M58 first-attempt interface correction (2026-09-15)
 
 The first Colab attempt loaded the exact checkpoint and reached the portable
