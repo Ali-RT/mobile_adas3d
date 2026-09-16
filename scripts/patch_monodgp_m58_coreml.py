@@ -13,12 +13,12 @@ def replace_once(path: Path, old: str, new: str, label: str) -> None:
     text = path.read_text(encoding="utf-8")
     old_count = text.count(old)
     new_count = text.count(new)
-    if old_count == 1 and new_count == 0:
+    if new_count == 1:
+        print(f"already patched {label}")
+        return
+    if old_count == 1:
         path.write_text(text.replace(old, new), encoding="utf-8")
         print(f"patched {label}")
-        return
-    if old_count == 0 and new_count == 1:
-        print(f"already patched {label}")
         return
     raise RuntimeError(
         f"Unexpected {label} source in {path}: old={old_count}, new={new_count}"
@@ -29,12 +29,12 @@ def replace_count(path: Path, old: str, new: str, expected: int, label: str) -> 
     text = path.read_text(encoding="utf-8")
     old_count = text.count(old)
     new_count = text.count(new)
-    if old_count == expected and new_count == 0:
+    if new_count == expected:
+        print(f"already patched {label}")
+        return
+    if old_count == expected:
         path.write_text(text.replace(old, new), encoding="utf-8")
         print(f"patched {label} ({expected} occurrences)")
-        return
-    if old_count == 0 and new_count == expected:
-        print(f"already patched {label}")
         return
     raise RuntimeError(
         f"Unexpected {label} source in {path}: old={old_count}, new={new_count}"
@@ -92,7 +92,11 @@ def patch_repo(repo: Path) -> None:
     if model_marker not in text:
         replace_once(
             model,
+            "        self.aux_loss = aux_loss\n"
+            "        self.with_box_refine = with_box_refine\n"
             "        self.num_classes = num_classes\n",
+            "        self.aux_loss = aux_loss\n"
+            "        self.with_box_refine = with_box_refine\n"
             "        self.num_classes = num_classes\n"
             "        self.m58_coreml_export_compat = False\n",
             "MonoDGP export flag",
