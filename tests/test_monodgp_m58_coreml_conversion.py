@@ -73,12 +73,13 @@ class MonoDGPM58CoreMLConversionTests(unittest.TestCase):
 
     def test_contract_preserves_all_later_barriers(self):
         contract = (ROOT / "MONODGP_M58_COREML_CONVERSION_CONTRACT.md").read_text()
-        self.assertIn("Status: prepared", contract)
+        self.assertIn("Status: complete", contract)
         self.assertIn("Stop point 1", contract)
         self.assertIn("macOS Core ML prediction-parity", contract)
         self.assertIn("physical-iPhone latency", contract)
         self.assertIn("FP16 Core ML conversion or quantization", contract)
         self.assertIn("the separate `0.80` target", contract)
+        self.assertIn("validate_monodgp_m58_macos_parity.py", contract)
 
     def test_notebook_is_standalone_and_stops_after_conversion(self):
         path = ROOT / "notebooks/MonoDGP_M58_CoreML_Conversion_Colab.ipynb"

@@ -1,6 +1,6 @@
 # MonoDGP M58 Fixed-Shape Core ML Conversion Contract
 
-Status: prepared; experimental conversion Stop point 1 pending.
+Status: complete; experimental conversion Stop point 1 passed.
 
 ## Purpose
 
@@ -73,15 +73,18 @@ The gate requires:
    hashes; and
 9. no training, weight-change, deployment, or safety claim.
 
-Stop and return `m58_coreml_export_gate.json`. If conversion fails, return
+Stop and return `m58_coreml_export_gate.json`. The successful report must set
+`all_export_gates_passed=true` and
+`macos_coreml_prediction_parity_authorized=true`. If conversion fails, return
 the same JSON and the durable log; the report records the exception.
 
 ## Later barriers
 
-A Stop point 1 pass authorizes only a macOS Core ML prediction-parity run using
-the exact package and reference I/O hashes. That run must compare all ten raw
-tensors across the seven semantic output families, plus decoded detections on
-the same samples.
+A Stop point 1 pass authorizes only the M59 macOS Core ML prediction-parity
+run using the exact package and reference I/O hashes. Run
+`scripts/validate_monodgp_m58_macos_parity.py`; it compares all ten raw
+tensors across the seven semantic output families and the deterministic
+top-50 decoded candidates on the same sample.
 
 Only after macOS parity passes may physical-iPhone latency, peak memory,
 sustained thermal behavior, stability, and artifact-integrity testing begin.
