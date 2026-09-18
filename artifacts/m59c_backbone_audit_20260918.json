@@ -1,0 +1,235 @@
+{
+  "schema_version": 1,
+  "complete": true,
+  "experiment": "M59c backbone-focused Core ML audit",
+  "scope": "frozen M59b FP32 package; no training or weight changes",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "coremltools_version": "9.0",
+  "compute_units": "ALL",
+  "mlpackage": "/private/tmp/m59b_run/monodgp_m59b_coreml_diagnostic/MonoDGP_M59b_intermediate_diagnostic_fp32.mlpackage",
+  "mlpackage_tree_sha256": "0586e5b0b1a91a8dc94c3c0cc8adc6bb35d562cc83377c1043dcb81529304413",
+  "mlpackage_size_bytes": 184485935,
+  "reference_io": "/private/tmp/m59b_run/monodgp_m59b_coreml_diagnostic/m59b_diagnostic_reference_io.npz",
+  "reference_io_sha256": "f8d90d0101de03c008e60da8efbcda7af280c3840581dee60d426cae7fa85f05",
+  "prediction_seconds": 1.764765416,
+  "backbone": {
+    "backbone_feat_0": {
+      "shape": [
+        1,
+        512,
+        48,
+        160
+      ],
+      "reference_max_abs": 13.842000961303711,
+      "max_abs_delta": 3.938749432563782e-05,
+      "mean_abs_delta": 2.7129343038723164e-07,
+      "normalized_max_abs_delta": 2.8455058221530494e-06,
+      "strict_passed": true,
+      "scale_aware_passed": true,
+      "strict_limit": 0.001,
+      "relative_limit": 1e-05
+    },
+    "backbone_feat_1": {
+      "shape": [
+        1,
+        1024,
+        24,
+        80
+      ],
+      "reference_max_abs": 95.25228881835938,
+      "max_abs_delta": 0.0001850128173828125,
+      "mean_abs_delta": 6.008169748383807e-07,
+      "normalized_max_abs_delta": 1.942345109791758e-06,
+      "strict_passed": true,
+      "scale_aware_passed": true,
+      "strict_limit": 0.001,
+      "relative_limit": 1e-05
+    },
+    "backbone_feat_2": {
+      "shape": [
+        1,
+        2048,
+        12,
+        40
+      ],
+      "reference_max_abs": 592512384.0,
+      "max_abs_delta": 848.0,
+      "mean_abs_delta": 4.590310573577881,
+      "normalized_max_abs_delta": 1.4311937149317034e-06,
+      "strict_passed": false,
+      "scale_aware_passed": true,
+      "strict_limit": 0.001,
+      "relative_limit": 1e-05
+    },
+    "backbone_pos_0": {
+      "shape": [
+        1,
+        256,
+        48,
+        160
+      ],
+      "reference_max_abs": 1.0,
+      "max_abs_delta": 2.384185791015625e-07,
+      "mean_abs_delta": 5.1681983137541465e-09,
+      "normalized_max_abs_delta": 2.384185791015625e-07,
+      "strict_passed": true,
+      "scale_aware_passed": true,
+      "strict_limit": 0.001,
+      "relative_limit": 1e-05
+    },
+    "backbone_pos_1": {
+      "shape": [
+        1,
+        256,
+        24,
+        80
+      ],
+      "reference_max_abs": 1.0,
+      "max_abs_delta": 2.384185791015625e-07,
+      "mean_abs_delta": 5.291658222716933e-09,
+      "normalized_max_abs_delta": 2.384185791015625e-07,
+      "strict_passed": true,
+      "scale_aware_passed": true,
+      "strict_limit": 0.001,
+      "relative_limit": 1e-05
+    },
+    "backbone_pos_2": {
+      "shape": [
+        1,
+        256,
+        12,
+        40
+      ],
+      "reference_max_abs": 1.0,
+      "max_abs_delta": 2.384185791015625e-07,
+      "mean_abs_delta": 5.291620475134096e-09,
+      "normalized_max_abs_delta": 2.384185791015625e-07,
+      "strict_passed": true,
+      "scale_aware_passed": true,
+      "strict_limit": 0.001,
+      "relative_limit": 1e-05
+    }
+  },
+  "input_projections": {
+    "input_proj_0": {
+      "shape": [
+        1,
+        256,
+        48,
+        160
+      ],
+      "reference_max_abs": 9.025652885437012,
+      "max_abs_delta": 5.14984130859375e-05,
+      "mean_abs_delta": 4.199728209641762e-06,
+      "normalized_max_abs_delta": 5.705782588762165e-06,
+      "strict_passed": true,
+      "scale_aware_passed": true,
+      "strict_limit": 0.001,
+      "relative_limit": 1e-05
+    },
+    "input_proj_1": {
+      "shape": [
+        1,
+        256,
+        24,
+        80
+      ],
+      "reference_max_abs": 8.643101692199707,
+      "max_abs_delta": 5.8650970458984375e-05,
+      "mean_abs_delta": 3.8097471133369254e-06,
+      "normalized_max_abs_delta": 6.7858706917582785e-06,
+      "strict_passed": true,
+      "scale_aware_passed": true,
+      "strict_limit": 0.001,
+      "relative_limit": 1e-05
+    },
+    "input_proj_2": {
+      "shape": [
+        1,
+        256,
+        12,
+        40
+      ],
+      "reference_max_abs": 8.858453750610352,
+      "max_abs_delta": 4.863739013671875e-05,
+      "mean_abs_delta": 3.036459474969888e-06,
+      "normalized_max_abs_delta": 5.4905056238926134e-06,
+      "strict_passed": true,
+      "scale_aware_passed": true,
+      "strict_limit": 0.001,
+      "relative_limit": 1e-05
+    },
+    "input_proj_3": {
+      "shape": [
+        1,
+        256,
+        6,
+        20
+      ],
+      "reference_max_abs": 7.0893707275390625,
+      "max_abs_delta": 4.2438507080078125e-05,
+      "mean_abs_delta": 3.223197154511581e-06,
+      "normalized_max_abs_delta": 5.986216366880538e-06,
+      "strict_passed": true,
+      "scale_aware_passed": true,
+      "strict_limit": 0.001,
+      "relative_limit": 1e-05
+    }
+  },
+  "first_strict_diverging_tensor": "backbone_feat_2",
+  "first_material_diverging_tensor": null,
+  "model_output_names": [
+    "backbone_feat_0",
+    "backbone_feat_1",
+    "backbone_feat_2",
+    "backbone_pos_0",
+    "backbone_pos_1",
+    "backbone_pos_2",
+    "input_proj_0",
+    "input_proj_1",
+    "input_proj_2",
+    "input_proj_3",
+    "enhanced_src_0",
+    "enhanced_src_1",
+    "enhanced_src_2",
+    "enhanced_src_3",
+    "seg_embed_0",
+    "seg_embed_1",
+    "seg_embed_2",
+    "seg_embed_3",
+    "final_region_prob_0",
+    "final_region_prob_1",
+    "final_region_prob_2",
+    "final_region_prob_3",
+    "final_pred_depth_map_logits",
+    "depth_pos_embed",
+    "weighted_depth",
+    "det2d_hs_last",
+    "det3d_hs_last",
+    "final_pred_logits",
+    "final_pred_boxes",
+    "final_pred_3d_dim",
+    "final_pred_depth",
+    "final_pred_angle",
+    "final_pred_depth_map_logits",
+    "final_region_prob_0",
+    "final_region_prob_1",
+    "final_region_prob_2",
+    "final_region_prob_3"
+  ],
+  "missing_reference_outputs": [
+    "region_prob_0",
+    "region_prob_1",
+    "region_prob_2",
+    "region_prob_3",
+    "depth_map_logits"
+  ],
+  "backbone_strict_passed": false,
+  "backbone_scale_aware_passed": true,
+  "input_projections_strict_passed": true,
+  "required_backbone_and_projection_outputs_present": true,
+  "backbone_audit_passed": true,
+  "physical_device_testing_authorized": false,
+  "fp16_or_quantization_authorized": false,
+  "product_safety_qualified": false
+}

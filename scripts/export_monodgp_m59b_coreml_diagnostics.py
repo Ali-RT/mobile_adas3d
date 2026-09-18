@@ -368,9 +368,9 @@ def main() -> None:
                 self.taps.clear()
                 values = self.wrapped(image, calibration, None, image_size, dn_args=0)
                 for key in FINAL_OUTPUT_KEYS:
-                    self.taps[f"final_{key}"] = values[key]
+                    self.taps.put(f"final_{key}", values[key])
                 for index, value in enumerate(values["pred_region_prob"]):
-                    self.taps[f"final_region_prob_{index}"] = value
+                    self.taps.put(f"final_region_prob_{index}", value)
                 if not self.output_names:
                     self.output_names = list(self.taps.values.keys())
                 missing = [name for name in self.output_names if name not in self.taps.values]
