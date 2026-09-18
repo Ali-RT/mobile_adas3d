@@ -1,0 +1,172 @@
+{
+  "schema_version": 1,
+  "complete": true,
+  "experiment": "M59f macOS positional-interleaving repair parity",
+  "scope": "one frozen sample; not full validation or device qualification",
+  "compute_units": "ALL",
+  "deployment_authorized": false,
+  "physical_device_testing_authorized": false,
+  "product_safety_qualified": false,
+  "raw_intermediate_parity": {
+    "enhanced_src_0": {
+      "passed": true,
+      "shape": [
+        1,
+        256,
+        48,
+        160
+      ],
+      "max_abs_delta": 7.3909759521484375e-06,
+      "mean_abs_delta": 2.338919991018429e-08,
+      "limit": 0.001
+    },
+    "enhanced_src_1": {
+      "passed": true,
+      "shape": [
+        1,
+        256,
+        24,
+        80
+      ],
+      "max_abs_delta": 1.8953869584947824e-09,
+      "mean_abs_delta": 3.8930931395286805e-11,
+      "limit": 0.001
+    },
+    "enhanced_src_2": {
+      "passed": true,
+      "shape": [
+        1,
+        256,
+        12,
+        40
+      ],
+      "max_abs_delta": 4.874891601502895e-10,
+      "mean_abs_delta": 3.0289434155283956e-11,
+      "limit": 0.001
+    },
+    "enhanced_src_3": {
+      "passed": true,
+      "shape": [
+        1,
+        256,
+        6,
+        20
+      ],
+      "max_abs_delta": 4.2928149923682213e-10,
+      "mean_abs_delta": 3.230167869294753e-11,
+      "limit": 0.001
+    },
+    "depth_pos_embed": {
+      "passed": true,
+      "shape": [
+        1,
+        256,
+        24,
+        80
+      ],
+      "max_abs_delta": 0.00040090084075927734,
+      "mean_abs_delta": 6.945999189156282e-07,
+      "limit": 0.001
+    },
+    "weighted_depth": {
+      "passed": true,
+      "shape": [
+        1,
+        24,
+        80
+      ],
+      "max_abs_delta": 0.000152587890625,
+      "mean_abs_delta": 4.583597183227539e-05,
+      "limit": 0.001
+    },
+    "det2d_encoder_layer_0": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 7.200241088867188e-05,
+      "mean_abs_delta": 1.5861878637224436e-06,
+      "limit": 0.001
+    },
+    "det2d_encoder_layer_1": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 5.9604644775390625e-05,
+      "mean_abs_delta": 2.0609638795576757e-06,
+      "limit": 0.001
+    },
+    "det2d_encoder_layer_2": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 4.363059997558594e-05,
+      "mean_abs_delta": 1.8230825844511855e-06,
+      "limit": 0.001
+    },
+    "det2d_decoder_layer_0": {
+      "passed": true,
+      "shape": [
+        1,
+        50,
+        256
+      ],
+      "max_abs_delta": 2.0444393157958984e-05,
+      "mean_abs_delta": 2.0216214124957332e-06,
+      "limit": 0.001
+    },
+    "det2d_decoder_layer_1": {
+      "passed": true,
+      "shape": [
+        1,
+        50,
+        256
+      ],
+      "max_abs_delta": 2.3663043975830078e-05,
+      "mean_abs_delta": 3.1826871236262377e-06,
+      "limit": 0.001
+    },
+    "det2d_decoder_layer_2": {
+      "passed": true,
+      "shape": [
+        1,
+        50,
+        256
+      ],
+      "max_abs_delta": 5.888938903808594e-05,
+      "mean_abs_delta": 4.101270405953983e-06,
+      "limit": 0.001
+    },
+    "det2d_hs_last": {
+      "passed": true,
+      "shape": [
+        1,
+        50,
+        256
+      ],
+      "max_abs_delta": 5.888938903808594e-05,
+      "mean_abs_delta": 4.101270405953983e-06,
+      "limit": 0.001
+    }
+  },
+  "first_diverging_tensor": null,
+  "all_parity_gates_passed": true,
+  "stage": "layers",
+  "export_gate_sha256": "e62c813b7837229f1ccadd75c37707a76da615a69acfbe5e5a3730e9b51b2d55",
+  "source_torchscript_sha256": "edbf236c0b1c3f5a0d0748acd4c8bd425d6aeb109e86d8d0dcff1a13122d95e5",
+  "mlpackage_tree_sha256": "b63476d4ea5dfd8ee6ae7b0851c446fea7acf577c01f706649b8ab164a533876",
+  "reference_io_sha256": "d9f951890da42d420f43f9737fe88629ea3db53762c4f90fae3032e058e22195",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "coremltools_version": "9.0",
+  "load_compile_seconds": 1.026780707994476,
+  "first_prediction_seconds": 0.18364941701292992,
+  "timing_is_benchmark": false
+}

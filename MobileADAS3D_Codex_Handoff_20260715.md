@@ -3454,3 +3454,31 @@ PyTorch equivalence, then recheck all positional scales, encoder outputs, and
 full raw/decoded output parity. Do not change trained weights, model
 architecture, or tolerances. Device testing and precision compression remain
 blocked until full parity passes.
+
+### M59f positional-interleaving repair executed (2026-09-18)
+
+The frozen M59d/M58 traces were patched in memory only: four positional
+methods, eight stack/flatten pairs replaced by concatenation and explicit
+channel selection. CPU PyTorch full-model outputs before/after are bit-exact;
+no weights, architecture, inputs, FP32 policy, or gate limits changed.
+
+Actual macOS results: four positional scales, 18 encoder-internal tensors,
+13 region/depth/layer tensors, and ten full raw-output gates all pass.
+Fourth-scale positional max delta is 4.768372e-7, down from 1.999016.
+The complete decoded gate still fails at 0.000415802 vs 0.0001, in depth
+(approximately 0.416 mm) and dimensions (0.000161171). All 50 selected
+query/class indices and class ranks remain unchanged. The unmodified CPU
+PyTorch control passes decoded parity with max delta 6.866455e-5, so do not
+misdescribe the remaining Core ML residual as an accepted result or as a
+rewrite-induced change in model mathematics.
+
+Evidence: `artifacts/m59f_*_20260918.json`. Repaired full-model artifact:
+`outputs/monodgp_m59f_position_interleave/full_diagnostic_only/` (local,
+Git-ignored). Optional CPU-only Colab replay:
+`notebooks/MonoDGP_M59f_Position_Interleave_Colab.ipynb`, revision
+`M59f-2026-09-18-r1`. Local execution is complete; no user rerun required.
+See `MONODGP_M59F_POSITION_INTERLEAVE_CONTRACT.md` for exact reproduction.
+
+Next is M59g, a bounded multi-input numerical precision audit with per-field
+residuals, unchanged-query checks, and CPU control. No automatic threshold
+relaxation, training, new architecture, quantization, or iPhone deployment.

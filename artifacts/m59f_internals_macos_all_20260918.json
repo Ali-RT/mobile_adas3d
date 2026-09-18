@@ -1,0 +1,268 @@
+{
+  "schema_version": 1,
+  "complete": true,
+  "experiment": "M59f macOS positional-interleaving repair parity",
+  "scope": "one frozen sample; not full validation or device qualification",
+  "compute_units": "ALL",
+  "deployment_authorized": false,
+  "physical_device_testing_authorized": false,
+  "product_safety_qualified": false,
+  "raw_intermediate_parity": {
+    "enc0_src": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 1.2755393981933594e-05,
+      "mean_abs_delta": 1.7295445076115357e-08,
+      "limit": 0.001
+    },
+    "enc0_pos": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 4.76837158203125e-07,
+      "mean_abs_delta": 4.858620616943199e-09,
+      "limit": 0.001
+    },
+    "enc0_reference_points": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        4,
+        2
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "enc0_query": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 1.2636184692382812e-05,
+      "mean_abs_delta": 2.1574249942091228e-08,
+      "limit": 0.001
+    },
+    "attn_value_projected": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 2.09808349609375e-05,
+      "mean_abs_delta": 3.0214103219350363e-08,
+      "limit": 0.001
+    },
+    "attn_sampling_offsets": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 2.0503997802734375e-05,
+      "mean_abs_delta": 8.918043477024185e-07,
+      "limit": 0.001
+    },
+    "attn_weight_logits": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        128
+      ],
+      "max_abs_delta": 9.5367431640625e-06,
+      "mean_abs_delta": 1.0039914144499562e-07,
+      "limit": 0.001
+    },
+    "attn_weight_probabilities": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        8,
+        16
+      ],
+      "max_abs_delta": 1.9669532775878906e-06,
+      "mean_abs_delta": 1.0108959003218843e-08,
+      "limit": 0.001
+    },
+    "attn_sampling_locations": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        8,
+        16,
+        2
+      ],
+      "max_abs_delta": 2.384185791015625e-06,
+      "mean_abs_delta": 4.965701805303979e-08,
+      "limit": 0.001
+    },
+    "attn_weighted_sum": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 3.591179847717285e-06,
+      "mean_abs_delta": 1.2818782479939728e-08,
+      "limit": 0.001
+    },
+    "enc0_attention_output": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 1.7881393432617188e-06,
+      "mean_abs_delta": 2.5279209836526206e-08,
+      "limit": 0.001
+    },
+    "enc0_residual1": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 1.2636184692382812e-05,
+      "mean_abs_delta": 3.6367506339729516e-08,
+      "limit": 0.001
+    },
+    "enc0_norm1": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 5.9604644775390625e-05,
+      "mean_abs_delta": 1.571852294546261e-06,
+      "limit": 0.001
+    },
+    "enc0_ffn_linear1": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 6.139278411865234e-05,
+      "mean_abs_delta": 2.507295221221284e-06,
+      "limit": 0.001
+    },
+    "enc0_ffn_relu": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 5.729496479034424e-05,
+      "mean_abs_delta": 4.941589395457413e-07,
+      "limit": 0.001
+    },
+    "enc0_ffn_linear2": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 4.935264587402344e-05,
+      "mean_abs_delta": 1.430517158951261e-06,
+      "limit": 0.001
+    },
+    "enc0_residual2": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 0.00010728836059570312,
+      "mean_abs_delta": 2.272500751132611e-06,
+      "limit": 0.001
+    },
+    "enc0_output": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 6.64442777633667e-05,
+      "mean_abs_delta": 1.6282720025628805e-06,
+      "limit": 0.001
+    }
+  },
+  "first_diverging_tensor": null,
+  "all_parity_gates_passed": true,
+  "positional_scales": [
+    {
+      "spatial_shape": [
+        48,
+        160
+      ],
+      "max_abs_delta": 2.384185791015625e-07,
+      "mean_abs_delta": 4.770542183507587e-09,
+      "elements_over_limit": 0,
+      "passed": true
+    },
+    {
+      "spatial_shape": [
+        24,
+        80
+      ],
+      "max_abs_delta": 2.384185791015625e-07,
+      "mean_abs_delta": 5.04921127131297e-09,
+      "elements_over_limit": 0,
+      "passed": true
+    },
+    {
+      "spatial_shape": [
+        12,
+        40
+      ],
+      "max_abs_delta": 2.384185791015625e-07,
+      "mean_abs_delta": 4.822504617862933e-09,
+      "elements_over_limit": 0,
+      "passed": true
+    },
+    {
+      "spatial_shape": [
+        6,
+        20
+      ],
+      "max_abs_delta": 4.76837158203125e-07,
+      "mean_abs_delta": 7.590642780996859e-09,
+      "elements_over_limit": 0,
+      "passed": true
+    }
+  ],
+  "stage": "internals",
+  "export_gate_sha256": "29447a533bc2b095cc5308dfe179f30ad1ee31f2f219abf5fce0bfa8559f4ae7",
+  "source_torchscript_sha256": "edbf236c0b1c3f5a0d0748acd4c8bd425d6aeb109e86d8d0dcff1a13122d95e5",
+  "mlpackage_tree_sha256": "323a72b7f71efe3b6b0fcc68dade7e78d021e29f2474bc5e5477604121ea39fd",
+  "reference_io_sha256": "69860f15003b7ea086827dd16fa227a6b95c66582e250bf6324ebc4ab5c73b98",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "coremltools_version": "9.0",
+  "load_compile_seconds": 0.811476125032641,
+  "first_prediction_seconds": 0.318200791021809,
+  "timing_is_benchmark": false
+}

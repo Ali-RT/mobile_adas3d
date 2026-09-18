@@ -1,0 +1,300 @@
+{
+  "schema_version": 1,
+  "complete": true,
+  "stage": "layers",
+  "experiment": "M59f explicit positional channel interleaving",
+  "training_performed": false,
+  "weights_changed": false,
+  "compute_precision": "FLOAT32",
+  "deployment_authorized": false,
+  "rewritten_pairs_by_method": {
+    "wrapped.backbone.1.forward": 2,
+    "wrapped.backbone.1.forward1": 2,
+    "wrapped.backbone.1.forward2": 2,
+    "wrapped.backbone.1.forward3": 2
+  },
+  "pytorch_preservation": {
+    "enhanced_src_0": {
+      "passed": true,
+      "shape": [
+        1,
+        256,
+        48,
+        160
+      ],
+      "max_abs_delta": 5.364418029785156e-06,
+      "mean_abs_delta": 5.293777860515547e-09,
+      "limit": 0.001
+    },
+    "enhanced_src_1": {
+      "passed": true,
+      "shape": [
+        1,
+        256,
+        24,
+        80
+      ],
+      "max_abs_delta": 1.673470251262188e-10,
+      "mean_abs_delta": 7.229253654039702e-12,
+      "limit": 0.001
+    },
+    "enhanced_src_2": {
+      "passed": true,
+      "shape": [
+        1,
+        256,
+        12,
+        40
+      ],
+      "max_abs_delta": 1.2732925824820995e-10,
+      "mean_abs_delta": 3.2661863665073287e-12,
+      "limit": 0.001
+    },
+    "enhanced_src_3": {
+      "passed": true,
+      "shape": [
+        1,
+        256,
+        6,
+        20
+      ],
+      "max_abs_delta": 7.09405867382884e-11,
+      "mean_abs_delta": 4.1099697430102555e-12,
+      "limit": 0.001
+    },
+    "depth_pos_embed": {
+      "passed": true,
+      "shape": [
+        1,
+        256,
+        24,
+        80
+      ],
+      "max_abs_delta": 4.5180320739746094e-05,
+      "mean_abs_delta": 1.0815601569902356e-07,
+      "limit": 0.001
+    },
+    "weighted_depth": {
+      "passed": true,
+      "shape": [
+        1,
+        24,
+        80
+      ],
+      "max_abs_delta": 2.6702880859375e-05,
+      "mean_abs_delta": 3.5941600344813196e-06,
+      "limit": 0.001
+    },
+    "det2d_encoder_layer_0": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 2.4318695068359375e-05,
+      "mean_abs_delta": 5.763600938735181e-07,
+      "limit": 0.001
+    },
+    "det2d_encoder_layer_1": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 2.205371856689453e-05,
+      "mean_abs_delta": 6.990067049628124e-07,
+      "limit": 0.001
+    },
+    "det2d_encoder_layer_2": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 1.9550323486328125e-05,
+      "mean_abs_delta": 6.074422458368645e-07,
+      "limit": 0.001
+    },
+    "det2d_decoder_layer_0": {
+      "passed": true,
+      "shape": [
+        1,
+        50,
+        256
+      ],
+      "max_abs_delta": 8.702278137207031e-06,
+      "mean_abs_delta": 5.918572583141213e-07,
+      "limit": 0.001
+    },
+    "det2d_decoder_layer_1": {
+      "passed": true,
+      "shape": [
+        1,
+        50,
+        256
+      ],
+      "max_abs_delta": 2.0265579223632812e-05,
+      "mean_abs_delta": 1.1857716799568152e-06,
+      "limit": 0.001
+    },
+    "det2d_decoder_layer_2": {
+      "passed": true,
+      "shape": [
+        1,
+        50,
+        256
+      ],
+      "max_abs_delta": 4.482269287109375e-05,
+      "mean_abs_delta": 1.784034225238429e-06,
+      "limit": 0.001
+    },
+    "det2d_hs_last": {
+      "passed": true,
+      "shape": [
+        1,
+        50,
+        256
+      ],
+      "max_abs_delta": 4.482269287109375e-05,
+      "mean_abs_delta": 1.784034225238429e-06,
+      "limit": 0.001
+    }
+  },
+  "all_export_gates_passed": true,
+  "source_gate_sha256": "e94fb11043961f1975c0ce27f0f3e6591a049d32784d3bf7298b5458bb960d43",
+  "source_torchscript_sha256": "edbf236c0b1c3f5a0d0748acd4c8bd425d6aeb109e86d8d0dcff1a13122d95e5",
+  "source_reference_io_sha256": "d9f951890da42d420f43f9737fe88629ea3db53762c4f90fae3032e058e22195",
+  "torch_version": "2.12.0",
+  "numpy_version": "2.3.5",
+  "coremltools_version": "9.0",
+  "output_names": [
+    "enhanced_src_0",
+    "enhanced_src_1",
+    "enhanced_src_2",
+    "enhanced_src_3",
+    "depth_pos_embed",
+    "weighted_depth",
+    "det2d_encoder_layer_0",
+    "det2d_encoder_layer_1",
+    "det2d_encoder_layer_2",
+    "det2d_decoder_layer_0",
+    "det2d_decoder_layer_1",
+    "det2d_decoder_layer_2",
+    "det2d_hs_last"
+  ],
+  "output_shapes": {
+    "enhanced_src_0": [
+      1,
+      256,
+      48,
+      160
+    ],
+    "enhanced_src_1": [
+      1,
+      256,
+      24,
+      80
+    ],
+    "enhanced_src_2": [
+      1,
+      256,
+      12,
+      40
+    ],
+    "enhanced_src_3": [
+      1,
+      256,
+      6,
+      20
+    ],
+    "depth_pos_embed": [
+      1,
+      256,
+      24,
+      80
+    ],
+    "weighted_depth": [
+      1,
+      24,
+      80
+    ],
+    "det2d_encoder_layer_0": [
+      1,
+      10200,
+      256
+    ],
+    "det2d_encoder_layer_1": [
+      1,
+      10200,
+      256
+    ],
+    "det2d_encoder_layer_2": [
+      1,
+      10200,
+      256
+    ],
+    "det2d_decoder_layer_0": [
+      1,
+      50,
+      256
+    ],
+    "det2d_decoder_layer_1": [
+      1,
+      50,
+      256
+    ],
+    "det2d_decoder_layer_2": [
+      1,
+      50,
+      256
+    ],
+    "det2d_hs_last": [
+      1,
+      50,
+      256
+    ]
+  },
+  "mil_operation_counts": {
+    "const": 1433,
+    "conv": 83,
+    "relu": 70,
+    "max_pool": 1,
+    "add": 68,
+    "reshape": 157,
+    "reduce_mean": 30,
+    "sub": 19,
+    "square": 13,
+    "sqrt": 13,
+    "real_div": 14,
+    "batch_norm": 13,
+    "upsample_bilinear": 4,
+    "sigmoid": 10,
+    "mul": 35,
+    "clip": 7,
+    "greater": 1,
+    "fill_like": 1,
+    "select": 7,
+    "softmax": 9,
+    "reduce_sum": 7,
+    "transpose": 92,
+    "linear": 54,
+    "matmul": 6,
+    "layer_norm": 16,
+    "concat": 2,
+    "split": 6,
+    "slice_by_index": 29,
+    "resample": 24,
+    "stack": 7,
+    "expand_dims": 6,
+    "tile": 4,
+    "log": 1,
+    "identity": 2
+  },
+  "artifacts": {
+    "mlpackage_tree_sha256": "b63476d4ea5dfd8ee6ae7b0851c446fea7acf577c01f706649b8ab164a533876",
+    "reference_io_sha256": "d9f951890da42d420f43f9737fe88629ea3db53762c4f90fae3032e058e22195"
+  }
+}
