@@ -1,0 +1,236 @@
+{
+  "schema_version": 1,
+  "complete": true,
+  "experiment": "M59g fixed-input collection",
+  "sample_count": 16,
+  "sample_indices": [
+    0,
+    251,
+    502,
+    753,
+    1004,
+    1256,
+    1507,
+    1758,
+    2009,
+    2260,
+    2512,
+    2763,
+    3014,
+    3265,
+    3516,
+    3768
+  ],
+  "sample_ids": [
+    "000001",
+    "000494",
+    "001025",
+    "001514",
+    "002014",
+    "002521",
+    "003010",
+    "003515",
+    "004074",
+    "004534",
+    "005014",
+    "005515",
+    "006039",
+    "006537",
+    "007016",
+    "007480"
+  ],
+  "selection_rule": "16 evenly spaced indices via linspace(0,3768,16,dtype=int)",
+  "val_split_sha256": "6e2394d97c866c3af1ffb049f828abdf3d5b707d9575d16885fd0de87b72b0c8",
+  "source_torchscript_sha256": "5f4cf0992dd39fc521793a66f53d754b200ef97d0b243f218f9410e1635d3fca",
+  "frozen_anchor_sha256": "6d018439a909678546cdb6060ca7ee5ad6fe08296e22462155e9314b243406f2",
+  "preprocessing": "monodgp-aa059a1-val-width-affine-imagenet-fp32-v1",
+  "anchor_preprocessing_bit_exact": true,
+  "training_performed": false,
+  "model_execution_performed": false,
+  "deployment_authorized": false,
+  "software": {
+    "python": "3.13.15",
+    "numpy": "2.1.3",
+    "pillow": "11.3.0",
+    "opencv": "5.0.0"
+  },
+  "collector_sha256": "ef1d8aaee0e0f12fc5ddae7b533315f2005308d3210bafe9925dd93be8b3297c",
+  "samples": [
+    {
+      "sample_id": "000001",
+      "file": "000001.npz",
+      "sha256": "f3649dda38220ef6d5eecc9b2ea9b6969ca7702b3057ab276cbf28810f4149e6",
+      "image_sha256": "40acaf855260376103a5e0d97e9dce15d51811c0f419ff308e948fefdd880bf6",
+      "calibration_sha256": "5813c05a89e33e67244891c62e153e0a572692d42365b8665e38cc242c7d4918",
+      "original_size_wh": [
+        1242.0,
+        375.0
+      ]
+    },
+    {
+      "sample_id": "000494",
+      "file": "000494.npz",
+      "sha256": "e4f6cc586ac362b9cea546623820bfa976b8d24113fdbfac7243e95636196c41",
+      "image_sha256": "914cac39089ef8cb9fbc5ba2459f1784e31d81ebd5d7b85f6359e0659318c043",
+      "calibration_sha256": "5813c05a89e33e67244891c62e153e0a572692d42365b8665e38cc242c7d4918",
+      "original_size_wh": [
+        1242.0,
+        375.0
+      ]
+    },
+    {
+      "sample_id": "001025",
+      "file": "001025.npz",
+      "sha256": "a7514eed60aae460b2b385f0905db32f6b9e0d398c67f4bf2b5fc434113a4dd3",
+      "image_sha256": "9dd0234ebd515fd193654d600a7b65e2e90dc75ada45146af26d54151cece34c",
+      "calibration_sha256": "5813c05a89e33e67244891c62e153e0a572692d42365b8665e38cc242c7d4918",
+      "original_size_wh": [
+        1242.0,
+        375.0
+      ]
+    },
+    {
+      "sample_id": "001514",
+      "file": "001514.npz",
+      "sha256": "47bac7e5802e47d35cb540383852f02e458a862acd9e96a3ff2f2e21cafce4c8",
+      "image_sha256": "5da6620b3b9acacd83fcb263fb57684f6a2ff3387773967ee43cd7da38e8e494",
+      "calibration_sha256": "fb6bcd5a19b22fc705e196f892ce346f77bb095f8b98215906126b71c9d52b73",
+      "original_size_wh": [
+        1241.0,
+        376.0
+      ]
+    },
+    {
+      "sample_id": "002014",
+      "file": "002014.npz",
+      "sha256": "516fba25f2388a517c2afc4c7bbd6b1b3121fb2ab57d2151bfd332362c0c4e12",
+      "image_sha256": "7369d99cfdaba4123bb8899ebe4adeddecdf7ec7fcd9b7fd60b2aecc4a975056",
+      "calibration_sha256": "29b89ca9fa49b2cad778bf73910ff7210c7998badae39796cf29666081992d7f",
+      "original_size_wh": [
+        1224.0,
+        370.0
+      ]
+    },
+    {
+      "sample_id": "002521",
+      "file": "002521.npz",
+      "sha256": "34fc9e5647208069fc680cbc827ffbc6a4fbbf4f650b07e62b67a3237f44b9b4",
+      "image_sha256": "92e4dd61d510ef9dba7855b7c7fe1e52f5fd39a7a87059bc8bf5cdd64a46178c",
+      "calibration_sha256": "5813c05a89e33e67244891c62e153e0a572692d42365b8665e38cc242c7d4918",
+      "original_size_wh": [
+        1242.0,
+        375.0
+      ]
+    },
+    {
+      "sample_id": "003010",
+      "file": "003010.npz",
+      "sha256": "95f7a666757a35a9c80f33261f99b2b794c9ebefdb895f5fcdaa17ffbab7cb10",
+      "image_sha256": "e6a57bd98ccc5f5c24fd77b1b8af7aeaba0c4059c8950c240ba59ab915af4b37",
+      "calibration_sha256": "5813c05a89e33e67244891c62e153e0a572692d42365b8665e38cc242c7d4918",
+      "original_size_wh": [
+        1242.0,
+        375.0
+      ]
+    },
+    {
+      "sample_id": "003515",
+      "file": "003515.npz",
+      "sha256": "a5b4e223a1de2d245e8a315101cf1c034d8d2cea7a20d95da8f80e21f3334b16",
+      "image_sha256": "f774075617ea96a6c525913fd499c8bed2af8ee3906cced3e8dd198bdff4cba1",
+      "calibration_sha256": "5813c05a89e33e67244891c62e153e0a572692d42365b8665e38cc242c7d4918",
+      "original_size_wh": [
+        1242.0,
+        375.0
+      ]
+    },
+    {
+      "sample_id": "004074",
+      "file": "004074.npz",
+      "sha256": "4a1a11e4732981901a9cc836e3ea156bfcaf42fc3f4036957b4d71dd193a2a4a",
+      "image_sha256": "119489a2318707e780b481361f94ec92e56186953486723000d7b8d7f48bf59e",
+      "calibration_sha256": "29b89ca9fa49b2cad778bf73910ff7210c7998badae39796cf29666081992d7f",
+      "original_size_wh": [
+        1224.0,
+        370.0
+      ]
+    },
+    {
+      "sample_id": "004534",
+      "file": "004534.npz",
+      "sha256": "a6ac548df83e9fd12a0187130575b185dc22d9fcad999af5a636cb5612fa39ac",
+      "image_sha256": "f9b9ae046568d6d4cf1c15f35806670f4a796c866ac651cfea198708c2bb8502",
+      "calibration_sha256": "5813c05a89e33e67244891c62e153e0a572692d42365b8665e38cc242c7d4918",
+      "original_size_wh": [
+        1242.0,
+        375.0
+      ]
+    },
+    {
+      "sample_id": "005014",
+      "file": "005014.npz",
+      "sha256": "03575ff8a518120656fd73b96136482856716467b042755dd66c69fbc1274031",
+      "image_sha256": "8bd9b9e8766e60bfaf61309fec8f82f310645102c3935d9c121596fa53313bb5",
+      "calibration_sha256": "5813c05a89e33e67244891c62e153e0a572692d42365b8665e38cc242c7d4918",
+      "original_size_wh": [
+        1242.0,
+        375.0
+      ]
+    },
+    {
+      "sample_id": "005515",
+      "file": "005515.npz",
+      "sha256": "e24b1741209fafaa7bcd97d1a3f719f708406ed24acdca0387721ef9f23045bf",
+      "image_sha256": "baf420883d0dd097c5c87d7a9e8b0f97693216325d8fc5ee3de8796a0f2084df",
+      "calibration_sha256": "5813c05a89e33e67244891c62e153e0a572692d42365b8665e38cc242c7d4918",
+      "original_size_wh": [
+        1242.0,
+        375.0
+      ]
+    },
+    {
+      "sample_id": "006039",
+      "file": "006039.npz",
+      "sha256": "33fa1ea78c966d87d3bc4bc69fb9c3c63c5028ba28b1605b5b74337fed457531",
+      "image_sha256": "1b3a355e1ed9b1dcfe2e710d9ca85fb7540047f568704e271b38f278660fbaf9",
+      "calibration_sha256": "5813c05a89e33e67244891c62e153e0a572692d42365b8665e38cc242c7d4918",
+      "original_size_wh": [
+        1242.0,
+        375.0
+      ]
+    },
+    {
+      "sample_id": "006537",
+      "file": "006537.npz",
+      "sha256": "9e7a2e0f4dfa4e0c3c470dc583eb315634dbdf5c28fb08cdd6b10c6579e21f60",
+      "image_sha256": "cf5c5ea91f79345dbdd4bfd97659f5d8132dbb030d6fe6a4e89eeb28d5d6975f",
+      "calibration_sha256": "5813c05a89e33e67244891c62e153e0a572692d42365b8665e38cc242c7d4918",
+      "original_size_wh": [
+        1242.0,
+        375.0
+      ]
+    },
+    {
+      "sample_id": "007016",
+      "file": "007016.npz",
+      "sha256": "0ed1ac03a4290410aaf8787b2a9d10a456d99a19b9b2cf6003d487560fa55c21",
+      "image_sha256": "5229f955cd6bf117edb819d7a26ae03108e15fd4f9da913bc6d5355749f5b367",
+      "calibration_sha256": "5813c05a89e33e67244891c62e153e0a572692d42365b8665e38cc242c7d4918",
+      "original_size_wh": [
+        1242.0,
+        375.0
+      ]
+    },
+    {
+      "sample_id": "007480",
+      "file": "007480.npz",
+      "sha256": "76c969828c18389a6b61a391cde442072be379318b202c3743778a30f1e3bd14",
+      "image_sha256": "494f00d943bb1d713529d4d341abf08ebee3d574b6f0e15ef6134087c80f2084",
+      "calibration_sha256": "5813c05a89e33e67244891c62e153e0a572692d42365b8665e38cc242c7d4918",
+      "original_size_wh": [
+        1242.0,
+        375.0
+      ]
+    }
+  ]
+}

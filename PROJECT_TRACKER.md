@@ -16,17 +16,17 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-- Current phase: **M59g one-input controls complete; 16-input audit pending**.
-- Next task: run all three cells of **MonoDGP_M59g_Precision_Inputs_Colab.ipynb**
-  on CPU and return its input ZIP. The local CPU and Core ML repeated calls
-  are bit-exact, with no query-selection changes. The bounded CPU_ONLY
-  control timed out after 45 seconds without a parity result.
-  Multi-input evaluation remains pending. M59f passes all four positional scales,
-  18 encoder-internal checks, 13 layer checks, and ten raw-output gates.
-  Decoded depth/dimension residuals still exceed the unchanged `0.0001`
-  limit (max `0.000415802`, depth ≈0.416 mm). Selected queries/classes do not
-  change; CPU PyTorch repaired vs original outputs are bit-exact. This is
-  a small remaining runtime numerical discrepancy, not a training change.
+- Current phase: **M59g 16-input audit complete; strict decoded gate failed**.
+- Recommended next task: **M59h final-geometry impact diagnostic**, using the
+  same 16 frozen inputs. Not yet implemented/authorized for execution.
+  All 160 raw checks pass, repeated CPU/Core ML calls and CPU rewrite
+  equivalence are bit-exact, and all 800 ranked query/class selections are
+  unchanged. The decoded gate fails on 14/16 inputs at the unchanged `0.0001`
+  limit: worst selected-depth delta `0.000761986` m (0.762 mm); angle-code
+  and dimension fields also fail on 7/16 and 2/16 inputs respectively.
+  CPU_ONLY again timed out after 45 seconds without a parity result.
+  Next measure actual boxes/yaw/distance impact before proposing any separate,
+  unit-aware tolerance for explicit review. No notebook rerun is needed now.
   Do not mark full parity passed or silently relax the decoded limit.
   No device, FP16, quantization, or deployment test is authorized.
 - Selected accuracy parent: **M54 MonoDGP epoch 100**, checkpoint SHA-256
@@ -115,7 +115,8 @@ not constrain the current accuracy-development stage.
 | M59d | 2D-transformer layer diagnostic | Complete—runtime parity failed, first stage located | Colab export passed with zero trace deltas for all 13 outputs. On macOS, six region/depth outputs passed; first failure was `det2d_encoder_layer_0` (max delta 1.2977898 vs 0.001). Encoder layers 1/2 reached 1.4707522/1.9415662; final 2D query delta was 0.8606860. ALL and CPU_AND_GPU reports were identical. Package/reference hashes verified. One frozen sample only; no AP or steady-state latency claim. See `artifacts/m59d_macos_2d_transformer_all_20260918.json` and `artifacts/m59d_macos_2d_transformer_cpu_gpu_20260918.json`. |
 | M59e | First encoder internal and positional-layout diagnosis | Complete—first input mismatch explained | Original-output preservation and 18-tap trace parity passed. macOS first fails at `enc0_pos`; only fourth (6×20) scale differs. Grouped sine/cosine ordering explains the failure to max residual `4.917383e-7` after removing learned level bias. No weights changed or model repaired. CPU-only replay notebook is available; no Colab rerun is needed for the reviewed result. See `MONODGP_M59E_ENCODER_INTERNALS_CONTRACT.md`. |
 | M59f | Export-only positional-interleaving repair | Complete—bug repaired; final numerical gate fails | Explicit concatenation/channel selection preserves CPU PyTorch outputs exactly. All 18 internal, 13 layer, and ten full raw checks pass. Decoded depth/dimensions fail the unchanged 0.0001 limit (max 0.000415802); all 50 query/class selections remain identical. No full-validation or device approval. See `MONODGP_M59F_POSITION_INTERLEAVE_CONTRACT.md`. |
-| M59g | Residual numerical precision audit | Partial—one input executed; capture notebook ready | Original/repaired CPU outputs and repeated CPU/Core ML calls are bit-exact; top-50 selection is unchanged. Frozen-anchor decoded max remains 0.000415802 (fail). CPU_ONLY timed out at 45 seconds. Collect 16 fixed inputs using the CPU-only notebook; no threshold change or deployment approval. See `MONODGP_M59G_PRECISION_AUDIT_CONTRACT.md`. |
+| M59g | Residual numerical precision audit | Complete—strict decoded gate failed | 16 real inputs verified/executed. All 160 raw checks pass; CPU rewrite/repeats and Core ML repeats are bit-exact; all 800 ranked query/class selections unchanged. Decoded gate fails on 14/16 inputs; worst selected-depth delta 0.762 mm. CPU_ONLY timeout at 45 seconds; no tolerance change or deployment approval. See `MONODGP_M59G_PRECISION_AUDIT_CONTRACT.md`. |
+| M59h | Final-geometry impact diagnostic | Proposed—not executed | Measure camera-space boxes, distance, dimensions, heading-bin/yaw effects on the same fixed inputs before proposing unit-aware numerical criteria for explicit review. No training, threshold change, or full-validation authorization yet. |
 
 **M53 completion note:** the model and official evaluator passed after the public-API import correction. The prior JSON failed only because it compared an independent reimplementation directly with published native-evaluator values. The corrected schema-v2 finalizer reused the complete prediction set and native log, and all frozen M53 gates passed.
 
@@ -407,11 +408,13 @@ frozen; passing AP does not by itself authorize deployment.
 42. **Complete:** M59f repaired positional interleaving. CPU rewrite equivalence
     is exact; intermediate and full raw checks pass. The strict decoded gate
     remains failed on depth/dimensions; selected queries/classes are unchanged.
-43. **Partial:** M59g one-input repeatability/rewrite/selection controls passed;
-    the strict decoded gate still fails. CPU_ONLY produced no result within
-    45 seconds. Next: collect the 16 fixed validation inputs using the
-    self-contained M59g CPU notebook, then run their macOS audit. Do not
-    change weights, architecture, or existing acceptance limits.
+43. **Complete—failed strict gate:** M59g verified/executed all 16 delivered
+    real inputs. All raw checks, repeatability, CPU rewrite equivalence, and
+    query selection pass. Strict decoded fails 14/16; max depth delta 0.762 mm.
+    CPU_ONLY produced no result within 45 seconds. No tolerance was relaxed.
+44. **Proposed:** M59h measure final-geometry impact on the same inputs, then
+    review any proposed numerical policy explicitly. No weights, architecture,
+    training schedule, or acceptance limits change automatically.
 
 ## Decision rules
 

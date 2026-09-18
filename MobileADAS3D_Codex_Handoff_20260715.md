@@ -3508,3 +3508,36 @@ Return `m59g_inputs_<timestamp>.zip`; then execute the macOS precision audit
 on all 16. References for new inputs are the unmodified CPU trace, while the
 old frozen anchor remains mandatory and separate. See
 `MONODGP_M59G_PRECISION_AUDIT_CONTRACT.md`. No deployment or accuracy claim.
+
+### M59g complete real-input audit executed (2026-09-18)
+
+The user supplied `monodgp_m59g_precision_audit-20260918T222148Z-1-001.zip`.
+Its 16 predetermined inputs, split/source/file hashes, and exact 000001
+anchor preprocessing passed verification. Ran the existing unchanged audit
+against the frozen M59f full package on macOS (ALL).
+
+All 160 raw-output checks pass. Original CPU repeats, original/repaired CPU
+equivalence, and three Core ML calls per input are bit-exact across all 16
+inputs. All 800 ranked query/class selections are unchanged. The strict
+decoded limit of 0.0001 still fails on 14/16 inputs. Maximum selected-depth
+delta is 0.0007619858 m (0.762 mm), sample 002014. Angle-code max delta is
+0.0001634359 (7 inputs fail); dimension max is 0.0001478195 (2 inputs fail).
+Only 003010 and 003515 pass every decoded field. These are implementation
+differences, not ground-truth errors; angle-code delta is not degrees.
+
+The mandatory original frozen anchor remains separately failed at 0.000415802.
+The supplementary CPU_ONLY control again hit the 45-second timeout with no
+parity result. Full report flags: complete=true, multi_input_complete=true,
+all_parity_gates_passed=false. No automatic tolerance relaxation or device
+authorization. Full AP/geometry evaluation has not run.
+
+Evidence: `artifacts/m59g_full16_precision_audit_20260918.json`,
+`artifacts/m59g_full16_cpu_only_anchor_20260918.txt`, and
+`artifacts/m59g_input_manifest_20260918.json`. Exact archive and manifest
+hashes plus per-field table are in the updated M59g contract.
+
+Recommended follow-up is M59h: a measurement-only final-geometry comparison
+on these same inputs (boxes/distance/dimensions/heading bins/yaw), followed
+by explicit review of any proposed unit-aware numerical policy. This is
+proposed, not implemented/executed. Do not change weights or training and
+do not loosen the old gate silently. No user notebook rerun is needed now.
