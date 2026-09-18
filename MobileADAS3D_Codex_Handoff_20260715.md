@@ -3423,3 +3423,34 @@ regeneration is required.
 ### M58 MIL conversion correction (2026-09-15)
 
 The Core ML converter rejected a sliced in-place reference update with a partial `[1,50,2]` assignment into `[1,50,6]`. M58 now applies an export-only concatenation patch to the 2D decoder, 3D decoder, and final heads before tracing.
+
+### M59d/M59e local execution and positional-layout diagnosis (2026-09-18)
+
+The supplied M59d archive was hash-verified and executed with macOS ALL and
+CPU_AND_GPU. Both comparisons passed the six preceding region/depth outputs
+and failed first at encoder layer 0 (max absolute delta 1.2977898 vs 0.001).
+
+M59e reused the frozen M59d TorchScript directly on CPU: no upstream clone,
+training, KITTI download, or CUDA extension rebuild. Its in-memory graph
+instrumentation preserved all original outputs within the unchanged tolerance,
+and all 18 internal trace comparisons passed. The FP32 diagnostic exported
+successfully and ran on macOS. Earliest failure is the encoder's positional
+input, not its source features or reference coordinates. The fourth scale
+(6×20, tokens 10080:10200) differs by up to 1.99901617; the first three scales
+pass. After removing the learned level embedding, Core ML matches grouped
+sine/cosine channels rather than the expected interleaving within each y/x
+block, with residual max delta 4.917383e-7 under that offline permutation.
+
+This is a strong channel-layout diagnosis on one frozen input, not a repaired
+model, AP result, or benchmark. All small export/runtime/layout evidence is in
+`artifacts/m59e_*_20260918.json`. The replay notebook is
+`notebooks/MonoDGP_M59e_Encoder_Internals_Colab.ipynb`, revision
+`M59e-2026-09-18-r1`; CPU is enough and the reviewed local result needs no
+Colab rerun. Contract and reproduction commands:
+`MONODGP_M59E_ENCODER_INTERNALS_CONTRACT.md`.
+
+Next: M59f should rewrite only export-time sine/cosine interleaving, prove
+PyTorch equivalence, then recheck all positional scales, encoder outputs, and
+full raw/decoded output parity. Do not change trained weights, model
+architecture, or tolerances. Device testing and precision compression remain
+blocked until full parity passes.

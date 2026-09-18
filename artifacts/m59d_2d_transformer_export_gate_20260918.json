@@ -1,0 +1,317 @@
+{
+  "schema_version": 1,
+  "complete": true,
+  "experiment": "M59d 2D-transformer layer diagnostic export",
+  "training_performed": false,
+  "weights_changed": false,
+  "probe_limit_max_abs": 0.001,
+  "physical_device_testing_authorized": false,
+  "fp16_or_quantization_authorized": false,
+  "product_safety_qualified": false,
+  "source_commit": "aa059a18214aebf644510e7f0793971b403f9d14",
+  "source_checkpoint": "/content/drive/MyDrive/mobile_adas3d_outputs/compression/monodgp_m56d_det2d_fp32_storage/monodgp_m56d_det2d_fp32_storage/checkpoint_epoch_100.pth",
+  "source_runtime_config": "/content/mobile_adas3d/configs/monodgp_m56d_runtime_frozen.yaml",
+  "m59b_export_gate": "/content/drive/MyDrive/mobile_adas3d_outputs/compression/monodgp_m59b_coreml_diagnostic/m59b_coreml_diagnostic_export_gate.json",
+  "encoder_layer_count": 3,
+  "decoder_layer_count": 3,
+  "output_names": [
+    "enhanced_src_0",
+    "enhanced_src_1",
+    "enhanced_src_2",
+    "enhanced_src_3",
+    "depth_pos_embed",
+    "weighted_depth",
+    "det2d_encoder_layer_0",
+    "det2d_encoder_layer_1",
+    "det2d_encoder_layer_2",
+    "det2d_decoder_layer_0",
+    "det2d_decoder_layer_1",
+    "det2d_decoder_layer_2",
+    "det2d_hs_last"
+  ],
+  "output_shapes": {
+    "enhanced_src_0": [
+      1,
+      256,
+      48,
+      160
+    ],
+    "enhanced_src_1": [
+      1,
+      256,
+      24,
+      80
+    ],
+    "enhanced_src_2": [
+      1,
+      256,
+      12,
+      40
+    ],
+    "enhanced_src_3": [
+      1,
+      256,
+      6,
+      20
+    ],
+    "depth_pos_embed": [
+      1,
+      256,
+      24,
+      80
+    ],
+    "weighted_depth": [
+      1,
+      24,
+      80
+    ],
+    "det2d_encoder_layer_0": [
+      1,
+      10200,
+      256
+    ],
+    "det2d_encoder_layer_1": [
+      1,
+      10200,
+      256
+    ],
+    "det2d_encoder_layer_2": [
+      1,
+      10200,
+      256
+    ],
+    "det2d_decoder_layer_0": [
+      1,
+      50,
+      256
+    ],
+    "det2d_decoder_layer_1": [
+      1,
+      50,
+      256
+    ],
+    "det2d_decoder_layer_2": [
+      1,
+      50,
+      256
+    ],
+    "det2d_hs_last": [
+      1,
+      50,
+      256
+    ]
+  },
+  "trace_parity": {
+    "enhanced_src_0": {
+      "passed": true,
+      "shape": [
+        1,
+        256,
+        48,
+        160
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "enhanced_src_1": {
+      "passed": true,
+      "shape": [
+        1,
+        256,
+        24,
+        80
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "enhanced_src_2": {
+      "passed": true,
+      "shape": [
+        1,
+        256,
+        12,
+        40
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "enhanced_src_3": {
+      "passed": true,
+      "shape": [
+        1,
+        256,
+        6,
+        20
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "depth_pos_embed": {
+      "passed": true,
+      "shape": [
+        1,
+        256,
+        24,
+        80
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "weighted_depth": {
+      "passed": true,
+      "shape": [
+        1,
+        24,
+        80
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "det2d_encoder_layer_0": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "det2d_encoder_layer_1": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "det2d_encoder_layer_2": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "det2d_decoder_layer_0": {
+      "passed": true,
+      "shape": [
+        1,
+        50,
+        256
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "det2d_decoder_layer_1": {
+      "passed": true,
+      "shape": [
+        1,
+        50,
+        256
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "det2d_decoder_layer_2": {
+      "passed": true,
+      "shape": [
+        1,
+        50,
+        256
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "det2d_hs_last": {
+      "passed": true,
+      "shape": [
+        1,
+        50,
+        256
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    }
+  },
+  "conversion_seconds": 5.202588162999746,
+  "coreml_spec_type": "mlProgram",
+  "mil_operation_counts": {
+    "add": 68,
+    "batch_norm": 13,
+    "clip": 7,
+    "concat": 2,
+    "const": 1433,
+    "conv": 83,
+    "expand_dims": 6,
+    "fill_like": 1,
+    "greater": 1,
+    "identity": 2,
+    "layer_norm": 16,
+    "linear": 54,
+    "log": 1,
+    "matmul": 6,
+    "max_pool": 1,
+    "mul": 35,
+    "real_div": 14,
+    "reduce_mean": 30,
+    "reduce_sum": 7,
+    "relu": 70,
+    "resample": 24,
+    "reshape": 157,
+    "select": 7,
+    "sigmoid": 10,
+    "slice_by_index": 29,
+    "softmax": 9,
+    "split": 6,
+    "sqrt": 13,
+    "square": 13,
+    "stack": 7,
+    "sub": 19,
+    "tile": 4,
+    "transpose": 92,
+    "upsample_bilinear": 4
+  },
+  "artifacts": {
+    "torchscript": "/content/drive/MyDrive/mobile_adas3d_outputs/compression/monodgp_m59d_2d_transformer/MonoDGP_M59d_2d_transformer_fp32.pt",
+    "torchscript_sha256": "edbf236c0b1c3f5a0d0748acd4c8bd425d6aeb109e86d8d0dcff1a13122d95e5",
+    "reference_io": "/content/drive/MyDrive/mobile_adas3d_outputs/compression/monodgp_m59d_2d_transformer/m59d_2d_transformer_reference_io.npz",
+    "reference_io_sha256": "d9f951890da42d420f43f9737fe88629ea3db53762c4f90fae3032e058e22195",
+    "mlpackage": "/content/drive/MyDrive/mobile_adas3d_outputs/compression/monodgp_m59d_2d_transformer/MonoDGP_M59d_2d_transformer_fp32.mlpackage",
+    "mlpackage_tree_sha256": "2b1fd6528fadca21a317ef44f60d59eca2af554882a8557d63604c4906a114e0",
+    "mlpackage_size_bytes": 162206022,
+    "mlpackage_zip": "/content/drive/MyDrive/mobile_adas3d_outputs/compression/monodgp_m59d_2d_transformer/MonoDGP_M59d_2d_transformer_fp32.zip",
+    "mlpackage_zip_sha256": "bcf8230379b81a4a264c3db73c27449238057cc6fa41e0d75c4f8b9677283cba"
+  },
+  "gate_results": {
+    "m59b_export_gate_passed": true,
+    "fixed_input_signature": true,
+    "native_attention_not_called": true,
+    "all_reference_outputs_finite": true,
+    "trace_parity_within_probe_limit": true,
+    "trace_has_no_custom_attention": true,
+    "mlprogram_created": true,
+    "mil_has_no_custom_op": true,
+    "package_saved": true,
+    "reference_io_saved": true,
+    "no_training_or_weight_change": true
+  },
+  "all_export_gates_passed": true
+}

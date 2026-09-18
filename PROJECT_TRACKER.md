@@ -1,6 +1,6 @@
 # MobileADAS3D project tracker
 
-Last updated: 2026-09-15
+Last updated: 2026-09-18
 
 This is the canonical status page. Update it whenever a task changes state,
 an experiment finishes, a gate passes/fails, or the next action changes.
@@ -16,12 +16,16 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-- Current phase: **M59 rejected; M59b intermediate-tensor diagnostic prepared**
-- Active task: run the separate M59b Colab export, then execute its diagnostic
-  package on macOS to locate the first Core ML runtime divergence. No device,
-  FP16, quantization, or deployment test is authorized. The completed M59
-  ALL-units run is saved as `m58_macos_coreml_parity_20260915.json` in
-  Downloads.
+- Current phase: **M59e executed; fourth-scale positional channel-order mismatch isolated**.
+- Next task: **M59f export-only positional-interleaving repair**. The 6×20
+  fourth scale appears grouped by sine/cosine instead of interleaved; its
+  max delta is `1.99901617`. An offline channel permutation explains the
+  discrepancy to `4.917383e-7`. The first three scales, source features, and
+  reference coordinates pass. No model repair or full-model parity pass is
+  claimed yet. Verify an equivalent export rewrite through all four scales,
+  encoder outputs, and full raw/decoded outputs without changing weights or
+  the `0.001` diagnostic threshold.
+  No device, FP16, quantization, or deployment test is authorized.
 - Selected accuracy parent: **M54 MonoDGP epoch 100**, checkpoint SHA-256
   `8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847`.
 - Legacy accuracy reference: **R0 ResNet50 MonoDETR, epoch 185**.
@@ -103,7 +107,11 @@ not constrain the current accuracy-development stage.
 | M57 | Deformable-attention export replacement | Complete—portable operator selected | Exact manifest/smoke hashes `7c475779…313`/`2a96cffd…3b0` passed nine module checks, three traces, and raw-output parity with zero native-extension calls. Complete validation produced 3,769/3,769 files, all nine preservation gates passed, and every metric exactly matched M56d at reported precision. A100 portable CUDA inference was ~1.24× slower and used ~52% more peak allocated memory. The next fixed-shape Core ML parity experiment is authorized; direct conversion, deployment, and product-safety qualification are not. |
 | M58 | Fixed-shape FP32 Core ML conversion | Complete—Stop point 1 passed | The corrected workflow produced the iOS 17 FP32 ML Program, TorchScript, reference I/O, and ZIP. All export gates passed: exact M56d/M57 provenance, ten-output interface, trace parity, `grid_sampler`, MIL `resample`, and zero custom MIL operators. The report sets `macos_coreml_prediction_parity_authorized=true`; physical-device testing, FP16/quantization, deployment, and product safety remain false. |
 | M59 | macOS Core ML raw and decoded-candidate parity | Complete—rejected | The package executed on macOS 26.6.2 with Core ML Tools 9.0 and ALL compute units in `8.50 s`, but the gate failed: logits/boxes/dimensions/depth/angle exceeded unchanged M56 limits (`0.2009/0.0262/0.6534/9.4795/1.0098` max deltas), and decoded candidates reached `39.6842` max delta with 7/50 class-rank changes. Depth-map and all four region outputs passed. CPU_ONLY compilation did not finish within the bounded retry. No iPhone, FP16, quantization, or product-safety work is authorized. |
-| M59b | Core ML intermediate-tensor diagnostic | Prepared—run Colab then macOS | The separate diagnostic exporter returns backbone/projection, region/depth, 2D-query, 3D-query, raw-head, and final-output tensors in causal order. It reuses exact M58/M57 provenance, keeps the product package unchanged, and reports `first_diverging_tensor` with a `1e-3` probe limit. No device, FP16, quantization, or product-safety work is authorized. |
+| M59b | Core ML intermediate-tensor diagnostic | Complete—followed by M59c/M59d | Exported the frozen diagnostic package. The strict backbone mismatch required a scale-aware check in M59c before localizing transformer drift. |
+| M59c | Backbone and projection audit | Complete—passed scale-aware audit | The deepest backbone feature had a large absolute delta but normalized max error of ~1.43e-6; projections passed the strict limit. See `artifacts/m59c_backbone_audit_20260918.json`. |
+| M59d | 2D-transformer layer diagnostic | Complete—runtime parity failed, first stage located | Colab export passed with zero trace deltas for all 13 outputs. On macOS, six region/depth outputs passed; first failure was `det2d_encoder_layer_0` (max delta 1.2977898 vs 0.001). Encoder layers 1/2 reached 1.4707522/1.9415662; final 2D query delta was 0.8606860. ALL and CPU_AND_GPU reports were identical. Package/reference hashes verified. One frozen sample only; no AP or steady-state latency claim. See `artifacts/m59d_macos_2d_transformer_all_20260918.json` and `artifacts/m59d_macos_2d_transformer_cpu_gpu_20260918.json`. |
+| M59e | First encoder internal and positional-layout diagnosis | Complete—first input mismatch explained | Original-output preservation and 18-tap trace parity passed. macOS first fails at `enc0_pos`; only fourth (6×20) scale differs. Grouped sine/cosine ordering explains the failure to max residual `4.917383e-7` after removing learned level bias. No weights changed or model repaired. CPU-only replay notebook is available; no Colab rerun is needed for the reviewed result. See `MONODGP_M59E_ENCODER_INTERNALS_CONTRACT.md`. |
+| M59f | Export-only positional-interleaving repair | Planned | Preserve the trained model; test an equivalent positional construction, then repeat intermediate and full-model parity. No tolerance relaxation, retraining, or device test. |
 
 **M53 completion note:** the model and official evaluator passed after the public-API import correction. The prior JSON failed only because it compared an independent reimplementation directly with published native-evaluator values. The corrected schema-v2 finalizer reused the complete prediction set and native log, and all frozen M53 gates passed.
 
@@ -384,13 +392,17 @@ frozen; passing AP does not by itself authorize deployment.
     decomposition while native CUDA remains the unchanged default path. Both
     stop points passed; the complete 3,769-image run preserved all nine metrics
     exactly at reported precision.
-39. **Prepared—run next:** execute
-    `MonoDGP_M59b_CoreML_Intermediate_Diagnostic_Colab.ipynb` and return
-    `m59b_coreml_diagnostic_export_gate.json`, the diagnostic reference I/O,
-    and the package/ZIP.
-40. Run `scripts/validate_monodgp_m59b_macos_diagnostics.py` on macOS and
-    report `first_diverging_tensor`. Do not begin device, FP16, quantization,
-    or deployment work until the numerical drift is explained.
+39. **Complete:** M59b/M59c checked backbone and projection parity; M59d
+    Colab export passed with all 13 reference/trace deltas equal to zero.
+40. **Complete:** M59d macOS ALL and CPU_AND_GPU runs both failed first at
+    `det2d_encoder_layer_0`; six preceding outputs passed. Reports are in
+    `artifacts/m59d_macos_2d_transformer_*_20260918.json`.
+41. **Complete:** M59e exposed 18 first-encoder tensors. Runtime drift starts
+    before attention, at the fourth scale's positional channels. A grouped
+    sine/cosine permutation explains the observed mismatch to `4.917383e-7`.
+42. **Next:** M59f export-only positional-interleaving rewrite, followed by
+    unchanged intermediate and full-model parity checks. No weights or
+    architecture changes, training, compression, or device testing.
 
 ## Decision rules
 
@@ -420,6 +432,8 @@ frozen; passing AP does not by itself authorize deployment.
 - M57 portable deformable-attention contract: `MONODGP_M57_DEFORMABLE_ATTENTION_CONTRACT.md`
 - M58 fixed-shape Core ML contract: `MONODGP_M58_COREML_CONVERSION_CONTRACT.md`
 - M59b intermediate-tensor diagnostic contract: `MONODGP_M59B_COREML_DIAGNOSTIC_CONTRACT.md`
+- M59d 2D-transformer diagnostic contract: `MONODGP_M59D_2D_TRANSFORMER_CONTRACT.md`
+- M59e encoder-internal diagnosis and replay: `MONODGP_M59E_ENCODER_INTERNALS_CONTRACT.md`
 - R0 protocol: `TWO_CLASS_REFERENCE_PROTOCOL.md`
 - Full chronological evidence: `MobileADAS3D_Codex_Handoff_20260715.md`
 - Current status and next task: this file

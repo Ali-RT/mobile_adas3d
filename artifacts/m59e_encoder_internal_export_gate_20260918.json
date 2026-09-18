@@ -1,0 +1,526 @@
+{
+  "schema_version": 1,
+  "complete": true,
+  "experiment": "M59e first 2D encoder internal diagnostic export",
+  "training_performed": false,
+  "weights_changed": false,
+  "physical_device_testing_authorized": false,
+  "fp16_or_quantization_authorized": false,
+  "product_safety_qualified": false,
+  "original_m59d_output_preservation": {
+    "enhanced_src_0": {
+      "passed": true,
+      "shape": [
+        1,
+        256,
+        48,
+        160
+      ],
+      "max_abs_delta": 5.364418029785156e-06,
+      "mean_abs_delta": 5.293777860515547e-09,
+      "limit": 0.001
+    },
+    "enhanced_src_1": {
+      "passed": true,
+      "shape": [
+        1,
+        256,
+        24,
+        80
+      ],
+      "max_abs_delta": 1.673470251262188e-10,
+      "mean_abs_delta": 7.229253654039702e-12,
+      "limit": 0.001
+    },
+    "enhanced_src_2": {
+      "passed": true,
+      "shape": [
+        1,
+        256,
+        12,
+        40
+      ],
+      "max_abs_delta": 1.2732925824820995e-10,
+      "mean_abs_delta": 3.2661863665073287e-12,
+      "limit": 0.001
+    },
+    "enhanced_src_3": {
+      "passed": true,
+      "shape": [
+        1,
+        256,
+        6,
+        20
+      ],
+      "max_abs_delta": 7.09405867382884e-11,
+      "mean_abs_delta": 4.1099697430102555e-12,
+      "limit": 0.001
+    },
+    "depth_pos_embed": {
+      "passed": true,
+      "shape": [
+        1,
+        256,
+        24,
+        80
+      ],
+      "max_abs_delta": 4.5180320739746094e-05,
+      "mean_abs_delta": 1.0815601569902356e-07,
+      "limit": 0.001
+    },
+    "weighted_depth": {
+      "passed": true,
+      "shape": [
+        1,
+        24,
+        80
+      ],
+      "max_abs_delta": 2.6702880859375e-05,
+      "mean_abs_delta": 3.5941600344813196e-06,
+      "limit": 0.001
+    },
+    "det2d_encoder_layer_0": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 2.4318695068359375e-05,
+      "mean_abs_delta": 5.763600938735181e-07,
+      "limit": 0.001
+    },
+    "det2d_encoder_layer_1": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 2.205371856689453e-05,
+      "mean_abs_delta": 6.990067049628124e-07,
+      "limit": 0.001
+    },
+    "det2d_encoder_layer_2": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 1.9550323486328125e-05,
+      "mean_abs_delta": 6.074422458368645e-07,
+      "limit": 0.001
+    },
+    "det2d_decoder_layer_0": {
+      "passed": true,
+      "shape": [
+        1,
+        50,
+        256
+      ],
+      "max_abs_delta": 8.702278137207031e-06,
+      "mean_abs_delta": 5.918572583141213e-07,
+      "limit": 0.001
+    },
+    "det2d_decoder_layer_1": {
+      "passed": true,
+      "shape": [
+        1,
+        50,
+        256
+      ],
+      "max_abs_delta": 2.0265579223632812e-05,
+      "mean_abs_delta": 1.1857716799568152e-06,
+      "limit": 0.001
+    },
+    "det2d_decoder_layer_2": {
+      "passed": true,
+      "shape": [
+        1,
+        50,
+        256
+      ],
+      "max_abs_delta": 4.482269287109375e-05,
+      "mean_abs_delta": 1.784034225238429e-06,
+      "limit": 0.001
+    },
+    "det2d_hs_last": {
+      "passed": true,
+      "shape": [
+        1,
+        50,
+        256
+      ],
+      "max_abs_delta": 4.482269287109375e-05,
+      "mean_abs_delta": 1.784034225238429e-06,
+      "limit": 0.001
+    }
+  },
+  "all_export_gates_passed": true,
+  "scope": "one frozen M59d input; instrumentation only",
+  "source_gate_sha256": "e94fb11043961f1975c0ce27f0f3e6591a049d32784d3bf7298b5458bb960d43",
+  "source_torchscript_sha256": "edbf236c0b1c3f5a0d0748acd4c8bd425d6aeb109e86d8d0dcff1a13122d95e5",
+  "source_reference_io_sha256": "d9f951890da42d420f43f9737fe88629ea3db53762c4f90fae3032e058e22195",
+  "torch_version": "2.12.0",
+  "numpy_version": "2.3.5",
+  "coremltools_version": "9.0",
+  "trace_parity": {
+    "enc0_src": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "enc0_pos": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "enc0_reference_points": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        4,
+        2
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "enc0_query": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "attn_value_projected": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "attn_sampling_offsets": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "attn_weight_logits": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        128
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "attn_weight_probabilities": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        8,
+        16
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "attn_sampling_locations": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        8,
+        16,
+        2
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "attn_weighted_sum": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "enc0_attention_output": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "enc0_residual1": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "enc0_norm1": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "enc0_ffn_linear1": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "enc0_ffn_relu": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "enc0_ffn_linear2": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "enc0_residual2": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    },
+    "enc0_output": {
+      "passed": true,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0,
+      "limit": 0.001
+    }
+  },
+  "probe_limit_max_abs": 0.001,
+  "output_names": [
+    "enc0_src",
+    "enc0_pos",
+    "enc0_reference_points",
+    "enc0_query",
+    "attn_value_projected",
+    "attn_sampling_offsets",
+    "attn_weight_logits",
+    "attn_weight_probabilities",
+    "attn_sampling_locations",
+    "attn_weighted_sum",
+    "enc0_attention_output",
+    "enc0_residual1",
+    "enc0_norm1",
+    "enc0_ffn_linear1",
+    "enc0_ffn_relu",
+    "enc0_ffn_linear2",
+    "enc0_residual2",
+    "enc0_output"
+  ],
+  "output_shapes": {
+    "enc0_src": [
+      1,
+      10200,
+      256
+    ],
+    "enc0_pos": [
+      1,
+      10200,
+      256
+    ],
+    "enc0_reference_points": [
+      1,
+      10200,
+      4,
+      2
+    ],
+    "enc0_query": [
+      1,
+      10200,
+      256
+    ],
+    "attn_value_projected": [
+      1,
+      10200,
+      256
+    ],
+    "attn_sampling_offsets": [
+      1,
+      10200,
+      256
+    ],
+    "attn_weight_logits": [
+      1,
+      10200,
+      128
+    ],
+    "attn_weight_probabilities": [
+      1,
+      10200,
+      8,
+      16
+    ],
+    "attn_sampling_locations": [
+      1,
+      10200,
+      8,
+      16,
+      2
+    ],
+    "attn_weighted_sum": [
+      1,
+      10200,
+      256
+    ],
+    "enc0_attention_output": [
+      1,
+      10200,
+      256
+    ],
+    "enc0_residual1": [
+      1,
+      10200,
+      256
+    ],
+    "enc0_norm1": [
+      1,
+      10200,
+      256
+    ],
+    "enc0_ffn_linear1": [
+      1,
+      10200,
+      256
+    ],
+    "enc0_ffn_relu": [
+      1,
+      10200,
+      256
+    ],
+    "enc0_ffn_linear2": [
+      1,
+      10200,
+      256
+    ],
+    "enc0_residual2": [
+      1,
+      10200,
+      256
+    ],
+    "enc0_output": [
+      1,
+      10200,
+      256
+    ]
+  },
+  "conversion_seconds": 2.8965784159954637,
+  "mil_operation_counts": {
+    "const": 747,
+    "conv": 77,
+    "relu": 58,
+    "max_pool": 1,
+    "add": 31,
+    "reshape": 38,
+    "reduce_mean": 20,
+    "sub": 9,
+    "square": 8,
+    "sqrt": 8,
+    "real_div": 8,
+    "batch_norm": 8,
+    "upsample_bilinear": 3,
+    "sigmoid": 8,
+    "mul": 11,
+    "clip": 4,
+    "transpose": 14,
+    "concat": 1,
+    "linear": 6,
+    "select": 1,
+    "softmax": 1,
+    "split": 1,
+    "slice_by_index": 4,
+    "resample": 4,
+    "stack": 1,
+    "reduce_sum": 1,
+    "layer_norm": 2,
+    "identity": 2
+  },
+  "artifacts": {
+    "mlpackage": "/private/tmp/mobileadas3d_m59e_verified/MonoDGP_M59e_encoder_internal_fp32.mlpackage",
+    "mlpackage_tree_sha256": "df7fc30a67bd69cf2c5728a2764ca9d658b03d111c773d12a3235b41fa9765e3",
+    "reference_io": "/private/tmp/mobileadas3d_m59e_verified/m59e_encoder_internal_reference_io.npz",
+    "reference_io_sha256": "69860f15003b7ea086827dd16fa227a6b95c66582e250bf6324ebc4ab5c73b98"
+  }
+}

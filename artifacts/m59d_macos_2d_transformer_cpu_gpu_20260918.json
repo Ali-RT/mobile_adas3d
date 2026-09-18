@@ -1,0 +1,184 @@
+{
+  "schema_version": 1,
+  "complete": false,
+  "experiment": "M59d macOS 2D-transformer layer diagnostic",
+  "scope": "fixed-shape FP32 diagnostic package; one frozen M58 validation sample",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "coremltools_version": "9.0",
+  "compute_units": "CPU_AND_GPU",
+  "mlpackage": "/private/tmp/mobileadas3d_m59d_20260918/monodgp_m59d_2d_transformer/MonoDGP_M59d_2d_transformer_fp32.mlpackage",
+  "mlpackage_tree_sha256": "2b1fd6528fadca21a317ef44f60d59eca2af554882a8557d63604c4906a114e0",
+  "reference_io": "/private/tmp/mobileadas3d_m59d_20260918/monodgp_m59d_2d_transformer/m59d_2d_transformer_reference_io.npz",
+  "reference_io_sha256": "d9f951890da42d420f43f9737fe88629ea3db53762c4f90fae3032e058e22195",
+  "prediction_seconds": 1.3912768750451505,
+  "output_names": [
+    "enhanced_src_0",
+    "enhanced_src_1",
+    "enhanced_src_2",
+    "enhanced_src_3",
+    "depth_pos_embed",
+    "weighted_depth",
+    "det2d_encoder_layer_0",
+    "det2d_encoder_layer_1",
+    "det2d_encoder_layer_2",
+    "det2d_decoder_layer_0",
+    "det2d_decoder_layer_1",
+    "det2d_decoder_layer_2",
+    "det2d_hs_last"
+  ],
+  "raw_intermediate_parity": {
+    "enhanced_src_0": {
+      "passed": true,
+      "shape": [
+        1,
+        256,
+        48,
+        160
+      ],
+      "max_abs_delta": 7.3909759521484375e-06,
+      "mean_abs_delta": 2.338919991018429e-08,
+      "limit": 0.001
+    },
+    "enhanced_src_1": {
+      "passed": true,
+      "shape": [
+        1,
+        256,
+        24,
+        80
+      ],
+      "max_abs_delta": 1.8953869584947824e-09,
+      "mean_abs_delta": 3.8930931395286805e-11,
+      "limit": 0.001
+    },
+    "enhanced_src_2": {
+      "passed": true,
+      "shape": [
+        1,
+        256,
+        12,
+        40
+      ],
+      "max_abs_delta": 4.874891601502895e-10,
+      "mean_abs_delta": 3.0289434155283956e-11,
+      "limit": 0.001
+    },
+    "enhanced_src_3": {
+      "passed": true,
+      "shape": [
+        1,
+        256,
+        6,
+        20
+      ],
+      "max_abs_delta": 4.2928149923682213e-10,
+      "mean_abs_delta": 3.230167869294753e-11,
+      "limit": 0.001
+    },
+    "depth_pos_embed": {
+      "passed": true,
+      "shape": [
+        1,
+        256,
+        24,
+        80
+      ],
+      "max_abs_delta": 0.00040090084075927734,
+      "mean_abs_delta": 6.947763608877722e-07,
+      "limit": 0.001
+    },
+    "weighted_depth": {
+      "passed": true,
+      "shape": [
+        1,
+        24,
+        80
+      ],
+      "max_abs_delta": 0.000152587890625,
+      "mean_abs_delta": 4.583597183227539e-05,
+      "limit": 0.001
+    },
+    "det2d_encoder_layer_0": {
+      "passed": false,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 1.2977898120880127,
+      "mean_abs_delta": 0.0010574660263955593,
+      "limit": 0.001
+    },
+    "det2d_encoder_layer_1": {
+      "passed": false,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 1.470752239227295,
+      "mean_abs_delta": 0.004929536487907171,
+      "limit": 0.001
+    },
+    "det2d_encoder_layer_2": {
+      "passed": false,
+      "shape": [
+        1,
+        10200,
+        256
+      ],
+      "max_abs_delta": 1.9415662288665771,
+      "mean_abs_delta": 0.007260528393089771,
+      "limit": 0.001
+    },
+    "det2d_decoder_layer_0": {
+      "passed": false,
+      "shape": [
+        1,
+        50,
+        256
+      ],
+      "max_abs_delta": 0.13796687126159668,
+      "mean_abs_delta": 0.01124353427439928,
+      "limit": 0.001
+    },
+    "det2d_decoder_layer_1": {
+      "passed": false,
+      "shape": [
+        1,
+        50,
+        256
+      ],
+      "max_abs_delta": 0.3523528575897217,
+      "mean_abs_delta": 0.016794299706816673,
+      "limit": 0.001
+    },
+    "det2d_decoder_layer_2": {
+      "passed": false,
+      "shape": [
+        1,
+        50,
+        256
+      ],
+      "max_abs_delta": 0.8606860041618347,
+      "mean_abs_delta": 0.023555850610136986,
+      "limit": 0.001
+    },
+    "det2d_hs_last": {
+      "passed": false,
+      "shape": [
+        1,
+        50,
+        256
+      ],
+      "max_abs_delta": 0.8606860041618347,
+      "mean_abs_delta": 0.023555850610136986,
+      "limit": 0.001
+    }
+  },
+  "first_diverging_tensor": "det2d_encoder_layer_0",
+  "all_intermediate_gates_passed": false,
+  "physical_device_testing_authorized": false,
+  "fp16_or_quantization_authorized": false,
+  "product_safety_qualified": false
+}
