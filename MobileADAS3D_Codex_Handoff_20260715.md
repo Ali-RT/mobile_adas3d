@@ -3482,3 +3482,29 @@ See `MONODGP_M59F_POSITION_INTERLEAVE_CONTRACT.md` for exact reproduction.
 Next is M59g, a bounded multi-input numerical precision audit with per-field
 residuals, unchanged-query checks, and CPU control. No automatic threshold
 relaxation, training, new architecture, quantization, or iPhone deployment.
+
+### M59g one-input controls executed; multi-input capture prepared (2026-09-18)
+
+The verified M59f full package was executed three times on the same frozen
+input. All ten outputs were bit-exact across calls. Original CPU TorchScript
+was bit-exact across two calls and against the position-repaired CPU trace.
+Top-50 query/class identities and order were unchanged. The strict decoded
+residual remains 0.000415802 against the original frozen anchor (fail), and
+0.000373840 against local CPU. A supplementary CPU_ONLY subprocess was stopped
+after its 45-second budget; it produced no numerical result. No limit changed.
+
+Only one verified validation input exists locally. The multi-input audit is
+therefore explicitly pending, not complete or approved. Evidence is retained
+in `artifacts/m59g_anchor_precision_audit_20260918.json` and the CPU-only log.
+
+New `notebooks/MonoDGP_M59g_Precision_Inputs_Colab.ipynb`, revision
+`M59g-2026-09-18-r1`, defines all helpers and paths in three cells. Run all
+three on Colab CPU. It uses the original M58 files and existing KITTI Drive
+images/calibrations, verifies bit-exact preprocessing on 000001, and collects
+16 deterministic, evenly spaced Chen-val inputs with hashes into a ZIP. No
+training, model inference, upstream clone, or CUDA build occurs in Colab.
+
+Return `m59g_inputs_<timestamp>.zip`; then execute the macOS precision audit
+on all 16. References for new inputs are the unmodified CPU trace, while the
+old frozen anchor remains mandatory and separate. See
+`MONODGP_M59G_PRECISION_AUDIT_CONTRACT.md`. No deployment or accuracy claim.
