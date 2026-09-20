@@ -1,6 +1,6 @@
 # MobileADAS3D project tracker
 
-Last updated: 2026-09-18
+Last updated: 2026-09-19
 
 This is the canonical status page. Update it whenever a task changes state,
 an experiment finishes, a gate passes/fails, or the next action changes.
@@ -16,17 +16,17 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-- Current phase: **M59g 16-input audit complete; strict decoded gate failed**.
-- Recommended next task: **M59h final-geometry impact diagnostic**, using the
-  same 16 frozen inputs. Not yet implemented/authorized for execution.
-  All 160 raw checks pass, repeated CPU/Core ML calls and CPU rewrite
-  equivalence are bit-exact, and all 800 ranked query/class selections are
-  unchanged. The decoded gate fails on 14/16 inputs at the unchanged `0.0001`
-  limit: worst selected-depth delta `0.000761986` m (0.762 mm); angle-code
-  and dimension fields also fail on 7/16 and 2/16 inputs respectively.
-  CPU_ONLY again timed out after 45 seconds without a parity result.
-  Next measure actual boxes/yaw/distance impact before proposing any separate,
-  unit-aware tolerance for explicit review. No notebook rerun is needed now.
+- Current phase: **M59h geometry measurement complete; numerical-policy review pending**.
+- Next decision: review the explicitly proposed unit-aware limits in
+  `MONODGP_M59H_GEOMETRY_CONTRACT.md`, then prepare the **one remaining planned
+  experiment: full 3,769-image KITTI preservation evaluation**. No criteria
+  have been changed or approved by the measurement itself.
+  On 16 inputs/800 candidates, max continuous deltas are 0.00351 px (2D box),
+  0.762 mm (depth), 0.898 mm (3D corner), and 0.000426 degrees (yaw).
+  Query/class selection, heading bins, and score-filter decisions are unchanged.
+  Native two-decimal formatting changes 40 rows, with up to 1 cm stored
+  geometric difference; AP preservation is not yet measured. Old M59g strict
+  decoded gate remains failed. No new notebook run is needed now.
   Do not mark full parity passed or silently relax the decoded limit.
   No device, FP16, quantization, or deployment test is authorized.
 - Selected accuracy parent: **M54 MonoDGP epoch 100**, checkpoint SHA-256
@@ -116,7 +116,7 @@ not constrain the current accuracy-development stage.
 | M59e | First encoder internal and positional-layout diagnosis | Complete—first input mismatch explained | Original-output preservation and 18-tap trace parity passed. macOS first fails at `enc0_pos`; only fourth (6×20) scale differs. Grouped sine/cosine ordering explains the failure to max residual `4.917383e-7` after removing learned level bias. No weights changed or model repaired. CPU-only replay notebook is available; no Colab rerun is needed for the reviewed result. See `MONODGP_M59E_ENCODER_INTERNALS_CONTRACT.md`. |
 | M59f | Export-only positional-interleaving repair | Complete—bug repaired; final numerical gate fails | Explicit concatenation/channel selection preserves CPU PyTorch outputs exactly. All 18 internal, 13 layer, and ten full raw checks pass. Decoded depth/dimensions fail the unchanged 0.0001 limit (max 0.000415802); all 50 query/class selections remain identical. No full-validation or device approval. See `MONODGP_M59F_POSITION_INTERLEAVE_CONTRACT.md`. |
 | M59g | Residual numerical precision audit | Complete—strict decoded gate failed | 16 real inputs verified/executed. All 160 raw checks pass; CPU rewrite/repeats and Core ML repeats are bit-exact; all 800 ranked query/class selections unchanged. Decoded gate fails on 14/16 inputs; worst selected-depth delta 0.762 mm. CPU_ONLY timeout at 45 seconds; no tolerance change or deployment approval. See `MONODGP_M59G_PRECISION_AUDIT_CONTRACT.md`. |
-| M59h | Final-geometry impact diagnostic | Proposed—not executed | Measure camera-space boxes, distance, dimensions, heading-bin/yaw effects on the same fixed inputs before proposing unit-aware numerical criteria for explicit review. No training, threshold change, or full-validation authorization yet. |
+| M59h | Final-geometry impact diagnostic | Complete—measurement, not acceptance | 16 inputs/800 candidates; decoder port bit-exact to native on both backends. Max continuous differences: 0.00351 px, depth 0.762 mm, corner 0.898 mm, yaw 0.000426 degrees. No identity/bin/filter changes. Native .2f rounding changes 40 rows (up to 1 cm); AP unmeasured. Unit-aware criteria proposed for review only. See `MONODGP_M59H_GEOMETRY_CONTRACT.md`. |
 
 **M53 completion note:** the model and official evaluator passed after the public-API import correction. The prior JSON failed only because it compared an independent reimplementation directly with published native-evaluator values. The corrected schema-v2 finalizer reused the complete prediction set and native log, and all frozen M53 gates passed.
 
@@ -412,9 +412,13 @@ frozen; passing AP does not by itself authorize deployment.
     real inputs. All raw checks, repeatability, CPU rewrite equivalence, and
     query selection pass. Strict decoded fails 14/16; max depth delta 0.762 mm.
     CPU_ONLY produced no result within 45 seconds. No tolerance was relaxed.
-44. **Proposed:** M59h measure final-geometry impact on the same inputs, then
-    review any proposed numerical policy explicitly. No weights, architecture,
-    training schedule, or acceptance limits change automatically.
+44. **Complete—measurement only:** M59h measured final geometry on the same
+    16 inputs, preserving all decoding and formatting. Sub-mm continuous
+    geometry differences; no bin/filter changes. Native rounding changes 40
+    rows, so full AP preservation still needs measurement.
+45. **Next—policy approval required:** review proposed physical-unit numerical
+    limits, then prepare the final full-KITTI preservation comparison. Do not
+    change the old failed gate, output precision, weights, or training schedule.
 
 ## Decision rules
 
@@ -448,6 +452,7 @@ frozen; passing AP does not by itself authorize deployment.
 - M59e encoder-internal diagnosis and replay: `MONODGP_M59E_ENCODER_INTERNALS_CONTRACT.md`
 - M59f positional repair and remaining numerical gate: `MONODGP_M59F_POSITION_INTERLEAVE_CONTRACT.md`
 - M59g precision audit and input collection: `MONODGP_M59G_PRECISION_AUDIT_CONTRACT.md`
+- M59h geometry impact and proposed numerical-policy review: `MONODGP_M59H_GEOMETRY_CONTRACT.md`
 - R0 protocol: `TWO_CLASS_REFERENCE_PROTOCOL.md`
 - Full chronological evidence: `MobileADAS3D_Codex_Handoff_20260715.md`
 - Current status and next task: this file

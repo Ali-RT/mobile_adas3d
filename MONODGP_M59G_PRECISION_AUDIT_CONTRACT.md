@@ -172,6 +172,10 @@ complete report means the audit is partial or a parity check failed.
 
 ## Recommended next task — M59h, measurement only
 
+Update (2026-09-19): M59h has now executed. See
+`MONODGP_M59H_GEOMETRY_CONTRACT.md` for measured final geometry and the
+proposed (not adopted) policy. The following text records the original plan.
+
 Compare final camera-space boxes, distances, dimensions, heading-bin choices,
 and decoded yaw on these same 16 inputs, retaining the paired raw outputs.
 This separates encoded-tensor differences from actual geometric changes.

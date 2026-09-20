@@ -3541,3 +3541,40 @@ on these same inputs (boxes/distance/dimensions/heading bins/yaw), followed
 by explicit review of any proposed unit-aware numerical policy. This is
 proposed, not implemented/executed. Do not change weights or training and
 do not loosen the old gate silently. No user notebook rerun is needed now.
+
+### M59h final geometry measured (2026-09-19)
+
+Implemented and executed `scripts/diagnose_monodgp_m59h_geometry.py` on the
+same 16 real inputs, unchanged original CPU trace, and repaired FP32 Core ML
+package. Retained all 16 paired raw-output/input NPZ files locally with hashes
+in `artifacts/m59h_geometry_diagnostic_20260919.json`. The implementation
+uses hash-pinned native top-k extraction and checks its independent geometry
+port against the exact native decoding functions on every input/backend;
+all comparisons are bit-exact. Frozen config meanshape=false, original P2,
+KITTI bottom-center coordinates, native class order, 0.001 score filtering,
+top-k50, no NMS, and .2f serialization are preserved.
+
+All 800 query/class identities, ranking, heading bins, and score-filter
+decisions are unchanged. Maximum continuous deltas: 2D box 0.00350654 pixels,
+depth 0.761986 mm, dimension 0.147820 mm, bottom-center displacement 0.862420 mm,
+corner displacement 0.898120 mm, yaw 0.000426141 degrees, confidence 0.000041008.
+No invalid geometry. However 40/800 native .2f text rows change at rounding
+boundaries, with stored geometry changes up to 0.01 m. Full AP is still
+unmeasured; small continuous deltas do not establish preservation.
+
+Existing confidence serialization retains 522 candidates at the downstream
+0.001 threshold versus 772 using unrounded confidence, identically for both
+backends. This is preserved existing behavior, not a conversion regression,
+and must not be silently changed in the final comparison.
+
+39 regression tests pass. Full report, reproduction, and proposed (NOT active)
+unit-aware numerical limits are in `MONODGP_M59H_GEOMETRY_CONTRACT.md`.
+Proposed for review: 0.01 px boxes, 0.01 m metric geometry, 0.01 degree yaw/alpha,
+0.0001 confidence, existing raw limits and unchanged discrete decisions on the
+fixed diagnostic set. No criterion was adopted, no old failed result overwritten,
+and no training, AP, latency, or deployment qualification performed.
+
+One planned conversion experiment remains: full 3,769-image KITTI preservation,
+after explicit policy approval and dataset/inference workflow preparation.
+No further architecture or small numerical experiments are automatically
+authorized. No Colab rerun is needed for the completed M59h result.
