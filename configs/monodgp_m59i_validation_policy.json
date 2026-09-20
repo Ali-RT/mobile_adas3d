@@ -1,0 +1,41 @@
+{
+  "policy_id": "m59i-approved-20260919-v1",
+  "approved_on": "2026-09-19",
+  "approval": "User approved the M59h proposed numerical limits and preparation of full KITTI validation.",
+  "numerical_gate_scope": "Fixed 16 M59g diagnostic inputs; full-split numerical differences are also reported, not used to retune this policy.",
+  "geometry_limits": {
+    "bbox_pixel_max_delta": 0.01,
+    "depth_m_delta": 0.01,
+    "dimension_m_max_delta": 0.01,
+    "bottom_center_m_l2_delta": 0.01,
+    "geometric_center_m_l2_delta": 0.01,
+    "radial_distance_m_delta": 0.01,
+    "yaw_degrees_delta": 0.01,
+    "alpha_degrees_delta": 0.01,
+    "corner_m_max_l2_delta": 0.01,
+    "final_confidence_delta": 0.0001
+  },
+  "raw_limits": {
+    "pred_logits": 0.1, "pred_boxes": 0.01, "pred_3d_dim": 0.1,
+    "pred_depth": 0.5, "pred_angle": 0.1, "pred_depth_map_logits": 0.1,
+    "pred_region_prob": 0.01
+  },
+  "preservation_gates": {
+    "vehicle_3d_moderate": 18.47926118042715,
+    "pedestrian_3d_moderate": 5.866134983562169,
+    "mean_3d_moderate": 12.17269808199466,
+    "vehicle_bev_moderate": 24.48633280825395,
+    "pedestrian_bev_moderate": 6.429234988326799,
+    "vehicle_near_recall": 0.8999254609650843,
+    "pedestrian_near_recall": 0.7148677248677249,
+    "pedestrian_localization_failure_rate_max": 0.24765432098765433,
+    "prediction_files": 3769
+  },
+  "score_threshold": 0.001,
+  "topk": 50,
+  "nms_applied": false,
+  "serialization_decimals": 2,
+  "m59g_historical_gate_passed": false,
+  "training_authorized": false,
+  "deployment_authorized": false
+}

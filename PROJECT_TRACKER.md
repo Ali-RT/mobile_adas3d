@@ -16,19 +16,19 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-- Current phase: **M59h geometry measurement complete; numerical-policy review pending**.
-- Next decision: review the explicitly proposed unit-aware limits in
-  `MONODGP_M59H_GEOMETRY_CONTRACT.md`, then prepare the **one remaining planned
-  experiment: full 3,769-image KITTI preservation evaluation**. No criteria
-  have been changed or approved by the measurement itself.
-  On 16 inputs/800 candidates, max continuous deltas are 0.00351 px (2D box),
-  0.762 mm (depth), 0.898 mm (3D corner), and 0.000426 degrees (yaw).
-  Query/class selection, heading bins, and score-filter decisions are unchanged.
-  Native two-decimal formatting changes 40 rows, with up to 1 cm stored
-  geometric difference; AP preservation is not yet measured. Old M59g strict
-  decoded gate remains failed. No new notebook run is needed now.
-  Do not mark full parity passed or silently relax the decoded limit.
-  No device, FP16, quantization, or deployment test is authorized.
+- Current phase: **M59i policy approved; full-validation workflow ready, dataset pending**.
+- Next action: run all three code cells of
+  `notebooks/MonoDGP_M59i_Full_Validation_Bundle_Colab.ipynb` (revision
+  M59i-2026-09-19-r1) on CPU and return `m59i_chen_val3769.zip`.
+  Then run paired CPU PyTorch/Core ML inference and the unchanged full-split
+  AP/nearby-preservation gates on the Mac. This is the **one remaining planned
+  conversion experiment**. See `MONODGP_M59I_FULL_VALIDATION_CONTRACT.md`.
+  The user approved 0.01 px / 0.01 m / 0.01 degree / 0.0001 confidence limits
+  on the fixed diagnostic set, retaining raw/discrete checks. All 16 saved
+  M59h inputs pass that separately versioned policy. Historical M59g remains
+  failed; full AP/nearby preservation remains unmeasured. Keep native .2f
+  output formatting unchanged. No training, device, quantization or deployment
+  approval follows from this preparation. Stop for review after the full run.
 - Selected accuracy parent: **M54 MonoDGP epoch 100**, checkpoint SHA-256
   `8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847`.
 - Legacy accuracy reference: **R0 ResNet50 MonoDETR, epoch 185**.
@@ -117,6 +117,7 @@ not constrain the current accuracy-development stage.
 | M59f | Export-only positional-interleaving repair | Complete—bug repaired; final numerical gate fails | Explicit concatenation/channel selection preserves CPU PyTorch outputs exactly. All 18 internal, 13 layer, and ten full raw checks pass. Decoded depth/dimensions fail the unchanged 0.0001 limit (max 0.000415802); all 50 query/class selections remain identical. No full-validation or device approval. See `MONODGP_M59F_POSITION_INTERLEAVE_CONTRACT.md`. |
 | M59g | Residual numerical precision audit | Complete—strict decoded gate failed | 16 real inputs verified/executed. All 160 raw checks pass; CPU rewrite/repeats and Core ML repeats are bit-exact; all 800 ranked query/class selections unchanged. Decoded gate fails on 14/16 inputs; worst selected-depth delta 0.762 mm. CPU_ONLY timeout at 45 seconds; no tolerance change or deployment approval. See `MONODGP_M59G_PRECISION_AUDIT_CONTRACT.md`. |
 | M59h | Final-geometry impact diagnostic | Complete—measurement, not acceptance | 16 inputs/800 candidates; decoder port bit-exact to native on both backends. Max continuous differences: 0.00351 px, depth 0.762 mm, corner 0.898 mm, yaw 0.000426 degrees. No identity/bin/filter changes. Native .2f rounding changes 40 rows (up to 1 cm); AP unmeasured. Unit-aware criteria proposed for review only. See `MONODGP_M59H_GEOMETRY_CONTRACT.md`. |
+| M59i | Approved policy and full KITTI preservation | Prepared—awaiting dataset bundle | User approved M59h limits; all 16 saved inputs pass the new separately frozen diagnostic policy. Three-cell CPU collection notebook and hash-bound resumable Mac paired evaluator implemented; 53 M59 tests pass. Full 3,769-image AP/nearby comparison not yet run. See `MONODGP_M59I_FULL_VALIDATION_CONTRACT.md`. |
 
 **M53 completion note:** the model and official evaluator passed after the public-API import correction. The prior JSON failed only because it compared an independent reimplementation directly with published native-evaluator values. The corrected schema-v2 finalizer reused the complete prediction set and native log, and all frozen M53 gates passed.
 
@@ -416,9 +417,11 @@ frozen; passing AP does not by itself authorize deployment.
     16 inputs, preserving all decoding and formatting. Sub-mm continuous
     geometry differences; no bin/filter changes. Native rounding changes 40
     rows, so full AP preservation still needs measurement.
-45. **Next—policy approval required:** review proposed physical-unit numerical
-    limits, then prepare the final full-KITTI preservation comparison. Do not
-    change the old failed gate, output precision, weights, or training schedule.
+45. **Approved and prepared:** M59i freezes the explicitly approved unit-aware
+    policy. Run its three-cell CPU data notebook and return the ZIP; paired
+    complete-split inference/evaluation happens on the Mac. Do not change the
+    old failed gate, output precision, weights or training schedule. Review the
+    full result before any further experiment or deployment decision.
 
 ## Decision rules
 
@@ -453,6 +456,7 @@ frozen; passing AP does not by itself authorize deployment.
 - M59f positional repair and remaining numerical gate: `MONODGP_M59F_POSITION_INTERLEAVE_CONTRACT.md`
 - M59g precision audit and input collection: `MONODGP_M59G_PRECISION_AUDIT_CONTRACT.md`
 - M59h geometry impact and proposed numerical-policy review: `MONODGP_M59H_GEOMETRY_CONTRACT.md`
+- M59i approved policy, data notebook and full validation: `MONODGP_M59I_FULL_VALIDATION_CONTRACT.md`
 - R0 protocol: `TWO_CLASS_REFERENCE_PROTOCOL.md`
 - Full chronological evidence: `MobileADAS3D_Codex_Handoff_20260715.md`
 - Current status and next task: this file

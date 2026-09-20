@@ -1,6 +1,9 @@
 # M59h — final decoded geometry diagnostic
 
-Status (2026-09-19): **measurement complete, no new acceptance policy adopted**.
+Status at measurement (2026-09-19): **measurement complete, no new acceptance policy adopted**.
+Subsequent decision: the user explicitly approved the proposed policy.
+It is frozen separately for M59i in `MONODGP_M59I_FULL_VALIDATION_CONTRACT.md`.
+The measurement report and historical M59g failure remain unchanged.
 M59g's strict decoded gate remains failed. One planned experiment remains:
 complete KITTI preservation evaluation, conditional on explicit numerical-policy
 review. No new training or architecture experiment is proposed.

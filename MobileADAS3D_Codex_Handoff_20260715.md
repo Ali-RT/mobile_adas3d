@@ -3578,3 +3578,35 @@ One planned conversion experiment remains: full 3,769-image KITTI preservation,
 after explicit policy approval and dataset/inference workflow preparation.
 No further architecture or small numerical experiments are automatically
 authorized. No Colab rerun is needed for the completed M59h result.
+
+### M59i approved policy and full-validation preparation (2026-09-19)
+
+User answered "yeah" to freezing the M59h limits and preparing the final
+complete-KITTI comparison. Frozen policy is
+`configs/monodgp_m59i_validation_policy.json` (SHA-256
+`8306ec063a55b81d4db9b852242144fd42d078e7ca4644d3a6bcf18e0d7c340f`).
+All 16 existing M59h samples pass the approved diagnostic limits; separately
+recorded in `artifacts/m59i_approved_diagnostic_gate.json`. Old failed reports
+remain unchanged. Full AP has not been executed.
+
+Prepared `MonoDGP_M59i_Full_Validation_Bundle_Colab.ipynb`, revision
+M59i-2026-09-19-r1: run all three code cells on CPU, return
+`m59i_chen_val3769.zip`. It packages original validation images, calibration and
+unmodified labels (exact historical label-tree hash), not remapped training GT.
+Collection is restartable with checksums and one final ZIP; no GPU or model
+setup. This is the only user action needed now.
+
+`evaluate_monodgp_m59i_coreml.py` runs both existing inference artifacts on the
+Mac and all three frozen evaluators for each prediction set. Per-image hashes
+and code/software/model/policy/data binding protect restart reuse. It retains
+native .2f formatting, top-k50 and threshold0.001. Numerical/discrete gates apply
+to the fixed diagnostic set; all-image raw checks and full AP/nearby floors are
+mandatory, and extra full-image numerical changes remain visible for review.
+The legacy evaluator provenance argument identifies the actual TorchScript
+file and hash. No fake checkpoint path or additional checkpoint is required.
+
+53 M59 tests pass; 14 new tests include copy/ZIP/restart, input corruption,
+policy changes, numerical/discrete checks, exact prediction IDs and notebook
+compilation. Contract: `MONODGP_M59I_FULL_VALIDATION_CONTRACT.md`.
+After the full result, stop for a single decision; do not automatically launch
+more tiny experiments, new training, quantization or device tests.
