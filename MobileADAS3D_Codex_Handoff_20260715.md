@@ -3610,3 +3610,33 @@ policy changes, numerical/discrete checks, exact prediction IDs and notebook
 compilation. Contract: `MONODGP_M59I_FULL_VALIDATION_CONTRACT.md`.
 After the full result, stop for a single decision; do not automatically launch
 more tiny experiments, new training, quantization or device tests.
+
+### M59i dataset received; input preflight stopped (2026-09-21)
+
+Received `/Users/ral3ply/Downloads/m59i_chen_val3769.zip` (3.051 GB unpacked),
+SHA-256 `9a34ac90e33d3d487ec60129edbcc2d8e76a372c6bb043fb0650358711cebcd0`.
+Safe extraction and full dataset verification pass: 3,769 images/calibrations/
+original labels, frozen Chen split, label tree, and reviewed 16 source hashes.
+Dataset: `outputs/m59i_delivered_20260921/m59i_chen_val3769`.
+
+Old `/private/tmp` M58/source folders were gone. Restored the exact trace and
+anchor from the previously supplied M58 ZIP into
+`outputs/m59i_restored_m58_20260921/monodgp_m58_coreml_conversion` (hash verified).
+Cloned the public source into `outputs/m59i_restored_MonoDGP_source_20260921`,
+detached at pinned aa059a1; all five native decoder hashes match without patches.
+Existing repaired M59f package remains available.
+
+Actual runner stopped before any inference on exact-input preflight: 11
+image-channel values differ from the frozen anchor (one 8-bit intensity step,
+max normalized delta 0.017506957); P2 and original size are exact. All 16 frozen
+samples reproduce the issue (306 changed channel values). Isolated Pillow11.3,
+OpenCV5.0, no-FP-contraction Pillow build, and disabled OpenCV optimizations did
+not fix it. The underlying operation/platform cause is not yet confirmed.
+Report: `artifacts/m59i_preprocessing_preflight_20260921.json`; failure log:
+`outputs/m59i_full_validation_20260921.log`. No inference progress/binding was
+created and full AP has NOT been measured. No guard or tolerance was relaxed.
+
+Docker CLI is installed but daemon is stopped. Asked user permission to start
+Docker for local Linux preprocessing reproduction; alternative is a Colab cell
+exporting preprocessed tensors. Do not start Docker or change the collector
+until the user chooses. Do not ask for the same raw dataset upload again.

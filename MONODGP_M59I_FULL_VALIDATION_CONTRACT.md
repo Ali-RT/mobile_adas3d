@@ -1,8 +1,35 @@
 # M59i — approved numerical policy and complete KITTI preservation
 
-Status (2026-09-19): **policy approved; workflow prepared; full dataset pending**.
+Status (2026-09-21): **dataset verified; full run blocked by exact-input preflight**.
 The user approved the M59h proposal before any complete-split run. This is the
 one remaining planned conversion experiment, not another model/training sweep.
+
+## Delivered dataset and execution attempt (2026-09-21)
+
+Received `m59i_chen_val3769.zip`, archive SHA-256
+`9a34ac90e33d3d487ec60129edbcc2d8e76a372c6bb043fb0650358711cebcd0`.
+All 11,309 archive entries were safely extracted, and the complete 3,769-sample
+bundle, original labels, split, and reviewed image/calibration hashes verified.
+The temporary M58/source folders were missing; restored the exact original
+trace from the delivered M58 archive and the five unmodified decoder source
+files from pinned MonoDGP commit `aa059a18214aebf644510e7f0793971b403f9d14`.
+All expected hashes match. Restored files are under project `outputs/` rather
+than relying on temporary folders.
+
+The full runner exits **before inference** at the existing bit-exact image
+anchor guard. Mac preprocessing changes 11 channel values in the first image,
+each by one source-intensity increment (normalized max delta 0.017506957).
+Calibration and image size are exact. Across all 16 previously frozen inputs,
+306 image-channel values differ. Restoring Pillow11.3/OpenCV5, disabling OpenCV
+optimizations, and building isolated Pillow11.3 with `-ffp-contract=off` did
+not resolve it. This does not establish which underlying operation causes the
+platform difference; no model-accuracy or conversion-preservation result exists.
+
+Evidence: `artifacts/m59i_preprocessing_preflight_20260921.json`.
+The delivered dataset is valid. Keep all weights, criteria, transforms and
+anchor checks unchanged. Asked permission to start installed Docker for local
+Linux reproduction; alternative is Colab export of already-preprocessed inputs.
+Do not rerun the current raw-image collector or download the dataset again.
 
 ## Frozen decision
 
