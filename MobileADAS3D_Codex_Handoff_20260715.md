@@ -3692,3 +3692,32 @@ This closes the planned conversion-preservation experiment. Product Pedestrian
 nearby recall still misses0.80, and iPhone runtime/thermals/generalization/safety
 are unqualified. Stop for review; do not start another conversion tweak,
 training, quantization or device benchmark without a new decision.
+
+### M60a device preparation authorized (2026-09-21)
+
+User asked to proceed and be told when to connect the phone. Prepared an
+isolated app in this repository: `ios/M60Benchmark`, bundle ID
+`com.ali.MonoDGPM60`. The existing `MobileADAS3DBenchmarkFresh` checkout has
+substantial user changes and remains untouched. Its old dense decoder is not
+compatible with MonoDGP and is not reused.
+
+The app bundles the exact M59i-passed package and16 hash-pinned input fixtures.
+Preparation executes the frozen TorchScript and Core ML package again and
+requires all16 unchanged fixed-set gates before exporting little-endian FP32
+resources. Device output serialization respects MLMultiArray strides. Native
+host review checks raw outputs, query/class ordering, heading bins, score
+filters and final geometry against both PyTorch and Mac references.
+
+Initial runtime scope: ALL compute,5 extra warmups,100 model-only predictions,
+60-second stability loop. Compilation/loading time, raw tensors, sampled RSS,
+thermal state and raw timings are retained. Partial failures are recorded;
+serious/critical thermal state stops the loop. No camera permission is used.
+The50ms p95 target remains; no thresholds/weights are changed.
+
+Prepared resources: `outputs/monodgp_m60_device_bundle/M60`.
+Release build: `outputs/m60_xcode_build/Build/Products/Release-iphoneos/M60Benchmark.app`.
+Read `MONODGP_M60_DEVICE_FEASIBILITY_CONTRACT.md` before signing/installing on
+the actual phone. Device execution, model speed and safety remain unverified.
+M60a does not cover camera preprocessing/decoding, end-to-end FPS or30-minute
+stability. M60b camera integration depends on review of M60a, not an automatic
+next action. Product Pedestrian nearby recall still misses0.80.

@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "experiment": "M60a physical-device feasibility preparation",
+  "revision": "M60-2026-09-21-r1",
+  "preparation_complete": true,
+  "device_execution_performed": false,
+  "signed_build_verified": false,
+  "deployment_authorized": false,
+  "end_to_end_qualified": false,
+  "model_package_tree_sha256": "90a5146acc25eb96d8bdafd27c3434898f737082ef5c1c8140d3ba97aaba1459",
+  "m59i_report_sha256": "2aff5f2603d44d30dea1edce5cf6104375b1550eb560f0497296b2f6b21c4ad2",
+  "device_manifest_sha256": "e21e8d3867ddcc6eb2cac41833a401b4fb2054fdfbca25fc3f627dc357659cca",
+  "resource_bundle_tree_sha256": "6df1685e11b8bca8f0f2ec9252911f2c8e1ee8d90f7d54880a6d0fa92d3a90fd",
+  "resource_bundle_bytes": 292154824,
+  "fixed_inputs": 16,
+  "fresh_mac_vs_pytorch_fixed16_passed": true,
+  "swift_all16_input_bytes_exact": true,
+  "swift_padded_output_serialization_passed": true,
+  "built_resources_byte_exact": true,
+  "unsigned_release_iphoneos_build_passed": true,
+  "xcode_version": "27.0 (27A266a)",
+  "new_python_tests_passed": 7,
+  "m59_regression_tests_passed": 57,
+  "app_bundle_identifier": "com.ali.MonoDGPM60",
+  "legacy_app_repository_changed": false,
+  "source_sha256": {
+    "ios/M60Benchmark/M60Runner.swift": "67263c6c88ea5ba0001dfd526c8e42b6e7b3c5fc19b7b54c82e728c9b2e2258b",
+    "ios/M60Benchmark/M60App.swift": "83e6f320359bea6b8e2b10cbcb70dcf0172b3ff21d72343b33a2e83a907e688c",
+    "ios/M60Benchmark/Tests/main.swift": "8e54bd5a35b18721fae7157078cee001a10dbfb2eb5dba1ee38d5ce9e8fbcbb7",
+    "ios/M60Benchmark/M60Benchmark.xcodeproj/project.pbxproj": "6f62198e3e10c9c5e3668befbc6fe36a00f072e8bb85b4ba2224f2947f0c69e3"
+  },
+  "next_action": "Connect and unlock the iPhone; then verify signing, install the isolated app and perform the bounded M60a run"
+}

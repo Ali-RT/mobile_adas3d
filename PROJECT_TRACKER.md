@@ -16,7 +16,8 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-- Current phase: **M59i complete—Mac conversion-preservation gates passed**.
+- Current phase: **M60a prepared—physical-iPhone feasibility awaiting device**.
+  M59i remains complete; its conversion-preservation gates passed.
 - All 3,769 delivered images/calibration/original labels and frozen hashes pass.
   Original trace restored from the prior archive and all five upstream decoder
   files match. No additional dataset upload is needed.
@@ -41,9 +42,12 @@ not constrain the current accuracy-development stage.
   +0.000236 points; other AP entries are equal. Native .2f formatting unchanged.
   Evidence: `artifacts/m59i_full_validation_gate_20260921.json` and
   `MONODGP_M59I_FULL_VALIDATION_CONTRACT.md`. Historical M59g remains failed.
-- Next decision: review this completed result and authorize a bounded physical-
-  device feasibility benchmark of the converted trained model, if desired.
-  No further conversion tweak, training, quantization or deployment is launched.
+- User authorized the bounded physical-device feasibility step. M60a has an
+  isolated iPhone application, exact model/fixed16 resources and independent
+  host review. First protocol: parity, 5 warmups/100 model-only predictions,
+  60-second stability loop. Physical-device results are still pending.
+  See `MONODGP_M60_DEVICE_FEASIBILITY_CONTRACT.md`. No live camera, training,
+  quantization or deployment is launched; the legacy v7 app remains untouched.
 - Selected accuracy parent: **M54 MonoDGP epoch 100**, checkpoint SHA-256
   `8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847`.
 - Legacy accuracy reference: **R0 ResNet50 MonoDETR, epoch 185**.
@@ -55,8 +59,8 @@ not constrain the current accuracy-development stage.
 - S1/H1/H2 status: **frozen negative experiments; do not resume**.
 - Knowledge distillation: **completed and rejected for A1**; it did not improve
   balanced accuracy and should not be retuned or resumed.
-- iPhone model constraints: **suspended during accuracy development**; restore
-  them after an accuracy-qualified student is frozen.
+- iPhone model constraints: **now measured as M60 feasibility**, not used to
+  retroactively change accuracy gates. The nearby-recall product gap remains.
 - iPhone street recording: **not needed in the current phase**.
 
 ## Milestone tracker
@@ -136,6 +140,7 @@ not constrain the current accuracy-development stage.
 | M59g | Residual numerical precision audit | Complete—strict decoded gate failed | 16 real inputs verified/executed. All 160 raw checks pass; CPU rewrite/repeats and Core ML repeats are bit-exact; all 800 ranked query/class selections unchanged. Decoded gate fails on 14/16 inputs; worst selected-depth delta 0.762 mm. CPU_ONLY timeout at 45 seconds; no tolerance change or deployment approval. See `MONODGP_M59G_PRECISION_AUDIT_CONTRACT.md`. |
 | M59h | Final-geometry impact diagnostic | Complete—measurement, not acceptance | 16 inputs/800 candidates; decoder port bit-exact to native on both backends. Max continuous differences: 0.00351 px, depth 0.762 mm, corner 0.898 mm, yaw 0.000426 degrees. No identity/bin/filter changes. Native .2f rounding changes 40 rows (up to 1 cm); AP unmeasured. Unit-aware criteria proposed for review only. See `MONODGP_M59H_GEOMETRY_CONTRACT.md`. |
 | M59i | Approved policy and full KITTI preservation | Complete—passed frozen preservation gates | All 3,769 paired predictions evaluated; all eight gated metrics exactly equal across PyTorch/Core ML. Full raw and fixed16 checks pass. Extra diagnostics flag 93 non-fixed images; 17 are order-only, not candidate-set changes. Hard Pedestrian 3D AP +0.000236 points; no automatic device/deployment approval. See `MONODGP_M59I_FULL_VALIDATION_CONTRACT.md`. |
+| M60a | Trained MonoDGP physical-device feasibility | Prepared—awaiting connected iPhone | Isolated app, exact model and16 verified fixtures, raw-output capture,5 warmups/100 timed predictions,60-second loop and native host geometry review. No camera or deployment qualification. See `MONODGP_M60_DEVICE_FEASIBILITY_CONTRACT.md`. |
 
 **M53 completion note:** the model and official evaluator passed after the public-API import correction. The prior JSON failed only because it compared an independent reimplementation directly with published native-evaluator values. The corrected schema-v2 finalizer reused the complete prediction set and native log, and all frozen M53 gates passed.
 
@@ -477,6 +482,7 @@ frozen; passing AP does not by itself authorize deployment.
 - M59g precision audit and input collection: `MONODGP_M59G_PRECISION_AUDIT_CONTRACT.md`
 - M59h geometry impact and proposed numerical-policy review: `MONODGP_M59H_GEOMETRY_CONTRACT.md`
 - M59i approved policy, data notebook and full validation: `MONODGP_M59I_FULL_VALIDATION_CONTRACT.md`
+- M60 device feasibility, isolated app and test procedure: `MONODGP_M60_DEVICE_FEASIBILITY_CONTRACT.md`
 - R0 protocol: `TWO_CLASS_REFERENCE_PROTOCOL.md`
 - Full chronological evidence: `MobileADAS3D_Codex_Handoff_20260715.md`
 - Current status and next task: this file
