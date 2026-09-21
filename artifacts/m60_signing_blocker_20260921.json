@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "experiment": "M60a physical-device feasibility",
+  "device_connected": true,
+  "device_model": "iPhone 16 Pro Max",
+  "product_type": "iPhone17,2",
+  "os_version": "26.6.2",
+  "os_build": "23G90",
+  "transport": "wired",
+  "paired": true,
+  "developer_mode_enabled": true,
+  "signed_build_exit_code": 65,
+  "signed_build_passed": false,
+  "blocker": "Xcode saved account credentials are invalid (missing Xcode-Username); No Accounts; no iOS App Development provisioning profile for com.ali.MonoDGPM60",
+  "app_installed": false,
+  "benchmark_started": false,
+  "deployment_authorized": false,
+  "required_user_action": "Sign back into the Apple account in Xcode Settings > Accounts, then retry the signed Release build",
+  "legacy_app_changed": false
+}

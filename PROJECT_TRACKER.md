@@ -16,7 +16,7 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-- Current phase: **M60a prepared—physical-iPhone feasibility awaiting device**.
+- Current phase: **M60a prepared—iPhone connected; Xcode sign-in required**.
   M59i remains complete; its conversion-preservation gates passed.
 - All 3,769 delivered images/calibration/original labels and frozen hashes pass.
   Original trace restored from the prior archive and all five upstream decoder
@@ -48,6 +48,11 @@ not constrain the current accuracy-development stage.
   60-second stability loop. Physical-device results are still pending.
   See `MONODGP_M60_DEVICE_FEASIBILITY_CONTRACT.md`. No live camera, training,
   quantization or deployment is launched; the legacy v7 app remains untouched.
+- iPhone 16 Pro Max (iOS26.6.2) is wired, paired and Developer Mode is enabled.
+  Signed build failed because Xcode's saved account credentials are invalid
+  and the M60 provisioning profile is unavailable. User must sign back into
+  Xcode Accounts. Nothing installed or benchmarked yet; evidence:
+  `artifacts/m60_signing_blocker_20260921.json`.
 - Selected accuracy parent: **M54 MonoDGP epoch 100**, checkpoint SHA-256
   `8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847`.
 - Legacy accuracy reference: **R0 ResNet50 MonoDETR, epoch 185**.
@@ -140,7 +145,7 @@ not constrain the current accuracy-development stage.
 | M59g | Residual numerical precision audit | Complete—strict decoded gate failed | 16 real inputs verified/executed. All 160 raw checks pass; CPU rewrite/repeats and Core ML repeats are bit-exact; all 800 ranked query/class selections unchanged. Decoded gate fails on 14/16 inputs; worst selected-depth delta 0.762 mm. CPU_ONLY timeout at 45 seconds; no tolerance change or deployment approval. See `MONODGP_M59G_PRECISION_AUDIT_CONTRACT.md`. |
 | M59h | Final-geometry impact diagnostic | Complete—measurement, not acceptance | 16 inputs/800 candidates; decoder port bit-exact to native on both backends. Max continuous differences: 0.00351 px, depth 0.762 mm, corner 0.898 mm, yaw 0.000426 degrees. No identity/bin/filter changes. Native .2f rounding changes 40 rows (up to 1 cm); AP unmeasured. Unit-aware criteria proposed for review only. See `MONODGP_M59H_GEOMETRY_CONTRACT.md`. |
 | M59i | Approved policy and full KITTI preservation | Complete—passed frozen preservation gates | All 3,769 paired predictions evaluated; all eight gated metrics exactly equal across PyTorch/Core ML. Full raw and fixed16 checks pass. Extra diagnostics flag 93 non-fixed images; 17 are order-only, not candidate-set changes. Hard Pedestrian 3D AP +0.000236 points; no automatic device/deployment approval. See `MONODGP_M59I_FULL_VALIDATION_CONTRACT.md`. |
-| M60a | Trained MonoDGP physical-device feasibility | Prepared—awaiting connected iPhone | Isolated app, exact model and16 verified fixtures, raw-output capture,5 warmups/100 timed predictions,60-second loop and native host geometry review. No camera or deployment qualification. See `MONODGP_M60_DEVICE_FEASIBILITY_CONTRACT.md`. |
+| M60a | Trained MonoDGP physical-device feasibility | Prepared—blocked on Xcode account sign-in | iPhone16 Pro Max connected/paired, Developer Mode enabled. Signing fails with invalid saved account credentials/no profile; not installed or run. App and fixtures are ready. See `MONODGP_M60_DEVICE_FEASIBILITY_CONTRACT.md`. |
 
 **M53 completion note:** the model and official evaluator passed after the public-API import correction. The prior JSON failed only because it compared an independent reimplementation directly with published native-evaluator values. The corrected schema-v2 finalizer reused the complete prediction set and native log, and all frozen M53 gates passed.
 

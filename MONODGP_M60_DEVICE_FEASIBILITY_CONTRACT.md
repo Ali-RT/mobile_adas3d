@@ -1,6 +1,6 @@
 # M60 — physical-iPhone feasibility of the M59i model
 
-Status: preparation authorized 2026-09-21; **device results pending**.
+Status: preparation authorized 2026-09-21; **device connected, signing blocked**.
 Revision: **M60-2026-09-21-r1**. This is a bounded runtime experiment, not training.
 
 Preparation verified on this Mac: unsigned Release iPhoneOS build passed with
@@ -10,6 +10,14 @@ Seven new Python tests and57 M59 regressions pass. The built app resources match
 the prepared bundle byte-for-byte. Evidence:
 `artifacts/m60_preparation_20260921.json`. Signing/installation and real device
 execution have **not** yet been verified.
+
+Connection check: physical iPhone16 Pro Max, iOS26.6.2, wired/paired and Developer
+Mode enabled. Signed Release build exited65: Xcode reports invalid saved account
+credentials (`missing Xcode-Username`), `No Accounts`, and no provisioning
+profile for `com.ali.MonoDGPM60`. User sign-in in Xcode Settings > Accounts is
+required before retrying. No installation or benchmark has occurred. Evidence:
+`artifacts/m60_signing_blocker_20260921.json`. Do not change bundle ID to overwrite
+the legacy app or weaken signing to work around account authentication.
 
 ## Frozen candidate
 
