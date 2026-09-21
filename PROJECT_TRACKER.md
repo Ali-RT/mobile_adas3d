@@ -16,7 +16,7 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-- Current phase: **M59i dataset verified; blocked at exact input preprocessing**.
+- Current phase: **M59i Linux input preflight passed; full tensor collection running**.
 - All 3,769 delivered images/calibration/original labels and frozen hashes pass.
   Original trace restored from the prior archive and all five upstream decoder
   files match. No additional dataset upload is requested yet.
@@ -25,11 +25,13 @@ not constrain the current accuracy-development stage.
   Across the 16 frozen inputs, 306 image-channel values differ; calibration and
   original dimensions match exactly. Pinning Pillow/OpenCV and a strict-FP
   Pillow build did not resolve it. Cause is not yet conclusively isolated.
-- Next decision: permission requested to start installed Docker for a local
-  Linux reproduction; alternative is exporting preprocessed tensors in Colab.
-  Do not relax/bypass the anchor guard or silently substitute inputs.
+- Docker startup approved. Linux/x86 with the frozen Colab library versions
+  reproduces all 16 reference inputs **bit-for-bit** (zero changed values).
+  Full source-bound tensor collection is running locally; the Mac evaluator
+  will independently verify it and give identical inputs to both models.
+  No limits, transforms or weights changed; 57 regression tests pass.
   Full AP/nearby evaluation has **not run**. Evidence:
-  `artifacts/m59i_preprocessing_preflight_20260921.json`.
+  `artifacts/m59i_linux_preprocessing_probe_20260921.json`.
   This remains the **one planned conversion experiment**, not new training.
   The user approved 0.01 px / 0.01 m / 0.01 degree / 0.0001 confidence limits
   on the fixed diagnostic set, retaining raw/discrete checks. All 16 saved
@@ -125,7 +127,7 @@ not constrain the current accuracy-development stage.
 | M59f | Export-only positional-interleaving repair | Complete—bug repaired; final numerical gate fails | Explicit concatenation/channel selection preserves CPU PyTorch outputs exactly. All 18 internal, 13 layer, and ten full raw checks pass. Decoded depth/dimensions fail the unchanged 0.0001 limit (max 0.000415802); all 50 query/class selections remain identical. No full-validation or device approval. See `MONODGP_M59F_POSITION_INTERLEAVE_CONTRACT.md`. |
 | M59g | Residual numerical precision audit | Complete—strict decoded gate failed | 16 real inputs verified/executed. All 160 raw checks pass; CPU rewrite/repeats and Core ML repeats are bit-exact; all 800 ranked query/class selections unchanged. Decoded gate fails on 14/16 inputs; worst selected-depth delta 0.762 mm. CPU_ONLY timeout at 45 seconds; no tolerance change or deployment approval. See `MONODGP_M59G_PRECISION_AUDIT_CONTRACT.md`. |
 | M59h | Final-geometry impact diagnostic | Complete—measurement, not acceptance | 16 inputs/800 candidates; decoder port bit-exact to native on both backends. Max continuous differences: 0.00351 px, depth 0.762 mm, corner 0.898 mm, yaw 0.000426 degrees. No identity/bin/filter changes. Native .2f rounding changes 40 rows (up to 1 cm); AP unmeasured. Unit-aware criteria proposed for review only. See `MONODGP_M59H_GEOMETRY_CONTRACT.md`. |
-| M59i | Approved policy and full KITTI preservation | Dataset verified—input preflight blocked | All 3,769 samples and original labels verified. Exact trace/decoder restored. Mac preprocessing differs at 11 anchor channel values / 306 across the 16 frozen inputs; run stopped before inference with guard unchanged. Waiting on local Linux reproduction versus Colab tensor-export decision. Full AP/nearby comparison not run. See `MONODGP_M59I_FULL_VALIDATION_CONTRACT.md`. |
+| M59i | Approved policy and full KITTI preservation | Linux input preflight passed—tensor collection running | All 3,769 raw samples verified. Linux/x86 reproduces all 16 frozen inputs bit-for-bit, resolving the Mac input blocker without relaxing the guard. Full source-bound tensors are being prepared for paired Mac inference; 57 regression tests pass. Full AP/nearby comparison not run. See `MONODGP_M59I_FULL_VALIDATION_CONTRACT.md`. |
 
 **M53 completion note:** the model and official evaluator passed after the public-API import correction. The prior JSON failed only because it compared an independent reimplementation directly with published native-evaluator values. The corrected schema-v2 finalizer reused the complete prediction set and native log, and all frozen M53 gates passed.
 
@@ -425,12 +427,11 @@ frozen; passing AP does not by itself authorize deployment.
     16 inputs, preserving all decoding and formatting. Sub-mm continuous
     geometry differences; no bin/filter changes. Native rounding changes 40
     rows, so full AP preservation still needs measurement.
-45. **Dataset verified; preflight blocked:** M59i received the complete ZIP.
-    Mac preprocessing is not bit-identical to frozen Colab inputs. Resolve
-    preprocessing under the original policy before starting paired inference.
-    Local Linux reproduction via Docker is proposed, pending permission;
-    Colab preprocessed-tensor export is the alternative. Do not change the
-    failed historical gate, anchor guard, weights, or output precision.
+45. **Linux preflight passed; tensor collection running:** M59i received the
+    complete ZIP. Approved local Linux/x86 preprocessing reproduces all 16
+    references exactly. Prepare and independently verify the full tensor bundle,
+    then run the unchanged paired accuracy-preservation gate on the Mac. No
+    additional upload, altered gate, changed weights or output precision.
 
 ## Decision rules
 

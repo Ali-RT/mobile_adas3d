@@ -29,6 +29,7 @@ from scripts.evaluate_monodgp_m56_fp16_storage import (
     metric_value, preservation_gate_results, prediction_tree_sha256, run_logged,
 )
 from scripts.prepare_monodgp_m55_feasibility import PRESERVATION_GATES
+from scripts.prepare_monodgp_m59i_tensor_inputs import verify_tensor_bundle, load_tensor
 
 POLICY_PATH = ROOT / "configs/monodgp_m59i_validation_policy.json"
 POLICY_SHA256 = "8306ec063a55b81d4db9b852242144fd42d078e7ca4644d3a6bcf18e0d7c340f"
@@ -146,9 +147,15 @@ def main():
     for name in ("dataset-bundle", "artifact-dir", "m58-dir", "upstream-repo"):
         parser.add_argument("--" + name, type=Path)
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--tensor-input-dir", type=Path,
+                        help="Source-bound, bit-exact Linux input bundle; never approximate inputs")
+    parser.add_argument("--reviewed-input-archive", type=Path,
+                        help="Original M59g ZIP for independent fixed16 verification")
     parser.add_argument("--check-policy-only", action="store_true",
                         help="Apply the approved policy to hash-pinned existing M59h evidence; no model execution")
     args = parser.parse_args()
+    if (args.tensor_input_dir is None) != (args.reviewed_input_archive is None):
+        parser.error("--tensor-input-dir and --reviewed-input-archive must be supplied together")
     policy = load_policy()
     reviewed = approved_diagnostic_report(policy)
     if args.check_policy_only:
@@ -176,8 +183,20 @@ def main():
     if sha256_file(ROOT / "configs/monodgp_m56d_runtime_frozen.yaml") != CONFIG_SHA256:
         raise RuntimeError("Frozen inference config changed")
     native_decode, extract, decoder_hashes = upstream_decoder(args.upstream_repo)
+    tensor_manifest = None
+    tensor_rows = {}
+    if args.tensor_input_dir is not None:
+        print("Verifying complete Linux tensor bundle before inference...", flush=True)
+        tensor_manifest = verify_tensor_bundle(args.tensor_input_dir, dataset, manifest,
+                                              args.reviewed_input_archive, anchor_file)
+        tensor_rows = {row["sample_id"]: row for row in tensor_manifest["samples"]}
+    def inputs_for(sample_id):
+        if tensor_manifest is not None:
+            return load_tensor(args.tensor_input_dir, tensor_rows[sample_id])
+        return preprocess(dataset / "training/image_2" / (sample_id + ".png"),
+                          dataset / "training/calib" / (sample_id + ".txt"))
     with np.load(anchor_file, allow_pickle=False) as anchor:
-        require_anchor_match(preprocess(dataset / "training/image_2/000001.png", dataset / "training/calib/000001.txt"), anchor)
+        require_anchor_match(inputs_for("000001"), anchor)
     import torch
     import coremltools as ct
     import PIL
@@ -188,6 +207,10 @@ def main():
                "mlpackage_tree_sha256": PACKAGE_SHA256, "dataset_manifest_sha256": sha256_file(dataset / "m59i_dataset_manifest.json"),
                "runtime_config_sha256": CONFIG_SHA256, "upstream_decoder_hashes": decoder_hashes,
                "code_fingerprint": code_fingerprint(), "compute_units": "ALL", "software": software}
+    if tensor_manifest is not None:
+        binding["input_source"] = "verified_linux_tensor_bundle"
+        binding["tensor_manifest_sha256"] = sha256_file(args.tensor_input_dir / "m59i_tensor_manifest.json")
+        binding["preprocessing_binding"] = tensor_manifest["binding"]
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
     lock = output / "m59i_run_binding.json"
@@ -218,7 +241,7 @@ def main():
                 if original is None:
                     original = torch.jit.load(str(trace), map_location="cpu").eval()
                     model = ct.models.MLModel(str(package), compute_units=ct.ComputeUnit.ALL)
-                inputs = preprocess(dataset / "training/image_2" / (sample_id + ".png"), dataset / "training/calib" / (sample_id + ".txt"))
+                inputs = inputs_for(sample_id)
                 with torch.inference_mode():
                     values = original(*(torch.from_numpy(inputs[name]) for name in INPUT_SHAPES))
                 reference = {name: value.numpy().copy() for name, value in zip(OUTPUT_NAMES, values)}

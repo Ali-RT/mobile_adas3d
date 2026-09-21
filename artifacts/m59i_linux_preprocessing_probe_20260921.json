@@ -1,0 +1,293 @@
+{
+  "complete": true,
+  "software": {
+    "python": "3.13.15",
+    "platform": "Linux-6.10.14-linuxkit-x86_64-with-glibc2.36",
+    "numpy": "2.1.3",
+    "pillow": "11.3.0",
+    "opencv": "5.0.0"
+  },
+  "samples": [
+    {
+      "sample_id": "000001",
+      "fields": {
+        "image": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "calibration": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "image_size": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        }
+      }
+    },
+    {
+      "sample_id": "000494",
+      "fields": {
+        "image": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "calibration": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "image_size": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        }
+      }
+    },
+    {
+      "sample_id": "001025",
+      "fields": {
+        "image": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "calibration": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "image_size": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        }
+      }
+    },
+    {
+      "sample_id": "001514",
+      "fields": {
+        "image": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "calibration": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "image_size": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        }
+      }
+    },
+    {
+      "sample_id": "002014",
+      "fields": {
+        "image": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "calibration": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "image_size": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        }
+      }
+    },
+    {
+      "sample_id": "002521",
+      "fields": {
+        "image": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "calibration": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "image_size": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        }
+      }
+    },
+    {
+      "sample_id": "003010",
+      "fields": {
+        "image": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "calibration": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "image_size": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        }
+      }
+    },
+    {
+      "sample_id": "003515",
+      "fields": {
+        "image": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "calibration": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "image_size": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        }
+      }
+    },
+    {
+      "sample_id": "004074",
+      "fields": {
+        "image": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "calibration": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "image_size": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        }
+      }
+    },
+    {
+      "sample_id": "004534",
+      "fields": {
+        "image": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "calibration": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "image_size": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        }
+      }
+    },
+    {
+      "sample_id": "005014",
+      "fields": {
+        "image": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "calibration": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "image_size": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        }
+      }
+    },
+    {
+      "sample_id": "005515",
+      "fields": {
+        "image": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "calibration": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "image_size": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        }
+      }
+    },
+    {
+      "sample_id": "006039",
+      "fields": {
+        "image": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "calibration": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "image_size": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        }
+      }
+    },
+    {
+      "sample_id": "006537",
+      "fields": {
+        "image": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "calibration": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "image_size": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        }
+      }
+    },
+    {
+      "sample_id": "007016",
+      "fields": {
+        "image": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "calibration": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "image_size": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        }
+      }
+    },
+    {
+      "sample_id": "007480",
+      "fields": {
+        "image": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "calibration": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        },
+        "image_size": {
+          "changed_values": 0,
+          "max_abs_delta": 0.0
+        }
+      }
+    }
+  ],
+  "inverse_affine_1242_375_hex": [
+    "0x1.f0ccccccccccdp-1",
+    "-0x0.0p+0",
+    "0x0.0p+0",
+    "-0x1.999999999999ap-54",
+    "0x1.f0ccccccccccdp-1",
+    "0x1.3333333333400p+0"
+  ],
+  "bit_exact": true
+}

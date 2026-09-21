@@ -3640,3 +3640,26 @@ Docker CLI is installed but daemon is stopped. Asked user permission to start
 Docker for local Linux preprocessing reproduction; alternative is a Colab cell
 exporting preprocessed tensors. Do not start Docker or change the collector
 until the user chooses. Do not ask for the same raw dataset upload again.
+
+### M59i Linux reproduction passed (2026-09-21)
+
+User approved Docker. Started Docker Desktop and built an isolated Linux/amd64
+Python3.13.15 image with NumPy2.1.3, Pillow11.3.0, OpenCV5.0.0. All 16 original
+M59g NPZ image/calibration/size tensors match bit-for-bit, including M58 anchor.
+Evidence: `artifacts/m59i_linux_preprocessing_probe_20260921.json`.
+
+Added `scripts/prepare_monodgp_m59i_tensor_inputs.py` and the digest-pinned
+`tools/m59i_preprocessing/Dockerfile`. Full source-bound collection is running
+under image `sha256:525a3e09319f9ea93c919396e6b6ffd69a53a48d0ef2026a01d3dcd0b6351604`
+into `outputs/m59i_linux_tensor_inputs_20260921`; log:
+`outputs/m59i_linux_tensor_preparation_20260921.log`. No network, read-only
+source and data, writable output only. Container name:
+`mobileadas3d-m59i-preprocessing`. 57 M59 regression tests pass.
+
+Mac evaluator now accepts `--tensor-input-dir` plus `--reviewed-input-archive`.
+It verifies all tensor/source hashes and fixed16/anchor exact equality before
+inference; the input-manifest hash joins the immutable run binding. Neither
+preprocessing arithmetic nor weights, tolerances, decode or AP policy changed.
+Do not modify producer code during collection or evaluator code during a run.
+Current next step: finish collection, start paired full inference, then review
+one complete result. No new Colab upload is needed.

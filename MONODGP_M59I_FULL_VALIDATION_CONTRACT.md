@@ -1,6 +1,6 @@
 # M59i — approved numerical policy and complete KITTI preservation
 
-Status (2026-09-21): **dataset verified; full run blocked by exact-input preflight**.
+Status (2026-09-21): **Linux input preflight passed; complete tensor collection running**.
 The user approved the M59h proposal before any complete-split run. This is the
 one remaining planned conversion experiment, not another model/training sweep.
 
@@ -26,10 +26,16 @@ not resolve it. This does not establish which underlying operation causes the
 platform difference; no model-accuracy or conversion-preservation result exists.
 
 Evidence: `artifacts/m59i_preprocessing_preflight_20260921.json`.
-The delivered dataset is valid. Keep all weights, criteria, transforms and
-anchor checks unchanged. Asked permission to start installed Docker for local
-Linux reproduction; alternative is Colab export of already-preprocessed inputs.
-Do not rerun the current raw-image collector or download the dataset again.
+The delivered dataset is valid. The user approved starting Docker. Linux/x86
+with Python3.13.15, NumPy2.1.3, Pillow11.3.0 and OpenCV5.0.0 reproduces **all 16
+frozen image/calibration/size tensors bit-for-bit**, including the M58 anchor.
+Evidence: `artifacts/m59i_linux_preprocessing_probe_20260921.json`. The probe
+also records affine coefficients that differ from Mac coefficients; the full
+underlying implementation cause is not isolated. This is not an accuracy claim.
+
+The exact same preprocessing code now runs in the pinned container and saves
+source-bound FP32 tensors for both Mac backends. No transform, weights, limits,
+or anchor checks change. No new Colab run or dataset upload is needed.
 
 ## Frozen decision
 
@@ -111,20 +117,46 @@ weights, training state or already-computed accuracy claims.
 
 ## Mac paired inference and evaluation
 
-Core ML cannot execute in Colab. Once the ZIP is provided, extract it safely
-and run on the Mac using the existing reviewed trace, package and decoder:
+### Verified Linux tensor handoff
+
+The received ZIP is already verified. The raw-Mac preprocessing path remains
+strict and rejects its non-bit-exact anchor; do not bypass that failure.
+`tools/m59i_preprocessing/Dockerfile` pins the reviewed Linux/amd64 image and
+libraries. `scripts/prepare_monodgp_m59i_tensor_inputs.py` runs there, checks all
+raw source hashes plus the original 16 NPZ hashes, and requires exact equality
+to all reference inputs before collecting the complete 3,769 tensors.
+
+The tensor manifest binds the Docker image content ID, software, preprocessing
+and producer source hashes, original dataset manifest, each image/calibration
+hash, NPZ hash, and canonical tensor digest. It supports restart only with the
+same binding. The consumer independently verifies all tensor files and repeats
+the original M58/fixed16 comparisons. Missing, changed or extra inputs fail.
+No synthetic, approximate or Mac-regenerated images are substituted.
+
+Current local tensor preparation output:
+`outputs/m59i_linux_tensor_inputs_20260921/m59i_tensor_manifest.json`.
+Runtime image: `sha256:525a3e09319f9ea93c919396e6b6ffd69a53a48d0ef2026a01d3dcd0b6351604`.
+The runtime has no network access, read-only source/data mounts, and one writable
+tensor-output mount. Model inference is not performed in Docker.
+
+### Paired inference
+
+Core ML executes on the Mac using the existing reviewed trace, package and
+decoder. Wait for the tensor manifest to be complete, then run:
 
 ```sh
 .venv/bin/python -u scripts/evaluate_monodgp_m59i_coreml.py \
   --dataset-bundle /absolute/path/to/m59i_chen_val3769 \
   --artifact-dir outputs/monodgp_m59f_position_interleave/full_diagnostic_only \
-  --m58-dir /private/tmp/m58_coreml_conversion_run/monodgp_m58_coreml_conversion \
-  --upstream-repo /private/tmp/MonoDGP_M58_patch_probe \
-  --output-dir outputs/monodgp_m59i_full_validation
+  --m58-dir outputs/m59i_restored_m58_20260921/monodgp_m58_coreml_conversion \
+  --upstream-repo outputs/m59i_restored_MonoDGP_source_20260921 \
+  --tensor-input-dir outputs/m59i_linux_tensor_inputs_20260921 \
+  --reviewed-input-archive /absolute/path/to/monodgp_m59g_precision_audit-20260918T222148Z-1-001.zip \
+  --output-dir outputs/monodgp_m59i_full_validation_20260921
 ```
 
-The `/private/tmp` paths refer to the already-reviewed local files; verify they
-still exist. Do not substitute another model/checkpoint if they are missing.
+The restored project-output paths contain the hash-verified original artifacts.
+Do not substitute another model/checkpoint if they are missing.
 This runner uses original CPU TorchScript versus M59f FP32 Core ML (`ALL`).
 It pins the trace, Core ML package, approved policy, runtime config, upstream
 decoder functions, data manifest, software versions and local evaluator code.
@@ -164,6 +196,6 @@ frozen protocol. Device latency, thermal stability, external generalization,
 quantization and deployment require separate decisions. The known Torch2.12 /
 Core ML Tools9.0 tested-version warning remains disclosed.
 
-Local verification: 53 M59 regression tests (including 14 M59i tests) pass.
+Local verification: 57 M59 regression tests (including 18 M59i tests) pass.
 The collector's copy/ZIP/restart path was exercised on a small synthetic fixture;
 notebook code cells compile. The real complete dataset has **not** been run.
