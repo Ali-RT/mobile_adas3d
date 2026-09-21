@@ -1,0 +1,152 @@
+{
+  "protocol": "KITTI-difficulty product-taxonomy AP_R40 external predictions",
+  "official_kitti_leaderboard_metric": false,
+  "split_protocol": "chen_3712_3769",
+  "split": "val",
+  "source_name": "M59i_coreml",
+  "prediction_dir": "/Users/ral3ply/Documents/GitHub/mobile_adas3d/outputs/monodgp_m59i_full_validation_20260921/coreml/data",
+  "classes": [
+    "Vehicle",
+    "Pedestrian"
+  ],
+  "evaluated_images": 3769,
+  "split_images": 3769,
+  "prediction_files": 3769,
+  "missing_prediction_files": 0,
+  "missing_prediction_ids_preview": [],
+  "complete_split": true,
+  "metrics": [
+    {
+      "class_name": "Vehicle",
+      "difficulty": "easy",
+      "metric": "bev",
+      "iou_threshold": 0.7,
+      "ap_r40": 36.44798741236212,
+      "num_valid_gt": 3221,
+      "num_scored_predictions": 81354,
+      "num_true_positives": 1871,
+      "num_false_positives": 79483
+    },
+    {
+      "class_name": "Vehicle",
+      "difficulty": "moderate",
+      "metric": "bev",
+      "iou_threshold": 0.7,
+      "ap_r40": 25.737362710396877,
+      "num_valid_gt": 9105,
+      "num_scored_predictions": 114079,
+      "num_true_positives": 3890,
+      "num_false_positives": 110189
+    },
+    {
+      "class_name": "Vehicle",
+      "difficulty": "hard",
+      "metric": "bev",
+      "iou_threshold": 0.7,
+      "ap_r40": 22.634472129917,
+      "num_valid_gt": 12826,
+      "num_scored_predictions": 115111,
+      "num_true_positives": 4922,
+      "num_false_positives": 110189
+    },
+    {
+      "class_name": "Vehicle",
+      "difficulty": "easy",
+      "metric": "3d",
+      "iou_threshold": 0.7,
+      "ap_r40": 26.691418622956455,
+      "num_valid_gt": 3221,
+      "num_scored_predictions": 81845,
+      "num_true_positives": 1583,
+      "num_false_positives": 80262
+    },
+    {
+      "class_name": "Vehicle",
+      "difficulty": "moderate",
+      "metric": "3d",
+      "iou_threshold": 0.7,
+      "ap_r40": 19.380285408387312,
+      "num_valid_gt": 9105,
+      "num_scored_predictions": 114446,
+      "num_true_positives": 3232,
+      "num_false_positives": 111214
+    },
+    {
+      "class_name": "Vehicle",
+      "difficulty": "hard",
+      "metric": "3d",
+      "iou_threshold": 0.7,
+      "ap_r40": 16.61452341915057,
+      "num_valid_gt": 12826,
+      "num_scored_predictions": 115203,
+      "num_true_positives": 3989,
+      "num_false_positives": 111214
+    },
+    {
+      "class_name": "Pedestrian",
+      "difficulty": "easy",
+      "metric": "bev",
+      "iou_threshold": 0.5,
+      "ap_r40": 9.71267531715245,
+      "num_valid_gt": 1143,
+      "num_scored_predictions": 54554,
+      "num_true_positives": 297,
+      "num_false_positives": 54257
+    },
+    {
+      "class_name": "Pedestrian",
+      "difficulty": "moderate",
+      "metric": "bev",
+      "iou_threshold": 0.5,
+      "ap_r40": 6.784285099357701,
+      "num_valid_gt": 1800,
+      "num_scored_predictions": 68728,
+      "num_true_positives": 368,
+      "num_false_positives": 68360
+    },
+    {
+      "class_name": "Pedestrian",
+      "difficulty": "hard",
+      "metric": "bev",
+      "iou_threshold": 0.5,
+      "ap_r40": 5.157461451772586,
+      "num_valid_gt": 2308,
+      "num_scored_predictions": 68744,
+      "num_true_positives": 384,
+      "num_false_positives": 68360
+    },
+    {
+      "class_name": "Pedestrian",
+      "difficulty": "easy",
+      "metric": "3d",
+      "iou_threshold": 0.5,
+      "ap_r40": 9.14465798317904,
+      "num_valid_gt": 1143,
+      "num_scored_predictions": 54583,
+      "num_true_positives": 269,
+      "num_false_positives": 54314
+    },
+    {
+      "class_name": "Pedestrian",
+      "difficulty": "moderate",
+      "metric": "3d",
+      "iou_threshold": 0.5,
+      "ap_r40": 6.1920336690518125,
+      "num_valid_gt": 1800,
+      "num_scored_predictions": 68735,
+      "num_true_positives": 318,
+      "num_false_positives": 68417
+    },
+    {
+      "class_name": "Pedestrian",
+      "difficulty": "hard",
+      "metric": "3d",
+      "iou_threshold": 0.5,
+      "ap_r40": 4.565108837768207,
+      "num_valid_gt": 2308,
+      "num_scored_predictions": 68747,
+      "num_true_positives": 330,
+      "num_false_positives": 68417
+    }
+  ]
+}

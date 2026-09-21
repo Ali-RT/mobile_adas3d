@@ -16,34 +16,42 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-- Current phase: **M59i Linux input preflight passed; full tensor collection running**.
+- Current phase: **M59i complete—Mac conversion-preservation gates passed**.
 - All 3,769 delivered images/calibration/original labels and frozen hashes pass.
   Original trace restored from the prior archive and all five upstream decoder
-  files match. No additional dataset upload is requested yet.
-- The actual run stops before model inference: Mac preprocessing differs from
+  files match. No additional dataset upload is needed.
+- The initial attempt stopped before inference: Mac preprocessing differs from
   the frozen Colab anchor at 11 image-channel values (one 8-bit intensity step).
   Across the 16 frozen inputs, 306 image-channel values differ; calibration and
   original dimensions match exactly. Pinning Pillow/OpenCV and a strict-FP
   Pillow build did not resolve it. Cause is not yet conclusively isolated.
 - Docker startup approved. Linux/x86 with the frozen Colab library versions
   reproduces all 16 reference inputs **bit-for-bit** (zero changed values).
-  Full source-bound tensor collection is running locally; the Mac evaluator
-  will independently verify it and give identical inputs to both models.
+  All 3,769 source-bound tensors were collected and independently verified by
+  the Mac evaluator. Paired inference and complete metric evaluation finished.
   No limits, transforms or weights changed; 57 regression tests pass.
-  Full AP/nearby evaluation has **not run**. Evidence:
-  `artifacts/m59i_linux_preprocessing_probe_20260921.json`.
-  This remains the **one planned conversion experiment**, not new training.
-  The user approved 0.01 px / 0.01 m / 0.01 degree / 0.0001 confidence limits
-  on the fixed diagnostic set, retaining raw/discrete checks. All 16 saved
-  M59h inputs pass that separately versioned policy. Historical M59g remains
-  failed; full AP/nearby preservation remains unmeasured. Keep native .2f
-  output formatting unchanged. No training, device, quantization or deployment
-  approval follows from this preparation. Stop for review after the full run.
+- **All eight gated metrics are identical** in PyTorch and Core ML: moderate
+  3D Vehicle19.380285/Pedestrian6.192034/mean12.786160; moderate BEV
+  Vehicle25.737363/Pedestrian6.784285; nearby recall0.909847/0.723104;
+  Pedestrian localization-failure rate0.238536. Both prediction sets contain
+  the exact 3,769 IDs. All full-set raw checks and fixed16 numerical gates pass.
+- Residuals are retained, not hidden: 93 images flag extended diagnostics
+  outside fixed16 (68 confidence-only, eight box-coordinate-only, 17 order-only
+  cases with unchanged candidate membership). Hard Pedestrian 3D AP differs by
+  +0.000236 points; other AP entries are equal. Native .2f formatting unchanged.
+  Evidence: `artifacts/m59i_full_validation_gate_20260921.json` and
+  `MONODGP_M59I_FULL_VALIDATION_CONTRACT.md`. Historical M59g remains failed.
+- Next decision: review this completed result and authorize a bounded physical-
+  device feasibility benchmark of the converted trained model, if desired.
+  No further conversion tweak, training, quantization or deployment is launched.
 - Selected accuracy parent: **M54 MonoDGP epoch 100**, checkpoint SHA-256
   `8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847`.
 - Legacy accuracy reference: **R0 ResNet50 MonoDETR, epoch 185**.
-- Deployment candidate: **MobileMonoDETR-Student-A2 epoch 130 (diagnostic only)**.
-- Open product gap: **Pedestrian nearby recall 0.72487 vs target 0.80**.
+- Converted candidate: **MonoDGP M59f FP32 (M54/M56d weights)**; Mac preservation
+  passed, physical-device performance not yet qualified. MobileMonoDETR A2
+  epoch130 remains a legacy diagnostic-only student.
+- Open product gap: **latest paired Pedestrian nearby recall 0.723104 vs target
+  0.80** (prior M54/native reports were approximately0.72487).
 - S1/H1/H2 status: **frozen negative experiments; do not resume**.
 - Knowledge distillation: **completed and rejected for A1**; it did not improve
   balanced accuracy and should not be retuned or resumed.
@@ -127,7 +135,7 @@ not constrain the current accuracy-development stage.
 | M59f | Export-only positional-interleaving repair | Complete—bug repaired; final numerical gate fails | Explicit concatenation/channel selection preserves CPU PyTorch outputs exactly. All 18 internal, 13 layer, and ten full raw checks pass. Decoded depth/dimensions fail the unchanged 0.0001 limit (max 0.000415802); all 50 query/class selections remain identical. No full-validation or device approval. See `MONODGP_M59F_POSITION_INTERLEAVE_CONTRACT.md`. |
 | M59g | Residual numerical precision audit | Complete—strict decoded gate failed | 16 real inputs verified/executed. All 160 raw checks pass; CPU rewrite/repeats and Core ML repeats are bit-exact; all 800 ranked query/class selections unchanged. Decoded gate fails on 14/16 inputs; worst selected-depth delta 0.762 mm. CPU_ONLY timeout at 45 seconds; no tolerance change or deployment approval. See `MONODGP_M59G_PRECISION_AUDIT_CONTRACT.md`. |
 | M59h | Final-geometry impact diagnostic | Complete—measurement, not acceptance | 16 inputs/800 candidates; decoder port bit-exact to native on both backends. Max continuous differences: 0.00351 px, depth 0.762 mm, corner 0.898 mm, yaw 0.000426 degrees. No identity/bin/filter changes. Native .2f rounding changes 40 rows (up to 1 cm); AP unmeasured. Unit-aware criteria proposed for review only. See `MONODGP_M59H_GEOMETRY_CONTRACT.md`. |
-| M59i | Approved policy and full KITTI preservation | Linux input preflight passed—tensor collection running | All 3,769 raw samples verified. Linux/x86 reproduces all 16 frozen inputs bit-for-bit, resolving the Mac input blocker without relaxing the guard. Full source-bound tensors are being prepared for paired Mac inference; 57 regression tests pass. Full AP/nearby comparison not run. See `MONODGP_M59I_FULL_VALIDATION_CONTRACT.md`. |
+| M59i | Approved policy and full KITTI preservation | Complete—passed frozen preservation gates | All 3,769 paired predictions evaluated; all eight gated metrics exactly equal across PyTorch/Core ML. Full raw and fixed16 checks pass. Extra diagnostics flag 93 non-fixed images; 17 are order-only, not candidate-set changes. Hard Pedestrian 3D AP +0.000236 points; no automatic device/deployment approval. See `MONODGP_M59I_FULL_VALIDATION_CONTRACT.md`. |
 
 **M53 completion note:** the model and official evaluator passed after the public-API import correction. The prior JSON failed only because it compared an independent reimplementation directly with published native-evaluator values. The corrected schema-v2 finalizer reused the complete prediction set and native log, and all frozen M53 gates passed.
 
@@ -427,11 +435,13 @@ frozen; passing AP does not by itself authorize deployment.
     16 inputs, preserving all decoding and formatting. Sub-mm continuous
     geometry differences; no bin/filter changes. Native rounding changes 40
     rows, so full AP preservation still needs measurement.
-45. **Linux preflight passed; tensor collection running:** M59i received the
+45. **Complete—preservation passed:** M59i received the
     complete ZIP. Approved local Linux/x86 preprocessing reproduces all 16
-    references exactly. Prepare and independently verify the full tensor bundle,
-    then run the unchanged paired accuracy-preservation gate on the Mac. No
-    additional upload, altered gate, changed weights or output precision.
+    references exactly. Full tensor preparation/verification is complete;
+    the unchanged paired accuracy-preservation run finished on the Mac. All
+    eight gated metrics are identical and all frozen gates pass. Review the
+    93 additional diagnostic flags before deciding a physical-device benchmark.
+    No automatic follow-on experiment or deployment authorization.
 
 ## Decision rules
 

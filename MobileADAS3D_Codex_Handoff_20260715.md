@@ -3649,7 +3649,7 @@ M59g NPZ image/calibration/size tensors match bit-for-bit, including M58 anchor.
 Evidence: `artifacts/m59i_linux_preprocessing_probe_20260921.json`.
 
 Added `scripts/prepare_monodgp_m59i_tensor_inputs.py` and the digest-pinned
-`tools/m59i_preprocessing/Dockerfile`. Full source-bound collection is running
+`tools/m59i_preprocessing/Dockerfile`. Full source-bound collection completed
 under image `sha256:525a3e09319f9ea93c919396e6b6ffd69a53a48d0ef2026a01d3dcd0b6351604`
 into `outputs/m59i_linux_tensor_inputs_20260921`; log:
 `outputs/m59i_linux_tensor_preparation_20260921.log`. No network, read-only
@@ -3661,5 +3661,34 @@ It verifies all tensor/source hashes and fixed16/anchor exact equality before
 inference; the input-manifest hash joins the immutable run binding. Neither
 preprocessing arithmetic nor weights, tolerances, decode or AP policy changed.
 Do not modify producer code during collection or evaluator code during a run.
-Current next step: finish collection, start paired full inference, then review
-one complete result. No new Colab upload is needed.
+Collection completed: 3,769/3,769. Mac independently verified every tensor and
+the fixed16/anchor. Manifest SHA-256:
+`564c502aa46ddc97619e1ef37c0ee88a2aad444e605d03221ba7b60555faf696`.
+Full paired inference and evaluation completed in
+`outputs/monodgp_m59i_full_validation_20260921`; durable log:
+`outputs/m59i_full_validation_linux_inputs_20260921.log`.
+First 105 saved samples had no raw-output failures; anchor passes every check.
+Measured initial pace ~0.4 seconds/image (not an edge latency benchmark).
+### M59i full preservation passed (2026-09-21)
+
+Process exited0. Both sides contain exactly3,769 predictions. All full raw
+checks and all16 fixed diagnostic checks pass. All eight gated metrics are
+exactly equal between CPU PyTorch and Core ML ALL:
+Vehicle3D19.3802854084, Pedestrian3D6.1920336691, mean12.7861595387;
+VehicleBEV25.7373627104, PedestrianBEV6.7842850994; near recall
+Vehicle0.9098469988/Pedestrian0.7231040564; Pedestrian localization failure
+0.2385361552. All frozen preservation floors pass.
+
+Report copied byte-exact to `artifacts/m59i_full_validation_gate_20260921.json`,
+SHA-256 `2aff5f2603d44d30dea1edce5cf6104375b1550eb560f0497296b2f6b21c4ad2`.
+Contract/tracker hold the final result. Among all12 AP entries, only hard
+Pedestrian3D differs (+0.0002360549AP points). The report preserves93 additional
+diagnostic flags:68 confidence-only, eight box-only,17 order-only with unchanged
+candidate membership. Do not interpret the17 missing rank-aligned geometry
+comparisons as17 invalid-geometry failures. Weights, preprocessing arithmetic,
+native .2f output precision and acceptance limits were not changed.
+
+This closes the planned conversion-preservation experiment. Product Pedestrian
+nearby recall still misses0.80, and iPhone runtime/thermals/generalization/safety
+are unqualified. Stop for review; do not start another conversion tweak,
+training, quantization or device benchmark without a new decision.

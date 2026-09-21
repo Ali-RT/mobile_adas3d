@@ -1,8 +1,48 @@
 # M59i — approved numerical policy and complete KITTI preservation
 
-Status (2026-09-21): **Linux input preflight passed; complete tensor collection running**.
+Status (2026-09-21): **complete—approved conversion-preservation gates passed**.
 The user approved the M59h proposal before any complete-split run. This is the
 one remaining planned conversion experiment, not another model/training sweep.
+
+## Complete result (2026-09-21)
+
+Both backends produced and evaluated all 3,769 frozen Chen-val prediction IDs.
+Report: `artifacts/m59i_full_validation_gate_20260921.json`, SHA-256
+`2aff5f2603d44d30dea1edce5cf6104375b1550eb560f0497296b2f6b21c4ad2`.
+`complete`, `all_validation_gates_passed`, `full_raw_output_gates_passed` and
+`fixed16_numerical_passed` are all true. No weights or acceptance limits changed.
+
+| Gated metric | PyTorch | Core ML | Difference |
+| --- | ---: | ---: | ---: |
+| Vehicle moderate 3D AP_R40 | 19.380285 | 19.380285 | 0 |
+| Pedestrian moderate 3D AP_R40 | 6.192034 | 6.192034 | 0 |
+| Balanced moderate 3D AP_R40 | 12.786160 | 12.786160 | 0 |
+| Vehicle moderate BEV AP_R40 | 25.737363 | 25.737363 | 0 |
+| Pedestrian moderate BEV AP_R40 | 6.784285 | 6.784285 | 0 |
+| Vehicle nearby recall | 0.909847 | 0.909847 | 0 |
+| Pedestrian nearby recall | 0.723104 | 0.723104 | 0 |
+| Pedestrian localization-failure rate | 0.238536 | 0.238536 | 0 |
+
+Differences are exactly zero at the stored precision, not only after rounding.
+These are product-taxonomy metrics, not official KITTI Car leaderboard values.
+Among the other AP entries, hard Pedestrian 3D AP changes from4.5648727829 to
+4.5651088378 (+0.0002360549 points); the other 11 AP entries are identical.
+
+All 3,769 raw-output comparisons and all16 fixed-set numerical checks pass.
+Additional fixed-set-style diagnostics flag93 other images:68 confidence-only,
+eight box-coordinate-only, and17 candidate-order cases. The same selected
+candidate membership is preserved in all17; rank-by-rank geometry was therefore
+marked unavailable, not silently realigned. Missing geometry checks in those
+17 reports are **not evidence of invalid boxes**. Across aligned cases, maxima
+include0.019278px box-coordinate delta,0.00162745 confidence delta,8.633mm depth,
+8.815mm corner displacement and0.003353degrees yaw. These remain review flags
+outside the approved fixed16 hard-gate scope; they were not erased or waived.
+
+The separate product Pedestrian nearby-recall target0.80 remains unmet at
+0.723104 (1,640/2,268 nearby objects). This validates conversion preservation
+under the frozen Mac protocol—not iPhone performance, generalization or safety.
+Stop for review. A physical-device feasibility benchmark requires a separate
+decision; no additional conversion/training/quantization run is started.
 
 ## Delivered dataset and execution attempt (2026-09-21)
 
@@ -16,7 +56,7 @@ files from pinned MonoDGP commit `aa059a18214aebf644510e7f0793971b403f9d14`.
 All expected hashes match. Restored files are under project `outputs/` rather
 than relying on temporary folders.
 
-The full runner exits **before inference** at the existing bit-exact image
+The initial runner attempt exited **before inference** at the existing bit-exact image
 anchor guard. Mac preprocessing changes 11 channel values in the first image,
 each by one source-intensity increment (normalized max delta 0.017506957).
 Calibration and image size are exact. Across all 16 previously frozen inputs,
@@ -133,8 +173,11 @@ same binding. The consumer independently verifies all tensor files and repeats
 the original M58/fixed16 comparisons. Missing, changed or extra inputs fail.
 No synthetic, approximate or Mac-regenerated images are substituted.
 
-Current local tensor preparation output:
+All 3,769 tensors were collected and independently verified on the Mac. Both
+backends completed inference and metric evaluation on these identical inputs.
+Local tensor preparation output:
 `outputs/m59i_linux_tensor_inputs_20260921/m59i_tensor_manifest.json`.
+Manifest SHA-256: `564c502aa46ddc97619e1ef37c0ee88a2aad444e605d03221ba7b60555faf696`.
 Runtime image: `sha256:525a3e09319f9ea93c919396e6b6ffd69a53a48d0ef2026a01d3dcd0b6351604`.
 The runtime has no network access, read-only source/data mounts, and one writable
 tensor-output mount. Model inference is not performed in Docker.
@@ -198,4 +241,5 @@ Core ML Tools9.0 tested-version warning remains disclosed.
 
 Local verification: 57 M59 regression tests (including 18 M59i tests) pass.
 The collector's copy/ZIP/restart path was exercised on a small synthetic fixture;
-notebook code cells compile. The real complete dataset has **not** been run.
+notebook code cells compile. The real complete-set inference and evaluation
+also completed successfully; see the result section above.
