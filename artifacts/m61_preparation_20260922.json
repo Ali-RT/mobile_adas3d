@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-22",
+  "experiment": "M61 MonoDGP to A2 Vehicle geometry distillation",
+  "status": "prepared_cuda_execution_pending",
+  "notebook_revision": "M61-2026-09-22-r1",
+  "m61_code_sha256": "87ee45f3e72c171e1d8b2ec57ad217280d2ffb9f2a33866a78c7905e3f114168",
+  "local_regression_tests": {
+    "passed": 44,
+    "failed": 0,
+    "suites": {
+      "test_m61_distillation.py": 22,
+      "test_monodgp_m54_adaptation.py": 9,
+      "test_monodetr_a1_distillation_workflow.py": 6,
+      "test_monodgp_m60_device.py": 7
+    }
+  },
+  "cli_help_checks_passed": 7,
+  "notebook_code_cells_parsed": 12,
+  "upstream_source_patch_and_idempotence_checks": {
+    "passed": true,
+    "student_commit": "6994b9f512400b258c6edb75f77423beb9c126f2",
+    "teacher_commit": "aa059a18214aebf644510e7f0793971b403f9d14",
+    "student_patched_source_sha256": "84248f85c6c39435c0ba806ad8d0daa2267e1eb3d35728745d5452cc3d85afb2",
+    "teacher_patched_source_sha256": "ccb544f7fb7bdbcb19fbf19b634bd5fe144e060770fd5ca566348768e957e0be",
+    "cuda_extensions_built_locally": false
+  },
+  "real_dataset_loader_probe": {
+    "complete": true,
+    "samples": 16,
+    "split": "val",
+    "purpose": "Mechanical image and target encoding parity only; no model inference or teacher quality selection",
+    "input_and_target_hashes_identical": true,
+    "report_sha256": "0a830529b63951937120ad1196221b528ae482b7591ff2e861018fafd18cf41a",
+    "unused_evaluator_import_simulated": true,
+    "colab_probe_uses_train_split": true
+  },
+  "cuda_smoke_performed": false,
+  "teacher_quality_audit_performed": false,
+  "pilot_training_performed": false,
+  "new_student_accuracy_result": false,
+  "student_phone_feasibility_established": false,
+  "next_action": "Run notebook sections 1 through 12 in order on Colab CUDA; audit and real smoke must pass before either ten-epoch arm"
+}

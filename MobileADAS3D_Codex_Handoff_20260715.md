@@ -3760,3 +3760,46 @@ Next proposal: one bounded device operator/compute-placement profile of this
 unchanged graph; ALL does not reveal actual accelerator placement. This result
 does not meet end-to-end runtime,30-minute stability, external generalization,
 or product safety gates. Pedestrian nearby recall0.723104 vs0.80 remains open.
+
+## 2026-09-22 — M61 returns to teacher/student deployment strategy
+
+User clarified that the phone should run a student, with a stronger teacher
+used during training. Defer direct MonoDGP device optimization; preserve M60
+results unchanged. Prepared M61, a new M54 MonoDGP -> A2 MonoDETR MobileNetV4
+Medium Vehicle-geometry distillation pilot. This is not the rejected R0->A1
+distillation or A2g GT geometry reweighting. Full contract:
+`MONODGP_TO_A2_M61_DISTILLATION_CONTRACT.md`.
+
+Notebook: `notebooks/MonoDGP_to_MonoDETR_M61_Vehicle_Distillation_Colab.ipynb`,
+revision `M61-2026-09-22-r1`, sections1–12 in order on CUDA. It reconstructs
+configs from pinned upstream sources, not missing `/content` runtime YAMLs.
+Teacher/student namespaces and local CUDA extensions are isolated. Do not
+replace original M54 weights with the compressed M56d artifact.
+
+Train-only caches bind exact image/calibration/GT hashes. Both arms deliberately
+use unaugmented training views, GT supervision for both classes, and no changes
+to the A2 graph. Native class1 is Vehicle; class0 is Pedestrian. Quality-filter
+teacher Vehicle matches, enable only geometry components that beat frozen A2
+in the train audit, and apply KD only where each teacher component is better.
+No teacher logits, Pedestrian KD, or temperature sweep. Two10-epoch arms,
+constant1e-5, batch4, seed20268; real CUDA forward/backward smoke is mandatory.
+Epoch-boundary Drive recovery includes optimizer state and experiment identity.
+
+The final epoch10 comparison requires Vehicle3D>=15.8713, all other original
+five AP gates, >=0.10 AP Vehicle gain over control, and no Pedestrian AP/nearby
+recall loss versus fresh A2 or control. Epoch5 is diagnostic, not a selection
+escape hatch. Pilot pass only recommends review/confirmation; no long run or
+deployment is automatically authorized. Return `m61_results.zip` or the failed
+audit/smoke JSON and durable log. No CUDA pilot or new student accuracy result
+has been produced locally; no phone is needed at this stage.
+
+Local verification: 44 focused regression tests pass (22 M61, 9 M54, 6 A1
+distillation, 7 M60), all seven CLI help commands succeed, and all 12 notebook
+code cells parse. Source patches apply and rerun idempotently on both pinned
+upstream commits. The two actual loaders produce byte-identical normalized
+images/calibration/GT on 16 delivered validation samples; this was a mechanical
+encoding check, not model inference or validation-guided teacher selection.
+The notebook repeats that probe on training data. Loader-only CPU subprocesses
+simulate the unused Numba evaluator import; CUDA cache/smoke/train never do.
+See `artifacts/m61_preparation_20260922.json`. CUDA extension builds and the
+real GPU smoke are still pending in Colab, not represented as locally passed.
