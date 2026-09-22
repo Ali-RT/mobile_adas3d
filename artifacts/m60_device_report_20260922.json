@@ -1,0 +1,2426 @@
+{
+  "camera_integration" : false,
+  "compile_ms" : 334.40737496130168,
+  "complete" : true,
+  "compute_units" : "ALL",
+  "deployment_authorized" : false,
+  "finished_at" : "2026-09-22T13:34:04Z",
+  "fixture_input_bytes" : 94372736,
+  "fixture_memory_note" : "16 input tensors cached; RSS includes fixtures, app and model, not model-only allocation",
+  "hardware" : "iPhone17,2",
+  "latency_scope" : "synchronous MLModel.prediction only; no input loading, decode or file writes",
+  "manifest_sha256" : "e21e8d3867ddcc6eb2cac41833a401b4fb2054fdfbca25fc3f627dc357659cca",
+  "model_load_ms" : 1149.3816666770726,
+  "observations" : [
+    {
+      "phase" : "start",
+      "resident_bytes" : 69582848,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584257.50384716666
+    },
+    {
+      "phase" : "compiled",
+      "resident_bytes" : 283361280,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584257.96066350001
+    },
+    {
+      "phase" : "loaded",
+      "resident_bytes" : 323485696,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584259.11078375007
+    },
+    {
+      "phase" : "inputs_cached",
+      "resident_bytes" : 515555328,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584259.22057725
+    },
+    {
+      "phase" : "parity_1",
+      "resident_bytes" : 192299008,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584264.92208129168
+    },
+    {
+      "phase" : "parity_2",
+      "resident_bytes" : 212729856,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584265.20533108339
+    },
+    {
+      "phase" : "parity_3",
+      "resident_bytes" : 218841088,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584265.4752313334
+    },
+    {
+      "phase" : "parity_4",
+      "resident_bytes" : 224772096,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584265.78027029173
+    },
+    {
+      "phase" : "parity_5",
+      "resident_bytes" : 230670336,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584266.05339225009
+    },
+    {
+      "phase" : "parity_6",
+      "resident_bytes" : 236617728,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584266.32565637503
+    },
+    {
+      "phase" : "parity_7",
+      "resident_bytes" : 242565120,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584266.60511912499
+    },
+    {
+      "phase" : "parity_8",
+      "resident_bytes" : 248528896,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584266.87483975
+    },
+    {
+      "phase" : "parity_9",
+      "resident_bytes" : 254492672,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584267.15158975008
+    },
+    {
+      "phase" : "parity_10",
+      "resident_bytes" : 260423680,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584267.42285637499
+    },
+    {
+      "phase" : "parity_11",
+      "resident_bytes" : 266387456,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584267.69256524998
+    },
+    {
+      "phase" : "parity_12",
+      "resident_bytes" : 272351232,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584267.96371791675
+    },
+    {
+      "phase" : "parity_13",
+      "resident_bytes" : 278315008,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584268.239416625
+    },
+    {
+      "phase" : "parity_14",
+      "resident_bytes" : 284278784,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584268.51020708343
+    },
+    {
+      "phase" : "parity_15",
+      "resident_bytes" : 290258944,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584268.78077545832
+    },
+    {
+      "phase" : "parity_16",
+      "resident_bytes" : 295223296,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584269.05051600002
+    },
+    {
+      "phase" : "timing_10",
+      "resident_bytes" : 299417600,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584272.50537337502
+    },
+    {
+      "phase" : "timing_20",
+      "resident_bytes" : 299433984,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584274.82647387509
+    },
+    {
+      "phase" : "timing_30",
+      "resident_bytes" : 299450368,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584277.14961162501
+    },
+    {
+      "phase" : "timing_40",
+      "resident_bytes" : 299450368,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584279.47524962504
+    },
+    {
+      "phase" : "timing_50",
+      "resident_bytes" : 299417600,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584281.80440387502
+    },
+    {
+      "phase" : "timing_60",
+      "resident_bytes" : 299417600,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584284.13985491672
+    },
+    {
+      "phase" : "timing_70",
+      "resident_bytes" : 299417600,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584286.47579679172
+    },
+    {
+      "phase" : "timing_80",
+      "resident_bytes" : 299417600,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584288.81351391668
+    },
+    {
+      "phase" : "timing_90",
+      "resident_bytes" : 299417600,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584291.15467595833
+    },
+    {
+      "phase" : "timing_100",
+      "resident_bytes" : 299417600,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584293.49830866675
+    },
+    {
+      "phase" : "sustain_5",
+      "resident_bytes" : 299433984,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584298.64276508335
+    },
+    {
+      "phase" : "sustain_10",
+      "resident_bytes" : 299433984,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584303.82853795832
+    },
+    {
+      "phase" : "sustain_15",
+      "resident_bytes" : 299450368,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584309.06909662508
+    },
+    {
+      "phase" : "sustain_20",
+      "resident_bytes" : 299450368,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584314.10473379167
+    },
+    {
+      "phase" : "sustain_25",
+      "resident_bytes" : 299466752,
+      "thermal" : "nominal",
+      "uptime_seconds" : 584319.16273475008
+    },
+    {
+      "phase" : "sustain_30",
+      "resident_bytes" : 299466752,
+      "thermal" : "fair",
+      "uptime_seconds" : 584324.23260962509
+    },
+    {
+      "phase" : "sustain_35",
+      "resident_bytes" : 299466752,
+      "thermal" : "fair",
+      "uptime_seconds" : 584329.30429895839
+    },
+    {
+      "phase" : "sustain_40",
+      "resident_bytes" : 299466752,
+      "thermal" : "fair",
+      "uptime_seconds" : 584334.38169425004
+    },
+    {
+      "phase" : "sustain_45",
+      "resident_bytes" : 299499520,
+      "thermal" : "fair",
+      "uptime_seconds" : 584339.50865804171
+    },
+    {
+      "phase" : "sustain_51",
+      "resident_bytes" : 299581440,
+      "thermal" : "fair",
+      "uptime_seconds" : 584344.67840500001
+    },
+    {
+      "phase" : "sustain_56",
+      "resident_bytes" : 299663360,
+      "thermal" : "fair",
+      "uptime_seconds" : 584349.83642329171
+    },
+    {
+      "phase" : "finished",
+      "resident_bytes" : 299778048,
+      "thermal" : "fair",
+      "uptime_seconds" : 584353.77432629175
+    }
+  ],
+  "os_version" : "Version 26.6.2 (Build 23G90)",
+  "peak_sampled_resident_bytes" : 515555328,
+  "physical_device" : true,
+  "prediction_ms" : [
+    230.44824996031821,
+    229.0633333614096,
+    229.97129161376506,
+    230.76287505682558,
+    229.84354163054377,
+    230.51095835398883,
+    229.91041664499789,
+    230.31845840159804,
+    231.94991669151932,
+    230.51933327224106,
+    228.84183330461383,
+    230.81700003240258,
+    232.03783330973238,
+    228.53316669352353,
+    230.42066663037986,
+    231.01158335339278,
+    231.01925000082701,
+    231.02575005032122,
+    233.07262500748038,
+    230.77845829539001,
+    228.84679166600108,
+    231.78204172290862,
+    231.72595829237252,
+    230.81974999513477,
+    230.29058333486319,
+    232.73354163393378,
+    231.28116666339338,
+    230.82879174035043,
+    230.13204173184931,
+    231.32129164878279,
+    229.96729169972241,
+    230.93308333773166,
+    230.80837505403906,
+    231.12562508322299,
+    230.97941663581878,
+    231.47458338644356,
+    231.78525001276284,
+    231.32116661872715,
+    231.58408340532333,
+    231.43941664602607,
+    228.48120832350105,
+    231.06841661501676,
+    232.08091664128006,
+    232.00641665607691,
+    232.48791659716517,
+    231.05612501967698,
+    232.63195832259953,
+    232.22408338915557,
+    231.88008333090693,
+    231.15045833401382,
+    230.96354166045785,
+    232.68325009848922,
+    231.3743750564754,
+    232.98724996857345,
+    231.11487505957484,
+    232.57170838769525,
+    231.29858332686126,
+    231.65645834524184,
+    233.15249988809228,
+    233.64224995020777,
+    230.28183332644403,
+    232.0799584267661,
+    233.21341664995998,
+    232.9507916001603,
+    232.52983333077282,
+    231.90712498035282,
+    231.40804166905582,
+    232.22408327274024,
+    232.41454164963216,
+    231.80750000756234,
+    230.2286250051111,
+    233.00658329389989,
+    232.84729162696749,
+    232.32095839921385,
+    232.35399997793138,
+    232.20887500792742,
+    233.18745836149901,
+    232.33912501018494,
+    231.93345824256539,
+    233.71316655538976,
+    231.38316662516445,
+    236.07366671785712,
+    231.78091668523848,
+    232.27537504862994,
+    234.03991665691137,
+    232.4047083966434,
+    232.49070823658258,
+    231.40816669911146,
+    232.67487494740635,
+    233.87608339544386,
+    230.32625007908791,
+    233.10908325947821,
+    233.20441669784486,
+    233.98570832796395,
+    233.33224991802126,
+    233.05333335883915,
+    232.7520833350718,
+    234.24070840701461,
+    233.71954169124365,
+    231.96779168210924
+  ],
+  "raw_parity_passed" : true,
+  "revision" : "M60-2026-09-21-r1",
+  "samples" : [
+    {
+      "outputs" : {
+        "pred_3d_dim" : {
+          "file" : "000001_pred_3d_dim.bin",
+          "sha256" : "a79ddff2ee256047f8e5dc9e6b1b02b2c8cc517b4b49d2859f72c77d90a37230",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_angle" : {
+          "file" : "000001_pred_angle.bin",
+          "sha256" : "cc6e3e71e12d0178d1a4f021f426385b38278f1f5372ea4ef98d4da4765a8140",
+          "shape" : [
+            1,
+            50,
+            24
+          ]
+        },
+        "pred_boxes" : {
+          "file" : "000001_pred_boxes.bin",
+          "sha256" : "79671b1cf903332902c1447ff132e5253dbddafb995f1adf95dbca5f0719560d",
+          "shape" : [
+            1,
+            50,
+            6
+          ]
+        },
+        "pred_depth" : {
+          "file" : "000001_pred_depth.bin",
+          "sha256" : "c382839e481b514e2c2c78607e393bc31cacca1b2241eabe4bfbccf2a53dff3d",
+          "shape" : [
+            1,
+            50,
+            2
+          ]
+        },
+        "pred_depth_map_logits" : {
+          "file" : "000001_pred_depth_map_logits.bin",
+          "sha256" : "a87749e70104e7fb5ac0259be1604f0a70538eda9a3243d2b690a877dae82e3c",
+          "shape" : [
+            1,
+            81,
+            24,
+            80
+          ]
+        },
+        "pred_logits" : {
+          "file" : "000001_pred_logits.bin",
+          "sha256" : "be36289b939545599849136d878175d58bdc7d975749b0abe4afcf2502032662",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_region_prob_0" : {
+          "file" : "000001_pred_region_prob_0.bin",
+          "sha256" : "2f39c2f1fa8f08c22a43f0e5639c43d3b1f027889d1bf603bf3d1780946dc432",
+          "shape" : [
+            1,
+            1,
+            48,
+            160
+          ]
+        },
+        "pred_region_prob_1" : {
+          "file" : "000001_pred_region_prob_1.bin",
+          "sha256" : "a827812a2fd60ea167c378c466613204095ba87e154ffe2ff348579f7d09cee8",
+          "shape" : [
+            1,
+            1,
+            24,
+            80
+          ]
+        },
+        "pred_region_prob_2" : {
+          "file" : "000001_pred_region_prob_2.bin",
+          "sha256" : "956765b3facfc6747339c9fa96b6bc23696eb834b0f5dc7c94d18894151b8b78",
+          "shape" : [
+            1,
+            1,
+            12,
+            40
+          ]
+        },
+        "pred_region_prob_3" : {
+          "file" : "000001_pred_region_prob_3.bin",
+          "sha256" : "70fe847368a82ee6324ac18f3182efdaee34fe03d71b7aadde2a45a303451927",
+          "shape" : [
+            1,
+            1,
+            6,
+            20
+          ]
+        }
+      },
+      "prediction_ms" : 5680.2969583077356,
+      "raw_max_abs_deltas_vs_mac" : {
+        "pred_3d_dim" : 3.147125244140625e-05,
+        "pred_angle" : 4.482269287109375e-05,
+        "pred_boxes" : 5.3644180297851562e-07,
+        "pred_depth" : 0.0001506805419921875,
+        "pred_depth_map_logits" : 7.62939453125e-06,
+        "pred_logits" : 8.3446502685546875e-06,
+        "pred_region_prob_0" : 7.4505805969238281e-08,
+        "pred_region_prob_1" : 7.6397554948925972e-11,
+        "pred_region_prob_2" : 0,
+        "pred_region_prob_3" : 0
+      },
+      "sample_id" : "000001"
+    },
+    {
+      "outputs" : {
+        "pred_3d_dim" : {
+          "file" : "000494_pred_3d_dim.bin",
+          "sha256" : "c6431a0161ba7ac2cf7900e835f0e425e81353f0e8e82762dc125fe808ee896f",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_angle" : {
+          "file" : "000494_pred_angle.bin",
+          "sha256" : "c9c42b154d4f77d1c326125633fc194e1aba0962aadeecf7cac5ef95c3860be3",
+          "shape" : [
+            1,
+            50,
+            24
+          ]
+        },
+        "pred_boxes" : {
+          "file" : "000494_pred_boxes.bin",
+          "sha256" : "a422bd4511bc985f4b0ee69f413055d0f5f79bc9ed11e974482af062936b7241",
+          "shape" : [
+            1,
+            50,
+            6
+          ]
+        },
+        "pred_depth" : {
+          "file" : "000494_pred_depth.bin",
+          "sha256" : "762d85af9586e3d87f8867fce4ec430ae7fa0743a4d21e9166a95b49364365f4",
+          "shape" : [
+            1,
+            50,
+            2
+          ]
+        },
+        "pred_depth_map_logits" : {
+          "file" : "000494_pred_depth_map_logits.bin",
+          "sha256" : "cdafabfa999424085afd5fe01b3694efc7dcfad8fb34609af56bc490be423eba",
+          "shape" : [
+            1,
+            81,
+            24,
+            80
+          ]
+        },
+        "pred_logits" : {
+          "file" : "000494_pred_logits.bin",
+          "sha256" : "d5cceaec7811ecc3ece7cadea03a80fce459d45ddf9a97b89e8fedbc1a6d160e",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_region_prob_0" : {
+          "file" : "000494_pred_region_prob_0.bin",
+          "sha256" : "15de61b383edaecbf2f113b1fb5f03cd35e0381bf257390991f1f3ac35c82669",
+          "shape" : [
+            1,
+            1,
+            48,
+            160
+          ]
+        },
+        "pred_region_prob_1" : {
+          "file" : "000494_pred_region_prob_1.bin",
+          "sha256" : "720ed687d7bff9f46efdfcb7f553115b100dfd748775c5ddeba7698a68ae92cb",
+          "shape" : [
+            1,
+            1,
+            24,
+            80
+          ]
+        },
+        "pred_region_prob_2" : {
+          "file" : "000494_pred_region_prob_2.bin",
+          "sha256" : "1ae5a7d3b5838db730ee1a61e2c2d8011b776007fd553cbedd86ffed6b12f407",
+          "shape" : [
+            1,
+            1,
+            12,
+            40
+          ]
+        },
+        "pred_region_prob_3" : {
+          "file" : "000494_pred_region_prob_3.bin",
+          "sha256" : "457f0f3cec6fb2fe1f0b541fd3377b18544e8cc67ed66b6998466e933480f91e",
+          "shape" : [
+            1,
+            1,
+            6,
+            20
+          ]
+        }
+      },
+      "prediction_ms" : 243.50437510292977,
+      "raw_max_abs_deltas_vs_mac" : {
+        "pred_3d_dim" : 2.8133392333984375e-05,
+        "pred_angle" : 2.6464462280273438e-05,
+        "pred_boxes" : 3.5762786865234375e-07,
+        "pred_depth" : 8.0108642578125e-05,
+        "pred_depth_map_logits" : 9.5367431640625e-06,
+        "pred_logits" : 2.193450927734375e-05,
+        "pred_region_prob_0" : 5.3644180297851562e-07,
+        "pred_region_prob_1" : 3.5762786865234375e-07,
+        "pred_region_prob_2" : 0,
+        "pred_region_prob_3" : 7.0780515670776367e-08
+      },
+      "sample_id" : "000494"
+    },
+    {
+      "outputs" : {
+        "pred_3d_dim" : {
+          "file" : "001025_pred_3d_dim.bin",
+          "sha256" : "f8b1932f8a300514d5c6c23d83117ca15d1486465d1695e2bea069f5b0bb6ea6",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_angle" : {
+          "file" : "001025_pred_angle.bin",
+          "sha256" : "bca79b3d62b9ad9ab44b3573805a4c20316e85728459dec97b488272aeb7a5cb",
+          "shape" : [
+            1,
+            50,
+            24
+          ]
+        },
+        "pred_boxes" : {
+          "file" : "001025_pred_boxes.bin",
+          "sha256" : "f66b832dd2f51f06be57287948b1453f83826d15a31fd1f1757eb830695b527a",
+          "shape" : [
+            1,
+            50,
+            6
+          ]
+        },
+        "pred_depth" : {
+          "file" : "001025_pred_depth.bin",
+          "sha256" : "6a8ad5394ce61cb833349477a3ba040433c4b27df1140007535aceb8cd3a5faf",
+          "shape" : [
+            1,
+            50,
+            2
+          ]
+        },
+        "pred_depth_map_logits" : {
+          "file" : "001025_pred_depth_map_logits.bin",
+          "sha256" : "5f443657fe28f1979bee35ac6020ce87f127bb3306dcb75775f0c178a6353306",
+          "shape" : [
+            1,
+            81,
+            24,
+            80
+          ]
+        },
+        "pred_logits" : {
+          "file" : "001025_pred_logits.bin",
+          "sha256" : "d1e610553d8f19e6ccb525df9ef5896d104b246c664fa29281f23b12671a9c08",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_region_prob_0" : {
+          "file" : "001025_pred_region_prob_0.bin",
+          "sha256" : "fdaaf41fee7f12909abe7704202715ddca8832cda29647fedb5c54fab466414f",
+          "shape" : [
+            1,
+            1,
+            48,
+            160
+          ]
+        },
+        "pred_region_prob_1" : {
+          "file" : "001025_pred_region_prob_1.bin",
+          "sha256" : "0a6adebd8a5fa808b0764d4d7857a7996414159b419e37db725d45cc75a8eb9f",
+          "shape" : [
+            1,
+            1,
+            24,
+            80
+          ]
+        },
+        "pred_region_prob_2" : {
+          "file" : "001025_pred_region_prob_2.bin",
+          "sha256" : "ae1d0ae5962b50748543b832ab0831b973eaebbd03fc6a94eeb530ed426be39d",
+          "shape" : [
+            1,
+            1,
+            12,
+            40
+          ]
+        },
+        "pred_region_prob_3" : {
+          "file" : "001025_pred_region_prob_3.bin",
+          "sha256" : "d0f03a1abb6ba55aa33f58b2ccbd4b9ba96c5ea354b0ce408a153a830852e1a8",
+          "shape" : [
+            1,
+            1,
+            6,
+            20
+          ]
+        }
+      },
+      "prediction_ms" : 229.56808342132717,
+      "raw_max_abs_deltas_vs_mac" : {
+        "pred_3d_dim" : 1.239776611328125e-05,
+        "pred_angle" : 4.0292739868164062e-05,
+        "pred_boxes" : 2.9802322387695312e-07,
+        "pred_depth" : 5.7220458984375e-05,
+        "pred_depth_map_logits" : 1.33514404296875e-05,
+        "pred_logits" : 6.67572021484375e-06,
+        "pred_region_prob_0" : 3.2782554626464844e-07,
+        "pred_region_prob_1" : 1.0132789611816406e-06,
+        "pred_region_prob_2" : 1.7695128917694092e-08,
+        "pred_region_prob_3" : 0
+      },
+      "sample_id" : "001025"
+    },
+    {
+      "outputs" : {
+        "pred_3d_dim" : {
+          "file" : "001514_pred_3d_dim.bin",
+          "sha256" : "9997c500ea4351ef5b364f44b9e7f3b746ce05d35088c78472ab7a0a176bae5b",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_angle" : {
+          "file" : "001514_pred_angle.bin",
+          "sha256" : "8f288cc02c79ed9af8c1ea26e08117ff169093c1ac9a785db4ba9fa50baeaee4",
+          "shape" : [
+            1,
+            50,
+            24
+          ]
+        },
+        "pred_boxes" : {
+          "file" : "001514_pred_boxes.bin",
+          "sha256" : "e9df3ac6214d17311b7052a77a42f32005dda7e759cdcecaa2d76cf6fe4d163a",
+          "shape" : [
+            1,
+            50,
+            6
+          ]
+        },
+        "pred_depth" : {
+          "file" : "001514_pred_depth.bin",
+          "sha256" : "72358b2fafeb91e433802159117509a6db506276eebf1a9aaae246c4238af916",
+          "shape" : [
+            1,
+            50,
+            2
+          ]
+        },
+        "pred_depth_map_logits" : {
+          "file" : "001514_pred_depth_map_logits.bin",
+          "sha256" : "3bdcfbb66d65104007b7f96452ad05149b80531f7935bda176f9b4a008d17571",
+          "shape" : [
+            1,
+            81,
+            24,
+            80
+          ]
+        },
+        "pred_logits" : {
+          "file" : "001514_pred_logits.bin",
+          "sha256" : "69aee87726e3647d27e0242814ff01d58a418b19c91406a97ff1fe251e8bff39",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_region_prob_0" : {
+          "file" : "001514_pred_region_prob_0.bin",
+          "sha256" : "7c8da1f24182923a5c3dd8c317901f4614bde7f8d69f9810095d04bbe9bf5a51",
+          "shape" : [
+            1,
+            1,
+            48,
+            160
+          ]
+        },
+        "pred_region_prob_1" : {
+          "file" : "001514_pred_region_prob_1.bin",
+          "sha256" : "06ea2c3d2366cbc77fc035285e322449e8a11d9dc21d0ce156589f0d0844d610",
+          "shape" : [
+            1,
+            1,
+            24,
+            80
+          ]
+        },
+        "pred_region_prob_2" : {
+          "file" : "001514_pred_region_prob_2.bin",
+          "sha256" : "52bc881d6a5ca03dcea8dc78d76e5714196e894dafaf155615ccef162cb4f06b",
+          "shape" : [
+            1,
+            1,
+            12,
+            40
+          ]
+        },
+        "pred_region_prob_3" : {
+          "file" : "001514_pred_region_prob_3.bin",
+          "sha256" : "6735b8288c68808857692df715608dd97e7f337545e29bda4cd8920e0d8b2974",
+          "shape" : [
+            1,
+            1,
+            6,
+            20
+          ]
+        }
+      },
+      "prediction_ms" : 262.41045829374343,
+      "raw_max_abs_deltas_vs_mac" : {
+        "pred_3d_dim" : 1.7404556274414062e-05,
+        "pred_angle" : 4.5299530029296875e-05,
+        "pred_boxes" : 5.9604644775390625e-07,
+        "pred_depth" : 0.000152587890625,
+        "pred_depth_map_logits" : 1.52587890625e-05,
+        "pred_logits" : 1.2159347534179688e-05,
+        "pred_region_prob_0" : 7.152557373046875e-07,
+        "pred_region_prob_1" : 8.2701444625854492e-07,
+        "pred_region_prob_2" : 6.5565109252929688e-07,
+        "pred_region_prob_3" : 8.9406967163085938e-07
+      },
+      "sample_id" : "001514"
+    },
+    {
+      "outputs" : {
+        "pred_3d_dim" : {
+          "file" : "002014_pred_3d_dim.bin",
+          "sha256" : "0eba880de97de5e499c0405e2ae9e3a7ba245829c2574df92ba885cb21ba6ba1",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_angle" : {
+          "file" : "002014_pred_angle.bin",
+          "sha256" : "7470ee01b70f4ae215b042e38c0a7d6068ca3394b892b3dd171a5b6a29cfe124",
+          "shape" : [
+            1,
+            50,
+            24
+          ]
+        },
+        "pred_boxes" : {
+          "file" : "002014_pred_boxes.bin",
+          "sha256" : "0d01fffb73714c3f07e6a62a6b9fb427b6a87dbe651830aebef6d702a42e86a0",
+          "shape" : [
+            1,
+            50,
+            6
+          ]
+        },
+        "pred_depth" : {
+          "file" : "002014_pred_depth.bin",
+          "sha256" : "6b90e3da026bdf6971ccdc7b761154357e13126abfe44168fb513172ba2503a9",
+          "shape" : [
+            1,
+            50,
+            2
+          ]
+        },
+        "pred_depth_map_logits" : {
+          "file" : "002014_pred_depth_map_logits.bin",
+          "sha256" : "f253af6e70afa496b4f3165c8051e58104c0f3fa0382788bc1c97e9106fde1f5",
+          "shape" : [
+            1,
+            81,
+            24,
+            80
+          ]
+        },
+        "pred_logits" : {
+          "file" : "002014_pred_logits.bin",
+          "sha256" : "e0801ce563da1e7e5e9887828ece9ae62f2adbd4d4d67b090b224a922d873f83",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_region_prob_0" : {
+          "file" : "002014_pred_region_prob_0.bin",
+          "sha256" : "46923dda937f3d55deb2e81979fe6a59d3dc5a91ef0fd332bf0baa4639c09972",
+          "shape" : [
+            1,
+            1,
+            48,
+            160
+          ]
+        },
+        "pred_region_prob_1" : {
+          "file" : "002014_pred_region_prob_1.bin",
+          "sha256" : "12ec83d179622e499aea9849e447675263b737c6993fd742cd0236b8898a93cf",
+          "shape" : [
+            1,
+            1,
+            24,
+            80
+          ]
+        },
+        "pred_region_prob_2" : {
+          "file" : "002014_pred_region_prob_2.bin",
+          "sha256" : "18f67d0ccff4273438a86c98f0dd2078ba5c85440d13672986312e78d0595eab",
+          "shape" : [
+            1,
+            1,
+            12,
+            40
+          ]
+        },
+        "pred_region_prob_3" : {
+          "file" : "002014_pred_region_prob_3.bin",
+          "sha256" : "b2a894d83f4b09558bd7a4d2542fa9bd4e7eb9312b7b8c679d58a3c1974f809e",
+          "shape" : [
+            1,
+            1,
+            6,
+            20
+          ]
+        }
+      },
+      "prediction_ms" : 230.62399995978922,
+      "raw_max_abs_deltas_vs_mac" : {
+        "pred_3d_dim" : 1.9431114196777344e-05,
+        "pred_angle" : 4.8160552978515625e-05,
+        "pred_boxes" : 7.4505805969238281e-07,
+        "pred_depth" : 9.632110595703125e-05,
+        "pred_depth_map_logits" : 1.1444091796875e-05,
+        "pred_logits" : 2.002716064453125e-05,
+        "pred_region_prob_0" : 3.5762786865234375e-07,
+        "pred_region_prob_1" : 1.9371509552001953e-07,
+        "pred_region_prob_2" : 3.5762786865234375e-07,
+        "pred_region_prob_3" : 0
+      },
+      "sample_id" : "002014"
+    },
+    {
+      "outputs" : {
+        "pred_3d_dim" : {
+          "file" : "002521_pred_3d_dim.bin",
+          "sha256" : "b023a887a3046c80b1ca7928039a3cb2998700103c3f39972003c1a8178f1203",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_angle" : {
+          "file" : "002521_pred_angle.bin",
+          "sha256" : "e21ce78d89fe6bdde6917732c9ce3e77477018acd2d88692af2e030aa6207ea6",
+          "shape" : [
+            1,
+            50,
+            24
+          ]
+        },
+        "pred_boxes" : {
+          "file" : "002521_pred_boxes.bin",
+          "sha256" : "194befca1ce6079a58daee1ce1d2154bb02254c987b7ab2695cda3c855fc93a4",
+          "shape" : [
+            1,
+            50,
+            6
+          ]
+        },
+        "pred_depth" : {
+          "file" : "002521_pred_depth.bin",
+          "sha256" : "64b28e05ac57a374a457d01a7d7314b48d08e89686b8aa816354348407152755",
+          "shape" : [
+            1,
+            50,
+            2
+          ]
+        },
+        "pred_depth_map_logits" : {
+          "file" : "002521_pred_depth_map_logits.bin",
+          "sha256" : "a42fae76e0ed190b825570fae7274b02cb2b98fcd4d63d05aaed5046fc9e8dcd",
+          "shape" : [
+            1,
+            81,
+            24,
+            80
+          ]
+        },
+        "pred_logits" : {
+          "file" : "002521_pred_logits.bin",
+          "sha256" : "1e3f0dfe30757eff9ae8bd34e079f99501bf0cec258ffcaac75955552f8bb5e7",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_region_prob_0" : {
+          "file" : "002521_pred_region_prob_0.bin",
+          "sha256" : "a155a9628a0d973b534ea1916eccd440c04b8af8644b46e54dd12eccd7b54e2e",
+          "shape" : [
+            1,
+            1,
+            48,
+            160
+          ]
+        },
+        "pred_region_prob_1" : {
+          "file" : "002521_pred_region_prob_1.bin",
+          "sha256" : "0f3897c524d1ab5b318d424498af45a5f8fa2cb4423c6c716321dd009fcb0ecd",
+          "shape" : [
+            1,
+            1,
+            24,
+            80
+          ]
+        },
+        "pred_region_prob_2" : {
+          "file" : "002521_pred_region_prob_2.bin",
+          "sha256" : "d50c589326a5595bfa9e6807ac198d069c3e51ad341d4c621577d2fec78db8e6",
+          "shape" : [
+            1,
+            1,
+            12,
+            40
+          ]
+        },
+        "pred_region_prob_3" : {
+          "file" : "002521_pred_region_prob_3.bin",
+          "sha256" : "70fe847368a82ee6324ac18f3182efdaee34fe03d71b7aadde2a45a303451927",
+          "shape" : [
+            1,
+            1,
+            6,
+            20
+          ]
+        }
+      },
+      "prediction_ms" : 230.99962493870407,
+      "raw_max_abs_deltas_vs_mac" : {
+        "pred_3d_dim" : 1.811981201171875e-05,
+        "pred_angle" : 3.0994415283203125e-05,
+        "pred_boxes" : 2.384185791015625e-07,
+        "pred_depth" : 0.0001373291015625,
+        "pred_depth_map_logits" : 1.9073486328125e-05,
+        "pred_logits" : 8.58306884765625e-06,
+        "pred_region_prob_0" : 1.1920928955078125e-07,
+        "pred_region_prob_1" : 5.0663948059082031e-07,
+        "pred_region_prob_2" : 3.2741809263825417e-10,
+        "pred_region_prob_3" : 0
+      },
+      "sample_id" : "002521"
+    },
+    {
+      "outputs" : {
+        "pred_3d_dim" : {
+          "file" : "003010_pred_3d_dim.bin",
+          "sha256" : "855dcd1f4bfc7b81ef1778e4431a853ce12e767260170e2cb74401cd6886cdb4",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_angle" : {
+          "file" : "003010_pred_angle.bin",
+          "sha256" : "3cdc08b9d39e5bf551d8c080c5848756cad3c4f53acf2a7d756a9b0c42d3b1ab",
+          "shape" : [
+            1,
+            50,
+            24
+          ]
+        },
+        "pred_boxes" : {
+          "file" : "003010_pred_boxes.bin",
+          "sha256" : "1ac6c31408cd168e158fee52e67a5bbf624eaf7f41c5662222069033f45c0ac2",
+          "shape" : [
+            1,
+            50,
+            6
+          ]
+        },
+        "pred_depth" : {
+          "file" : "003010_pred_depth.bin",
+          "sha256" : "08f3fc9b260fd14149c14b1bbd3616b1370b02c3ca0c86c4f6a6189c89aaa0c4",
+          "shape" : [
+            1,
+            50,
+            2
+          ]
+        },
+        "pred_depth_map_logits" : {
+          "file" : "003010_pred_depth_map_logits.bin",
+          "sha256" : "9cd7a78b8a8501ca4e855bbc25bf0ef60110ac79845e595f1796fee7d3ac3a8f",
+          "shape" : [
+            1,
+            81,
+            24,
+            80
+          ]
+        },
+        "pred_logits" : {
+          "file" : "003010_pred_logits.bin",
+          "sha256" : "20a6ddf301a3999d4bef9f3eff08543e7924426b8e35d0d18416af7d35cab5ec",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_region_prob_0" : {
+          "file" : "003010_pred_region_prob_0.bin",
+          "sha256" : "feace4e81bc4bb6f34328179ea8d7e0ebed0f480c22b9354e03d8804f98ff658",
+          "shape" : [
+            1,
+            1,
+            48,
+            160
+          ]
+        },
+        "pred_region_prob_1" : {
+          "file" : "003010_pred_region_prob_1.bin",
+          "sha256" : "34d70a0e7af1e41a41c22b693463a8dc2c1560d1a32fc327fdfdf77d3f468102",
+          "shape" : [
+            1,
+            1,
+            24,
+            80
+          ]
+        },
+        "pred_region_prob_2" : {
+          "file" : "003010_pred_region_prob_2.bin",
+          "sha256" : "b30e1dd668cd6803825eca5a72ec2a2b09c55ada4fb2b1eb457664f30a5f08ea",
+          "shape" : [
+            1,
+            1,
+            12,
+            40
+          ]
+        },
+        "pred_region_prob_3" : {
+          "file" : "003010_pred_region_prob_3.bin",
+          "sha256" : "5577f14838d68c89636839358516cd6050aa4a9a1da44de3f5a775f5bd9ce656",
+          "shape" : [
+            1,
+            1,
+            6,
+            20
+          ]
+        }
+      },
+      "prediction_ms" : 238.76745835877955,
+      "raw_max_abs_deltas_vs_mac" : {
+        "pred_3d_dim" : 9.8943710327148438e-06,
+        "pred_angle" : 8.6724758148193359e-05,
+        "pred_boxes" : 4.1723251342773438e-07,
+        "pred_depth" : 0.00016021728515625,
+        "pred_depth_map_logits" : 1.1444091796875e-05,
+        "pred_logits" : 1.5735626220703125e-05,
+        "pred_region_prob_0" : 8.9406967163085938e-07,
+        "pred_region_prob_1" : 6.5565109252929688e-07,
+        "pred_region_prob_2" : 2.7567148208618164e-07,
+        "pred_region_prob_3" : 1.9099388737231493e-11
+      },
+      "sample_id" : "003010"
+    },
+    {
+      "outputs" : {
+        "pred_3d_dim" : {
+          "file" : "003515_pred_3d_dim.bin",
+          "sha256" : "bb5574221adff0e84f747340bce46cb34151b3ed78664dca6e72314cf8330ac9",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_angle" : {
+          "file" : "003515_pred_angle.bin",
+          "sha256" : "66cabf17c20acb485608651e175be90c9ecb407c569c210b331b4c5f0e22a731",
+          "shape" : [
+            1,
+            50,
+            24
+          ]
+        },
+        "pred_boxes" : {
+          "file" : "003515_pred_boxes.bin",
+          "sha256" : "21089ecd6c7b7d0bb3bd3ab68cbfef3bf1d5e936f0a2be0f401a127a087dd614",
+          "shape" : [
+            1,
+            50,
+            6
+          ]
+        },
+        "pred_depth" : {
+          "file" : "003515_pred_depth.bin",
+          "sha256" : "52f7154c61e370580518f3225bc92f72852005f08c3a031922ca06cd51daa6c8",
+          "shape" : [
+            1,
+            50,
+            2
+          ]
+        },
+        "pred_depth_map_logits" : {
+          "file" : "003515_pred_depth_map_logits.bin",
+          "sha256" : "d0f1b4f985dc34e29eb2933f6bb7460508581698efc35344c075649c0f081f3f",
+          "shape" : [
+            1,
+            81,
+            24,
+            80
+          ]
+        },
+        "pred_logits" : {
+          "file" : "003515_pred_logits.bin",
+          "sha256" : "e7af172ef5a028580f9777603cd41a171cdcfd1131768fe1b9a9431cfb106002",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_region_prob_0" : {
+          "file" : "003515_pred_region_prob_0.bin",
+          "sha256" : "3efb9022d81107f6e69d8598aa28c26fa175d65c782c0a30d1f521031f8131f4",
+          "shape" : [
+            1,
+            1,
+            48,
+            160
+          ]
+        },
+        "pred_region_prob_1" : {
+          "file" : "003515_pred_region_prob_1.bin",
+          "sha256" : "41c11b27e962bfe7bbcf0f875534a76b0edfd6d1fa51dfe36d17831c55356c6e",
+          "shape" : [
+            1,
+            1,
+            24,
+            80
+          ]
+        },
+        "pred_region_prob_2" : {
+          "file" : "003515_pred_region_prob_2.bin",
+          "sha256" : "fea438e0741ec0ebed1b43614efeba77c6e9d4aa7bbce4659cbfb47da6051c67",
+          "shape" : [
+            1,
+            1,
+            12,
+            40
+          ]
+        },
+        "pred_region_prob_3" : {
+          "file" : "003515_pred_region_prob_3.bin",
+          "sha256" : "c902f0f366dcdb383ca9ac40fa1f3b554a5c7bb137b9fd383aa3cac6f588158d",
+          "shape" : [
+            1,
+            1,
+            6,
+            20
+          ]
+        }
+      },
+      "prediction_ms" : 229.67312508262694,
+      "raw_max_abs_deltas_vs_mac" : {
+        "pred_3d_dim" : 3.3020973205566406e-05,
+        "pred_angle" : 3.528594970703125e-05,
+        "pred_boxes" : 7.152557373046875e-07,
+        "pred_depth" : 4.9591064453125e-05,
+        "pred_depth_map_logits" : 1.33514404296875e-05,
+        "pred_logits" : 2.5510787963867188e-05,
+        "pred_region_prob_0" : 4.0233135223388672e-07,
+        "pred_region_prob_1" : 1.9371509552001953e-07,
+        "pred_region_prob_2" : 4.1723251342773438e-07,
+        "pred_region_prob_3" : 0
+      },
+      "sample_id" : "003515"
+    },
+    {
+      "outputs" : {
+        "pred_3d_dim" : {
+          "file" : "004074_pred_3d_dim.bin",
+          "sha256" : "4d4ad4624a817ff032a62ee010a70f10ff050e9d0b91b3d67eaf3c48f7b56dc8",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_angle" : {
+          "file" : "004074_pred_angle.bin",
+          "sha256" : "9c54f13b475869b4f73ef263e7a11507ad22de4a179d08b6f2385f2515d95f64",
+          "shape" : [
+            1,
+            50,
+            24
+          ]
+        },
+        "pred_boxes" : {
+          "file" : "004074_pred_boxes.bin",
+          "sha256" : "8a5dedf428294e91821e163489b97bb56164e71aaa1e66a5cac1465c91cd407b",
+          "shape" : [
+            1,
+            50,
+            6
+          ]
+        },
+        "pred_depth" : {
+          "file" : "004074_pred_depth.bin",
+          "sha256" : "747dc7f88360c81aa0385b8a66754638d068d1896eeb6a61f2b63a3054994cd8",
+          "shape" : [
+            1,
+            50,
+            2
+          ]
+        },
+        "pred_depth_map_logits" : {
+          "file" : "004074_pred_depth_map_logits.bin",
+          "sha256" : "ecf47a6f7dfca6db08bd4147444b626e55eb4527e1c72e3e061489ad19a6adeb",
+          "shape" : [
+            1,
+            81,
+            24,
+            80
+          ]
+        },
+        "pred_logits" : {
+          "file" : "004074_pred_logits.bin",
+          "sha256" : "5348d47872e01ec0208c4685e1a7048b06645c55d4e00ba6c067bc9c6577d518",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_region_prob_0" : {
+          "file" : "004074_pred_region_prob_0.bin",
+          "sha256" : "33ca51a8a98cb3bba727ddb547247ed7ad97b1c6f20bdc10249ad8d1f63cf78a",
+          "shape" : [
+            1,
+            1,
+            48,
+            160
+          ]
+        },
+        "pred_region_prob_1" : {
+          "file" : "004074_pred_region_prob_1.bin",
+          "sha256" : "bed1f6642cc686ae476bb8da54c312c9e662c0db23530e1b1e063fff53083ce9",
+          "shape" : [
+            1,
+            1,
+            24,
+            80
+          ]
+        },
+        "pred_region_prob_2" : {
+          "file" : "004074_pred_region_prob_2.bin",
+          "sha256" : "f6a85386ac9f22f4ba6ac74665a5517837d398048da231bd5e168a91bb359b10",
+          "shape" : [
+            1,
+            1,
+            12,
+            40
+          ]
+        },
+        "pred_region_prob_3" : {
+          "file" : "004074_pred_region_prob_3.bin",
+          "sha256" : "7d52ff4c6582703726632fc9362fbabb596141bc909df8bdb58876113769e18b",
+          "shape" : [
+            1,
+            1,
+            6,
+            20
+          ]
+        }
+      },
+      "prediction_ms" : 231.52224998921156,
+      "raw_max_abs_deltas_vs_mac" : {
+        "pred_3d_dim" : 1.9550323486328125e-05,
+        "pred_angle" : 4.8518180847167969e-05,
+        "pred_boxes" : 4.1723251342773438e-07,
+        "pred_depth" : 0.00011444091796875,
+        "pred_depth_map_logits" : 1.1444091796875e-05,
+        "pred_logits" : 2.09808349609375e-05,
+        "pred_region_prob_0" : 2.9802322387695312e-07,
+        "pred_region_prob_1" : 5.9604644775390625e-07,
+        "pred_region_prob_2" : 7.9162418842315674e-09,
+        "pred_region_prob_3" : 0
+      },
+      "sample_id" : "004074"
+    },
+    {
+      "outputs" : {
+        "pred_3d_dim" : {
+          "file" : "004534_pred_3d_dim.bin",
+          "sha256" : "5e5df258956ff976c6d494ea84af8acbf6c2006981535e71adf5c23fec12377a",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_angle" : {
+          "file" : "004534_pred_angle.bin",
+          "sha256" : "0dcf928e0249f69a0e145d8dccd9c946aec2981f64ff94ea4c75c0adc4109d85",
+          "shape" : [
+            1,
+            50,
+            24
+          ]
+        },
+        "pred_boxes" : {
+          "file" : "004534_pred_boxes.bin",
+          "sha256" : "258670f1edbd3a1e2e3c2c3f7abeebfc7bb08adb7d0002e156d2dce42e7b3861",
+          "shape" : [
+            1,
+            50,
+            6
+          ]
+        },
+        "pred_depth" : {
+          "file" : "004534_pred_depth.bin",
+          "sha256" : "ea42c3a9d924433690427a059bc7ea1e781c74b0cdd094394bb65157e4fcc9e2",
+          "shape" : [
+            1,
+            50,
+            2
+          ]
+        },
+        "pred_depth_map_logits" : {
+          "file" : "004534_pred_depth_map_logits.bin",
+          "sha256" : "3a8341b21135d5de3f07d1a95f0e9ec2c1f0cb22265c39c428dc61ef8fd8018c",
+          "shape" : [
+            1,
+            81,
+            24,
+            80
+          ]
+        },
+        "pred_logits" : {
+          "file" : "004534_pred_logits.bin",
+          "sha256" : "9ce33a96a829302fa5e9337de0dffd63c9acf6a166f4f6f0ec7c63fe5b2cefdf",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_region_prob_0" : {
+          "file" : "004534_pred_region_prob_0.bin",
+          "sha256" : "8709cb2225519042e45c20b866df90439f6a7abd0572a69f7533bd203ffe7085",
+          "shape" : [
+            1,
+            1,
+            48,
+            160
+          ]
+        },
+        "pred_region_prob_1" : {
+          "file" : "004534_pred_region_prob_1.bin",
+          "sha256" : "bcbbcd169bfe71e08a33b75053f65a544431f515922bed6578b316b8ad49190f",
+          "shape" : [
+            1,
+            1,
+            24,
+            80
+          ]
+        },
+        "pred_region_prob_2" : {
+          "file" : "004534_pred_region_prob_2.bin",
+          "sha256" : "4767d17717176909850fc80398fea28a488b34da0d68d96930f85f7caec3bd42",
+          "shape" : [
+            1,
+            1,
+            12,
+            40
+          ]
+        },
+        "pred_region_prob_3" : {
+          "file" : "004534_pred_region_prob_3.bin",
+          "sha256" : "d0e72af11e02f3646a90914d71d5c5d95be6340b0a25c445fb90289f729b09f1",
+          "shape" : [
+            1,
+            1,
+            6,
+            20
+          ]
+        }
+      },
+      "prediction_ms" : 230.80841661430895,
+      "raw_max_abs_deltas_vs_mac" : {
+        "pred_3d_dim" : 0.00021719932556152344,
+        "pred_angle" : 0.00047969818115234375,
+        "pred_boxes" : 1.430511474609375e-06,
+        "pred_depth" : 0.000453948974609375,
+        "pred_depth_map_logits" : 1.52587890625e-05,
+        "pred_logits" : 0.0001697540283203125,
+        "pred_region_prob_0" : 2.384185791015625e-07,
+        "pred_region_prob_1" : 2.2351741790771484e-07,
+        "pred_region_prob_2" : 7.4505805969238281e-09,
+        "pred_region_prob_3" : 0
+      },
+      "sample_id" : "004534"
+    },
+    {
+      "outputs" : {
+        "pred_3d_dim" : {
+          "file" : "005014_pred_3d_dim.bin",
+          "sha256" : "79b7347f696cfbfde6a572d2f34443ab9cbf0cd173da4387518aa2c46bd9f916",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_angle" : {
+          "file" : "005014_pred_angle.bin",
+          "sha256" : "8d6226cf858098dc27542cff795df38d4f18467bc29a89d321a1c9219138251b",
+          "shape" : [
+            1,
+            50,
+            24
+          ]
+        },
+        "pred_boxes" : {
+          "file" : "005014_pred_boxes.bin",
+          "sha256" : "9646b90825fe6865f7264d70f0e338f94725bfdbe58bf27627885f74fa8aec14",
+          "shape" : [
+            1,
+            50,
+            6
+          ]
+        },
+        "pred_depth" : {
+          "file" : "005014_pred_depth.bin",
+          "sha256" : "ef0e7fafe1d36158d050ad6867f27b4ca35292d04d8299a9482447f61cc0913a",
+          "shape" : [
+            1,
+            50,
+            2
+          ]
+        },
+        "pred_depth_map_logits" : {
+          "file" : "005014_pred_depth_map_logits.bin",
+          "sha256" : "8063767efd93fe17de69d074ee9561a5bb8a7bf8f8cd9e92f2036e92b89bc569",
+          "shape" : [
+            1,
+            81,
+            24,
+            80
+          ]
+        },
+        "pred_logits" : {
+          "file" : "005014_pred_logits.bin",
+          "sha256" : "003024f267ef0223f4d8cea6e4b1fc32ab98d52924eca5536a215a3322f00296",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_region_prob_0" : {
+          "file" : "005014_pred_region_prob_0.bin",
+          "sha256" : "93a8c24a210fbcafebc0e0d1446730d2927a0b5226d5216ea0b08c5fdaf03c11",
+          "shape" : [
+            1,
+            1,
+            48,
+            160
+          ]
+        },
+        "pred_region_prob_1" : {
+          "file" : "005014_pred_region_prob_1.bin",
+          "sha256" : "27f89197980321d35b4dc8dd51752c74176141c0cf78611c2e212a390ccf9adf",
+          "shape" : [
+            1,
+            1,
+            24,
+            80
+          ]
+        },
+        "pred_region_prob_2" : {
+          "file" : "005014_pred_region_prob_2.bin",
+          "sha256" : "e2ba6fb6373286c316158315b00bfdb32ded1d8a63493165c4dabad3e97595cc",
+          "shape" : [
+            1,
+            1,
+            12,
+            40
+          ]
+        },
+        "pred_region_prob_3" : {
+          "file" : "005014_pred_region_prob_3.bin",
+          "sha256" : "e03001b54ebd25e1a73ca9155b6a2b45fec517e95907f558fff466c629aee87a",
+          "shape" : [
+            1,
+            1,
+            6,
+            20
+          ]
+        }
+      },
+      "prediction_ms" : 230.13266664929688,
+      "raw_max_abs_deltas_vs_mac" : {
+        "pred_3d_dim" : 1.7881393432617188e-05,
+        "pred_angle" : 4.1484832763671875e-05,
+        "pred_boxes" : 7.4505805969238281e-07,
+        "pred_depth" : 4.9591064453125e-05,
+        "pred_depth_map_logits" : 1.33514404296875e-05,
+        "pred_logits" : 2.4557113647460938e-05,
+        "pred_region_prob_0" : 5.9604644775390625e-07,
+        "pred_region_prob_1" : 7.152557373046875e-07,
+        "pred_region_prob_2" : 1.1920928955078125e-07,
+        "pred_region_prob_3" : 0
+      },
+      "sample_id" : "005014"
+    },
+    {
+      "outputs" : {
+        "pred_3d_dim" : {
+          "file" : "005515_pred_3d_dim.bin",
+          "sha256" : "71c5010d16310cada398e372fa414e9105aa3c512a2a40c09cb60b91c07c0c59",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_angle" : {
+          "file" : "005515_pred_angle.bin",
+          "sha256" : "84d783b11a73e9d5faf43d4f8696f39b75b3af76b239ea0431b5d5f83b342961",
+          "shape" : [
+            1,
+            50,
+            24
+          ]
+        },
+        "pred_boxes" : {
+          "file" : "005515_pred_boxes.bin",
+          "sha256" : "a98de634a4373ec3921367c009959a7357a728509dcd305fb31c7a8e6e869b60",
+          "shape" : [
+            1,
+            50,
+            6
+          ]
+        },
+        "pred_depth" : {
+          "file" : "005515_pred_depth.bin",
+          "sha256" : "6831e1d3ddff3a0c376db3dfc229dab424c04bb614b5a28ef57c61f20af69078",
+          "shape" : [
+            1,
+            50,
+            2
+          ]
+        },
+        "pred_depth_map_logits" : {
+          "file" : "005515_pred_depth_map_logits.bin",
+          "sha256" : "054675f597ccc6664573f1aa35399ab7b5be0a45ec86b811cbbbf8d2e49f15c6",
+          "shape" : [
+            1,
+            81,
+            24,
+            80
+          ]
+        },
+        "pred_logits" : {
+          "file" : "005515_pred_logits.bin",
+          "sha256" : "9d60c41d694b978a2aa9c139dd224d0b0a040173700eda98ec50ea01c51e299a",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_region_prob_0" : {
+          "file" : "005515_pred_region_prob_0.bin",
+          "sha256" : "b478653fc091aa4cccc9354ec18758edbc5e37cf9ab6f56a3e6b90119cf583e6",
+          "shape" : [
+            1,
+            1,
+            48,
+            160
+          ]
+        },
+        "pred_region_prob_1" : {
+          "file" : "005515_pred_region_prob_1.bin",
+          "sha256" : "c4b2d87ab09243e259b0618da18b408722087df8e28a7cd6666230432c0393f5",
+          "shape" : [
+            1,
+            1,
+            24,
+            80
+          ]
+        },
+        "pred_region_prob_2" : {
+          "file" : "005515_pred_region_prob_2.bin",
+          "sha256" : "40c8a1b2e89cecce3c79132643b5f599a77d508904846e82fb9c0ff412ab22da",
+          "shape" : [
+            1,
+            1,
+            12,
+            40
+          ]
+        },
+        "pred_region_prob_3" : {
+          "file" : "005515_pred_region_prob_3.bin",
+          "sha256" : "fa45bf4e661a66c052f550cc9b6d9aeae2da211eb7285a9e71f8a40eeda2a6c8",
+          "shape" : [
+            1,
+            1,
+            6,
+            20
+          ]
+        }
+      },
+      "prediction_ms" : 229.6716250712052,
+      "raw_max_abs_deltas_vs_mac" : {
+        "pred_3d_dim" : 3.337860107421875e-05,
+        "pred_angle" : 7.152557373046875e-05,
+        "pred_boxes" : 6.5565109252929688e-07,
+        "pred_depth" : 0.0001316070556640625,
+        "pred_depth_map_logits" : 1.52587890625e-05,
+        "pred_logits" : 2.0503997802734375e-05,
+        "pred_region_prob_0" : 4.1723251342773438e-07,
+        "pred_region_prob_1" : 5.3644180297851562e-07,
+        "pred_region_prob_2" : 1.1324882507324219e-06,
+        "pred_region_prob_3" : 4.5401975512504578e-09
+      },
+      "sample_id" : "005515"
+    },
+    {
+      "outputs" : {
+        "pred_3d_dim" : {
+          "file" : "006039_pred_3d_dim.bin",
+          "sha256" : "3503a3d4491a53c4b3026c50ea16743b9da73bcc03b9af132a6e4aa349d9fb90",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_angle" : {
+          "file" : "006039_pred_angle.bin",
+          "sha256" : "36c03472abf450604ab66916e5301d1e5f1ac79971e1d5806feb93aa4a2ab704",
+          "shape" : [
+            1,
+            50,
+            24
+          ]
+        },
+        "pred_boxes" : {
+          "file" : "006039_pred_boxes.bin",
+          "sha256" : "9e1b1f315f1c3d6e94d02bfcb388a0e2b9cb8b692d12cf6aedb84f7dbfda995f",
+          "shape" : [
+            1,
+            50,
+            6
+          ]
+        },
+        "pred_depth" : {
+          "file" : "006039_pred_depth.bin",
+          "sha256" : "6c91393776c551b95b53b071c24b207cdc114998f4dacd696b4754541b351326",
+          "shape" : [
+            1,
+            50,
+            2
+          ]
+        },
+        "pred_depth_map_logits" : {
+          "file" : "006039_pred_depth_map_logits.bin",
+          "sha256" : "fdaf6d06fc2b6161c8d10499c58cd4ff67bf9aa15b8d412d2932c3452893998b",
+          "shape" : [
+            1,
+            81,
+            24,
+            80
+          ]
+        },
+        "pred_logits" : {
+          "file" : "006039_pred_logits.bin",
+          "sha256" : "5907196329dd5bdcde7643262ca0ac5409f87ae0755f80681e172406bfe78a20",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_region_prob_0" : {
+          "file" : "006039_pred_region_prob_0.bin",
+          "sha256" : "88637c6a4712858c79aeeb53ee341b9b54c257a845cb26fdf28f763ed79be6c7",
+          "shape" : [
+            1,
+            1,
+            48,
+            160
+          ]
+        },
+        "pred_region_prob_1" : {
+          "file" : "006039_pred_region_prob_1.bin",
+          "sha256" : "70e4eae1ae7df3905e38e266736b84ad71d75010b9910b297ad7fcf94e4abc0f",
+          "shape" : [
+            1,
+            1,
+            24,
+            80
+          ]
+        },
+        "pred_region_prob_2" : {
+          "file" : "006039_pred_region_prob_2.bin",
+          "sha256" : "b538b58de8e7740a2e3e62c77bc05caf9a1b223d14af9103e0cd9304f662109c",
+          "shape" : [
+            1,
+            1,
+            12,
+            40
+          ]
+        },
+        "pred_region_prob_3" : {
+          "file" : "006039_pred_region_prob_3.bin",
+          "sha256" : "490e967943028aa5c055fb9060d7cfc9aa9f23becc9015c45627a49273b12774",
+          "shape" : [
+            1,
+            1,
+            6,
+            20
+          ]
+        }
+      },
+      "prediction_ms" : 232.16879169922322,
+      "raw_max_abs_deltas_vs_mac" : {
+        "pred_3d_dim" : 5.5789947509765625e-05,
+        "pred_angle" : 4.3392181396484375e-05,
+        "pred_boxes" : 3.5762786865234375e-07,
+        "pred_depth" : 0.0001239776611328125,
+        "pred_depth_map_logits" : 1.1444091796875e-05,
+        "pred_logits" : 3.2901763916015625e-05,
+        "pred_region_prob_0" : 4.1723251342773438e-07,
+        "pred_region_prob_1" : 1.4901161193847656e-06,
+        "pred_region_prob_2" : 1.0132789611816406e-06,
+        "pred_region_prob_3" : 6.1094760894775391e-07
+      },
+      "sample_id" : "006039"
+    },
+    {
+      "outputs" : {
+        "pred_3d_dim" : {
+          "file" : "006537_pred_3d_dim.bin",
+          "sha256" : "98613c8f1c7beff8be2a5d6c3134fd1ee4f1fac13f993148023f00b5f3b5f68c",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_angle" : {
+          "file" : "006537_pred_angle.bin",
+          "sha256" : "a57664d638b27dae5b52d03b46f7fbed4eaa3ccd1d81103f6e038a5ac33f7c2a",
+          "shape" : [
+            1,
+            50,
+            24
+          ]
+        },
+        "pred_boxes" : {
+          "file" : "006537_pred_boxes.bin",
+          "sha256" : "38afae4daea1db04c490b2d5d06c528ad7d2d157b77d5949a6fb37ea7b06710e",
+          "shape" : [
+            1,
+            50,
+            6
+          ]
+        },
+        "pred_depth" : {
+          "file" : "006537_pred_depth.bin",
+          "sha256" : "59f9d43b3852a9ed651e2e163c08a081fe0f1a55cc3b51abaa5164744c08f6c4",
+          "shape" : [
+            1,
+            50,
+            2
+          ]
+        },
+        "pred_depth_map_logits" : {
+          "file" : "006537_pred_depth_map_logits.bin",
+          "sha256" : "21624250c7a26603d3a26134de242d0d7b8f261740ca93f7dd627c1178735322",
+          "shape" : [
+            1,
+            81,
+            24,
+            80
+          ]
+        },
+        "pred_logits" : {
+          "file" : "006537_pred_logits.bin",
+          "sha256" : "b2bd1495d6e60459b5842bc9339b69220f3a07c14af730c268fae24c838fa3e7",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_region_prob_0" : {
+          "file" : "006537_pred_region_prob_0.bin",
+          "sha256" : "a4d852aa5b08a47fa374e789bf5b5a4266afdbd3232aeec8bf3139ca1648c367",
+          "shape" : [
+            1,
+            1,
+            48,
+            160
+          ]
+        },
+        "pred_region_prob_1" : {
+          "file" : "006537_pred_region_prob_1.bin",
+          "sha256" : "4ef7e2b58556f5de70c471b0188492ea84b183bd7e225c34c10331d74d9713ac",
+          "shape" : [
+            1,
+            1,
+            24,
+            80
+          ]
+        },
+        "pred_region_prob_2" : {
+          "file" : "006537_pred_region_prob_2.bin",
+          "sha256" : "a6939bde3ec70d54b800eaa378e0266da821fca998e5e8903d44c91109eeea96",
+          "shape" : [
+            1,
+            1,
+            12,
+            40
+          ]
+        },
+        "pred_region_prob_3" : {
+          "file" : "006537_pred_region_prob_3.bin",
+          "sha256" : "3d561d9027af82591d3155452f65f54ebb06536015d68a71abf7600bb12ece95",
+          "shape" : [
+            1,
+            1,
+            6,
+            20
+          ]
+        }
+      },
+      "prediction_ms" : 230.31320841982961,
+      "raw_max_abs_deltas_vs_mac" : {
+        "pred_3d_dim" : 6.67572021484375e-05,
+        "pred_angle" : 0.00010991096496582031,
+        "pred_boxes" : 6.0349702835083008e-07,
+        "pred_depth" : 0.000156402587890625,
+        "pred_depth_map_logits" : 1.9073486328125e-05,
+        "pred_logits" : 3.62396240234375e-05,
+        "pred_region_prob_0" : 3.5762786865234375e-07,
+        "pred_region_prob_1" : 8.3819031715393066e-09,
+        "pred_region_prob_2" : 5.9604644775390625e-08,
+        "pred_region_prob_3" : 0
+      },
+      "sample_id" : "006537"
+    },
+    {
+      "outputs" : {
+        "pred_3d_dim" : {
+          "file" : "007016_pred_3d_dim.bin",
+          "sha256" : "17f7a99991d8c839b5dd66f693c4daea0b0c6d7160c829c38de8e7025b5ef559",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_angle" : {
+          "file" : "007016_pred_angle.bin",
+          "sha256" : "20cd0c290c0b36cd8f5d9e9761bad6f37035cbc06b4768c5183eec2e08e7ff6c",
+          "shape" : [
+            1,
+            50,
+            24
+          ]
+        },
+        "pred_boxes" : {
+          "file" : "007016_pred_boxes.bin",
+          "sha256" : "d657c5d895cdcc291d1de501b9e4cfb9754706ca666c33a0594016bc1fd50196",
+          "shape" : [
+            1,
+            50,
+            6
+          ]
+        },
+        "pred_depth" : {
+          "file" : "007016_pred_depth.bin",
+          "sha256" : "47b3a0af390e00f06be07f20ef42cc63f69bcd827692d301300534b54b8c7670",
+          "shape" : [
+            1,
+            50,
+            2
+          ]
+        },
+        "pred_depth_map_logits" : {
+          "file" : "007016_pred_depth_map_logits.bin",
+          "sha256" : "86a3b24719191623a017cedcd178b7012793e279a92c3d72d0df7a2bfd0706f0",
+          "shape" : [
+            1,
+            81,
+            24,
+            80
+          ]
+        },
+        "pred_logits" : {
+          "file" : "007016_pred_logits.bin",
+          "sha256" : "76a85a83801395b1784a637cde929b81d466c4a7a6998a0de5392f1efecd2611",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_region_prob_0" : {
+          "file" : "007016_pred_region_prob_0.bin",
+          "sha256" : "46566a97b3e8dfad378a9f9d7cf365156f08a725c3a07d50ec5b4a11bb53e72f",
+          "shape" : [
+            1,
+            1,
+            48,
+            160
+          ]
+        },
+        "pred_region_prob_1" : {
+          "file" : "007016_pred_region_prob_1.bin",
+          "sha256" : "d497ad05a86a8853d6e4155060f5dbc4773f5dd8f0791fd05a368e01ac8cdc93",
+          "shape" : [
+            1,
+            1,
+            24,
+            80
+          ]
+        },
+        "pred_region_prob_2" : {
+          "file" : "007016_pred_region_prob_2.bin",
+          "sha256" : "f765c0634ad85e768090ba5f6927b7e38a0e5b35253911e8dafd1872133f2c50",
+          "shape" : [
+            1,
+            1,
+            12,
+            40
+          ]
+        },
+        "pred_region_prob_3" : {
+          "file" : "007016_pred_region_prob_3.bin",
+          "sha256" : "70fe847368a82ee6324ac18f3182efdaee34fe03d71b7aadde2a45a303451927",
+          "shape" : [
+            1,
+            1,
+            6,
+            20
+          ]
+        }
+      },
+      "prediction_ms" : 230.25420831982046,
+      "raw_max_abs_deltas_vs_mac" : {
+        "pred_3d_dim" : 4.9829483032226562e-05,
+        "pred_angle" : 4.482269287109375e-05,
+        "pred_boxes" : 7.5995922088623047e-07,
+        "pred_depth" : 0.00012969970703125,
+        "pred_depth_map_logits" : 1.33514404296875e-05,
+        "pred_logits" : 3.0040740966796875e-05,
+        "pred_region_prob_0" : 1.7881393432617188e-07,
+        "pred_region_prob_1" : 1.7881393432617188e-07,
+        "pred_region_prob_2" : 0,
+        "pred_region_prob_3" : 0
+      },
+      "sample_id" : "007016"
+    },
+    {
+      "outputs" : {
+        "pred_3d_dim" : {
+          "file" : "007480_pred_3d_dim.bin",
+          "sha256" : "6de64985c0fa359feb6a72fcd23144bc38375242cf6a5c6228fb68ebd2d18ae7",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_angle" : {
+          "file" : "007480_pred_angle.bin",
+          "sha256" : "30bc7d8ba536e0443ae1b94eee1e8b6d814417eb2fba22defacd48740a874c15",
+          "shape" : [
+            1,
+            50,
+            24
+          ]
+        },
+        "pred_boxes" : {
+          "file" : "007480_pred_boxes.bin",
+          "sha256" : "f353dcd4e519d76ad3be6b812bcc9c46b11a33d35218971c9cfdd06b725e5328",
+          "shape" : [
+            1,
+            50,
+            6
+          ]
+        },
+        "pred_depth" : {
+          "file" : "007480_pred_depth.bin",
+          "sha256" : "933a81aebaef92275af39f3bc7771855391dba92153a1d12373941ce4d71e3ba",
+          "shape" : [
+            1,
+            50,
+            2
+          ]
+        },
+        "pred_depth_map_logits" : {
+          "file" : "007480_pred_depth_map_logits.bin",
+          "sha256" : "b2c1c79bcb1365d501797aeb68ad4882abe79a4eacd29936b36837ddb6016e6d",
+          "shape" : [
+            1,
+            81,
+            24,
+            80
+          ]
+        },
+        "pred_logits" : {
+          "file" : "007480_pred_logits.bin",
+          "sha256" : "d2085b3eb545ddb4ce8fc1bf9d6dcfe60e30e714df0e1c4d6b3da79a678b5d9b",
+          "shape" : [
+            1,
+            50,
+            3
+          ]
+        },
+        "pred_region_prob_0" : {
+          "file" : "007480_pred_region_prob_0.bin",
+          "sha256" : "86448680172adda25ef5d6e98f1aa4eff7f654194a61013a907127a43b7755aa",
+          "shape" : [
+            1,
+            1,
+            48,
+            160
+          ]
+        },
+        "pred_region_prob_1" : {
+          "file" : "007480_pred_region_prob_1.bin",
+          "sha256" : "e91f94dbcac9d96283dffc6b0c6bedf289070004eb440b97bc8c1ccf2ecba631",
+          "shape" : [
+            1,
+            1,
+            24,
+            80
+          ]
+        },
+        "pred_region_prob_2" : {
+          "file" : "007480_pred_region_prob_2.bin",
+          "sha256" : "bcfdd99ee7fa6965cc316a27e52977e988204f90b70596e45ef0be5c24d47983",
+          "shape" : [
+            1,
+            1,
+            12,
+            40
+          ]
+        },
+        "pred_region_prob_3" : {
+          "file" : "007480_pred_region_prob_3.bin",
+          "sha256" : "fc8ef9a7b739de410b24d33ec23678837e8ffb8cae34dafc34d737d0977af9bf",
+          "shape" : [
+            1,
+            1,
+            6,
+            20
+          ]
+        }
+      },
+      "prediction_ms" : 229.02545833494514,
+      "raw_max_abs_deltas_vs_mac" : {
+        "pred_3d_dim" : 1.5020370483398438e-05,
+        "pred_angle" : 4.9829483032226562e-05,
+        "pred_boxes" : 3.5762786865234375e-07,
+        "pred_depth" : 6.4849853515625e-05,
+        "pred_depth_map_logits" : 1.1444091796875e-05,
+        "pred_logits" : 1.0013580322265625e-05,
+        "pred_region_prob_0" : 1.0132789611816406e-06,
+        "pred_region_prob_1" : 1.0728836059570312e-06,
+        "pred_region_prob_2" : 4.76837158203125e-07,
+        "pred_region_prob_3" : 0
+      },
+      "sample_id" : "007480"
+    }
+  ],
+  "schema_version" : 1,
+  "started_at" : "2026-09-22T13:32:28Z",
+  "sustain_elapsed_seconds" : 60.262206416577101,
+  "sustain_prediction_ms" : [
+    231.92733328323811,
+    232.44208330288529,
+    234.10020826850086,
+    233.30733331386,
+    233.17904165014625,
+    233.070999966003,
+    235.01733329612762,
+    233.83775004185736,
+    232.84049995709211,
+    233.99620840791613,
+    232.7325833030045,
+    232.10987495258451,
+    232.91829170193523,
+    232.72541665937752,
+    232.88174998015165,
+    232.45504160877317,
+    232.32058330904692,
+    232.82483336515725,
+    232.99429169856012,
+    233.98558329790831,
+    233.63354173488915,
+    235.02345837187022,
+    230.31412495765835,
+    234.73558342084289,
+    233.33487496711314,
+    234.25395833328366,
+    234.58775004837662,
+    235.17216660548002,
+    233.35266660433263,
+    234.50983327347785,
+    236.46583338268101,
+    236.06795829255134,
+    235.59254163410515,
+    233.98741672281176,
+    235.10750010609627,
+    235.91154161840677,
+    235.6547499075532,
+    235.23391666822135,
+    235.16295826993883,
+    235.10662501212209,
+    236.88250000122935,
+    237.33849998097867,
+    235.615250072442,
+    236.07250000350177,
+    232.80845838598907,
+    236.25470837578177,
+    235.16016663052142,
+    236.53329175431281,
+    240.10133335832506,
+    236.34275002405047,
+    235.95437500625849,
+    237.88962501566857,
+    237.64149995986372,
+    240.57779158465564,
+    237.36729158554226,
+    237.63654159847647,
+    237.93791665229946,
+    237.50020831357688,
+    237.86391667090356,
+    238.50695823784918,
+    238.2719999877736,
+    240.73516658972949,
+    238.40391670819372,
+    235.71070842444897,
+    237.25070839282125,
+    239.33766665868461,
+    235.8622916508466,
+    238.26916667167097,
+    238.69675002060831,
+    239.71654172055423,
+    239.20995835214853,
+    239.93587505538017,
+    238.4775000391528,
+    239.00625004898757,
+    239.54220837913454,
+    239.69291674438864,
+    237.7314583864063,
+    239.00579172186553,
+    240.02074997406453,
+    241.2307916674763,
+    237.84779163543135,
+    238.26524999458343,
+    239.39150001388043,
+    241.82504159398377,
+    239.73575001582503,
+    239.24854164943099,
+    239.05970831401646,
+    237.77891672216356,
+    239.06600009649992,
+    239.53720834106207,
+    241.93924991413951,
+    241.09833338297904,
+    240.41149998083711,
+    239.17416669428349,
+    240.80895830411464,
+    238.38395834900439,
+    238.26187499798834,
+    239.08204166218638,
+    239.63891668245196,
+    240.22204161155969,
+    239.23616670072079,
+    242.99645842984319,
+    241.46237503737211,
+    241.73879169393331,
+    239.2807916039601,
+    243.05008340161294,
+    240.26512494310737,
+    240.44783331919461,
+    235.66083330661058,
+    241.55362497549504,
+    240.41233328171074,
+    244.23333338927478,
+    238.35679166950285,
+    242.04183334950358,
+    240.19708333071321,
+    241.26975005492568,
+    240.72224996052682,
+    238.56437508948147,
+    239.74300001282245,
+    241.97908327914774,
+    239.32087491266429,
+    242.20112501643598,
+    239.18991663958877,
+    244.28987503051758,
+    239.9199582869187,
+    242.11129161994904,
+    238.18858328741044,
+    243.00437502097338,
+    241.8929582927376,
+    236.53450002893806,
+    242.17983335256577,
+    243.82983322720975,
+    239.62391668464988,
+    239.96662499848753,
+    242.18604166526347,
+    243.47870843484998,
+    239.73074997775257,
+    239.93554164189845,
+    243.72175009921193,
+    242.6657082978636,
+    240.47954170964658,
+    240.55979168042541,
+    241.37720826547593,
+    239.25929167307913,
+    241.45925010088831,
+    241.84491671621799,
+    241.44925002474338,
+    239.89062500186265,
+    239.34424994513392,
+    238.27624996192753,
+    238.78116661217064,
+    241.44787492696196,
+    242.21300007775426,
+    239.05362491495907,
+    239.96045836247504,
+    241.04995827656239,
+    243.31325001548976,
+    241.02437496185303,
+    240.50883331801742,
+    242.00574995484203,
+    242.16787493787706,
+    240.57883338537067,
+    240.02466665115207,
+    241.48349999450147,
+    242.79108340851963,
+    239.90854166913778,
+    241.51791667100042,
+    241.07058334629983,
+    243.06399992201477,
+    240.9855832811445,
+    240.27904169633985,
+    235.88258330710232,
+    245.24804169777781,
+    248.47087496891618,
+    255.66454161889851,
+    262.51004170626402,
+    271.18275000248104,
+    284.31283333338797,
+    299.07083336729556,
+    338.64916663151234,
+    347.29466668795794,
+    350.80354171805084,
+    347.85849996842444,
+    344.12495838478208,
+    336.56812505796552,
+    320.67045825533569,
+    312.44500004686415,
+    311.42437504604459,
+    301.64658336434513,
+    301.95166659541428,
+    301.53037502896041,
+    303.35729161743075,
+    303.09754167683423,
+    301.73433327581733,
+    307.12999997194856,
+    304.64570829644799,
+    302.29770834557712,
+    302.31824994552881,
+    304.77604165207595,
+    305.27866666670889,
+    301.73966672737151,
+    303.29599999822676,
+    302.0921666175127,
+    304.76487497799098,
+    303.55933331884444,
+    299.64287497568876,
+    300.65854161512107,
+    300.46037503052503,
+    302.56529164034873,
+    302.67279176041484,
+    301.66970833670348,
+    303.37233329191804,
+    306.71262496616691,
+    301.97008326649666,
+    302.65875009354204,
+    301.92500003613532,
+    301.34550004731864,
+    300.82395824138075,
+    303.69879165664315,
+    302.69337503705174,
+    306.02016660850495,
+    304.41250000149012,
+    296.54583334922791,
+    300.09808333124965,
+    301.31362506654114,
+    303.04695828817785,
+    302.69312497694045,
+    301.95145832840353,
+    303.04204160347581,
+    305.16004166565835,
+    302.40866669919342,
+    303.99958335328847,
+    301.0933332843706,
+    300.5295000039041,
+    301.87674995977432
+  ],
+  "warmups_completed" : 5
+}

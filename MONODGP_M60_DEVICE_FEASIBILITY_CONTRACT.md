@@ -1,7 +1,59 @@
 # M60 — physical-iPhone feasibility of the M59i model
 
-Status (2026-09-22): **signed app installed and launched; benchmark pending**.
+Status (2026-09-22): **complete—fixed16 parity passed; device latency failed**.
 Revision: **M60-2026-09-21-r1**. This is a bounded runtime experiment, not training.
+
+## Physical-device result (2026-09-22)
+
+The complete run was retrieved from the iPhone 16 Pro Max (iOS 26.6.2).
+All 16 inputs and all ten outputs per input passed independent host review
+against both frozen PyTorch and Mac references, including native decoding,
+query/class ordering, heading bins, score-filter decisions and final geometry.
+Maximum differences versus PyTorch were 0.003043 px for box coordinates,
+0.666 mm depth, 0.783 mm corner displacement and 0.000331 degrees yaw.
+No model, input, acceptance limit or compute-unit setting was changed.
+
+| Measurement | Initial 100 predictions | 60-second loop |
+| --- | ---: | ---: |
+| Predictions | 100 | 235 |
+| Median inference | 231.78 ms | 240.22 ms |
+| p95 inference | 233.73 ms | 305.50 ms |
+| Maximum inference | 236.07 ms | 350.80 ms |
+| Mean inference | 231.72 ms | 255.76 ms |
+| p95 <= 50 ms | **Fail** | **Fail** |
+
+Five warmups completed. The stability loop lasted 60.262 seconds and finished
+without a recorded exception or thermal stop. Thermal state changed from
+`nominal` to `fair`; no `serious` or `critical` observation occurred. This does
+not establish that thermal throttling caused the slowdown. Sampled peak process
+RSS was 491.67 MiB, including 90.00 MiB of cached input fixtures; final sampled
+RSS was 285.89 MiB. This is not model-only or exact peak allocation. Observed
+compilation/load durations were 334.4 ms/1,149.4 ms; not a cold-start guarantee.
+
+Evidence (host review byte-exact; device JSON gains only a terminal newline):
+
+- `artifacts/m60_device_review_20260922.json`, SHA-256
+  `a77bdb10367db74e4b1f2409ef8313db1706e3eda87ce46c38587fb2db4b528d`.
+- `artifacts/m60_device_report_20260922.json`, SHA-256
+  `c76898a6448cc696fd52a972d042bfa1e3441011cddc3b2d392f6019e09798f4`.
+  Original downloaded device report, before the terminal newline: SHA-256
+  `5432f6956bd1680b21edfb7919140d46a2e2ab13fa694ded3296740ed645ce29`.
+- Full raw tensors remain in `outputs/m60_device_run_20260922`, tree SHA-256
+  `0b18f053c6c7cba81fe1058a20e4e37cbf47a0cd330b222535df7a13d3fe5dc9`.
+
+The evaluator exits 1 intentionally because latency fails, despite
+`complete=true` and `device_parity_passed=true`. This is a completed negative
+feasibility result, not an execution crash. No full KITTI AP was run on iPhone;
+device parity is limited to the frozen16 set. No camera integration or new
+optimization experiment is authorized by this result.
+
+Next proposal: one bounded device operator/compute-placement profile of this
+unchanged graph, to identify the dominant cost before choosing an optimization.
+ALL does not identify actual CPU/GPU/Neural Engine placement. Do not begin a
+blind quantization sweep or integrate a ~6.1x-over-budget sustained p95 model
+into the live camera pipeline. The separate Pedestrian nearby-recall gap remains.
+
+## Preparation and installation history
 
 Preparation verified on this Mac: unsigned Release iPhoneOS build passed with
 Xcode27.0; fresh Mac/PyTorch checks passed for all16 fixtures; the actual Swift
@@ -9,12 +61,12 @@ reader preserved every input byte and correctly serialized a padded output.
 Seven new Python tests and57 M59 regressions pass. The built app resources match
 the prepared bundle byte-for-byte. Evidence:
 `artifacts/m60_preparation_20260921.json`. Signing, installation and app launch
-are now verified; model execution and device performance are not yet measured.
+and the completed fixed-input device run are now verified (results above).
 
 Connection check: physical iPhone16 Pro Max, iOS26.6.2, wired/paired and Developer
 Mode enabled. Signed Release build exited65: Xcode reports invalid saved account
 credentials (`missing Xcode-Username`), `No Accounts`, and no provisioning
-profile for `com.ali.MonoDGPM60`. User sign-in in Xcode Settings > Accounts is
+profile for `com.ali.MonoDGPM60`. User sign-in in Xcode Settings > Accounts
 was required before retrying. Historical evidence:
 `artifacts/m60_signing_blocker_20260921.json`. Do not change bundle ID to overwrite
 the legacy app or weaken signing to work around account authentication.

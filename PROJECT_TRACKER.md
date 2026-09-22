@@ -16,7 +16,7 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-- Current phase: **M60a installed—device benchmark pending**.
+- Current phase: **M60a complete—device parity passed; latency failed**.
   M59i remains complete; its conversion-preservation gates passed.
 - All 3,769 delivered images/calibration/original labels and frozen hashes pass.
   Original trace restored from the prior archive and all five upstream decoder
@@ -45,20 +45,29 @@ not constrain the current accuracy-development stage.
 - User authorized the bounded physical-device feasibility step. M60a has an
   isolated iPhone application, exact model/fixed16 resources and independent
   host review. First protocol: parity, 5 warmups/100 model-only predictions,
-  60-second stability loop. Physical-device results are still pending.
+  60-second stability loop. The complete physical-device run was retrieved and
+  independently reviewed: all 16 cases pass both PyTorch and Mac parity.
   See `MONODGP_M60_DEVICE_FEASIBILITY_CONTRACT.md`. No live camera, training,
   quantization or deployment is launched; the legacy v7 app remains untouched.
 - iPhone 16 Pro Max (iOS26.6.2) is wired, paired and Developer Mode is enabled.
   User restored Xcode sign-in; signed Release build and installation passed.
   Initial launch was denied; launch succeeded after user trusted the developer.
-  Signed app resources retain the exact prepared hash. No benchmark result yet.
+  Signed app resources retain the exact prepared hash. Benchmark completed:
+  initial p95 233.73 ms; sustained p95 305.50 ms, both above the 50 ms target.
+  Thermal nominal→fair, no crash/thermal stop in 60.262 seconds. Sampled peak
+  RSS 491.67 MiB includes 90.00 MiB of cached inputs. No camera/FPS claim.
   Evidence: `artifacts/m60_device_installation_20260922.json`. The prior signing
   blocker is retained as historical evidence, not an active blocker.
+- Result: `artifacts/m60_device_review_20260922.json`; raw device report:
+  `artifacts/m60_device_report_20260922.json`. Evaluator exit1 is the expected
+  latency-gate rejection, not an incomplete test. Next proposal is one bounded
+  device operator/compute-placement profile before selecting an optimization.
+  No automatic model change, quantization sweep or live-camera integration.
 - Selected accuracy parent: **M54 MonoDGP epoch 100**, checkpoint SHA-256
   `8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847`.
 - Legacy accuracy reference: **R0 ResNet50 MonoDETR, epoch 185**.
 - Converted candidate: **MonoDGP M59f FP32 (M54/M56d weights)**; Mac preservation
-  passed, physical-device performance not yet qualified. MobileMonoDETR A2
+  and fixed16 iPhone parity passed, but physical-device latency failed. MobileMonoDETR A2
   epoch130 remains a legacy diagnostic-only student.
 - Open product gap: **latest paired Pedestrian nearby recall 0.723104 vs target
   0.80** (prior M54/native reports were approximately0.72487).
@@ -146,7 +155,7 @@ not constrain the current accuracy-development stage.
 | M59g | Residual numerical precision audit | Complete—strict decoded gate failed | 16 real inputs verified/executed. All 160 raw checks pass; CPU rewrite/repeats and Core ML repeats are bit-exact; all 800 ranked query/class selections unchanged. Decoded gate fails on 14/16 inputs; worst selected-depth delta 0.762 mm. CPU_ONLY timeout at 45 seconds; no tolerance change or deployment approval. See `MONODGP_M59G_PRECISION_AUDIT_CONTRACT.md`. |
 | M59h | Final-geometry impact diagnostic | Complete—measurement, not acceptance | 16 inputs/800 candidates; decoder port bit-exact to native on both backends. Max continuous differences: 0.00351 px, depth 0.762 mm, corner 0.898 mm, yaw 0.000426 degrees. No identity/bin/filter changes. Native .2f rounding changes 40 rows (up to 1 cm); AP unmeasured. Unit-aware criteria proposed for review only. See `MONODGP_M59H_GEOMETRY_CONTRACT.md`. |
 | M59i | Approved policy and full KITTI preservation | Complete—passed frozen preservation gates | All 3,769 paired predictions evaluated; all eight gated metrics exactly equal across PyTorch/Core ML. Full raw and fixed16 checks pass. Extra diagnostics flag 93 non-fixed images; 17 are order-only, not candidate-set changes. Hard Pedestrian 3D AP +0.000236 points; no automatic device/deployment approval. See `MONODGP_M59I_FULL_VALIDATION_CONTRACT.md`. |
-| M60a | Trained MonoDGP physical-device feasibility | Installed—benchmark pending | Signed Release build, installation and launch verified on iPhone16 Pro Max after account sign-in/developer trust. Exact resources preserved; awaiting fixed-input benchmark. See `MONODGP_M60_DEVICE_FEASIBILITY_CONTRACT.md`. |
+| M60a | Trained MonoDGP physical-device feasibility | Complete—parity passed, latency failed | iPhone16 Pro Max: all16 fixed-input raw/decoded parity checks pass vs PyTorch/Mac. p95 233.73 ms initially/305.50 ms sustained vs50 ms. 60.262-second loop completed, thermal nominal→fair, sampled peak RSS491.67 MiB including fixtures. No camera or deployment qualification. See `MONODGP_M60_DEVICE_FEASIBILITY_CONTRACT.md`. |
 
 **M53 completion note:** the model and official evaluator passed after the public-API import correction. The prior JSON failed only because it compared an independent reimplementation directly with published native-evaluator values. The corrected schema-v2 finalizer reused the complete prediction set and native log, and all frozen M53 gates passed.
 

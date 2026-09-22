@@ -3721,3 +3721,42 @@ the actual phone. Device execution, model speed and safety remain unverified.
 M60a does not cover camera preprocessing/decoding, end-to-end FPS or30-minute
 stability. M60b camera integration depends on review of M60a, not an automatic
 next action. Product Pedestrian nearby recall still misses0.80.
+
+### M60a completed physical-device result (2026-09-22)
+
+After the user restored Xcode sign-in and trusted the developer profile, the
+isolated signed app installed and launched on iPhone16 Pro Max/iOS26.6.2.
+The user started the benchmark. Downloaded all160 output binaries and the
+complete report from `Documents/M60-4D487222-57FF-436F-A7D5-750EF233A09B` to
+`outputs/m60_device_run_20260922`. No code/model/input/tolerance changes.
+
+Independent native host review passes all16 cases against both frozen PyTorch
+and Mac references: raw outputs, query/class order, heading bins, filters and
+final geometry. Versus PyTorch maxima: box0.003043px, depth0.666mm,
+corner0.783mm, yaw0.000331degrees. Device full-KITTI AP was not evaluated.
+
+Latency fails: after5 warmups,100 predictions have median231.78ms,
+p95 233.73ms, mean231.72ms, max236.07ms. The60.262-second loop completed235
+predictions with median240.22ms, p95 305.50ms, mean255.76ms, max350.80ms.
+Target remains p95≤50ms in both phases. Thermal nominal→fair, no recorded
+exception or serious/critical stop. Sampled peak RSS491.67MiB includes90MiB
+cached input fixtures; finalRSS285.89MiB. Compilation334.4ms/load1149.4ms
+are observed durations, not guaranteed cold-start metrics.
+
+Host evaluator exits1 for the failed speed gate with `complete=true` and
+`device_parity_passed=true`; not an execution crash. Preserve:
+`artifacts/m60_device_review_20260922.json` SHA
+`a77bdb10367db74e4b1f2409ef8313db1706e3eda87ce46c38587fb2db4b528d`,
+`artifacts/m60_device_report_20260922.json` SHA
+`c76898a6448cc696fd52a972d042bfa1e3441011cddc3b2d392f6019e09798f4`.
+Host review is byte-exact; the committed device JSON adds only a terminal
+newline. Original raw device report SHA is
+`5432f6956bd1680b21edfb7919140d46a2e2ab13fa694ded3296740ed645ce29`.
+Full local raw run tree SHA
+`0b18f053c6c7cba81fe1058a20e4e37cbf47a0cd330b222535df7a13d3fe5dc9`.
+
+Do not integrate live camera or start a blind quantization/training sweep.
+Next proposal: one bounded device operator/compute-placement profile of this
+unchanged graph; ALL does not reveal actual accelerator placement. This result
+does not meet end-to-end runtime,30-minute stability, external generalization,
+or product safety gates. Pedestrian nearby recall0.723104 vs0.80 remains open.
