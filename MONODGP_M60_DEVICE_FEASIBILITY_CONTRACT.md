@@ -1,6 +1,6 @@
 # M60 — physical-iPhone feasibility of the M59i model
 
-Status: preparation authorized 2026-09-21; **device connected, signing blocked**.
+Status (2026-09-22): **signed app installed and launched; benchmark pending**.
 Revision: **M60-2026-09-21-r1**. This is a bounded runtime experiment, not training.
 
 Preparation verified on this Mac: unsigned Release iPhoneOS build passed with
@@ -8,16 +8,25 @@ Xcode27.0; fresh Mac/PyTorch checks passed for all16 fixtures; the actual Swift
 reader preserved every input byte and correctly serialized a padded output.
 Seven new Python tests and57 M59 regressions pass. The built app resources match
 the prepared bundle byte-for-byte. Evidence:
-`artifacts/m60_preparation_20260921.json`. Signing/installation and real device
-execution have **not** yet been verified.
+`artifacts/m60_preparation_20260921.json`. Signing, installation and app launch
+are now verified; model execution and device performance are not yet measured.
 
 Connection check: physical iPhone16 Pro Max, iOS26.6.2, wired/paired and Developer
 Mode enabled. Signed Release build exited65: Xcode reports invalid saved account
 credentials (`missing Xcode-Username`), `No Accounts`, and no provisioning
 profile for `com.ali.MonoDGPM60`. User sign-in in Xcode Settings > Accounts is
-required before retrying. No installation or benchmark has occurred. Evidence:
+was required before retrying. Historical evidence:
 `artifacts/m60_signing_blocker_20260921.json`. Do not change bundle ID to overwrite
 the legacy app or weaken signing to work around account authentication.
+
+On2026-09-22 the user signed back in. Signed Release build and installation
+passed with matching app/team/device provisioning and byte-exact resources.
+First launch was denied by iOS; after the user trusted the developer profile,
+`devicectl` successfully launched the app. A Mac `codesign --verify` check
+reported `CSSMERR_TP_NOT_TRUSTED`; this is retained in the installation record,
+not described as a successful host signature check. Profile expires
+2026-09-29T13:24:19UTC. No benchmark report existed at launch.
+Evidence: `artifacts/m60_device_installation_20260922.json`.
 
 ## Frozen candidate
 
