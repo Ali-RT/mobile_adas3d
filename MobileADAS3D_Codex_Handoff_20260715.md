@@ -3803,3 +3803,28 @@ The notebook repeats that probe on training data. Loader-only CPU subprocesses
 simulate the unused Numba evaluator import; CUDA cache/smoke/train never do.
 See `artifacts/m61_preparation_20260922.json`. CUDA extension builds and the
 real GPU smoke are still pending in Colab, not represented as locally passed.
+
+## 2026-09-28 — park MonoDGP/M61; prepare M62 R0-to-A2 diagnosis
+
+User prioritizes a smarter A2 student, then iPhone deployment. MonoDGP/M61
+are parked, not deleted. User supplied M61 step7 audit rejection; full JSON
+remains unreviewed. No continuation-training result has been supplied.
+Freeze R0 ResNet50 epoch185 teacher and A2 MobileNetV4 Medium epoch130 student.
+See `A2_ACCURACY_DISTILLATION_DEPLOYMENT_PLAN.md`.
+
+Prepared `notebooks/MonoDETR_M62_R0_A2_Diagnostic_Colab.ipynb`, revision
+M62-2026-09-28-r1, eight sections. Uses MonoDETR only, no training commands.
+Native A2 inference/operator inventory reports custom CUDA blockers and
+5warmup/10 CUDA timings, explicitly not phone timing or successful conversion.
+Both frozen models cache all3712 train images with exact input/GT hashes.
+Vehicle geometry comparison proposes at most one component using predeclared
+count/distance coverage, without requiring global teacher mean superiority.
+This is a separate diagnostic policy, not a retroactive M61 threshold change.
+
+Return m62_results.zip and stop. Review precedes a separate paired10epoch
+control/KD contract; no KD weight or training authorization is emitted.
+Environment mismatches show actual differences; temporary NPZ I/O errors retry
+twice, while persistent failures retain original files for inspection.
+Local verification:11 new diagnostic tests plus22 unchanged M61 helper tests
+pass; all8 notebook code cells parse. No new CUDA inference, teacher-quality
+result, trained student, Core ML conversion or iPhone result is claimed.

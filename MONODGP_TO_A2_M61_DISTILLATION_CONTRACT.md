@@ -1,6 +1,9 @@
 # M61 — MonoDGP teacher to MobileNetV4 A2 student
 
-Status (2026-09-22): **workflow prepared; Colab CUDA audit/smoke/pilot pending**.
+Status (2026-09-28): **parked after user-reported train-audit rejection**.
+The full component report remains unreviewed; no continuation-training result
+has been supplied. Preserve this policy and caches. Active plan:
+`A2_ACCURACY_DISTILLATION_DEPLOYMENT_PLAN.md`.
 Notebook revision: **M61-2026-09-22-r1**. No new training result is claimed.
 
 ## Decision and scope

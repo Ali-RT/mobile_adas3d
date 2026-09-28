@@ -1,6 +1,6 @@
 # MobileADAS3D project tracker
 
-Last updated: 2026-09-22
+Last updated: 2026-09-28
 
 This is the canonical status page. Update it whenever a task changes state,
 an experiment finishes, a gate passes/fails, or the next action changes.
@@ -16,12 +16,12 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-- Current phase: **M61 teacher-to-student pilot prepared; Colab execution pending**.
-  User reaffirmed deploying a student, using frozen M54 MonoDGP as teacher and
-  A2 MobileNetV4 Medium as the student start. See
-  `MONODGP_TO_A2_M61_DISTILLATION_CONTRACT.md` and the M61 Colab notebook.
-  M60a remains complete (device parity passed, latency failed); its direct
-  teacher-runtime optimization proposal is deferred. M59i remains passed.
+- Current phase: **A2 accuracy-first; M62 R0-to-A2 diagnostic prepared**.
+  MonoDGP/M61 are parked by user decision. The user-reported M61 train audit
+  rejected all components; full component JSON remains unreviewed. No M61
+  continuation-training result has been supplied. See
+  `A2_ACCURACY_DISTILLATION_DEPLOYMENT_PLAN.md`.
+  Historical MonoDGP results below remain valid, not A2 device evidence.
 - All 3,769 delivered images/calibration/original labels and frozen hashes pass.
   Original trace restored from the prior archive and all five upstream decoder
   files match. No additional dataset upload is needed.
@@ -67,19 +67,19 @@ not constrain the current accuracy-development stage.
   latency-gate rejection, not an incomplete test. The subsequent operator-profile
   proposal is deferred by the user's M61 teacher/student decision. No teacher
   quantization sweep or live-camera integration is underway.
-- Selected accuracy parent: **M54 MonoDGP epoch 100**, checkpoint SHA-256
+- Parked MonoDGP accuracy parent: **M54 MonoDGP epoch 100**, checkpoint SHA-256
   `8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847`.
-- Legacy accuracy reference: **R0 ResNet50 MonoDETR, epoch 185**.
+- Active proposed KD teacher: **R0 ResNet50 MonoDETR, epoch 185**.
 - Converted candidate: **MonoDGP M59f FP32 (M54/M56d weights)**; Mac preservation
   and fixed16 iPhone parity passed, but physical-device latency failed. MobileMonoDETR A2
-  epoch130 is the frozen M61 student starting point, not yet accuracy-qualified.
-- Open product gap: **latest paired Pedestrian nearby recall 0.723104 vs target
-  0.80** (prior M54/native reports were approximately0.72487).
+  epoch130 is the active M62 student baseline, not yet accuracy-qualified.
+- Active A2 gaps: Vehicle 3D15.4573 vs15.8713 and Pedestrian nearby recall
+  0.69224 vs0.80. Parked MonoDGP recall0.723104 is not the A2 result.
 - S1/H1/H2 status: **frozen negative experiments; do not resume**.
 - Knowledge distillation: **R0-to-A1 completed and rejected**; do not resume it.
-  **M54-to-A2 Vehicle geometry pilot is prepared, not run**. It uses a train-only
-  quality audit, exact cached image/GT views, CUDA smoke, and two paired ten-epoch
-  arms. Native Vehicle index1/Pedestrian index0 are checked. No Pedestrian KD.
+  M61 is parked after reported audit rejection. M62 prepares a separate R0/A2
+  train-only diagnostic, not a resumed A1 experiment. No new KD-trained student
+  exists yet. Native Vehicle index1/Pedestrian index0 are preserved.
 - iPhone model constraints: **now measured as M60 feasibility**, not used to
   retroactively change accuracy gates. The nearby-recall product gap remains.
 - iPhone street recording: **not needed in the current phase**.
@@ -162,7 +162,8 @@ not constrain the current accuracy-development stage.
 | M59h | Final-geometry impact diagnostic | Complete—measurement, not acceptance | 16 inputs/800 candidates; decoder port bit-exact to native on both backends. Max continuous differences: 0.00351 px, depth 0.762 mm, corner 0.898 mm, yaw 0.000426 degrees. No identity/bin/filter changes. Native .2f rounding changes 40 rows (up to 1 cm); AP unmeasured. Unit-aware criteria proposed for review only. See `MONODGP_M59H_GEOMETRY_CONTRACT.md`. |
 | M59i | Approved policy and full KITTI preservation | Complete—passed frozen preservation gates | All 3,769 paired predictions evaluated; all eight gated metrics exactly equal across PyTorch/Core ML. Full raw and fixed16 checks pass. Extra diagnostics flag 93 non-fixed images; 17 are order-only, not candidate-set changes. Hard Pedestrian 3D AP +0.000236 points; no automatic device/deployment approval. See `MONODGP_M59I_FULL_VALIDATION_CONTRACT.md`. |
 | M60a | Trained MonoDGP physical-device feasibility | Complete—parity passed, latency failed | iPhone16 Pro Max: all16 fixed-input raw/decoded parity checks pass vs PyTorch/Mac. p95 233.73 ms initially/305.50 ms sustained vs50 ms. 60.262-second loop completed, thermal nominal→fair, sampled peak RSS491.67 MiB including fixtures. No camera or deployment qualification. See `MONODGP_M60_DEVICE_FEASIBILITY_CONTRACT.md`. |
-| M61 | MonoDGP-to-A2 Vehicle geometry distillation | Prepared—CUDA audit/smoke/pilot pending | Frozen M54 teacher and A2 epoch130 student; exact train-only cache/GT association, component-specific teacher-quality audit, same unaugmented view in both arms, two ten-epoch runs. Epoch10 must meet all five AP gates, improve Vehicle 3D over control by >=0.10 AP, and protect Pedestrian performance. No new accuracy or device result yet. See `MONODGP_TO_A2_M61_DISTILLATION_CONTRACT.md`. |
+| M61 | MonoDGP-to-A2 Vehicle geometry distillation | Parked after reported audit rejection | Full component report unreviewed. No continuation-training result supplied. Preserve original policy and caches. |
+| M62 | R0-to-A2 train-only geometry diagnosis | Prepared; Colab pending | Exact R0 epoch185/A2 epoch130. Bounded native inference/operator inventory, complete train caches, per-component teacher wins by distance. Separate declared screening policy; no training authorization. |
 
 **M53 completion note:** the model and official evaluator passed after the public-API import correction. The prior JSON failed only because it compared an independent reimplementation directly with published native-evaluator values. The corrected schema-v2 finalizer reused the complete prediction set and native log, and all frozen M53 gates passed.
 
@@ -320,11 +321,11 @@ frozen; passing AP does not by itself authorize deployment.
 
 ## Immediate execution plan
 
-**Next runnable action:** execute M61 notebook sections 1–12 on Colab CUDA.
-The train-only teacher audit and real CUDA smoke must pass before either
-ten-epoch arm. Return `m61_results.zip`; no phone is needed. Preparation
-evidence: `artifacts/m61_preparation_20260922.json` (44 focused tests passed;
-16 real sample loader views match; CUDA/model training remains untested).
+**Next runnable action:** run `MonoDETR_M62_R0_A2_Diagnostic_Colab.ipynb`
+sections1–8 on Colab CUDA. Return `m62_results.zip`; no phone or training.
+Review compatibility blockers and train-only geometry/coverage before freezing
+one paired KD pilot. Then confirm accuracy, convert/benchmark the improved
+student, and optimize measured runtime bottlenecks only.
 The numbered items below retain the historical execution sequence.
 
 1. **Completed:** preserve S1/H1/H2 artifacts and mark those families rejected;
@@ -521,4 +522,5 @@ The numbered items below retain the historical execution sequence.
 - M61 teacher-to-A2 pilot and stop rules: `MONODGP_TO_A2_M61_DISTILLATION_CONTRACT.md`
 - R0 protocol: `TWO_CLASS_REFERENCE_PROTOCOL.md`
 - Full chronological evidence: `MobileADAS3D_Codex_Handoff_20260715.md`
+- Active A2/R0 plan: `A2_ACCURACY_DISTILLATION_DEPLOYMENT_PLAN.md`
 - Current status and next task: this file
