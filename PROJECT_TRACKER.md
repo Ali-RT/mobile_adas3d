@@ -16,7 +16,17 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-- Current phase: **A2 accuracy-first; M62 R0-to-A2 diagnostic prepared**.
+- **Next action: M63**, R0 → A2 Vehicle-depth-only teaching versus a GT-only
+  control, ten epochs each from the same A2 epoch130 checkpoint. M62 reviewed
+  all 3,712 training samples and identified exactly 7,014 teacher-better depth
+  targets. This does not establish validation benefit yet. Local regression
+  checks pass; fresh validation baseline, CUDA smoke and Colab training remain
+  pending. Run `notebooks/MonoDETR_M63_R0_A2_Depth_Pilot_Colab.ipynb` sections1–10
+  on the same NVIDIA L4/software environment as M62. No phone needed.
+  Contract: `MONODETR_M63_DEPTH_DISTILLATION_CONTRACT.md`. No longer run or
+  deployment is authorized; historical product accuracy targets are unchanged.
+
+- Current phase: **A2 accuracy-first; M62 reviewed, M63 depth-only paired pilot prepared**.
   MonoDGP/M61 are parked by user decision. The user-reported M61 train audit
   rejected all components; full component JSON remains unreviewed. No M61
   continuation-training result has been supplied. See

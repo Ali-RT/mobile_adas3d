@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-28",
+  "revision": "M63-2026-09-28-r1",
+  "status": "prepared_not_cuda_executed",
+  "teacher": "R0 MonoDETR ResNet50 epoch185",
+  "student": "A2 MonoDETR MobileNetV4 Conv Medium epoch130",
+  "m62_results_archive_sha256": "7d61f8eb08aab12dbbae7b4eb8d263429eebbe3803be4fa61db4efb764f215cc",
+  "reviewed_train_images": 3712,
+  "approved_vehicle_depth_objects": 7014,
+  "epochs_per_arm": 10,
+  "local_tests": {
+    "command": ".venv/bin/python -m unittest discover -s tests -p 'test_m6[123]*.py' -v",
+    "passed": 44
+  },
+  "notebook_code_cells_parsed": 10,
+  "cli_help_checked": [
+    "prepare_m63_depth_pilot.py",
+    "train_m63_student.py",
+    "evaluate_m63_pilot.py"
+  ],
+  "cuda_smoke_executed": false,
+  "training_executed": false,
+  "phone_needed": false,
+  "full_run_authorized": false
+}

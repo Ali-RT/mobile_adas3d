@@ -5,6 +5,16 @@ M61's train-only audit rejected every component according to the user-provided
 log. The full component report has not been independently reviewed. No M61
 continuation-training result has been supplied. Do not overwrite its artifacts.
 
+## Current action — M63
+
+M62 results have been reviewed. Depth was selected by the frozen screening rule:
+7,014 approved objects across the 3,712 training images. Proceed with the paired
+10-epoch depth-only pilot defined in `MONODETR_M63_DEPTH_DISTILLATION_CONTRACT.md`.
+Run `notebooks/MonoDETR_M63_R0_A2_Depth_Pilot_Colab.ipynb`, sections1–10, on the
+same NVIDIA L4/software environment. The notebook is prepared; CUDA smoke and
+training have not run locally. No phone is needed. The M62 protocol below is
+retained as historical provenance, not an instruction to regenerate its caches.
+
 ## Priority order
 
 1. Freeze A2 epoch130 as the working baseline, not a safety-qualified product.
