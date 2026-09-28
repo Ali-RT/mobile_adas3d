@@ -114,12 +114,48 @@ class M63Tests(unittest.TestCase):
         self.assertEqual(len(cells),10)
         for code in cells: ast.parse(code)
         self.assertIn("def pilot",cells[0])
-        self.assertIn("M63-2026-09-28-r1",cells[0])
+        self.assertIn("M63-NOTEBOOK-2026-09-28-r2",cells[0])
         joined="\n".join(cells)
         self.assertNotIn("MonoDGP.git",joined)
         self.assertNotIn("reset",joined)
         self.assertIn("--baseline-only",cells[4])
         self.assertIn("--smoke",cells[5])
+
+
+    def test_setup_cell_executes_fresh_and_existing_checkout(self):
+        # Syntax parsing alone cannot catch a bare-name expression such as mobile_.
+        from types import SimpleNamespace
+        nb=json.loads((ROOT/"notebooks/MonoDETR_M63_R0_A2_Depth_Pilot_Colab.ipynb").read_text())
+        setup=["".join(c["source"]) for c in nb["cells"] if c["cell_type"]=="code"][1]
+        for existing in (False, True):
+            with self.subTest(existing=existing), tempfile.TemporaryDirectory() as temp:
+                root=Path(temp)
+                mobile, repo=root/"mobile", root/"monodetr"
+                if existing:
+                    mobile.mkdir()
+                    repo.mkdir()
+                calls=[]
+                def run(command, name, cwd=None):
+                    calls.append((list(map(str, command)), name))
+                def check_output(command, **kwargs):
+                    return "main" if "--show-current" in command else "frozen"
+                env={k:"test-version" for k in ("timm","numpy","scipy","pillow")}
+                scope=dict(MOBILE_REPO=mobile, REPO=repo, COMMIT="frozen",
+                           M62_OUTPUT=root/"m62", M62={"environment":env}, run=run,
+                           sys=sys, os=SimpleNamespace(environ={}),
+                           subprocess=SimpleNamespace(check_output=check_output))
+                exec(compile(setup, "<M63 setup cell>", "exec"), scope)
+                names=[name for _,name in calls]
+                self.assertLess(names.index("update_mobile"), names.index("dependencies"))
+                self.assertLess(names.index("dependencies"), names.index("verify_m62_environment"))
+                self.assertLess(names.index("verify_m62_environment"), names.index("cuda_build"))
+                self.assertEqual(scope["mobile_url"], "https://github.com/Ali-RT/mobile_adas3d.git")
+                self.assertEqual(scope["url"], "https://github.com/ZrrSkywalker/MonoDETR.git")
+                clones=[cmd for cmd,name in calls if name.startswith("clone_")]
+                self.assertEqual(len(clones), 0 if existing else 2)
+                if not existing:
+                    self.assertIn(scope["mobile_url"], clones[0])
+                    self.assertIn(scope["url"], clones[1])
 
 if __name__ == "__main__":
     unittest.main()
