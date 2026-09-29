@@ -5,15 +5,15 @@ M61's train-only audit rejected every component according to the user-provided
 log. The full component report has not been independently reviewed. No M61
 continuation-training result has been supplied. Do not overwrite its artifacts.
 
-## Current action — M63b, no new training
+## Current action — M63c, no new training
 
-M63 is complete and failed. Both GT-only and depth-KD continuation degraded
-relative to original A2 epoch130, which remains the working model.
-Next run the bounded continuation-regression diagnostic described in
-`MONODETR_M63B_CONTINUATION_DIAGNOSTIC.md`: existing M63 notebook sections1–3
-then11, revision M63-NOTEBOOK-2026-09-29-r3. Inspect epochs1,3,5 in both arms,
-recipe differences and normalization buffers. No automatic selection, training
-or deployment; historical targets and the failed epoch10 decision remain fixed.
+M63 failed; M63b found both continuation arms already regressed at epoch1.
+Original A2 epoch130 remains the working model. Saved source LR was already
+1e-5; statistics changed, but causal contribution has not yet been tested.
+Next: the isolated inference-time BN running-statistics intervention in
+`MONODETR_M63C_BN_STATISTICS_DIAGNOSTIC.md`. Existing M63 notebook revision
+M63-NOTEBOOK-2026-09-29-r4, sections1–3 then12. One validation pass, no training,
+no saved-weight edits or checkpoint promotion. Review before any further run.
 
 ## Priority order
 

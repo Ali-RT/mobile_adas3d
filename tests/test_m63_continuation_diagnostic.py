@@ -43,11 +43,11 @@ class ContinuationDiagnosticTests(unittest.TestCase):
 
     def test_notebook_diagnostic_has_no_training_calls(self):
         nb=json.loads((ROOT/"notebooks/MonoDETR_M63_R0_A2_Depth_Pilot_Colab.ipynb").read_text())
-        code="".join(nb["cells"][-1]["source"])
+        code=next("".join(c["source"]) for c in nb["cells"] if c["cell_type"]=="code" and "pilot(\'diagnose_m63_continuation.py\')" in "".join(c["source"]))
         ast.parse(code)
         self.assertIn("diagnose_m63_continuation.py",code)
         self.assertNotIn("train_m63_student",code)
-        self.assertIn("sections **1–3**","".join(nb["cells"][-2]["source"]))
+        self.assertIn("sections **1–3**",next("".join(c["source"]) for c in nb["cells"] if c["cell_type"]=="markdown" and "## 11." in "".join(c["source"])))
         script=(ROOT/"scripts/diagnose_m63_continuation.py").read_text()
         self.assertNotIn(".backward(",script)
         self.assertNotIn("optimizer.step(",script)

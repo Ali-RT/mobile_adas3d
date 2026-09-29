@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "revision": "M63c-2026-09-29-r1",
+  "status": "prepared_not_cuda_executed",
+  "reviewed_m63b_report_sha256": "0c4f2b86fb469fda0452dd0fcdc3a543b415852476019d2410d4556ac2086463",
+  "candidate": "M63 GT-only control epoch1",
+  "statistics_donor": "original A2 epoch130",
+  "allowed_changes": ["BatchNorm running_mean", "BatchNorm running_var"],
+  "expected_normalization_modules": 76,
+  "new_validation_passes": 1,
+  "optimizer_steps": 0,
+  "checkpoint_save_authorized": false,
+  "training_authorized": false,
+  "local_regression_tests_passed": 57,
+  "notebook_revision": "M63-NOTEBOOK-2026-09-29-r4",
+  "notebook_sections_to_run": [1, 2, 3, 12],
+  "cuda_inference_executed_locally": false
+}

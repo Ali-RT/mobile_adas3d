@@ -21,13 +21,17 @@ not constrain the current accuracy-development stage.
   control14.7835/6.6404, KD14.8930/6.3105. Both continuation arms regressed.
   Report hashes, implementation identity, both ten-epoch histories and decision
   calculations were verified; raw predictions/checkpoint binaries were not supplied.
-- **Next action: M63b continuation diagnostic prepared**, no training. In the
-  M63 notebook revision M63-NOTEBOOK-2026-09-29-r3, run sections1–3 then11.
-  Evaluate saved epochs1,3,5 in both arms and audit recipe/normalization changes.
-  Six full validation inference passes on the same L4 environment. M63 remains
-  failed; no checkpoint promotion or altered gates. Return m63b_results.zip.
-  See `MONODETR_M63B_CONTINUATION_DIAGNOSTIC.md`.
-- Current phase: **A2 accuracy-first; M63 failed, M63b diagnostic prepared**.
+- **M63b reviewed:** regression is present at epoch1 in both arms and neither
+  class's 3D AP returns to original A2 at inspected epochs1,3,5,10. Saved source
+  optimizer LR was already1e-5. Normalization counters updated928/epoch in76
+  modules; changed statistics alone do not establish the cause.
+- **Next action: M63c inference-only BN-statistics test prepared.** Keep the
+  GT-only epoch1 learned weights, replace only running means/variances with
+  source A2 values in memory, then evaluate one complete validation pass.
+  No training, checkpoint save, or promotion. M63 remains failed.
+  M63 notebook revision M63-NOTEBOOK-2026-09-29-r4: sections1–3 then12 only.
+  Return m63c_results.zip. See `MONODETR_M63C_BN_STATISTICS_DIAGNOSTIC.md`.
+- Current phase: **A2 accuracy-first; M63 failed, M63b reviewed, M63c prepared**.
   MonoDGP/M61 are parked by user decision. The user-reported M61 train audit
   rejected all components; full component JSON remains unreviewed. No M61
   continuation-training result has been supplied. See
