@@ -1,6 +1,6 @@
 # MobileADAS3D project tracker
 
-Last updated: 2026-09-28
+Last updated: 2026-09-29
 
 This is the canonical status page. Update it whenever a task changes state,
 an experiment finishes, a gate passes/fails, or the next action changes.
@@ -16,17 +16,18 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-- **Next action: M63**, R0 → A2 Vehicle-depth-only teaching versus a GT-only
-  control, ten epochs each from the same A2 epoch130 checkpoint. M62 reviewed
-  all 3,712 training samples and identified exactly 7,014 teacher-better depth
-  targets. This does not establish validation benefit yet. Local regression
-  checks pass; fresh validation baseline, CUDA smoke and Colab training remain
-  pending. Run `notebooks/MonoDETR_M63_R0_A2_Depth_Pilot_Colab.ipynb` sections1–10
-  on the same NVIDIA L4/software environment as M62. No phone needed.
-  Contract: `MONODETR_M63_DEPTH_DISTILLATION_CONTRACT.md`. No longer run or
-  deployment is authorized; historical product accuracy targets are unchanged.
-
-- Current phase: **A2 accuracy-first; M62 reviewed, M63 depth-only paired pilot prepared**.
+- **M63 completed and failed its fixed epoch10 acceptance rule.** Original A2
+  remains the working checkpoint. Vehicle/Pedestrian 3D AP: source15.4505/7.5285,
+  control14.7835/6.6404, KD14.8930/6.3105. Both continuation arms regressed.
+  Report hashes, implementation identity, both ten-epoch histories and decision
+  calculations were verified; raw predictions/checkpoint binaries were not supplied.
+- **Next action: M63b continuation diagnostic prepared**, no training. In the
+  M63 notebook revision M63-NOTEBOOK-2026-09-29-r3, run sections1–3 then11.
+  Evaluate saved epochs1,3,5 in both arms and audit recipe/normalization changes.
+  Six full validation inference passes on the same L4 environment. M63 remains
+  failed; no checkpoint promotion or altered gates. Return m63b_results.zip.
+  See `MONODETR_M63B_CONTINUATION_DIAGNOSTIC.md`.
+- Current phase: **A2 accuracy-first; M63 failed, M63b diagnostic prepared**.
   MonoDGP/M61 are parked by user decision. The user-reported M61 train audit
   rejected all components; full component JSON remains unreviewed. No M61
   continuation-training result has been supplied. See
