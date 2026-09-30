@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "experiment": "M63d one-epoch frozen-BN GT control",
+  "status": "prepared_cuda_pending",
+  "reviewed_m63c_sha256": "1342fa4d8839476a65457239df679c7a225d0686d9f68af94fbd325c56939526",
+  "epochs": 1,
+  "expected_optimizer_steps": 928,
+  "distillation": false,
+  "full_run_authorized": false,
+  "checkpoint_promotion_authorized": false,
+  "local_tests_passed": 64,
+  "notebook_revision": "M63-NOTEBOOK-2026-09-29-r5"
+}

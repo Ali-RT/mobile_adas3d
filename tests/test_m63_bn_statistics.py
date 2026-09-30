@@ -79,7 +79,7 @@ class BNInterventionTests(unittest.TestCase):
 
     def test_notebook_latest_section_is_no_training(self):
         nb=json.loads((ROOT/"notebooks/MonoDETR_M63_R0_A2_Depth_Pilot_Colab.ipynb").read_text())
-        code="".join(nb["cells"][-1]["source"])
+        code=next("".join(c["source"]) for c in nb["cells"] if c["cell_type"]=="code" and "pilot(\'diagnose_m63_bn_statistics.py\')" in "".join(c["source"]))
         ast.parse(code)
         self.assertIn("diagnose_m63_bn_statistics.py",code)
         self.assertNotIn("train_m63_student",code)

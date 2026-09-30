@@ -25,13 +25,17 @@ not constrain the current accuracy-development stage.
   class's 3D AP returns to original A2 at inspected epochs1,3,5,10. Saved source
   optimizer LR was already1e-5. Normalization counters updated928/epoch in76
   modules; changed statistics alone do not establish the cause.
-- **Next action: M63c inference-only BN-statistics test prepared.** Keep the
-  GT-only epoch1 learned weights, replace only running means/variances with
-  source A2 values in memory, then evaluate one complete validation pass.
-  No training, checkpoint save, or promotion. M63 remains failed.
-  M63 notebook revision M63-NOTEBOOK-2026-09-29-r4: sections1–3 then12 only.
-  Return m63c_results.zip. See `MONODETR_M63C_BN_STATISTICS_DIAGNOSTIC.md`.
-- Current phase: **A2 accuracy-first; M63 failed, M63b reviewed, M63c prepared**.
+- **M63c reviewed:** restoring source BN statistics at inference recovered
+  72.16% of the Vehicle 3D AP loss and 92.53% of its BEV loss, but only
+  10.06% of Pedestrian 3D loss; nearby recall worsened. No checkpoint promotion.
+- **Next action: M63d prepared.** One GT-only epoch from original A2 with
+  BatchNorm running statistics frozen during training; affine trainability
+  unchanged. Same batch4/seed20268/LR1e-5/fresh optimizer/no augmentation.
+  Evaluate once, then stop for review. No KD or additional epochs authorized.
+  Notebook revision M63-NOTEBOOK-2026-09-29-r5: sections1–3 then13A–13C;
+  skip4–12. Return m63d_results.zip.
+  See `MONODETR_M63D_FROZEN_BN_CONTROL.md`.
+- Current phase: **A2 accuracy-first; M63 failed, M63c reviewed, M63d prepared**.
   MonoDGP/M61 are parked by user decision. The user-reported M61 train audit
   rejected all components; full component JSON remains unreviewed. No M61
   continuation-training result has been supplied. See
