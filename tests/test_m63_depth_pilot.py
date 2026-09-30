@@ -111,10 +111,10 @@ class M63Tests(unittest.TestCase):
             checkpoint_for(m,"control",5)
         nb=json.loads((ROOT/"notebooks/MonoDETR_M63_R0_A2_Depth_Pilot_Colab.ipynb").read_text())
         cells=["".join(c["source"]) for c in nb["cells"] if c["cell_type"]=="code"]
-        self.assertEqual(len(cells),15)
+        self.assertEqual(len(cells),18)
         for code in cells: ast.parse(code)
         self.assertIn("def pilot",cells[0])
-        self.assertIn("M63-NOTEBOOK-2026-09-29-r5",cells[0])
+        self.assertIn("M63-NOTEBOOK-2026-09-30-r6",cells[0])
         joined="\n".join(cells)
         self.assertNotIn("MonoDGP.git",joined)
         self.assertNotIn("reset",joined)

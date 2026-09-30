@@ -5,18 +5,22 @@ M61's train-only audit rejected every component according to the user-provided
 log. The full component report has not been independently reviewed. No M61
 continuation-training result has been supplied. Do not overwrite its artifacts.
 
-## Current action — M63d, one frozen-BN control epoch
+## Current action — M63e, one lower-LR frozen-BN control epoch
 
-M63 failed; M63b found regression already at epoch1. M63c's inference-only
-statistics restoration recovered most Vehicle loss but not Pedestrian loss.
-Original A2 epoch130 remains the working model; neither continuation is promoted.
+M63d improved Vehicle 3D AP to15.6448 but reduced Pedestrian 3D AP to7.0550
+and Vehicle nearby recall to0.87517. Original A2 remains the working model.
+Freezing BN helps but has not made continuation harmless across both classes.
 
-Run one GT-only epoch from original A2 with BN running statistics frozen,
-preserving existing affine trainability and all other control settings.
-This tests whether preventing the drift during learning helps, which M63c
-could not establish. See `MONODETR_M63D_FROZEN_BN_CONTROL.md`.
-Use notebook revision M63-NOTEBOOK-2026-09-29-r5, sections1–3 then13A–13C,
-skipping4–12. Review m63d_results.zip before any KD or longer run.
+M63e tests one gentler GT-only epoch starting again from original A2.
+Change only optimizer LR1e-5 to1e-6 relative to M63d; preserve frozen BN,
+affine trainability, batch4, seed20268, fresh native AdamW, no augmentation,
+FP32 and both classes' original GT losses. Exactly928 steps, then val3769.
+This is a single-seed diagnostic, not an automatic promotion or safety test.
+
+Use notebook revision M63-NOTEBOOK-2026-09-30-r6, sections1–3 then14A–14C,
+skipping4–13. Return m63e_results.zip before KD or any longer run.
+Completed epoch checkpoints are reused; interrupted partial epochs replay
+from A2. Do not bypass environment/provenance checks or overwrite old outputs.
 
 ## Priority order
 

@@ -1,6 +1,6 @@
 # MobileADAS3D project tracker
 
-Last updated: 2026-09-29
+Last updated: 2026-09-30
 
 This is the canonical status page. Update it whenever a task changes state,
 an experiment finishes, a gate passes/fails, or the next action changes.
@@ -28,14 +28,20 @@ not constrain the current accuracy-development stage.
 - **M63c reviewed:** restoring source BN statistics at inference recovered
   72.16% of the Vehicle 3D AP loss and 92.53% of its BEV loss, but only
   10.06% of Pedestrian 3D loss; nearby recall worsened. No checkpoint promotion.
-- **Next action: M63d prepared.** One GT-only epoch from original A2 with
-  BatchNorm running statistics frozen during training; affine trainability
-  unchanged. Same batch4/seed20268/LR1e-5/fresh optimizer/no augmentation.
-  Evaluate once, then stop for review. No KD or additional epochs authorized.
-  Notebook revision M63-NOTEBOOK-2026-09-29-r5: sections1–3 then13A–13C;
-  skip4–12. Return m63d_results.zip.
-  See `MONODETR_M63D_FROZEN_BN_CONTROL.md`.
-- Current phase: **A2 accuracy-first; M63 failed, M63c reviewed, M63d prepared**.
+- **M63d reviewed:** frozen-BN GT-only epoch1 gave Vehicle/Pedestrian 3D
+  AP15.6448/7.0550 versus original15.4505/7.5285. Vehicle BEV21.5959,
+  Pedestrian BEV8.5279; nearby recall0.87517/0.69312. Vehicle improves,
+  but Pedestrian 3D and Vehicle recall regress. Original A2 stays selected.
+  Reports bind 928 steps, 228 unchanged BN buffers and3769 prediction IDs;
+  raw predictions/checkpoint tensors were not supplied for independent rerun.
+- **Next action: M63e prepared.** One GT-only frozen-BN epoch from original A2,
+  changing only LR1e-5 to1e-6 relative to M63d. Keep batch4/seed20268/fresh
+  AdamW/no augmentation/FP32/both classes' GT losses. No KD or longer run.
+  Use M63 notebook revision M63-NOTEBOOK-2026-09-30-r6: sections1–3 then14A–14C,
+  skip4–13. Return m63e_results.zip. CUDA execution is pending.
+  Outputs are isolated in m63e_frozen_bn_lr. Interrupted partial epochs
+  replay from A2; a completed epoch is verified and reused, never extended.
+- Current phase: **A2 accuracy-first; M63 failed, M63d reviewed, M63e prepared**.
   MonoDGP/M61 are parked by user decision. The user-reported M61 train audit
   rejected all components; full component JSON remains unreviewed. No M61
   continuation-training result has been supplied. See

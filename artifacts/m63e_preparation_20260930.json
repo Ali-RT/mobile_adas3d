@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "experiment": "M63e lower-LR frozen-BN GT-only control",
+  "status": "prepared_cuda_pending",
+  "date": "2026-09-30",
+  "reviewed_m63d_comparison_sha256": "b881bfa08900b0ac82fdaa4d742ce17b3dc2e8e97d3f2f4fbfc0506b7dbdf1e8",
+  "start": "original A2 epoch130",
+  "epochs": 1,
+  "expected_optimizer_steps": 928,
+  "learning_rate": 0.000001,
+  "batch_size": 4,
+  "seed": 20268,
+  "distillation": false,
+  "bn_statistics_frozen": true,
+  "full_run_authorized": false,
+  "checkpoint_promotion_authorized": false,
+  "local_tests_passed": 68,
+  "notebook_revision": "M63-NOTEBOOK-2026-09-30-r6"
+}
