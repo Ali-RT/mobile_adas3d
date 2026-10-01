@@ -105,6 +105,25 @@ def validate_predictions(directory, ids, checkpoint_sha, manifest_sha):
             raise RuntimeError(f"Changed prediction {i}")
     return data,info
 
+def load_model_state_safely(path, expected_sha256):
+    """Hash-bound restricted load; permit only NumPy floating scalar metadata."""
+    if sha256(path)!=expected_sha256:
+        raise RuntimeError("Checkpoint SHA256 mismatch before loading")
+    core=getattr(np,"_core",None)
+    if core is None:
+        core=np.core
+    allowed=[(core.multiarray.scalar,"numpy.core.multiarray.scalar"),
+             (core.multiarray.scalar,"numpy._core.multiarray.scalar"),
+             np.dtype,type(np.dtype(np.float32)),type(np.dtype(np.float64))]
+    with torch.serialization.safe_globals(allowed):
+        payload=torch.load(path,map_location="cpu",weights_only=True)
+    state=payload.get("model_state") if isinstance(payload,dict) else None
+    if not isinstance(state,dict) or not state:
+        raise RuntimeError("Checkpoint lacks nonempty model_state")
+    if not all(isinstance(k,str) and isinstance(v,torch.Tensor) for k,v in state.items()):
+        raise RuntimeError("Expected tensor-only model_state")
+    return state
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument("--manifest",required=True,type=Path)
@@ -128,10 +147,14 @@ def main():
         "m63f_kd":(root/"m63f_frozen_bn_kd/evaluation/vehicle_kd_epoch001",
                   root/"m63f_frozen_bn_kd/runs/vehicle_kd/checkpoint_epoch_1.pth",rows["vehicle_kd"])}
     ids=check_split(Path(m["dataset_root"])/"ImageSets/val.txt","val")
+    states={}
+    for name,(_,checkpoint,row) in specs.items():
+        print(f"{name}: restricted checkpoint preflight",flush=True)
+        states[name]=load_model_state_safely(checkpoint,row["checkpoint_sha256"])
     label_dir=resolve_label_dir(Path(m["dataset_root"]))
     ground_truth={i:map_objects([asdict(t) for t in parse_kitti_label_file(label_dir/f"{i}.txt")],
                                KITTI_PRODUCTION_CLASS_MAPPING) for i in ids}
-    all_rows={};summaries={};prediction_hashes={};states={}
+    all_rows={};summaries={};prediction_hashes={}
     for name,(directory,checkpoint,row) in specs.items():
         print(f"{name}: checking saved predictions and checkpoint",flush=True)
         if sha256(checkpoint)!=row["checkpoint_sha256"]: raise RuntimeError("Changed "+name+" checkpoint")
@@ -147,7 +170,6 @@ def main():
         summaries[name]=dict(status_counts=dict(Counter(r["status"] for r in model_rows.values())),
             score_threshold_counts={k:dict(v) for k,v in counts.items()},
             all_matched_geometry=averages([r for r in model_rows.values() if r["matched"]]))
-        states[name]=torch.load(checkpoint,map_location="cpu",weights_only=True)["model_state"]
     pairs=(("a2","m63d"),("a2","m63f_control"),("a2","m63f_kd"),
            ("m63d","m63f_control"),("m63f_control","m63f_kd"))
     changes={a+"_to_"+b:compare(all_rows[a],all_rows[b]) for a,b in pairs}
