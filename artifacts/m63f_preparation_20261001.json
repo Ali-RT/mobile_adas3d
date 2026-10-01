@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "experiment": "M63f paired frozen-BN Vehicle-depth KD",
+  "status": "prepared_cuda_pending",
+  "date": "2026-10-01",
+  "reviewed_m63e_sha256": "5b10681081ba3b800cfcc85f511f00a01c01e44c316bfc663158283cd32c075e",
+  "source": "original A2 epoch130",
+  "variants": [
+    "control",
+    "vehicle_kd"
+  ],
+  "epochs_per_arm": 1,
+  "optimizer_steps_per_arm": 928,
+  "learning_rate": 0.00001,
+  "kd_weight": 0.25,
+  "approved_vehicle_depth_targets": 7014,
+  "batch_size": 4,
+  "seed": 20268,
+  "bn_statistics_frozen": true,
+  "augmentation": false,
+  "full_run_authorized": false,
+  "checkpoint_promotion_authorized": false,
+  "local_tests_passed": 75,
+  "notebook_revision": "M63-NOTEBOOK-2026-10-01-r7"
+}

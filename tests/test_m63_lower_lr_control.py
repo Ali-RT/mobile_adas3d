@@ -33,11 +33,11 @@ class LowerLRTests(unittest.TestCase):
     def test_notebook_current_section(self):
         nb = json.loads((ROOT / "notebooks/MonoDETR_M63_R0_A2_Depth_Pilot_Colab.ipynb").read_text())
         code = ["".join(c["source"]) for c in nb["cells"] if c["cell_type"] == "code"]
-        for cell, action in zip(code[-3:], ("--smoke", "--train", "--evaluate")):
+        for cell, action in zip(code[-7:-4], ("--smoke", "--train", "--evaluate")):
             ast.parse(cell)
             self.assertIn("run_m63_lower_lr_control.py", cell)
             self.assertIn(action, cell)
-        self.assertIn("m63e_results.zip", code[-1])
+        self.assertIn("m63e_results.zip", code[-5])
 
 if __name__ == "__main__":
     unittest.main()

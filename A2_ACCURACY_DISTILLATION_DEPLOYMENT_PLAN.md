@@ -5,22 +5,30 @@ M61's train-only audit rejected every component according to the user-provided
 log. The full component report has not been independently reviewed. No M61
 continuation-training result has been supplied. Do not overwrite its artifacts.
 
-## Current action — M63e, one lower-LR frozen-BN control epoch
+## Current action — M63f, matched frozen-BN selective KD retry
 
-M63d improved Vehicle 3D AP to15.6448 but reduced Pedestrian 3D AP to7.0550
-and Vehicle nearby recall to0.87517. Original A2 remains the working model.
-Freezing BN helps but has not made continuation harmless across both classes.
+M63e did not preserve A2 accuracy: Vehicle/Pedestrian3D15.3313/6.9417,
+versus original15.4505/7.5285. Original A2 remains the working model.
+Stable GT-only continuation is not a prerequisite to a bounded KD test,
+but beating a degraded control alone is insufficient.
 
-M63e tests one gentler GT-only epoch starting again from original A2.
-Change only optimizer LR1e-5 to1e-6 relative to M63d; preserve frozen BN,
-affine trainability, batch4, seed20268, fresh native AdamW, no augmentation,
-FP32 and both classes' original GT losses. Exactly928 steps, then val3769.
-This is a single-seed diagnostic, not an automatic promotion or safety test.
+Run two fresh one-epoch arms from original A2: GT-only and GT plus audited
+Vehicle-depth teaching (7014 targets, weight0.25). Both use frozen BN,
+unchanged affine trainability, batch4, seed20268, fresh native AdamW LR1e-5,
+FP32/no augmentation, and original GT losses for both classes.
+LR1e-5 follows the stronger M63d geometry result, not a new LR sweep.
+Exactly928 steps per arm; fixed epoch1 val3769 evaluations.
 
-Use notebook revision M63-NOTEBOOK-2026-09-30-r6, sections1–3 then14A–14C,
-skipping4–13. Return m63e_results.zip before KD or any longer run.
-Completed epoch checkpoints are reused; interrupted partial epochs replay
-from A2. Do not bypass environment/provenance checks or overwrite old outputs.
+Reuse established acceptance margins: Vehicle3D gain >=0.10AP over BOTH
+source/control; preserve Pedestrian3D, PedestrianBEV, Pedestrian nearby recall
+and mean3D against BOTH. VehicleBEV drop <=0.15AP; Vehicle recall drop <=0.01.
+These are exploratory engineering gates; a pass permits review only.
+M63's original failed decision remains unchanged. No longer-run/promotion
+authorization. Single-seed findings require confirmation if promising.
+
+Notebook revision M63-NOTEBOOK-2026-10-01-r7: sections1–3 then15A–15D,
+skip4–14. Return m63f_results.zip. Prior outputs are read-only.
+Each completed arm is verified/reused; a partial epoch replays from A2.
 
 ## Priority order
 

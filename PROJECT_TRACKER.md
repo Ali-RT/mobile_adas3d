@@ -1,6 +1,6 @@
 # MobileADAS3D project tracker
 
-Last updated: 2026-09-30
+Last updated: 2026-10-01
 
 This is the canonical status page. Update it whenever a task changes state,
 an experiment finishes, a gate passes/fails, or the next action changes.
@@ -34,14 +34,22 @@ not constrain the current accuracy-development stage.
   but Pedestrian 3D and Vehicle recall regress. Original A2 stays selected.
   Reports bind 928 steps, 228 unchanged BN buffers and3769 prediction IDs;
   raw predictions/checkpoint tensors were not supplied for independent rerun.
-- **Next action: M63e prepared.** One GT-only frozen-BN epoch from original A2,
-  changing only LR1e-5 to1e-6 relative to M63d. Keep batch4/seed20268/fresh
-  AdamW/no augmentation/FP32/both classes' GT losses. No KD or longer run.
-  Use M63 notebook revision M63-NOTEBOOK-2026-09-30-r6: sections1–3 then14A–14C,
-  skip4–13. Return m63e_results.zip. CUDA execution is pending.
-  Outputs are isolated in m63e_frozen_bn_lr. Interrupted partial epochs
-  replay from A2; a completed epoch is verified and reused, never extended.
-- Current phase: **A2 accuracy-first; M63 failed, M63d reviewed, M63e prepared**.
+- **M63e reviewed:** LR1e-6 frozen-BN epoch1 produced Vehicle/Pedestrian3D
+  AP15.3313/6.9417 and nearby recall0.88042/0.69004. Lower LR did not preserve
+  pedestrian accuracy. Reports verified928 steps,228 unchanged BN buffers
+  and3769 prediction IDs; no independent tensor/prediction rerun.
+- **Next action: M63f prepared.** User approved selective A2 teaching retry.
+  Run matched GT-only and Vehicle-depth KD arms from original A2, one epoch
+  each, frozen BN, LR1e-5, batch4, seed20268, fresh AdamW, FP32/no augmentation.
+  Use7014 audited targets and fixed0.25 KD weight; both classes retain GT.
+  Fixed epoch1 acceptance requires Vehicle3D +0.10 over BOTH source/control;
+  preserve Pedestrian3D/BEV/recall and mean3D against BOTH. VehicleBEV margin
+  -0.15AP, Vehicle nearby-recall margin -0.01 versus the better comparator.
+  These are exploratory engineering criteria, not significance/safety claims.
+  Notebook M63-NOTEBOOK-2026-10-01-r7: sections1–3 then15A–15D, skip4–14.
+  Return m63f_results.zip. CUDA pending; no automatic longer run or promotion.
+  New outputs only in m63f_frozen_bn_kd; completed arms resume without extension.
+- Current phase: **A2 accuracy-first; M63e reviewed, M63f paired KD prepared**.
   MonoDGP/M61 are parked by user decision. The user-reported M61 train audit
   rejected all components; full component JSON remains unreviewed. No M61
   continuation-training result has been supplied. See
