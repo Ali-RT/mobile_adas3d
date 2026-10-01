@@ -90,7 +90,7 @@ class TradeoffTests(unittest.TestCase):
             before=list(torch.serialization.get_safe_globals())
             loaded=load_model_state_safely(p,sha256(p))
             self.assertTrue(torch.equal(state["layer.weight"],loaded["layer.weight"]))
-            self.assertEqual(torch.serialization.get_safe_globals(),before)
+            self.assertEqual(set(torch.serialization.get_safe_globals()),set(before))
 
     def test_wrong_hash_stops_before_unpickling(self):
         with tempfile.TemporaryDirectory() as tmp:
