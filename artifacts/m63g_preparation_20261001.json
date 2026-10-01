@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "experiment": "M63g pedestrian tradeoff and control-state audit",
+  "status": "prepared_runtime_pending",
+  "reviewed_m63f_sha256": "e5addd27afed6faa19dd271a8b99b1494a3c173bdd51fe4e7d84932de8d68eb2",
+  "training_performed": false,
+  "inference_performed": false,
+  "checkpoint_promotion_authorized": false,
+  "local_tests_passed": 82,
+  "notebook_revision": "M63-NOTEBOOK-2026-10-01-r8",
+  "variants": [
+    "a2",
+    "m63d",
+    "m63f_control",
+    "m63f_kd"
+  ],
+  "matching": "class-specific score-descending greedy 2D IoU >=0.5; descriptive, not AP attribution",
+  "common_gt_geometry": true
+}

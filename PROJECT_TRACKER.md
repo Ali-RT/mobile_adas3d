@@ -38,18 +38,21 @@ not constrain the current accuracy-development stage.
   AP15.3313/6.9417 and nearby recall0.88042/0.69004. Lower LR did not preserve
   pedestrian accuracy. Reports verified928 steps,228 unchanged BN buffers
   and3769 prediction IDs; no independent tensor/prediction rerun.
-- **Next action: M63f prepared.** User approved selective A2 teaching retry.
-  Run matched GT-only and Vehicle-depth KD arms from original A2, one epoch
-  each, frozen BN, LR1e-5, batch4, seed20268, fresh AdamW, FP32/no augmentation.
-  Use7014 audited targets and fixed0.25 KD weight; both classes retain GT.
-  Fixed epoch1 acceptance requires Vehicle3D +0.10 over BOTH source/control;
-  preserve Pedestrian3D/BEV/recall and mean3D against BOTH. VehicleBEV margin
-  -0.15AP, Vehicle nearby-recall margin -0.01 versus the better comparator.
-  These are exploratory engineering criteria, not significance/safety claims.
-  Notebook M63-NOTEBOOK-2026-10-01-r7: sections1–3 then15A–15D, skip4–14.
-  Return m63f_results.zip. CUDA pending; no automatic longer run or promotion.
-  New outputs only in m63f_frozen_bn_kd; completed arms resume without extension.
-- Current phase: **A2 accuracy-first; M63e reviewed, M63f paired KD prepared**.
+- **M63f reviewed: failed overall acceptance.** Matched control Vehicle/Pedestrian
+  3D AP15.4690/6.9774; KD15.6219/6.8049 versus original15.4505/7.5285.
+  KD gains0.1528 Vehicle3D over control but loses0.1726 Pedestrian3D.
+  Pedestrian nearby recall0.68210 versus baseline0.69268. Teacher gradients
+  nonzero/finite; both arms928 steps,228 unchanged BN buffers,3769 IDs each.
+  New control differs from M63d despite matching recorded settings; cause
+  is not established. Single-seed gain is not proof of repeatability.
+- **Next action: M63g prepared, read-only.** Compare original A2, M63d, M63f
+  control/KD saved predictions and checkpoints. Separate detection transitions
+  and geometry on identical GT matches; audit checkpoint and settings differences.
+  No new training, inference, threshold selection, or promotion.
+  Notebook M63-NOTEBOOK-2026-10-01-r8: configured session section16 directly
+  after repository update; fresh runtime setup1–3 then16, skip4–15.
+  Return m63g_results.zip. Diagnostic itself is CPU-only; old setup needs L4.
+- Current phase: **A2 accuracy-first; M63f failed, M63g diagnosis prepared**.
   MonoDGP/M61 are parked by user decision. The user-reported M61 train audit
   rejected all components; full component JSON remains unreviewed. No M61
   continuation-training result has been supplied. See

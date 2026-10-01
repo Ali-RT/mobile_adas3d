@@ -5,30 +5,27 @@ M61's train-only audit rejected every component according to the user-provided
 log. The full component report has not been independently reviewed. No M61
 continuation-training result has been supplied. Do not overwrite its artifacts.
 
-## Current action — M63f, matched frozen-BN selective KD retry
+## Current action — M63g, no new training or inference
 
-M63e did not preserve A2 accuracy: Vehicle/Pedestrian3D15.3313/6.9417,
-versus original15.4505/7.5285. Original A2 remains the working model.
-Stable GT-only continuation is not a prerequisite to a bounded KD test,
-but beating a degraded control alone is insufficient.
+M63f KD gained0.1528 Vehicle3D AP over its matched control, but lost0.1726
+Pedestrian3D AP. Relative to original A2 it gained0.1714 Vehicle3D and lost
+0.7237 Pedestrian3D. The pilot failed its fixed acceptance rule.
+Original A2 remains selected. Shared-weight effects are plausible, not
+established causally. The nominal repeat control also differed from M63d.
 
-Run two fresh one-epoch arms from original A2: GT-only and GT plus audited
-Vehicle-depth teaching (7014 targets, weight0.25). Both use frozen BN,
-unchanged affine trainability, batch4, seed20268, fresh native AdamW LR1e-5,
-FP32/no augmentation, and original GT losses for both classes.
-LR1e-5 follows the stronger M63d geometry result, not a new LR sweep.
-Exactly928 steps per arm; fixed epoch1 val3769 evaluations.
+M63g uses existing full validation predictions and checkpoints from A2,
+M63d, and both M63f arms. It reports missed/gained pedestrian detections,
+descriptive score-threshold counts, common-GT geometry differences,
+checkpoint differences and recorded settings equality. No training,
+model inference, threshold tuning, teacher filtering, or model promotion.
+Matching is diagnostic, not an exact attribution of official AP. Saved
+predictions are top-k/score truncated. We did not record RNG/kernel histories,
+so the audit cannot establish nondeterminism as the cause of variation.
 
-Reuse established acceptance margins: Vehicle3D gain >=0.10AP over BOTH
-source/control; preserve Pedestrian3D, PedestrianBEV, Pedestrian nearby recall
-and mean3D against BOTH. VehicleBEV drop <=0.15AP; Vehicle recall drop <=0.01.
-These are exploratory engineering gates; a pass permits review only.
-M63's original failed decision remains unchanged. No longer-run/promotion
-authorization. Single-seed findings require confirmation if promising.
-
-Notebook revision M63-NOTEBOOK-2026-10-01-r7: sections1–3 then15A–15D,
-skip4–14. Return m63f_results.zip. Prior outputs are read-only.
-Each completed arm is verified/reused; a partial epoch replays from A2.
+Use notebook revision M63-NOTEBOOK-2026-10-01-r8, section16 in the current
+configured runtime; after reset run setup1–3 then16, skip4–15. The diagnostic
+runs on CPU, but original setup expects L4. Return m63g_results.zip.
+Review evidence before choosing a preservation loss or restricting updates.
 
 ## Priority order
 
