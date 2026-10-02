@@ -7,6 +7,8 @@ continuation-training result has been supplied. Do not overwrite its artifacts.
 
 ## Current action — M63h, bounded reproducibility check
 
+**Current runnable notebook:** `notebooks/MonoDETR_M63h_Reproducibility_Colab.ipynb`, revision `M63H-STANDALONE-2026-10-02-r1`. Run sections1–4 top-to-bottom on L4. This supersedes the old section17 handoff. It restores CUDA toolkit selection, source, dataset links and split files before full provenance preflight. Existing Drive evidence is preserved; no previous experiment is rerun. Colab execution remains to be verified.
+
 M63f KD gained0.1528 Vehicle3D AP over its matched control, but lost0.1726
 Pedestrian3D AP. Original A2 remains selected; the pilot failed.
 

@@ -16,6 +16,8 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
+**Current runnable notebook:** `notebooks/MonoDETR_M63h_Reproducibility_Colab.ipynb`, revision `M63H-STANDALONE-2026-10-02-r1`. Run sections1–4 top-to-bottom on L4. This supersedes the old section17 handoff. It restores CUDA toolkit selection, source, dataset links and split files before full provenance preflight. Existing Drive evidence is preserved; no previous experiment is rerun. Colab execution remains to be verified.
+
 - **M63 completed and failed its fixed epoch10 acceptance rule.** Original A2
   remains the working checkpoint. Vehicle/Pedestrian 3D AP: source15.4505/7.5285,
   control14.7835/6.6404, KD14.8930/6.3105. Both continuation arms regressed.
