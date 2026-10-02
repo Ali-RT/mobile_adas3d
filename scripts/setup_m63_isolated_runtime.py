@@ -26,6 +26,34 @@ def validate_inventory(info):
         raise RuntimeError("Unexpected CUDA backend/packages: "+str(banned))
     if packages.get("numba")!="0.61.2" or packages.get("llvmlite")!="0.44.0":
         raise RuntimeError("Unexpected Numba/LLVM version")
+def ensure_private_python(path):
+    """Recover a partial venv without ensurepip or shared site-packages."""
+    path=Path(path)
+    config=path/"pyvenv.cfg"
+    if config.exists():
+        if "include-system-site-packages = false" not in config.read_text().lower():
+            raise RuntimeError("Refusing an environment with shared packages")
+    elif path.exists() and any(path.iterdir()):
+        raise RuntimeError("Existing nonempty directory is not a venv; preserving "+str(path))
+    python=path/"bin/python"
+    if not config.exists() or not python.exists():
+        venv.EnvBuilder(with_pip=False,system_site_packages=False,symlinks=True).create(path)
+    if "include-system-site-packages = false" not in config.read_text().lower():
+        raise RuntimeError("Venv isolation check failed")
+    probe=subprocess.run([str(python),"-c",
+        "import sys; assert sys.prefix != sys.base_prefix"],check=True)
+    ready=subprocess.run([str(python),"-m","pip","--version"],
+                         capture_output=True,text=True)
+    if ready.returncode:
+        # Host pip manages only the explicitly selected private interpreter.
+        # This supported pip feature works when target Python has no ensurepip.
+        command=[sys.executable,"-m","pip","--python",str(python),
+                 "install","pip==25.2"]
+        print("+"," ".join(command),flush=True)
+        subprocess.run(command,check=True)
+        subprocess.run([str(python),"-m","pip","--version"],check=True)
+    return python
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument("--manifest",type=Path,required=True)
@@ -38,11 +66,7 @@ def main():
     identity=dict(revision="M63H-ISOLATED-2026-10-02-r1",environment=e,
                   installer_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                   venv=str(a.venv),historical_numba_identity_known=False)
-    python=a.venv/"bin/python"
-    if not a.venv.exists():
-        venv.EnvBuilder(with_pip=True,system_site_packages=False).create(a.venv)
-    if "include-system-site-packages = false" not in (a.venv/"pyvenv.cfg").read_text().lower():
-        raise RuntimeError("Refusing an environment with shared packages")
+    python=ensure_private_python(a.venv)
     old=json.loads(a.receipt.read_text()) if a.receipt.exists() else None
     if old and old["identity"]!=identity:
         raise RuntimeError("Existing runtime receipt differs; preserve it for review")

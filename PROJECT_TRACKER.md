@@ -16,7 +16,7 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-**Current runnable notebook:** `notebooks/MonoDETR_M63h_Reproducibility_Colab.ipynb`, revision `M63H-STANDALONE-2026-10-02-r2`. Run sections1–4 top-to-bottom on L4. This supersedes the old section17 handoff. It restores CUDA toolkit selection, source, dataset links and split files before full provenance preflight. Existing Drive evidence is preserved; no previous experiment is rerun. Colab execution remains to be verified. Runtime r2 uses `/content/m63h_cuda128_venv` without shared packages, pinned bundled Numba0.61.2/llvmlite0.44.0, recorded resolved dependencies and real KITTI CUDA import/IoU/backward smoke. No historical Numba equivalence is claimed. New reports use `diagnostics_m63h_isolated`; failed earlier attempts stay untouched.
+**Current runnable notebook:** `notebooks/MonoDETR_M63h_Reproducibility_Colab.ipynb`, revision `M63H-STANDALONE-2026-10-02-r3`. Run sections1–4 top-to-bottom on L4. This supersedes the old section17 handoff. It restores CUDA toolkit selection, source, dataset links and split files before full provenance preflight. Existing Drive evidence is preserved; no previous experiment is rerun. Colab execution remains to be verified. Runtime r2 uses `/content/m63h_cuda128_venv` without shared packages, pinned bundled Numba0.61.2/llvmlite0.44.0, recorded resolved dependencies and real KITTI CUDA import/IoU/backward smoke. No historical Numba equivalence is claimed. New reports use `diagnostics_m63h_isolated`; failed earlier attempts stay untouched.
 
 - **M63 completed and failed its fixed epoch10 acceptance rule.** Original A2
   remains the working checkpoint. Vehicle/Pedestrian 3D AP: source15.4505/7.5285,
