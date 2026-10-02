@@ -7,7 +7,7 @@ continuation-training result has been supplied. Do not overwrite its artifacts.
 
 ## Current action — M63h, bounded reproducibility check
 
-**Current runnable notebook:** `notebooks/MonoDETR_M63h_Reproducibility_Colab.ipynb`, revision `M63H-STANDALONE-2026-10-02-r1`. Run sections1–4 top-to-bottom on L4. This supersedes the old section17 handoff. It restores CUDA toolkit selection, source, dataset links and split files before full provenance preflight. Existing Drive evidence is preserved; no previous experiment is rerun. Colab execution remains to be verified.
+**Current runnable notebook:** `notebooks/MonoDETR_M63h_Reproducibility_Colab.ipynb`, revision `M63H-STANDALONE-2026-10-02-r2`. Run sections1–4 top-to-bottom on L4. This supersedes the old section17 handoff. It restores CUDA toolkit selection, source, dataset links and split files before full provenance preflight. Existing Drive evidence is preserved; no previous experiment is rerun. Colab execution remains to be verified. Runtime r2 uses `/content/m63h_cuda128_venv` without shared packages, pinned bundled Numba0.61.2/llvmlite0.44.0, recorded resolved dependencies and real KITTI CUDA import/IoU/backward smoke. No historical Numba equivalence is claimed. New reports use `diagnostics_m63h_isolated`; failed earlier attempts stay untouched.
 
 M63f KD gained0.1528 Vehicle3D AP over its matched control, but lost0.1726
 Pedestrian3D AP. Original A2 remains selected; the pilot failed.

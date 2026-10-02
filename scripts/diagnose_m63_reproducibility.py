@@ -122,7 +122,15 @@ def main():
     p.add_argument("--manifest",type=Path,required=True)
     p.add_argument("--worker",choices=("a","b"))
     p.add_argument("--temporary-output",type=Path)
+    p.add_argument("--runtime-receipt",type=Path)
     args=p.parse_args()
+    runtime_binding=None
+    if args.runtime_receipt:
+        from setup_m63_isolated_runtime import inventory,validate_inventory
+        receipt=read_json(args.runtime_receipt)
+        current=inventory(sys.executable);validate_inventory(current)
+        if current!=receipt["inventory"]: raise RuntimeError("Isolated runtime inventory changed")
+        runtime_binding=sha256(args.runtime_receipt)
     m=load_manifest(args.manifest)
     if args.worker:
         if args.temporary_output is None: p.error("--worker requires --temporary-output")
@@ -132,13 +140,16 @@ def main():
     validated_audit(m)
     if m["seed"]!=20268 or m["batch_size"]!=4 or m["augmentation"] is not False:
         raise RuntimeError("Diagnostic settings changed")
-    output=Path(m["output_dir"])/"diagnostics_m63h"
+    output=Path(m["output_dir"])/("diagnostics_m63h_isolated" if runtime_binding else "diagnostics_m63h")
     identity=dict(revision="M63h-2026-10-02-r1",manifest_sha256=m["manifest_sha256"],
         reviewed_m63g_sha256=REVIEWED,steps_per_replica=STEPS,replicas=2,
         script_sha256=sha256(Path(__file__)),environment=environment(),
         dependencies={p:sha256(ROOT/p) for p in ("scripts/run_m63_frozen_bn_control.py",
                       "scripts/m63d_frozen_bn.py","scripts/m63c_bn_intervention.py")},
         checkpoint_promotion_authorized=False,full_run_authorized=False)
+    if runtime_binding:
+        identity["runtime_receipt_sha256"]=runtime_binding
+        identity["historical_runtime_equivalence_claimed"]=False
     identity_path=output/"identity.json"
     if identity_path.exists() and read_json(identity_path)!=identity:
         raise RuntimeError("Existing M63h identity changed")
@@ -154,7 +165,8 @@ def main():
         traces={}
         for replica in ("a","b"):
             subprocess.run([sys.executable,"-u",str(Path(__file__).resolve()),"--manifest",str(args.manifest),
-                "--worker",replica,"--temporary-output",str(root/replica)],check=True,cwd=ROOT)
+                "--worker",replica,"--temporary-output",str(root/replica)] +
+                (["--runtime-receipt",str(args.runtime_receipt)] if args.runtime_receipt else []),check=True,cwd=ROOT)
             traces[replica]=read_json(root/replica/"trace.json")
             write_json(output/f"trace_{replica}.json",traces[replica])
         comparisons=compare_replicas(traces["a"],traces["b"],root/"a",root/"b")
