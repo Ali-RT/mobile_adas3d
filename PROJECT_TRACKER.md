@@ -1,6 +1,6 @@
 # MobileADAS3D project tracker
 
-Last updated: 2026-10-01
+Last updated: 2026-10-02
 
 This is the canonical status page. Update it whenever a task changes state,
 an experiment finishes, a gate passes/fails, or the next action changes.
@@ -45,14 +45,19 @@ not constrain the current accuracy-development stage.
   nonzero/finite; both arms928 steps,228 unchanged BN buffers,3769 IDs each.
   New control differs from M63d despite matching recorded settings; cause
   is not established. Single-seed gain is not proof of repeatability.
-- **Next action: M63g prepared, read-only.** Compare original A2, M63d, M63f
-  control/KD saved predictions and checkpoints. Separate detection transitions
-  and geometry on identical GT matches; audit checkpoint and settings differences.
-  No new training, inference, threshold selection, or promotion.
-  Notebook M63-NOTEBOOK-2026-10-01-r8: configured session section16 directly
-  after repository update; fresh runtime setup1–3 then16, skip4–15.
-  Return m63g_results.zip. Diagnostic itself is CPU-only; old setup needs L4.
-- Current phase: **A2 accuracy-first; M63f failed, M63g diagnosis prepared**.
+- **M63g reviewed:** on 1,274 common moderate Pedestrian matches, A2→KD
+  depth MAE increased0.7389→0.7809m and mean3D IoU fell0.2470→0.2377.
+  There were48 lost/24 gained detections. Both detection and geometry matter.
+  Recorded repeat-control settings match and228 BN buffers remain unchanged,
+  but learned weights differ; the cause is not yet established.
+- **Next action: M63h prepared.** Two fresh processes, three GT-only updates
+  each from original A2, for six diagnostic updates total. Compare input/GT
+  hashes, RNG states, backend settings, losses, outputs, gradients and weights.
+  No KD, full epoch, validation sweep or checkpoint promotion. Temporary local
+  tensor snapshots are deleted after comparison; original A2 remains selected.
+  Notebook M63-NOTEBOOK-2026-10-02-r9: configured L4 session section17 directly;
+  after reset run setup1–3 then17, skip4–16. Return m63h_results.zip.
+- Current phase: **A2 accuracy-first; M63g reviewed, M63h reproducibility check prepared**.
   MonoDGP/M61 are parked by user decision. The user-reported M61 train audit
   rejected all components; full component JSON remains unreviewed. No M61
   continuation-training result has been supplied. See

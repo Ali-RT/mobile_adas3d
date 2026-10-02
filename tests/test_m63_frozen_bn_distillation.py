@@ -62,7 +62,7 @@ class FrozenBNKDTests(unittest.TestCase):
 
     def test_notebook_fixed_actions(self):
         nb=json.loads((ROOT/"notebooks/MonoDETR_M63_R0_A2_Depth_Pilot_Colab.ipynb").read_text())
-        cells=["".join(c["source"]) for c in nb["cells"] if c["cell_type"]=="code"][-5:-1]
+        cells=["".join(c["source"]) for c in nb["cells"] if c["cell_type"]=="code"][-6:-2]
         for code in cells: ast.parse(code)
         for code,action in zip(cells,("--smoke","'control'","'vehicle_kd'","--evaluate")):
             self.assertIn(action,code)

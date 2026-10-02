@@ -76,7 +76,7 @@ class FrozenBNControlTests(unittest.TestCase):
 
     def test_notebook_three_actions_and_no_distillation(self):
         nb=json.loads((ROOT/"notebooks/MonoDETR_M63_R0_A2_Depth_Pilot_Colab.ipynb").read_text())
-        cells=["".join(c["source"]) for c in nb["cells"] if c["cell_type"]=="code"][-11:-8]
+        cells=["".join(c["source"]) for c in nb["cells"] if c["cell_type"]=="code"][-12:-9]
         for code in cells: ast.parse(code)
         for code,action in zip(cells,("--smoke","--train","--evaluate")):
             self.assertIn("run_m63_frozen_bn_control.py",code)

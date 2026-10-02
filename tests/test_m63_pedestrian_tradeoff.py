@@ -114,7 +114,7 @@ class TradeoffTests(unittest.TestCase):
 
     def test_notebook_is_analysis_only(self):
         nb=json.loads((ROOT/"notebooks/MonoDETR_M63_R0_A2_Depth_Pilot_Colab.ipynb").read_text())
-        code="".join(nb["cells"][-1]["source"]);ast.parse(code)
+        code="".join(nb["cells"][-3]["source"]);ast.parse(code)
         self.assertIn("diagnose_m63_pedestrian_tradeoff.py",code)
         self.assertNotIn("--train",code);self.assertNotIn("--infer",code)
         script=(ROOT/"scripts/diagnose_m63_pedestrian_tradeoff.py").read_text()

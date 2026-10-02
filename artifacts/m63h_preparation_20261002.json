@@ -1,0 +1,13 @@
+{
+  "experiment": "M63h bounded GT-only reproducibility diagnostic",
+  "prepared": true,
+  "cuda_run_performed_locally": false,
+  "steps_per_replica": 3,
+  "replicas": 2,
+  "optimizer_steps_budget": 6,
+  "distillation": false,
+  "checkpoint_promotion_authorized": false,
+  "notebook_revision": "M63-NOTEBOOK-2026-10-02-r9",
+  "section": 17,
+  "local_regression_tests_passed": 91
+}

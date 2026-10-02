@@ -5,27 +5,29 @@ M61's train-only audit rejected every component according to the user-provided
 log. The full component report has not been independently reviewed. No M61
 continuation-training result has been supplied. Do not overwrite its artifacts.
 
-## Current action — M63g, no new training or inference
+## Current action — M63h, bounded reproducibility check
 
 M63f KD gained0.1528 Vehicle3D AP over its matched control, but lost0.1726
-Pedestrian3D AP. Relative to original A2 it gained0.1714 Vehicle3D and lost
-0.7237 Pedestrian3D. The pilot failed its fixed acceptance rule.
-Original A2 remains selected. Shared-weight effects are plausible, not
-established causally. The nominal repeat control also differed from M63d.
+Pedestrian3D AP. Original A2 remains selected; the pilot failed.
 
-M63g uses existing full validation predictions and checkpoints from A2,
-M63d, and both M63f arms. It reports missed/gained pedestrian detections,
-descriptive score-threshold counts, common-GT geometry differences,
-checkpoint differences and recorded settings equality. No training,
-model inference, threshold tuning, teacher filtering, or model promotion.
-Matching is diagnostic, not an exact attribution of official AP. Saved
-predictions are top-k/score truncated. We did not record RNG/kernel histories,
-so the audit cannot establish nondeterminism as the cause of variation.
+M63g confirms both detection and geometry deterioration, not just depth.
+On1,274 common moderate Pedestrian matches, depth MAE rose0.7389→0.7809m
+and mean3D IoU fell0.2470→0.2377 from A2 to KD, with48 lost/24 gained
+detections. Diagnostic matching is not an exact attribution of AP.
+Repeat controls share recorded settings and unchanged BN buffers but have
+different learned weights. This does not establish which operation caused it.
 
-Use notebook revision M63-NOTEBOOK-2026-10-01-r8, section16 in the current
-configured runtime; after reset run setup1–3 then16, skip4–15. The diagnostic
-runs on CPU, but original setup expects L4. Return m63g_results.zip.
-Review evidence before choosing a preservation loss or restricting updates.
+M63h runs two fresh subprocesses, each with three GT-only updates from A2.
+Keep seed20268, batch4, LR1e-5, fresh native optimizer, no augmentation,
+FP32 and frozen BN running buffers. Compare input/GT identities, RNG states,
+backend flags, losses, outputs, gradients and updated weights. Six updates
+total; no KD, full epoch, validation sweep or promoted checkpoint. Temporary
+local tensor snapshots are removed after comparison. Three instrumented
+batches cannot prove full-run determinism or identify a specific faulty kernel.
+
+Use notebook revision M63-NOTEBOOK-2026-10-02-r9, section17 in the configured
+L4 runtime; after reset run setup1–3 then17, skip4–16. Return m63h_results.zip.
+Review before choosing a preservation loss or restricting model updates.
 
 ## Priority order
 
