@@ -114,7 +114,7 @@ class M63Tests(unittest.TestCase):
         self.assertEqual(len(cells),24)
         for code in cells: ast.parse(code)
         self.assertIn("def pilot",cells[0])
-        self.assertIn("M63-NOTEBOOK-2026-10-02-r9",cells[0])
+        self.assertIn("M63-NOTEBOOK-2026-10-02-r10",cells[0])
         joined="\n".join(cells)
         self.assertNotIn("MonoDGP.git",joined)
         self.assertNotIn("reset",joined)
