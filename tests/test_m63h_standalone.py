@@ -34,6 +34,24 @@ class StandaloneTests(unittest.TestCase):
             self.assertTrue((root/'dataset/training/image_2').is_symlink())
             self.assertEqual((root/'dataset/ImageSets/train.txt').read_bytes(),(splits/'train.txt').read_bytes())
 
+    def test_driver_paths_and_extension_build_gates(self):
+        from types import SimpleNamespace
+        n=json.loads((ROOT/'notebooks/MonoDETR_M63h_Reproducibility_Colab.ipynb').read_text())
+        code=''.join(n['cells'][2]['source'])
+        tree=ast.parse(code)
+        # Execute the path assignments with a known prior driver/custom path.
+        scope=dict(os=SimpleNamespace(environ={'LD_LIBRARY_PATH':'/custom/driver'}),
+                   driver_dirs=['/usr/lib64-nvidia'],cuda=Path('/usr/local/cuda-12.8'))
+        assigns=[x for x in tree.body if isinstance(x,ast.Assign) and
+                 ('library_dirs' in ast.unparse(x) or 'LD_LIBRARY_PATH' in ast.unparse(x))]
+        exec(compile(ast.Module(body=assigns,type_ignores=[]),'paths','exec'),scope)
+        paths=scope['os'].environ['LD_LIBRARY_PATH'].split(':')
+        self.assertIn('/custom/driver',paths)
+        self.assertIn('/usr/lib64-nvidia',paths)
+        self.assertIn('/usr/local/cuda-12.8/lib64',paths)
+        self.assertLess(code.index('gpu_before_extension_build'),code.index("'cuda_build'"))
+        self.assertGreater(code.index('verify_cuda_extension'),code.index("'cuda_build'"))
+
     def test_four_cell_flow(self):
         nb=json.loads((ROOT/'notebooks/MonoDETR_M63h_Reproducibility_Colab.ipynb').read_text())
         cells=[''.join(c['source']) for c in nb['cells'] if c['cell_type']=='code']
