@@ -2,6 +2,8 @@ import ast
 import json
 from pathlib import Path
 import sys
+import subprocess
+import signal
 import unittest
 import tempfile
 from types import SimpleNamespace
@@ -10,6 +12,7 @@ from unittest.mock import patch
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'scripts'))
 from setup_m63_isolated_runtime import validate_inventory, ensure_private_python
+from smoke_m63_isolated_runtime import SmokeTrace
 
 class IsolatedRuntimeTests(unittest.TestCase):
     def test_partial_venv_bootstraps_only_target(self):
@@ -70,14 +73,73 @@ class IsolatedRuntimeTests(unittest.TestCase):
         self.assertNotIn('/',calls[0][1])
         self.assertIn('smoke_m63_isolated_runtime.py',codes[1])
         self.assertLess(codes[1].index('smoke_m63_isolated_runtime.py'),codes[1].index('PREFLIGHT_READY = True'))
+        self.assertIn('-X\',\'faulthandler',codes[1])
+        self.assertLess(codes[1].index('PREFLIGHT_READY = False'),codes[1].index('restore_m63_data.py'))
+        self.assertEqual(n['metadata']['colab']['name'],'MonoDETR_M63h_Reproducibility_Colab.ipynb')
         self.assertIn('--runtime-receipt',codes[2])
         self.assertIn('diagnostics_m63h_isolated',codes[3])
 
     def test_smoke_is_real_kernel_and_no_updates(self):
         code=(ROOT/'scripts/smoke_m63_isolated_runtime.py').read_text()
-        self.assertIn('rotate_iou_gpu_eval(box,box)',code)
+        self.assertIn('rotate_iou_gpu_eval(box, box)',code)
         self.assertIn('KITTI_Dataset',code)
         self.assertIn('optimizer_steps=0',code)
         self.assertNotIn('optimizer.step',code)
+
+
+    def test_smoke_trace_records_python_failure_before_reraising(self):
+        with tempfile.TemporaryDirectory() as d, patch('builtins.print'):
+            path = Path(d) / 'smoke.progress.json'
+            trace = SmokeTrace(path)
+            with self.assertRaisesRegex(ValueError, 'probe failed'):
+                with trace.stage('native_import'):
+                    raise ValueError('probe failed')
+            progress = json.loads(path.read_text())
+            self.assertFalse(progress['complete'])
+            self.assertEqual(progress['last_stage'], 'native_import')
+            self.assertEqual(progress['last_status'], 'failed')
+            self.assertEqual(progress['events'][0]['status'], 'running')
+            self.assertEqual(progress['events'][-1]['error_type'], 'ValueError')
+            self.assertEqual(progress['optimizer_steps'], 0)
+
+    def test_smoke_trace_marks_success_only_after_finish(self):
+        with tempfile.TemporaryDirectory() as d, patch('builtins.print'):
+            path = Path(d) / 'smoke.progress.json'
+            trace = SmokeTrace(path)
+            with trace.stage('kernel'):
+                pass
+            self.assertFalse(json.loads(path.read_text())['complete'])
+            trace.finish()
+            progress = json.loads(path.read_text())
+            self.assertTrue(progress['complete'])
+            self.assertEqual(progress['last_stage'], 'complete')
+            self.assertEqual(progress['events'][1]['status'], 'passed')
+
+    @unittest.skipUnless(sys.platform != 'win32', 'requires POSIX signals')
+    def test_native_crash_preserves_stage_and_fault_handler_output(self):
+        # Deliberate signal in an isolated child; no invalid memory or GPU needed.
+        code = """
+import faulthandler, os, resource, signal, sys
+resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+sys.path.insert(0, sys.argv[1])
+from smoke_m63_isolated_runtime import SmokeTrace
+faulthandler.enable(all_threads=True)
+trace = SmokeTrace(sys.argv[2])
+with trace.stage('native_crash_probe'):
+    os.kill(os.getpid(), signal.SIGSEGV)
+"""
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / 'smoke.progress.json'
+            result = subprocess.run([sys.executable, '-u', '-c', code,
+                                     str(ROOT / 'scripts'), str(path)],
+                                    capture_output=True, text=True, timeout=20)
+            self.assertEqual(result.returncode, -signal.SIGSEGV)
+            self.assertIn('native_crash_probe: running', result.stdout)
+            self.assertIn('Fatal Python error: Segmentation fault', result.stderr)
+            progress = json.loads(path.read_text())
+            self.assertFalse(progress['complete'])
+            self.assertEqual(progress['last_stage'], 'native_crash_probe')
+            self.assertEqual(progress['last_status'], 'running')
+            self.assertEqual(progress['optimizer_steps'], 0)
 
 if __name__=='__main__': unittest.main()

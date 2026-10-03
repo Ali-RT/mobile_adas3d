@@ -16,7 +16,7 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-**Current runnable notebook:** `notebooks/MonoDETR_M63h_Reproducibility_Colab.ipynb`, revision `M63H-STANDALONE-2026-10-02-r4`. Run sections1–4 top-to-bottom on L4. This supersedes the old section17 handoff. It restores CUDA toolkit selection, source, dataset links and split files before full provenance preflight. Existing Drive evidence is preserved; no previous experiment is rerun. Colab execution remains to be verified. Runtime r2 uses `/content/m63h_cuda128_venv` without shared packages, pinned bundled Numba0.61.2/llvmlite0.44.0, recorded resolved dependencies and real KITTI CUDA import/IoU/backward smoke. No historical Numba equivalence is claimed. New reports use `diagnostics_m63h_isolated`; failed earlier attempts stay untouched.
+**Current runnable notebook:** `notebooks/MonoDETR_M63h_Reproducibility_Colab.ipynb`, revision `M63H-STANDALONE-2026-10-02-r5`. On a new L4 runtime, run sections1–4 in order. In the current live session, pull main and rerun section2 only; packages, compiled extension and runtime receipt do not need rebuilding. This supersedes the old section17 handoff. Existing Drive evidence is preserved. The user reports complete data restoration and successful frozen provenance/approved-target checks, followed by native SIGSEGV (exit -11) in the CUDA smoke test. The crashing operation is not yet identified; no M63h optimizer updates have run. Revision r5 adds flushed stage markers, Python fault traces and `m63h_isolated_runtime_smoke.progress.json`, including actual loaded native-library paths. Training remains blocked until smoke succeeds. Return the smoke log and progress JSON if it fails again. Runtime uses `/content/m63h_cuda128_venv` without shared packages, pinned Numba0.61.2/llvmlite0.44.0 and a recorded dependency lock; no historical Numba equivalence is claimed. New reports use `diagnostics_m63h_isolated`.
 
 - **M63 completed and failed its fixed epoch10 acceptance rule.** Original A2
   remains the working checkpoint. Vehicle/Pedestrian 3D AP: source15.4505/7.5285,
@@ -57,8 +57,8 @@ not constrain the current accuracy-development stage.
   hashes, RNG states, backend settings, losses, outputs, gradients and weights.
   No KD, full epoch, validation sweep or checkpoint promotion. Temporary local
   tensor snapshots are deleted after comparison; original A2 remains selected.
-  Notebook M63-NOTEBOOK-2026-10-02-r9: configured L4 session section17 directly;
-  after reset run setup1–3 then17, skip4–16. Return m63h_results.zip.
+  Standalone notebook r5: after a reset run sections1–4; in the current session
+  rerun section2 for smoke diagnostics. Return m63h_results.zip after completion.
 - Current phase: **A2 accuracy-first; M63g reviewed, M63h reproducibility check prepared**.
   MonoDGP/M61 are parked by user decision. The user-reported M61 train audit
   rejected all components; full component JSON remains unreviewed. No M61
