@@ -1,6 +1,6 @@
 # MobileADAS3D project tracker
 
-Last updated: 2026-10-02
+Last updated: 2026-10-04
 
 This is the canonical status page. Update it whenever a task changes state,
 an experiment finishes, a gate passes/fails, or the next action changes.
@@ -16,7 +16,26 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-**Current runnable notebook:** `notebooks/MonoDETR_M63h_Reproducibility_Colab.ipynb`, revision `M63H-STANDALONE-2026-10-02-r5`. On a new L4 runtime, run sections1–4 in order. In the current live session, pull main and rerun section2 only; packages, compiled extension and runtime receipt do not need rebuilding. This supersedes the old section17 handoff. Existing Drive evidence is preserved. The user reports complete data restoration and successful frozen provenance/approved-target checks, followed by native SIGSEGV (exit -11) in the CUDA smoke test. The crashing operation is not yet identified; no M63h optimizer updates have run. Revision r5 adds flushed stage markers, Python fault traces and `m63h_isolated_runtime_smoke.progress.json`, including actual loaded native-library paths. Training remains blocked until smoke succeeds. Return the smoke log and progress JSON if it fails again. Runtime uses `/content/m63h_cuda128_venv` without shared packages, pinned Numba0.61.2/llvmlite0.44.0 and a recorded dependency lock; no historical Numba equivalence is claimed. New reports use `diagnostics_m63h_isolated`.
+**Current decision:** keep A2 epoch130 and its MobileNetV4 Conv Medium plus
+MonoDETR inference graph. Stop extending the rejected scalar-depth pilot and
+defer M63h historical-runtime recovery as the main development task. The next
+workflow must qualify one stronger teacher and test an A2-preserving control
+before one paired object-aware feature-distillation pilot. MonoPRIO is a
+researched challenger, not a selected or reproduced teacher. The self-contained
+M64 notebook is prepared: sections 1–6 restore unchanged A2, run zero-update
+smokes, and evaluate A2 plus the single teacher candidate on all 3,769 validation
+images. Local regression/source checks pass; CUDA execution and teacher accuracy
+remain unverified. Return `m64_results.zip` before any training. See
+`MONODETR_M64_TEACHER_QUALIFICATION_CONTRACT.md` and
+`A2_ACCURACY_DISTILLATION_DEPLOYMENT_PLAN.md` for evidence, teacher taxonomy
+limits, proposed loss design and the review boundary. Product gates do not change.
+
+- **M64 local preflight:** the actual MonoPRIO seed444 validation checkpoint
+  (epoch242) loads with restricted deserialization and matches all712 model
+  state tensors and seven prior buffers in CPU inspection. Attention imports
+  and the CUDA-only loss constructor were stubbed for this state check; it is
+  not GPU operator, loss or accuracy evidence. Downloaded release hashes are
+  pinned, not publisher-signed. See `artifacts/m64_local_preflight_20261004.json`.
 
 - **M63 completed and failed its fixed epoch10 acceptance rule.** Original A2
   remains the working checkpoint. Vehicle/Pedestrian 3D AP: source15.4505/7.5285,
@@ -52,14 +71,14 @@ not constrain the current accuracy-development stage.
   There were48 lost/24 gained detections. Both detection and geometry matter.
   Recorded repeat-control settings match and228 BN buffers remain unchanged,
   but learned weights differ; the cause is not yet established.
-- **Next action: M63h prepared.** Two fresh processes, three GT-only updates
-  each from original A2, for six diagnostic updates total. Compare input/GT
-  hashes, RNG states, backend settings, losses, outputs, gradients and weights.
-  No KD, full epoch, validation sweep or checkpoint promotion. Temporary local
-  tensor snapshots are deleted after comparison; original A2 remains selected.
-  Standalone notebook r5: after a reset run sections1–4; in the current session
-  rerun section2 for smoke diagnostics. Return m63h_results.zip after completion.
-- Current phase: **A2 accuracy-first; M63g reviewed, M63h reproducibility check prepared**.
+- **M63h crash localized, diagnostic deferred.** The supplied r5 fault trace
+  reaches Numba CUDA context initialization in `rotate_iou.py`, eagerly imported
+  by the KITTI dataset through its AP evaluator. Torch and attention-extension
+  imports pass, but attention forward/backward has not been established. The
+  underlying driver/binding conflict remains unproven. No optimizer updates
+  ran. Preserve all historical notebooks/artifacts; new training must not
+  initialize AP evaluation at dataset import or rewrite M62 runtime hashes.
+- Current phase: **A2 accuracy-first; teacher and KD-method reassessment**.
   MonoDGP/M61 are parked by user decision. The user-reported M61 train audit
   rejected all components; full component JSON remains unreviewed. No M61
   continuation-training result has been supplied. See
@@ -112,7 +131,9 @@ not constrain the current accuracy-development stage.
   quantization sweep or live-camera integration is underway.
 - Parked MonoDGP accuracy parent: **M54 MonoDGP epoch 100**, checkpoint SHA-256
   `8e79f3921d96e1de70cbb4219245e3fcc3fa1fb67ae675468b4ebca90e579847`.
-- Active proposed KD teacher: **R0 ResNet50 MonoDETR, epoch 185**.
+- Available KD reference: **R0 ResNet50 MonoDETR, epoch 185**, a Vehicle
+  specialist rather than a uniformly stronger teacher. New candidate:
+  **MonoPRIO**, pending checkpoint/split/prior/taxonomy qualification.
 - Converted candidate: **MonoDGP M59f FP32 (M54/M56d weights)**; Mac preservation
   and fixed16 iPhone parity passed, but physical-device latency failed. MobileMonoDETR A2
   epoch130 is the active M62 student baseline, not yet accuracy-qualified.
@@ -121,8 +142,9 @@ not constrain the current accuracy-development stage.
 - S1/H1/H2 status: **frozen negative experiments; do not resume**.
 - Knowledge distillation: **R0-to-A1 completed and rejected**; do not resume it.
   M61 is parked after reported audit rejection. M62 prepares a separate R0/A2
-  train-only diagnostic, not a resumed A1 experiment. No new KD-trained student
-  exists yet. Native Vehicle index1/Pedestrian index0 are preserved.
+  train-only diagnostic, not a resumed A1 experiment. M63/M63f produced
+  experimental KD checkpoints but no KD checkpoint passed promotion; original
+  A2 remains selected. Native Vehicle index1/Pedestrian index0 are preserved.
 - iPhone model constraints: **now measured as M60 feasibility**, not used to
   retroactively change accuracy gates. The nearby-recall product gap remains.
 - iPhone street recording: **not needed in the current phase**.
@@ -206,7 +228,8 @@ not constrain the current accuracy-development stage.
 | M59i | Approved policy and full KITTI preservation | Complete—passed frozen preservation gates | All 3,769 paired predictions evaluated; all eight gated metrics exactly equal across PyTorch/Core ML. Full raw and fixed16 checks pass. Extra diagnostics flag 93 non-fixed images; 17 are order-only, not candidate-set changes. Hard Pedestrian 3D AP +0.000236 points; no automatic device/deployment approval. See `MONODGP_M59I_FULL_VALIDATION_CONTRACT.md`. |
 | M60a | Trained MonoDGP physical-device feasibility | Complete—parity passed, latency failed | iPhone16 Pro Max: all16 fixed-input raw/decoded parity checks pass vs PyTorch/Mac. p95 233.73 ms initially/305.50 ms sustained vs50 ms. 60.262-second loop completed, thermal nominal→fair, sampled peak RSS491.67 MiB including fixtures. No camera or deployment qualification. See `MONODGP_M60_DEVICE_FEASIBILITY_CONTRACT.md`. |
 | M61 | MonoDGP-to-A2 Vehicle geometry distillation | Parked after reported audit rejection | Full component report unreviewed. No continuation-training result supplied. Preserve original policy and caches. |
-| M62 | R0-to-A2 train-only geometry diagnosis | Prepared; Colab pending | Exact R0 epoch185/A2 epoch130. Bounded native inference/operator inventory, complete train caches, per-component teacher wins by distance. Separate declared screening policy; no training authorization. |
+| M62 | R0-to-A2 train-only geometry diagnosis | Completed; historical diagnostic | Reviewed `m62_results.zip` led to the bounded M63 Vehicle-depth pilot. Exact R0 epoch185/A2 epoch130 and train-only component screening are preserved; this is not the next recommended notebook. |
+| M64 | Unchanged A2 and one teacher candidate | Prepared; GPU execution pending | Prospective isolated CUDA 13.0 runtime; no M62 rollback. Exact A2 epoch130 and pinned MonoPRIO validation assets. Lazy AP imports, separate model/evaluator processes, resumable complete-set predictions, distinct native/product metrics. Zero optimizer updates; teacher selection, KD and phone deployment remain unauthorized. |
 
 **M53 completion note:** the model and official evaluator passed after the public-API import correction. The prior JSON failed only because it compared an independent reimplementation directly with published native-evaluator values. The corrected schema-v2 finalizer reused the complete prediction set and native log, and all frozen M53 gates passed.
 
@@ -364,11 +387,14 @@ frozen; passing AP does not by itself authorize deployment.
 
 ## Immediate execution plan
 
-**Next runnable action:** run `MonoDETR_M62_R0_A2_Diagnostic_Colab.ipynb`
-sections1–8 on Colab CUDA. Return `m62_results.zip`; no phone or training.
-Review compatibility blockers and train-only geometry/coverage before freezing
-one paired KD pilot. Then confirm accuracy, convert/benchmark the improved
-student, and optimize measured runtime bottlenecks only.
+**Next runnable action:** run
+`MonoDETR_A2_M64_Teacher_Qualification_Colab.ipynb` sections 1–6 on a CUDA 13.0
+GPU runtime. Return `m64_results.zip`; no phone or optimizer updates.
+Review unchanged A2 stability, native teacher reproduction, product taxonomy
+coverage, geometry and prior provenance. Only then freeze an A2-preserving
+control followed by one matched feature-KD pilot. Historical M62/M63 notebooks
+are not the next recommended run. Later confirm accuracy and qualify the
+improved student on the phone; optimize measured bottlenecks only.
 The numbered items below retain the historical execution sequence.
 
 1. **Completed:** preserve S1/H1/H2 artifacts and mark those families rejected;
@@ -566,4 +592,5 @@ The numbered items below retain the historical execution sequence.
 - R0 protocol: `TWO_CLASS_REFERENCE_PROTOCOL.md`
 - Full chronological evidence: `MobileADAS3D_Codex_Handoff_20260715.md`
 - Active A2/R0 plan: `A2_ACCURACY_DISTILLATION_DEPLOYMENT_PLAN.md`
+- M64 notebook scope and review boundary: `MONODETR_M64_TEACHER_QUALIFICATION_CONTRACT.md`
 - Current status and next task: this file

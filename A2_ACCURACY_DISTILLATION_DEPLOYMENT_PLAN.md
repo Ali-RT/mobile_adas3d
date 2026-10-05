@@ -1,13 +1,33 @@
 # A2 accuracy → distillation → iPhone plan
 
-Decision date: 2026-09-28. MonoDGP and M61 are parked, not deleted.
+Decision updated: 2026-10-04. Keep A2 as the student and reassess both the
+teacher and the transfer method. Do not extend the rejected scalar-depth pilot
+or make historical-runtime recovery the main accuracy-development task.
+MonoDGP and M61 are parked, not deleted.
 M61's train-only audit rejected every component according to the user-provided
 log. The full component report has not been independently reviewed. No M61
 continuation-training result has been supplied. Do not overwrite its artifacts.
 
-## Current action — M63h, bounded reproducibility check
+## Current action
 
-**Current runnable notebook:** `notebooks/MonoDETR_M63h_Reproducibility_Colab.ipynb`, revision `M63H-STANDALONE-2026-10-02-r5`. On a new L4 runtime, run sections1–4 in order. In the current live session, pull main and rerun section2 only; packages, compiled extension and runtime receipt do not need rebuilding. This supersedes the old section17 handoff. Existing Drive evidence is preserved. The user reports complete data restoration and successful frozen provenance/approved-target checks, followed by native SIGSEGV (exit -11) in the CUDA smoke test. The crashing operation is not yet identified; no M63h optimizer updates have run. Revision r5 adds flushed stage markers, Python fault traces and `m63h_isolated_runtime_smoke.progress.json`, including actual loaded native-library paths. Training remains blocked until smoke succeeds. Return the smoke log and progress JSON if it fails again. Runtime uses `/content/m63h_cuda128_venv` without shared packages, pinned Numba0.61.2/llvmlite0.44.0 and a recorded dependency lock; no historical Numba equivalence is claimed. New reports use `diagnostics_m63h_isolated`.
+Run the new bounded M64 teacher-qualification notebook:
+`notebooks/MonoDETR_A2_M64_Teacher_Qualification_Colab.ipynb`, sections 1–6.
+It restores unchanged A2, checks real forward/backward with zero optimizer
+updates, and evaluates one candidate teacher on the complete Chen validation
+split. Return `m64_results.zip` for review. The workflow is prepared and locally
+tested; its CUDA execution and teacher accuracy are not yet verified.
+No new teacher is selected and no new KD run has started. See
+`MONODETR_M64_TEACHER_QUALIFICATION_CONTRACT.md` for the exact boundaries.
+The existing M63h notebook is archival, not the next accuracy experiment.
+Preserve its files and hashes.
+
+The latest M63h r5 log localizes SIGSEGV to Numba CUDA context initialization
+while importing the KITTI AP evaluator through the dataset loader. Torch and
+the deformable-attention extension import passed; that does not establish
+attention forward/backward correctness. The underlying driver/binding conflict
+is not yet proven. No M63h optimizer updates ran. A prospective training loader
+must not initialize the AP evaluator at import time; run metric evaluation
+separately and record a new runtime/source identity instead of changing M62.
 
 M63f KD gained0.1528 Vehicle3D AP over its matched control, but lost0.1726
 Pedestrian3D AP. Original A2 remains selected; the pilot failed.
@@ -19,29 +39,29 @@ detections. Diagnostic matching is not an exact attribution of AP.
 Repeat controls share recorded settings and unchanged BN buffers but have
 different learned weights. This does not establish which operation caused it.
 
-M63h runs two fresh subprocesses, each with three GT-only updates from A2.
-Keep seed20268, batch4, LR1e-5, fresh native optimizer, no augmentation,
-FP32 and frozen BN running buffers. Compare input/GT identities, RNG states,
-backend flags, losses, outputs, gradients and updated weights. Six updates
-total; no KD, full epoch, validation sweep or promoted checkpoint. Temporary
-local tensor snapshots are removed after comparison. Three instrumented
-batches cannot prove full-run determinism or identify a specific faulty kernel.
-
-Use standalone notebook r5. After a reset run sections1–4; in the current live
-session rerun section2 for the stage-marked smoke test. Return m63h_results.zip
-after completion, or the smoke log and progress JSON if the native crash recurs.
-Review before choosing a preservation loss or restricting model updates.
+The evidence supports two separate problems: the chosen KD treatment did not
+meet acceptance, and continuation training can lose A2 accuracy even without
+KD. It does not prove that R0 is useless or that changing teachers alone will
+solve the problem. M63 taught only final Vehicle depth, using a fixed
+0.25-weight absolute error in metres, unaugmented views and all student
+parameters trainable. It did not test object-aware feature distillation or a
+loss preserving reliable original A2 predictions.
 
 ## Priority order
 
-1. Freeze A2 epoch130 as the working baseline, not a safety-qualified product.
-2. Bound the initial deployment check to native inference and operator inventory.
-   Record custom CUDA blockers; do not divert into another long export project.
-3. Diagnose useful R0 teacher supervision on training data only (M62 below).
-4. After review, freeze one matched 10-epoch GT-only / GT+KD pilot. Keep A2's
-   graph and both classes' GT losses. No temperature/architecture sweep.
-5. Measure gain against unchanged A2 and control; protect Pedestrian AP/recall.
-   Confirm a successful pilot with another seed before longer training.
+1. Keep the exact A2 epoch130 checkpoint and inference graph as the baseline.
+2. Qualify one newer multi-class teacher candidate and establish a simple,
+   working prospective A2 runtime. Do not train a new teacher from scratch,
+   resume MonoDGP export, or restore every historical package as this stage.
+3. Re-evaluate unchanged A2, then test a short GT-plus-preservation control.
+   Freeze the continuation recipe and numerical criteria before execution.
+   If the control substantially forgets A2, stop and correct that recipe.
+4. Run one matched control versus object-aware feature-KD pilot using the
+   qualified teacher only on supported classes/components. Keep both classes'
+   GT losses and identical A2-preservation supervision in both arms.
+5. Measure benefit against unchanged A2 and the matched control, including
+   per-class AP, nearby recall and geometry tails. Confirm a promising result
+   with a second seed before longer training; failure does not authorize a grid.
 6. Freeze the improved student, convert with prediction-preservation checks,
    then measure actual iPhone model and end-to-end timing/memory/stability.
 7. Optimize only a measured runtime bottleneck, one change at a time, retaining
@@ -62,10 +82,95 @@ improvement. Teacher runs on the training machine; student is the phone target.
 - A2 retains four of five historical 90%-of-R0 AP gates. Vehicle3D15.8713
   remains missed by0.4140; Pedestrian nearby target0.80 remains missed.
   These limits are not silently lowered. A2 iPhone performance is not measured.
-- R0 is not a uniformly better teacher: start with selective Vehicle geometry,
-  not blind Pedestrian or all-output imitation. Rejected R0→A1 stays rejected.
+- R0 is not a uniformly better teacher: restrict its external supervision to
+  supported Vehicle strengths, not blind Pedestrian or all-output imitation.
+  Rejected R0→A1 stays rejected.
 
-## M62 — bounded diagnostic, zero training
+## Teacher selection
+
+Our own product-taxonomy moderate 3D AP_R40 results are:
+
+| Model | Vehicle | Pedestrian | Current role |
+| --- | ---: | ---: | --- |
+| A2 MobileNetV4 Conv Medium MonoDETR | 15.4573 | 7.5328 | Selected student baseline |
+| R0 ResNet50 MonoDETR | 17.6348 | 5.7214 | Available Vehicle specialist |
+| M54 ResNet50 MonoDGP | 19.4519 | 6.1749 | Parked reference, not an approved KD teacher |
+
+Neither existing teacher is uniformly stronger than A2. Higher aggregate AP
+does not establish that every training target is better or transferable.
+The M61 audit rejection remains part of the evidence; do not simply revive
+that exact pipeline because M54 has higher Vehicle AP.
+
+The proposed single challenger is **MonoPRIO**, a May 2026 preprint with an
+official implementation, unified Car/Pedestrian/Cyclist validation checkpoints,
+logs and size-prior banks. Its reported median-of-five moderate 3D AP_R40 is
+21.856 for Car and 9.361 for Pedestrian. These are published standard-KITTI
+results, **not our Vehicle/Pedestrian benchmark or reproduced results**.
+See the [paper](https://arxiv.org/abs/2605.14781) and
+[official implementation](https://github.com/Leon-Davies/MonoPRIO).
+
+Qualification must check checkpoint/config/source identity, exact train/val
+IDs, geometry conventions and prior-bank construction before inference.
+Use a validation checkpoint, never a trainval/test checkpoint for Chen-val.
+Prior banks must not use validation labels. Reproduce the published native
+class protocol first, then evaluate with our unchanged product evaluator.
+Do not equate native Car with Truck/Tram/Van or native Pedestrian with
+Person_sitting without checking the training taxonomy. A native-class-only
+teacher can supply class-supported targets, not claim full product coverage.
+
+Select supervision by actual class/range strengths, uncertainty, coverage and
+geometry errors as well as AP. Train-only target screening and development-set
+teacher qualification serve different purposes; validation labels never become
+KD targets. If the candidate cannot be reproduced or shows no useful advantage,
+retain A2 and report that outcome. No automatic teacher-training campaign or
+second challenger is authorized by a failed qualification.
+
+## Proposed distillation design
+
+The first new treatment should teach **object-matched internal geometry
+features**, not repeat only final-depth copying. Hungarian/GT associations must
+align objects rather than assume equal query indices. An alignment projector
+may be used during training and removed for inference. The inference target
+remains A2, not MonoPRIO. This is a proposed adaptation, not a validated
+implementation of [DETRDistill](https://arxiv.org/abs/2211.10156), which studies
+Hungarian-matched and target-aware feature KD for 2D DETR detectors.
+
+Use three distinct sources of supervision:
+
+- Original GT losses for Vehicle and Pedestrian.
+- A soft preservation loss from frozen original A2 on reliable predictions,
+  particularly Pedestrian classification, localization and geometry. It is
+  intended to limit forgetting, not to make A2's errors immutable.
+- One object-aware feature-KD loss from the qualified stronger teacher, masked
+  to supported classes/ranges. R0 remains a possible Vehicle-only fallback,
+  not an assumed Pedestrian teacher. New geometry/logit KD is a later ablation,
+  not added simultaneously to this first treatment.
+
+The matched control receives the same GT and preservation losses, augmentations,
+initial checkpoint, update budget and optimizer recipe; only stronger-teacher
+KD differs. Preserve BN running buffers and document any affine-parameter
+updates. Teachers run detached and in evaluation mode. Teacher and student
+must see the same geometrically transformed image/calibration; restore useful
+augmentation through online or transform-compatible teaching rather than reuse
+unaugmented cached targets incorrectly. Address mixup separately before using it.
+
+Class counts are about 7.2 Vehicle objects per Pedestrian object in train.
+Report per-class contributions and normalize KD over objects within each class
+so Vehicle count alone cannot set the loss scale. This is not an automatic
+7.2-times Pedestrian GT weight: earlier sampling/focal-weight experiments did
+not solve the gap. Freeze weights, gradient-scale checks and reliable-target
+rules using training data before evaluating the pilot. Preservation is a
+hypothesis to test, not a guarantee.
+
+The intended budget is one teacher qualification, one short paired pilot and
+one confirmation seed only if promising. Exact epochs, loss coefficients and
+acceptance tolerances require the new executable contract; do not present this
+plan as a runnable experiment. No temperature grid is justified for feature KD.
+
+## M62 completed diagnostic
+
+The following records the original M62 protocol, not a request to rerun it.
+Its reviewed evidence remains available in `m62_results.zip`.
 
 Notebook: `notebooks/MonoDETR_M62_R0_A2_Diagnostic_Colab.ipynb`.
 Revision `M62-2026-09-28-r1`, sections1–8 in order on CUDA. No phone needed.
@@ -107,18 +212,19 @@ An aggregate training-error gate alone cannot establish whether KD improves
 generalization; conversely, cherry-picked training wins do not establish it
 either. Only a future controlled held-out comparison can measure that benefit.
 
-## Review boundary and later pilot
+## Historical review boundary
 
-Return `m62_results.zip`: manifest, native compatibility report, component
-summary and per-object geometry rows. Review coverage, near-zero/noisy wins,
-tail errors and operating ranges before freezing teacher targets and loss scale.
-No trainable model, selected KD weight, or training command is produced here.
+The delivered `m62_results.zip` contains the manifest, native compatibility
+report, component summary and per-object geometry rows. M62 itself produced
+no trainable model, selected KD weight or training command.
 
-The later contract must freeze numerical acceptance limits before training:
+The historical M62/M63 pilot has already run and failed; its acceptance limits
+and frozen artifacts remain unchanged. The redesigned pilot must separately
+freeze numerical acceptance limits before training:
 Vehicle3D gain vs unchanged A2 and matched control, Pedestrian AP/nearby-recall
 preservation, Vehicle BEV/recall limits, exact split and decision epoch. Report
-the original five AP gates separately. Keep GT supervision for both classes;
-one selected Vehicle component only. If unaugmented caches are used, both arms
-must use that identical view; never reuse targets on incompatible transforms.
-No class-logit KD means no temperature sweep. A pass needs seed confirmation;
-a failure does not automatically authorize extra epochs or more variants.
+the original five AP gates separately. Keep GT supervision for both classes
+and never reuse targets on incompatible transforms. A pass needs seed
+confirmation; a failure does not automatically authorize extra epochs or more
+variants. Repeatedly inspected Chen-val is development data, not an untouched
+final test. Later qualification must include external, unseen evaluation.

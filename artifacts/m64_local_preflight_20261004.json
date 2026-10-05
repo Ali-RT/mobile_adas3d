@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "revision": "M64-TEACHER-QUALIFICATION-2026-10-04-r1",
+  "date": "2026-10-04",
+  "scope": "Mac CPU source and asset inspection only",
+  "a2_upstream_commit": "6994b9f512400b258c6edb75f77423beb9c126f2",
+  "teacher_upstream_commit": "884b7d8562e528031616c4773170bfc4fe211bf0",
+  "a2_patched_source_sha256": "883b08e4d362473dc6cd00a0c45df712c19400482077eaaecd53590140078192",
+  "teacher_patched_source_sha256": "9ed060fe8a97b9abc5f35003112e23973835581dd48a767f3985c12194cec430",
+  "actual_source_imports_without_ap_initialization": {
+    "a2": true,
+    "teacher": true
+  },
+  "source_patch_reapplication_verified": true,
+  "synthetic_kitti_loader_and_target_interfaces_passed": {
+    "a2": true,
+    "teacher": true
+  },
+  "notebook_nbformat_schema_passed": true,
+  "notebook_code_sections": 6,
+  "new_cpu_regression_tests_passed": 27,
+  "related_metric_regression_tests_passed": 17,
+  "pinned_auxiliary_linux_python313_wheels_available": true,
+  "full_colab_dependency_installation_verified": false,
+  "teacher_asset_sha256": {
+    "checkpoint": "6ac885b5902b98110e42da0217a01232e61cf8534884f188bd794ff97e50c098",
+    "prior": "e2f519187b72f1f4c62d44cbef63f0d6d05f87c7c47fff160049b34d230b464c",
+    "log": "8dd018b12a36adc29842a54a36addc890ade4f34f5efb737b47e2d321aa71850"
+  },
+  "publisher_signed_checksums_available": false,
+  "teacher_checkpoint_epoch": 242,
+  "teacher_state_tensors": 712,
+  "restricted_checkpoint_load_passed": true,
+  "strict_cpu_model_state_load_passed": true,
+  "matching_prior_buffers": 7,
+  "prior_training_ids_independently_verified": false,
+  "native_attention_import_stubbed_for_cpu_inspection": true,
+  "cuda_only_loss_constructor_stubbed_for_cpu_state_inspection": true,
+  "actual_cuda_forward_backward_executed": false,
+  "colab_runtime_recipe_executed": false,
+  "a2_checkpoint_binary_inspected_locally_this_step": false,
+  "teacher_accuracy_reproduced": false,
+  "teacher_selected": false,
+  "kd_authorized": false,
+  "optimizer_steps": 0
+}
