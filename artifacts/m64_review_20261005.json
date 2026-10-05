@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "review_date": "2026-10-05",
+  "source_archive": "m64_results.zip",
+  "source_archive_sha256": "7bacc9bdd4b4c7871dfd9fdc4055d580bd3adaba1ae9ade5d1b49676ce404362",
+  "manifest_file_sha256": "10cfd5663b8cb999794d2b0600f71ecc6df976d55f7ce806f666e71bb13d8ce8",
+  "qualification_file_sha256": "4b256b1b27050198e787618f732c3398929084357838261aaa8a95a19dfc8554",
+  "manifest_identity": "46bd83eb562192150c8839fed7ee5905f0aba2510e90b72d1ee7dc88c6a183ba",
+  "revision": "M64-TEACHER-QUALIFICATION-2026-10-05-r2",
+  "gpu": "NVIDIA A100-SXM4-80GB",
+  "reviewed_report_and_log_evidence": true,
+  "raw_checkpoint_and_prediction_independent_rerun": false,
+  "evaluated_images_per_model": 3769,
+  "a2_baseline_reproduced": true,
+  "teacher_native_reproduced": true,
+  "optimizer_steps": 0,
+  "a2_product_moderate": {
+    "vehicle_3d": 15.447527335986564,
+    "pedestrian_3d": 7.528416451699579,
+    "vehicle_bev": 21.377606101348228,
+    "pedestrian_bev": 8.488669175064146
+  },
+  "monoprio_product_moderate": {
+    "vehicle_3d": 19.491666974455466,
+    "pedestrian_3d": 8.663286006334816,
+    "vehicle_bev": 24.681598359108996,
+    "pedestrian_bev": 9.805071667045686
+  },
+  "a2_nearby_recall": {"Vehicle": 0.8829344841114163, "Pedestrian": 0.6926807760141094},
+  "monoprio_nearby_recall": {"Vehicle": 0.8534327187132209, "Pedestrian": 0.7469135802469136},
+  "teacher_selected": false,
+  "kd_authorized": false,
+  "prior_training_ids_independently_verified": false,
+  "default_prior_recipe_discrepancy": {
+    "released_prototype_counts": {"Pedestrian": 13, "Car": 10, "Cyclist": 12},
+    "default_maximum_counts": {"Pedestrian": 8, "Car": 20, "Cyclist": 8},
+    "construction_sample_ids_present": false,
+    "validation_leakage_proven": false
+  },
+  "next_action": "M65 one-epoch GT plus original-A2 preservation control; external-teacher KD remains disabled"
+}

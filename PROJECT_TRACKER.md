@@ -19,16 +19,35 @@ not constrain the current accuracy-development stage.
 **Current decision:** keep A2 epoch130 and its MobileNetV4 Conv Medium plus
 MonoDETR inference graph. Stop extending the rejected scalar-depth pilot and
 defer M63h historical-runtime recovery as the main development task. The next
-workflow must qualify one stronger teacher and test an A2-preserving control
-before one paired object-aware feature-distillation pilot. MonoPRIO is a
-researched challenger, not a selected or reproduced teacher. The self-contained
-M64 notebook is prepared: sections 1–6 restore unchanged A2, run zero-update
-smokes, and evaluate A2 plus the single teacher candidate on all 3,769 validation
-images. Local regression/source checks pass; CUDA execution and teacher accuracy
-remain unverified. Return `m64_results.zip` before any training. See
+workflow must test an A2-preserving control before one paired object-aware
+feature-distillation pilot. M64 r2 completed on A100 80 GB: both models evaluated
+all 3,769 images, A2 reproduced its baseline and MonoPRIO reproduced its published
+native seed 444 results. No optimizer updates occurred. MonoPRIO remains a
+candidate, not a selected teacher: its released prior-bank construction is
+unverified and incompatible with the pinned default prototype-count recipe.
+This is not proof of validation leakage. M65 is the next prepared standalone
+notebook: one epoch of GT plus original-A2 preservation, without MonoPRIO targets.
+Return `m65_results.zip`; GPU control execution and stability remain unverified. See
 `MONODETR_M64_TEACHER_QUALIFICATION_CONTRACT.md` and
 `A2_ACCURACY_DISTILLATION_DEPLOYMENT_PLAN.md` for evidence, teacher taxonomy
 limits, proposed loss design and the review boundary. Product gates do not change.
+The executable control contract is `MONODETR_M65_A2_PRESERVATION_CONTRACT.md`.
+Local checks: 34 M64 regression tests and 21 M65 tests pass. All six M65 code
+cells compile, and the preservation loss works with the exact pinned native
+Hungarian matcher on CPU. These checks do not establish GPU training or accuracy.
+
+- **M64 reviewed:** product moderate 3D AP A2 Vehicle 15.4475/Pedestrian 7.5284,
+  MonoPRIO 19.4917/8.6633; BEV 21.3776/8.4887 versus 24.6816/9.8051.
+  Nearby Vehicle/Pedestrian recall A2 .88293/.69268, teacher .85343/.74691.
+  Both Vehicle recalls pass .85; neither Pedestrian recall passes .80.
+  Manifest/reports/logs and CSV aggregates were checked; raw predictions and
+  checkpoint binaries were not included for an independent AP rerun.
+  Evidence: `artifacts/m64_review_20261005.json`.
+- **M65 prior audit:** released Pedestrian/Car/Cyclist counts 13/10/12 versus
+  builder default maximum 8/20/8; no construction sample IDs/split digests.
+  Source defaults and the paper's training-only statement do not independently
+  tie the released bytes to the exact inputs. Obtain exact construction evidence
+  before external-teacher KD; the teacher-independent A2 control can proceed.
 
 - **M64 local preflight:** the actual MonoPRIO seed444 validation checkpoint
   (epoch242) loads with restricted deserialization and matches all712 model
@@ -238,7 +257,8 @@ limits, proposed loss design and the review boundary. Product gates do not chang
 | M60a | Trained MonoDGP physical-device feasibility | Complete—parity passed, latency failed | iPhone16 Pro Max: all16 fixed-input raw/decoded parity checks pass vs PyTorch/Mac. p95 233.73 ms initially/305.50 ms sustained vs50 ms. 60.262-second loop completed, thermal nominal→fair, sampled peak RSS491.67 MiB including fixtures. No camera or deployment qualification. See `MONODGP_M60_DEVICE_FEASIBILITY_CONTRACT.md`. |
 | M61 | MonoDGP-to-A2 Vehicle geometry distillation | Parked after reported audit rejection | Full component report unreviewed. No continuation-training result supplied. Preserve original policy and caches. |
 | M62 | R0-to-A2 train-only geometry diagnosis | Completed; historical diagnostic | Reviewed `m62_results.zip` led to the bounded M63 Vehicle-depth pilot. Exact R0 epoch185/A2 epoch130 and train-only component screening are preserved; this is not the next recommended notebook. |
-| M64 | Unchanged A2 and one teacher candidate | Prepared; GPU execution pending | Prospective isolated CUDA 13.0 runtime; no M62 rollback. Exact A2 epoch130 and pinned MonoPRIO validation assets. Lazy AP imports, separate model/evaluator processes, resumable complete-set predictions, distinct native/product metrics. Zero optimizer updates; teacher selection, KD and phone deployment remain unauthorized. |
+| M64 | Unchanged A2 and one teacher candidate | Complete; reproduction passed, prior provenance unresolved | A100 80 GB,3769/3769 each; A2 baseline and MonoPRIO seed 444 native references reproduced. Product 3D AP 15.4475/7.5284 versus19.4917/8.6633. Zero updates; no teacher/student promotion. Released prior construction lacks IDs and exceeds default recipe counts. |
+| M65 | Original A2 preservation control | Prepared; CUDA execution pending | One GT-plus-original-A2 preservation epoch, 928 updates, frozen BN, online matched transforms, full fresh baseline/control validation. External KD disabled; original A2 unchanged on disk. |
 
 **M53 completion note:** the model and official evaluator passed after the public-API import correction. The prior JSON failed only because it compared an independent reimplementation directly with published native-evaluator values. The corrected schema-v2 finalizer reused the complete prediction set and native log, and all frozen M53 gates passed.
 
@@ -397,11 +417,11 @@ frozen; passing AP does not by itself authorize deployment.
 ## Immediate execution plan
 
 **Next runnable action:** run
-`MonoDETR_A2_M64_Teacher_Qualification_Colab.ipynb` sections 1–6 on a CUDA 13.0
-GPU runtime. Return `m64_results.zip`; no phone or optimizer updates.
-Review unchanged A2 stability, native teacher reproduction, product taxonomy
-coverage, geometry and prior provenance. Only then freeze an A2-preserving
-control followed by one matched feature-KD pilot. Historical M62/M63 notebooks
+`MonoDETR_A2_M65_Preservation_Control_Colab.ipynb` sections 1–6 on an A100
+CUDA 13.0 runtime. Return `m65_results.zip`; no phone is required. The run makes
+only 928 control updates and never overwrites original A2. M64 is complete.
+Review the control's stability and resolve the released prior's exact construction
+before freezing one matched feature-KD treatment. Historical M62/M63 notebooks
 are not the next recommended run. Later confirm accuracy and qualify the
 improved student on the phone; optimize measured bottlenecks only.
 The numbered items below retain the historical execution sequence.
@@ -602,4 +622,6 @@ The numbered items below retain the historical execution sequence.
 - Full chronological evidence: `MobileADAS3D_Codex_Handoff_20260715.md`
 - Active A2/R0 plan: `A2_ACCURACY_DISTILLATION_DEPLOYMENT_PLAN.md`
 - M64 notebook scope and review boundary: `MONODETR_M64_TEACHER_QUALIFICATION_CONTRACT.md`
+- M64 completed review: `artifacts/m64_review_20261005.json`
+- M65 bounded control and prior audit: `MONODETR_M65_A2_PRESERVATION_CONTRACT.md`
 - Current status and next task: this file

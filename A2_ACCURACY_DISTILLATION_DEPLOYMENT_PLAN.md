@@ -1,6 +1,6 @@
 # A2 accuracy → distillation → iPhone plan
 
-Decision updated: 2026-10-04. Keep A2 as the student and reassess both the
+Decision updated: 2026-10-05. Keep A2 as the student and reassess both the
 teacher and the transfer method. Do not extend the rejected scalar-depth pilot
 or make historical-runtime recovery the main accuracy-development task.
 MonoDGP and M61 are parked, not deleted.
@@ -10,14 +10,24 @@ continuation-training result has been supplied. Do not overwrite its artifacts.
 
 ## Current action
 
-Run the new bounded M64 teacher-qualification notebook:
-`notebooks/MonoDETR_A2_M64_Teacher_Qualification_Colab.ipynb`, sections 1–6.
-It restores unchanged A2, checks real forward/backward with zero optimizer
-updates, and evaluates one candidate teacher on the complete Chen validation
-split. Return `m64_results.zip` for review. The workflow is prepared and locally
-tested; its CUDA execution and teacher accuracy are not yet verified.
-No new teacher is selected and no new KD run has started. See
-`MONODETR_M64_TEACHER_QUALIFICATION_CONTRACT.md` for the exact boundaries.
+M64 r2 completed on A100 80 GB: both models evaluated 3,769/3,769 images,
+unchanged A2 reproduced its baseline, and MonoPRIO reproduced its published
+seed 444 native results. No optimizer updates occurred. Product moderate 3D AP
+was A2 Vehicle 15.4475/Pedestrian 7.5284 and teacher 19.4917/8.6633.
+The teacher has higher AP but lower nearby Vehicle recall; no student improvement
+or uniformly superior teacher geometry is established.
+
+The exact released prior has 13 Pedestrian/12 Cyclist prototypes, exceeding the
+pinned builder's default maximum 8 each, and contains no construction IDs.
+This is an unresolved recipe/provenance gap, not proven validation leakage.
+External-teacher KD remains disabled. See `artifacts/m64_review_20261005.json`
+and `MONODETR_M65_A2_PRESERVATION_CONTRACT.md`.
+
+Next run the standalone `notebooks/MonoDETR_A2_M65_Preservation_Control_Colab.ipynb`,
+sections 1–6. It uses the successful prospective CUDA 13 recipe and one epoch of
+GT plus original-A2 preservation, without MonoPRIO targets. Return
+`m65_results.zip`. The control recipe is prepared; GPU training and accuracy
+preservation are not yet verified. No new teacher is selected or KD started.
 The existing M63h notebook is archival, not the next accuracy experiment.
 Preserve its files and hashes.
 
@@ -101,11 +111,13 @@ does not establish that every training target is better or transferable.
 The M61 audit rejection remains part of the evidence; do not simply revive
 that exact pipeline because M54 has higher Vehicle AP.
 
-The proposed single challenger is **MonoPRIO**, a May 2026 preprint with an
+The single challenger is **MonoPRIO**, a May 2026 preprint with an
 official implementation, unified Car/Pedestrian/Cyclist validation checkpoints,
 logs and size-prior banks. Its reported median-of-five moderate 3D AP_R40 is
 21.856 for Car and 9.361 for Pedestrian. These are published standard-KITTI
-results, **not our Vehicle/Pedestrian benchmark or reproduced results**.
+results, **not our Vehicle/Pedestrian benchmark**. M64 subsequently reproduced
+the separate seed 444 native protocol and measured its product-taxonomy results;
+the released prior's exact construction remains unverified.
 See the [paper](https://arxiv.org/abs/2605.14781) and
 [official implementation](https://github.com/Leon-Davies/MonoPRIO).
 
@@ -162,10 +174,13 @@ not solve the gap. Freeze weights, gradient-scale checks and reliable-target
 rules using training data before evaluating the pilot. Preservation is a
 hypothesis to test, not a guarantee.
 
-The intended budget is one teacher qualification, one short paired pilot and
+The intended budget is one teacher qualification, one short preservation control,
+one short paired pilot and
 one confirmation seed only if promising. Exact epochs, loss coefficients and
-acceptance tolerances require the new executable contract; do not present this
-plan as a runnable experiment. No temperature grid is justified for feature KD.
+acceptance tolerances for external feature-KD require its future executable
+contract. M65 separately freezes the teacher-independent one-epoch control
+and stability criteria; it does not authorize the paired treatment.
+No temperature grid is justified for feature KD.
 
 ## M62 completed diagnostic
 
