@@ -5,6 +5,7 @@ reproducible stronger teacher before another distillation attempt. It performs
 zero optimizer updates. A2 remains selected; MonoPRIO is a candidate only.
 Local regression and pinned-source import checks do not establish CUDA execution,
 published accuracy reproduction, improvement or deployment readiness.
+Build repair revision: `M64-TEACHER-QUALIFICATION-2026-10-05-r2`.
 
 ## Models and scope
 
@@ -43,6 +44,14 @@ methods. A2 and teacher run in separate processes with separate local attention
 binaries. The published native evaluator runs in another process without prior
 Torch CUDA initialization. A native evaluator crash cannot authorize KD or
 discard completed prediction caches.
+
+The A2 release hard-codes old CUDA GPU targets in `ops/setup.py`, including
+`sm_60`, which CUDA13 cannot compile. The M64-only patch removes that exact
+reviewed list and delegates target generation to PyTorch using the attached
+GPU's compute capability. Kernel code and model weights are unchanged. Include
+the private venv's `bin` directory on PATH for its ninja executable; invoking
+the venv's Python alone does not activate that PATH. Failed builds are retried
+with `--force` without deleting source, checkpoints, or logs.
 
 Narrow teacher fixes repair its class-docstring indentation, prohibit pickle
 loading of numeric prior arrays, and suppress unused ImageNet initialization

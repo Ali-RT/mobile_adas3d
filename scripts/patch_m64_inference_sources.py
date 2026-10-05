@@ -9,6 +9,50 @@ import subprocess
 A2_COMMIT = "6994b9f512400b258c6edb75f77423beb9c126f2"
 TEACHER_COMMIT = "884b7d8562e528031616c4773170bfc4fe211bf0"
 MARKER = "# M64: AP evaluation is deliberately lazy and separate from training."
+BUILD_MARKER = "# M64: PyTorch selects the current GPU via TORCH_CUDA_ARCH_LIST."
+LEGACY_ARCH_FLAGS = (
+    "-arch=sm_60",
+    "-gencode=arch=compute_60,code=sm_60",
+    "-gencode=arch=compute_61,code=sm_61",
+    "-gencode=arch=compute_70,code=sm_70",
+    "-gencode=arch=compute_75,code=sm_75",
+)
+
+
+def cuda_build_targets(text: str) -> str:
+    """Remove only the pinned release's legacy nvcc targets, not kernel code."""
+    tree = ast.parse(text)
+    assignments = [node for node in ast.walk(tree) if isinstance(node, ast.Assign)
+                   and any(isinstance(target, ast.Subscript)
+                           and isinstance(target.value, ast.Name)
+                           and target.value.id == "extra_compile_args"
+                           and isinstance(target.slice, ast.Constant)
+                           and target.slice.value == "nvcc" for target in node.targets)]
+    if len(assignments) != 1 or not isinstance(assignments[0].value, ast.List):
+        raise RuntimeError("Unexpected CUDA compile-argument layout")
+    values = assignments[0].value.elts
+    if any(not isinstance(value, ast.Constant) or not isinstance(value.value, str) for value in values):
+        raise RuntimeError("CUDA compile arguments must be the reviewed literal list")
+    architecture = [value for value in values if "arch" in value.value]
+    if architecture and tuple(value.value for value in architecture) != LEGACY_ARCH_FLAGS:
+        raise RuntimeError("Unreviewed explicit CUDA architecture flags; do not silently remove them")
+    lines = text.splitlines(keepends=True)
+    removed = set()
+    for value in architecture:
+        if value.lineno != value.end_lineno:
+            raise RuntimeError("Unexpected multiline CUDA architecture flag")
+        line = lines[value.lineno - 1].strip()
+        if line not in {repr(value.value) + ",", '"' + value.value + '",'}:
+            raise RuntimeError("Architecture flag shares a line with other build settings")
+        removed.add(value.lineno - 1)
+    result = "".join(line for index, line in enumerate(lines) if index not in removed)
+    if BUILD_MARKER not in result:
+        old = '        extra_compile_args["nvcc"] = [\n'
+        if result.count(old) != 1:
+            raise RuntimeError("Unexpected nvcc list indentation")
+        result = result.replace(old, old + "            " + BUILD_MARKER + "\n")
+    ast.parse(result)
+    return result
 
 
 def lazy_evaluator(text: str) -> str:
@@ -65,7 +109,9 @@ def patch(repo: Path, role: str) -> None:
         raise RuntimeError(f"Wrong {role} source commit: {commit}")
     if repo.name in {"MonoDETR_M62", "MonoDETR_M63"}:
         raise RuntimeError("Do not patch a historical experiment checkout")
-    paths = {repo / "lib/datasets/kitti/kitti_dataset.py": lazy_evaluator}
+    model_name = "monodetr" if role == "a2" else "monoprio"
+    paths = {repo / "lib/datasets/kitti/kitti_dataset.py": lazy_evaluator,
+             repo / f"lib/models/{model_name}/ops/setup.py": cuda_build_targets}
     if role == "teacher":
         paths[repo / "lib/models/monoprio/monoprio.py"] = teacher_model_syntax
         paths[repo / "lib/models/monoprio/backbone.py"] = teacher_backbone

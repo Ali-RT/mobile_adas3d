@@ -1,6 +1,6 @@
 # MobileADAS3D project tracker
 
-Last updated: 2026-10-04
+Last updated: 2026-10-05
 
 This is the canonical status page. Update it whenever a task changes state,
 an experiment finishes, a gate passes/fails, or the next action changes.
@@ -36,6 +36,15 @@ limits, proposed loss design and the review boundary. Product gates do not chang
   and the CUDA-only loss constructor were stubbed for this state check; it is
   not GPU operator, loss or accuracy evidence. Downloaded release hashes are
   pinned, not publisher-signed. See `artifacts/m64_local_preflight_20261004.json`.
+
+- **M64 cell 2 build failure:** the supplied compiler log stops on obsolete
+  `sm_60` flags hard-coded in upstream A2 `ops/setup.py`. CUDA13 rejects these
+  targets; the previous environment setting did not override explicit flags.
+  Revision `M64-TEACHER-QUALIFICATION-2026-10-05-r2` removes only the reviewed
+  legacy target list, compiles for the attached GPU, and includes the private
+  venv executable directory on PATH so ninja can be found. This is a build
+  repair, not evidence of GPU execution or teacher/student accuracy.
+  See `artifacts/m64_build_repair_preflight_20261005.json` for the local checks.
 
 - **M63 completed and failed its fixed epoch10 acceptance rule.** Original A2
   remains the working checkpoint. Vehicle/Pedestrian 3D AP: source15.4505/7.5285,

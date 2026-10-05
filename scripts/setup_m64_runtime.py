@@ -24,14 +24,15 @@ def run(command: list[str], env: dict[str, str]) -> None:
     subprocess.run(list(map(str, command)), env=env, check=True)
 
 
-def runtime_env(cuda: Path) -> dict[str, str]:
+def runtime_env(cuda: Path, python_bin: Path | None = None) -> dict[str, str]:
     env = os.environ.copy()
     drivers = [p for p in ("/usr/lib64-nvidia", "/usr/lib/x86_64-linux-gnu") if Path(p).is_dir()]
     # Preserve caller paths, but never choose CUDA link-time stubs as a driver.
     existing = [p for p in env.get("LD_LIBRARY_PATH", "").split(":") if p and "/stubs" not in p]
     env["LD_LIBRARY_PATH"] = ":".join(dict.fromkeys([*drivers, *existing, str(cuda / "lib64")]))
     env["CUDA_HOME"] = str(cuda)
-    env["PATH"] = str(cuda / "bin") + ":" + env.get("PATH", "")
+    prefixes = ([str(python_bin)] if python_bin is not None else []) + [str(cuda / "bin")]
+    env["PATH"] = ":".join([*prefixes, env.get("PATH", "")])
     env["MAX_JOBS"] = "2"
     env.pop("PYTHONPATH", None)
     env.pop("PYTHONHOME", None)
@@ -52,7 +53,7 @@ def main() -> None:
     version = subprocess.check_output([str(nvcc), "--version"], text=True)
     if "release 13.0," not in version:
         raise RuntimeError(f"This prospective recipe needs nvcc 13.0; found:\n{version}")
-    env = runtime_env(args.cuda)
+    env = runtime_env(args.cuda, args.venv.resolve() / "bin")
     run(["nvidia-smi"], env)
     venv = args.venv.resolve()
     python = venv / "bin/python"

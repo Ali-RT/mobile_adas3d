@@ -6,12 +6,28 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
+
+from patch_m64_inference_sources import cuda_build_targets
 
 
 def sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def native_arch(capability: tuple[int, int]) -> str:
+    if capability < (7, 5):
+        raise RuntimeError("CUDA 13.0 needs a Turing-or-newer GPU; use T4, L4, A100 or newer")
+    return f"{capability[0]}.{capability[1]}"
+
+
+def build_environment(arch: str) -> dict[str, str]:
+    env = dict(os.environ, TORCH_CUDA_ARCH_LIST=arch, MAX_JOBS="2")
+    # Calling a venv interpreter does not activate its executable PATH.
+    env["PATH"] = str(Path(sys.executable).parent) + ":" + env.get("PATH", "")
+    return env
 
 
 def main() -> None:
@@ -28,11 +44,19 @@ def main() -> None:
     ops = repo / f"lib/models/{name}/ops"
     if not (ops / "setup.py").is_file():
         raise FileNotFoundError(ops / "setup.py")
+    setup_text = (ops / "setup.py").read_text()
+    if cuda_build_targets(setup_text) != setup_text:
+        raise RuntimeError("Run patch_m64_inference_sources.py first; explicit legacy CUDA targets remain")
     source = {str(p.relative_to(ops)): sha(p) for p in sorted(ops.rglob("*"))
               if p.is_file() and p.suffix in {".py", ".cu", ".cpp", ".h", ".cuh"}
               and "build" not in p.relative_to(ops).parts}
     capability = torch.cuda.get_device_capability(0)
-    arch = f"{capability[0]}.{capability[1]}"
+    arch = native_arch(capability)
+    env = build_environment(arch)
+    ninja = shutil.which("ninja", path=env["PATH"])
+    if ninja is None:
+        raise RuntimeError("Private-runtime ninja executable is missing; rerun the M64 runtime setup")
+    print(f"{args.role}: GPU={torch.cuda.get_device_name(0)}, TORCH_CUDA_ARCH_LIST={arch}, ninja={ninja}", flush=True)
     identity = dict(python=sys.version, torch=torch.__version__, cuda=torch.version.cuda,
                     cuda_home=os.environ.get("CUDA_HOME"), arch=arch, sources=source)
     receipt_path = ops / "m64_build_receipt.json"
@@ -45,7 +69,6 @@ def main() -> None:
         # Do not use a shared pip-installed extension or change model source.
         if len(binaries) > 1:
             raise RuntimeError("Multiple ABI builds in checkout; use a new M64 checkout path")
-        env = dict(os.environ, TORCH_CUDA_ARCH_LIST=arch, MAX_JOBS="2")
         command = [sys.executable, "setup.py", "build_ext", "--inplace", "--force"]
         print("+", " ".join(command), flush=True)
         subprocess.run(command, cwd=ops, env=env, check=True)
@@ -55,7 +78,7 @@ def main() -> None:
     # Import-only verification here. The next stage tests actual forward/backward.
     probe = "import sys,torch;sys.path.insert(0,sys.argv[1]);import MultiScaleDeformableAttention as m;print(m.__file__)"
     resolved = subprocess.check_output([sys.executable, "-X", "faulthandler", "-c", probe, str(ops)],
-                                       text=True).strip()
+                                       env=env, text=True).strip()
     if Path(resolved).resolve() != binaries[0].resolve():
         raise RuntimeError("Attention import resolved to another checkout")
     receipt_path.write_text(json.dumps(dict(identity=identity, binary=str(binaries[0]),

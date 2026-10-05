@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "revision": "M64-TEACHER-QUALIFICATION-2026-10-05-r2",
+  "date": "2026-10-05",
+  "scope": "CPU static build configuration and regression verification",
+  "reported_failure": "nvcc fatal: Unsupported gpu architecture 'sm_60'",
+  "cause": "Pinned A2 setup.py supplies explicit legacy CUDA architecture flags, suppressing PyTorch environment-based target generation",
+  "repair": "Remove only the reviewed legacy flags and compile for the attached GPU; prepend private venv bin to PATH for ninja",
+  "actual_pinned_source_patch_and_reapplication_passed": {
+    "a2": true,
+    "teacher": true
+  },
+  "patched_source_sha256": {
+    "a2": "f1ce39fa8877e76c3fc1c456de98ec57a8a9db288fdd5a0d68d9ba34f92dfb82",
+    "teacher": "d61e3b40ffedadbfa035d998c7ead7f7b3d9ae596159807e18db87037862b251"
+  },
+  "both_actual_setup_files_generate_only_selected_target": {
+    "8.0": "-gencode=arch=compute_80,code=sm_80",
+    "8.9": "-gencode=arch=compute_89,code=sm_89",
+    "12.0": "-gencode=arch=compute_120,code=sm_120"
+  },
+  "local_cpu_torch_version_used_for_target_generation": "2.12.0",
+  "prospective_colab_torch_version": "2.10.0+cu130",
+  "notebook_nbformat_schema_passed": true,
+  "cpu_regression_tests_passed": 34,
+  "actual_cuda_compilation_executed_locally": false,
+  "actual_cuda_forward_backward_executed_locally": false,
+  "model_weights_modified": false,
+  "inference_architecture_modified": false,
+  "historical_manifests_modified": false,
+  "teacher_accuracy_reproduced": false,
+  "teacher_selected": false,
+  "kd_authorized": false,
+  "optimizer_steps": 0
+}

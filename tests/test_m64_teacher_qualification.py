@@ -20,6 +20,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import m64_teacher_qualification as q
 import patch_m64_inference_sources as source_patch
 import setup_m64_runtime as setup
+import build_m64_attention as attention_build
 
 
 class UnapprovedObject:
@@ -82,6 +83,52 @@ class M64Tests(unittest.TestCase):
         self.assertIn("pretrained=False", result)
         self.assertEqual(result, source_patch.teacher_backbone(result))
 
+    def test_legacy_cuda_targets_removed_without_changing_other_flags(self):
+        text = ('def build():\n        extra_compile_args["nvcc"] = [\n'
+                '            "-DCUDA_HAS_FP16=1",\n'
+                + "".join(f'            "{flag}",\n' for flag in source_patch.LEGACY_ARCH_FLAGS)
+                + ']\n        return extra_compile_args\n')
+        result = source_patch.cuda_build_targets(text)
+        self.assertEqual(result, source_patch.cuda_build_targets(result))
+        self.assertIn('"-DCUDA_HAS_FP16=1"', result)
+        for flag in source_patch.LEGACY_ARCH_FLAGS:
+            self.assertNotIn(flag, result)
+        self.assertIn("return extra_compile_args", result)
+
+    def test_teacher_native_cuda_target_list_is_preserved(self):
+        text = ('def build():\n        extra_compile_args["nvcc"] = [\n'
+                '            "-D__CUDA_NO_HALF_OPERATORS__",\n]\n')
+        result = source_patch.cuda_build_targets(text)
+        self.assertEqual(result, source_patch.cuda_build_targets(result))
+        self.assertIn('"-D__CUDA_NO_HALF_OPERATORS__"', result)
+
+    def test_unknown_explicit_cuda_target_is_refused(self):
+        text = ('def build():\n        extra_compile_args["nvcc"] = [\n'
+                '            "-arch=sm_89",\n]\n')
+        with self.assertRaisesRegex(RuntimeError, "Unreviewed"):
+            source_patch.cuda_build_targets(text)
+
+    def test_pytorch_generates_only_the_current_gpu_targets(self):
+        from torch.utils.cpp_extension import _get_cuda_arch_flags
+        # CPU-safe: setting an explicit architecture avoids GPU discovery.
+        for architecture, suffix in (("8.0", "80"), ("8.9", "89"), ("12.0", "120")):
+            with patch.dict(os.environ, TORCH_CUDA_ARCH_LIST=architecture):
+                flags = _get_cuda_arch_flags(["-DCUDA_HAS_FP16=1"])
+            self.assertEqual(flags, [f"-gencode=arch=compute_{suffix},code=sm_{suffix}"])
+
+    def test_build_environment_finds_private_executables(self):
+        with patch.object(attention_build.sys, "executable", "/private-venv/bin/python"), \
+             patch.dict(os.environ, PATH="/cuda13/bin:/usr/bin"):
+            env = attention_build.build_environment("8.9")
+        self.assertEqual(env["PATH"].split(":")[0], "/private-venv/bin")
+        self.assertEqual(env["TORCH_CUDA_ARCH_LIST"], "8.9")
+        self.assertEqual(env["MAX_JOBS"], "2")
+
+    def test_cuda13_refuses_pre_turing_gpu(self):
+        self.assertEqual(attention_build.native_arch((8, 0)), "8.0")
+        with self.assertRaisesRegex(RuntimeError, "Turing"):
+            attention_build.native_arch((6, 0))
+
     def test_patches_refuse_historical_checkout(self):
         with patch.object(source_patch.subprocess, "check_output", return_value=source_patch.A2_COMMIT):
             with self.assertRaisesRegex(RuntimeError, "historical"):
@@ -103,6 +150,11 @@ class M64Tests(unittest.TestCase):
         self.assertNotIn("PYTHONPATH", env)
         self.assertNotIn("PYTHONHOME", env)
         self.assertEqual(env["CUDA_HOME"], "/cuda13")
+
+    def test_runtime_path_includes_private_venv_before_cuda(self):
+        with patch.dict(os.environ, PATH="/usr/bin"):
+            env = setup.runtime_env(Path("/cuda13"), Path("/private-venv/bin"))
+        self.assertEqual(env["PATH"].split(":"), ["/private-venv/bin", "/cuda13/bin", "/usr/bin"])
 
     def test_runtime_uses_virtualenv_not_ensurepip_or_kernel_pip(self):
         text = (ROOT / "scripts/setup_m64_runtime.py").read_text()
@@ -247,6 +299,7 @@ class M64Tests(unittest.TestCase):
         for i, flag in ((2, "SETUP_READY"), (3, "MANIFEST_READY"), (4, "SMOKE_READY")):
             self.assertIn(f"if not {flag}:", cells[i])
         self.assertIn("allow_failure=True", cells[4])
+        self.assertIn("helpers['runtime_env'](CUDA, PYTHON.parent)", cells[1])
         self.assertIn("qualify('bundle')", cells[5])
 
     def test_no_training_loop_or_unsafe_load_in_workflow(self):
