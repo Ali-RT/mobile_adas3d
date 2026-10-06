@@ -1,6 +1,9 @@
 """CPU tests for same-object pairing and honest M65 gradient evidence."""
 import copy
+import os
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 import unittest
 import json
@@ -104,6 +107,28 @@ class GradientProbeTests(unittest.TestCase):
         self.torch = torch
         import probe_m65_preservation_gradients as probe
         self.probe = probe
+
+    def test_absolute_script_launch_resolves_repository_package(self):
+        root = Path(__file__).resolve().parents[1]
+        env = os.environ.copy()
+        env.pop("PYTHONPATH", None)
+        env.pop("PYTHONHOME", None)
+        with tempfile.TemporaryDirectory() as directory:
+            missing = Path(directory) / "missing_m65_manifest.json"
+            report = Path(directory) / "report.json"
+            result = subprocess.run(
+                [sys.executable, str(root / "scripts/probe_m65_preservation_gradients.py"),
+                 "--manifest", str(missing), "--repo", directory,
+                 "--dataset-root", directory, "--role", "original",
+                 "--report", str(report)],
+                cwd=directory, env=env, text=True, capture_output=True, timeout=60)
+            # Reach the input guard after importing third_party, without any GPU
+            # forward, checkpoint access, report write or notebook sys.path state.
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("FileNotFoundError", result.stderr)
+            self.assertIn(str(missing), result.stderr)
+            self.assertNotIn("ModuleNotFoundError", result.stderr)
+            self.assertFalse(report.exists())
 
     def test_aggregate_gradient_norm_and_cosine(self):
         a = [self.torch.tensor([3., 0.]), self.torch.tensor([4.])]

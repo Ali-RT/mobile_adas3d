@@ -3870,11 +3870,19 @@ combined preclip norms cannot establish separate-loss gradient dominance.
 Evidence: `artifacts/m65_regression_review_20261005.json`.
 
 Prepared `notebooks/MonoDETR_A2_M65b_Gradient_Diagnostic_Colab.ipynb`, revision
-M65B-ZERO-UPDATE-GRADIENTS-2026-10-05-r1, sections 1–3. It measures original A2
+M65B-ZERO-UPDATE-GRADIENTS-2026-10-05-r2, sections 1–3. It measures original A2
 and completed M65 on first32 train images, using separate loss gradients, no
 optimizer and zero updates. A fresh prospective CUDA13 environment/source build
 has its own receipts and does not rewrite historical identities. Both checkpoint
 tensors must remain on Drive; the uploaded results ZIP alone is insufficient.
-Local: 12 diagnostic tests and 21 unchanged M65 tests pass; all three cells
-compile. Publication to main is approved; GPU probe execution is pending. No new trained model,
+The r1 Colab process stopped before any model forward with `No module named
+'third_party'`: file-entry Python included scripts/ but not the repository root.
+Revision r2 resolves the root from the script file and adds a subprocess test
+from an unrelated working directory with no PYTHONPATH. The frozen M65
+implementation, checkpoint and manifest identities are unchanged. Local
+verification passes all 68 related tests (34 M64, 21 M65, 13 diagnostic)
+and compiles all three notebook cells with matching r2 revision markers. Revision
+r2 on main includes the correction. An existing ready session needs a pull and
+section 3 only, not another runtime
+build. GPU gradient measurements remain pending. No new trained model,
 selected coefficient, external teacher or deployment result is claimed.

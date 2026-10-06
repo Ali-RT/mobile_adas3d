@@ -37,11 +37,15 @@ loss means nor combined gradient norms establish which term caused regression.
 See `artifacts/m65_regression_review_20261005.json`.
 
 Next run `notebooks/MonoDETR_A2_M65b_Gradient_Diagnostic_Colab.ipynb`, sections
-1–3. Publication to main is approved. It measures separate GT and
+1–3, revision r2 on main. It measures separate GT and
 preservation gradients at original A2 and the completed M65 endpoint on 32 fixed
 training images. No optimizer or parameter update is created, and the original
 checkpoints/manifests remain read-only. Return `m65b_gradient_results.zip` for
-review. The probe is prepared; no GPU result is claimed. Only afterward
+review. The r1 probe stopped at a repository-package import before its first
+model forward. Revision r2 fixes that entry point without changing the frozen
+M65 implementation. An existing ready session can pull main and rerun section
+3 only; no runtime rebuild is required. No GPU
+gradient result is claimed. Only afterward
 decide whether one revised preservation control is justified. No loss weight,
 teacher, architecture or additional training budget is selected by this diagnosis.
 The existing M63h notebook is archival, not the next accuracy experiment.

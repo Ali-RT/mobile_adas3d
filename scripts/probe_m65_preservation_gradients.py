@@ -7,11 +7,17 @@ import math
 from pathlib import Path
 import sys
 
+# Absolute script launches expose scripts/, not the repository's third_party/.
+# Resolve imports from this file, independently of the notebook's working dir.
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 import m65_a2_preservation_control as c
 import m64_teacher_qualification as q
 from diagnose_m65_preservation_regression import REVIEWED_MANIFEST
 
-REVISION = "M65B-ZERO-UPDATE-GRADIENTS-2026-10-05-r1"
+REVISION = "M65B-ZERO-UPDATE-GRADIENTS-2026-10-05-r2"
 CONTROL_SHA = "e5c2b592977c68f79bc371196536c0263badaa7277e7fc17bd0ed6c7b64a6a18"
 PARTS = ("loss_ce", "loss_bbox", "loss_giou", "loss_depth", "loss_dim",
          "loss_angle", "loss_center", "loss_depth_map")

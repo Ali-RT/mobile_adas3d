@@ -34,9 +34,14 @@ a zero-update gradient diagnosis, not more training or external-teacher KD. See
 `A2_ACCURACY_DISTILLATION_DEPLOYMENT_PLAN.md` for evidence, teacher taxonomy
 limits, proposed loss design and the review boundary. Product gates do not change.
 The executable control contract is `MONODETR_M65_A2_PRESERVATION_CONTRACT.md`.
-The archive diagnosis is complete; the M65b GPU gradient probe is prepared but
-not executed. Its three notebook cells compile, and 12 diagnostic tests plus
-21 unchanged M65 tests pass. Local tests do not establish CUDA probe results.
+The archive diagnosis is complete; M65b section 3 stopped before any model
+forward because the standalone probe could not import the repository's
+`third_party` package. Revision r2 resolves the repository root from the script
+file and adds a fresh-process launch regression test. No loss, checkpoint,
+frozen implementation or manifest changes are required. CUDA measurements
+remain pending; an existing live session needs the correction and section 3 only.
+All 68 related CPU tests pass (34 M64, 21 M65, 13 diagnostic), and all three
+notebook cells compile with matching r2 revision markers.
 
 - **M65 reviewed and failed preservation:** both evaluations cover 3,769 images.
   Moderate Vehicle/Pedestrian 3D AP was 15.4475/7.5284 before and
@@ -61,8 +66,9 @@ not executed. Its three notebook cells compile, and 12 diagnostic tests plus
   sections 1–3, measures GT/preservation norms and directions on the first32
   training images at original A2 and the completed M65 checkpoint. No optimizer,
   updates, teacher, weight sweep or checkpoint promotion. Fresh runtime/source
-  receipts do not rewrite historical manifests. Publication to main is approved;
-  GPU execution is pending.
+  receipts do not rewrite historical manifests. Revision r2 on main includes
+  the standalone import correction and regression test. GPU measurements are
+  pending.
 
 - **M64 reviewed:** product moderate 3D AP A2 Vehicle 15.4475/Pedestrian 7.5284,
   MonoPRIO 19.4917/8.6633; BEV 21.3776/8.4887 versus 24.6816/9.8051.
