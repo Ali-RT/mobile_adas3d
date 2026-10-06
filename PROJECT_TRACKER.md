@@ -25,16 +25,44 @@ all 3,769 images, A2 reproduced its baseline and MonoPRIO reproduced its publish
 native seed 444 results. No optimizer updates occurred. MonoPRIO remains a
 candidate, not a selected teacher: its released prior-bank construction is
 unverified and incompatible with the pinned default prototype-count recipe.
-This is not proof of validation leakage. M65 is the next prepared standalone
-notebook: one epoch of GT plus original-A2 preservation, without MonoPRIO targets.
-Return `m65_results.zip`; GPU control execution and stability remain unverified. See
+This is not proof of validation leakage. M65 completed one epoch of GT plus
+original-A2 preservation on A100 40 GB, without MonoPRIO targets, and failed
+preservation: Pedestrian 3D AP dropped 0.4724 points and Vehicle BEV AP dropped
+0.2864 points. Original A2 remains selected. The next bounded action is M65b,
+a zero-update gradient diagnosis, not more training or external-teacher KD. See
 `MONODETR_M64_TEACHER_QUALIFICATION_CONTRACT.md` and
 `A2_ACCURACY_DISTILLATION_DEPLOYMENT_PLAN.md` for evidence, teacher taxonomy
 limits, proposed loss design and the review boundary. Product gates do not change.
 The executable control contract is `MONODETR_M65_A2_PRESERVATION_CONTRACT.md`.
-Local checks: 34 M64 regression tests and 21 M65 tests pass. All six M65 code
-cells compile, and the preservation loss works with the exact pinned native
-Hungarian matcher on CPU. These checks do not establish GPU training or accuracy.
+The archive diagnosis is complete; the M65b GPU gradient probe is prepared but
+not executed. Its three notebook cells compile, and 12 diagnostic tests plus
+21 unchanged M65 tests pass. Local tests do not establish CUDA probe results.
+
+- **M65 reviewed and failed preservation:** both evaluations cover 3,769 images.
+  Moderate Vehicle/Pedestrian 3D AP was 15.4475/7.5284 before and
+  15.3961/7.0561 after. Vehicle/Pedestrian BEV AP was 21.3776/8.4887 before
+  and 21.0912/8.4988 after. Nearby recall fell .88293→.88035 for Vehicle
+  and .69268→.68915 for Pedestrian, within the control's loss tolerances.
+  There were 928 updates; BN buffers and the original-A2 anchor remained
+  unchanged. No external teacher was used or improved checkpoint selected.
+- **M65 paired diagnosis:** 19,313 GT records can be paired uniquely; 28 are
+  excluded because the CSVs lack explicit label IDs. On 13,775 common Vehicle
+  matches, yaw error rose .9781 degrees and depth MAE rose .0413 m overall.
+  Nearby Vehicle depth improved .0147 m; farther-than-or-equal-to-40 m depth
+  worsened .2821 m. On 1,534 common Pedestrian matches, dimension MAE rose
+  .00275 m and mean 3D IoU fell .00307. These are diagnostic 2D-matched
+  populations, not a difficulty-specific AP decomposition.
+  Native ranking scores include depth log uncertainty, which M65 does not
+  explicitly preserve. Unmatched queries and intermediate features also lack
+  preservation terms. This identifies coverage gaps, not their causal impact.
+  Logs contain combined preclip norms only, so component-gradient dominance
+  remains unmeasured. Evidence: `artifacts/m65_regression_review_20261005.json`.
+- **M65b prepared:** `notebooks/MonoDETR_A2_M65b_Gradient_Diagnostic_Colab.ipynb`,
+  sections 1–3, measures GT/preservation norms and directions on the first32
+  training images at original A2 and the completed M65 checkpoint. No optimizer,
+  updates, teacher, weight sweep or checkpoint promotion. Fresh runtime/source
+  receipts do not rewrite historical manifests. Publication to main is approved;
+  GPU execution is pending.
 
 - **M64 reviewed:** product moderate 3D AP A2 Vehicle 15.4475/Pedestrian 7.5284,
   MonoPRIO 19.4917/8.6633; BEV 21.3776/8.4887 versus 24.6816/9.8051.

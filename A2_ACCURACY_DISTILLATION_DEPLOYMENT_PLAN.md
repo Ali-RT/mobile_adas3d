@@ -23,11 +23,27 @@ This is an unresolved recipe/provenance gap, not proven validation leakage.
 External-teacher KD remains disabled. See `artifacts/m64_review_20261005.json`
 and `MONODETR_M65_A2_PRESERVATION_CONTRACT.md`.
 
-Next run the standalone `notebooks/MonoDETR_A2_M65_Preservation_Control_Colab.ipynb`,
-sections 1–6. It uses the successful prospective CUDA 13 recipe and one epoch of
-GT plus original-A2 preservation, without MonoPRIO targets. Return
-`m65_results.zip`. The control recipe is prepared; GPU training and accuracy
-preservation are not yet verified. No new teacher is selected or KD started.
+M65 completed the fixed one-epoch control on A100 40 GB. Both evaluations cover
+3,769 images, but the control failed preservation: Pedestrian 3D AP fell
+7.5284→7.0561 and Vehicle BEV AP fell 21.3776→21.0912. There were 928 updates,
+with unchanged BN buffers and original-A2 anchor. No external teacher was used.
+Keep original A2 epoch130; do not extend the failed control or start KD.
+
+The completed archive diagnosis pairs 19,313 GT records and excludes 28 ambiguous
+depth keys. Geometry changed slightly across several components; nearby Vehicle
+depth improved while farther Vehicle depth worsened. Native scores also depend
+on a depth-uncertainty output not explicitly preserved by M65. Neither scalar
+loss means nor combined gradient norms establish which term caused regression.
+See `artifacts/m65_regression_review_20261005.json`.
+
+Next run `notebooks/MonoDETR_A2_M65b_Gradient_Diagnostic_Colab.ipynb`, sections
+1–3. Publication to main is approved. It measures separate GT and
+preservation gradients at original A2 and the completed M65 endpoint on 32 fixed
+training images. No optimizer or parameter update is created, and the original
+checkpoints/manifests remain read-only. Return `m65b_gradient_results.zip` for
+review. The probe is prepared; no GPU result is claimed. Only afterward
+decide whether one revised preservation control is justified. No loss weight,
+teacher, architecture or additional training budget is selected by this diagnosis.
 The existing M63h notebook is archival, not the next accuracy experiment.
 Preserve its files and hashes.
 

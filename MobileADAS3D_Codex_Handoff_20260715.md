@@ -3828,3 +3828,53 @@ twice, while persistent failures retain original files for inspection.
 Local verification:11 new diagnostic tests plus22 unchanged M61 helper tests
 pass; all8 notebook code cells parse. No new CUDA inference, teacher-quality
 result, trained student, Core ML conversion or iPhone result is claimed.
+
+## 2026-10-05 M65 control review and zero update gradient diagnosis
+
+M64 r2 reproduced unchanged A2 and the MonoPRIO candidate over all 3,769 Chen-val
+images. The released MonoPRIO prior bank still lacks exact construction IDs and
+differs from the pinned builder's default counts. This is unresolved provenance,
+not proven leakage. MonoPRIO remains a candidate; external KD is disabled.
+
+Reviewed `m65_results.zip` SHA256
+`4f3504eddfd3c27038237863487674ec36ca390507e31b6c17d35132fcd9dff2`.
+M65 used GT plus frozen original-A2 output preservation, not an external teacher.
+Its one A100 40 GB epoch completed 928 updates; BN buffers and anchor were
+unchanged. Both evaluations cover all 3,769 images.
+
+| Moderate product AP_R40 | Original A2 | M65 control | Change |
+| --- | ---: | ---: | ---: |
+| Vehicle 3D | 15.4475 | 15.3961 | -0.0514 |
+| Pedestrian 3D | 7.5284 | 7.0561 | -0.4724 |
+| Vehicle BEV | 21.3776 | 21.0912 | -0.2864 |
+| Pedestrian BEV | 8.4887 | 8.4988 | +0.0101 |
+
+The fixed preservation gate failed Pedestrian 3D and Vehicle BEV. Nearby-recall
+loss checks passed, but the .80 Pedestrian product target remains unmet.
+Original A2 epoch130 remains selected. No training continuation or KD follows.
+
+The read-only archive diagnosis pairs 19,313 GT rows through unique image,
+class and exact GT-depth keys. It excludes 28 ambiguous rows rather than infer
+their identity. On common matches, Vehicle yaw error rose .9781 degrees and
+farther Vehicle depth MAE rose .2821 m, while nearby depth improved .0147 m.
+Pedestrian dimension MAE rose .00275 m and mean 3D IoU fell .00307. These
+diagnostic greedy 2D-matched populations are not KITTI AP attribution. The
+archive omits raw predictions/checkpoint tensors, so no independent AP rerun
+or learned-state comparison was performed.
+
+Native score equals class sigmoid times exp(negative depth log uncertainty).
+M65 preserves point depth, not that uncertainty output; it also does not
+explicitly preserve background queries or intermediate features. These are
+coverage gaps to investigate, not proven causes. Logged scalar means and
+combined preclip norms cannot establish separate-loss gradient dominance.
+Evidence: `artifacts/m65_regression_review_20261005.json`.
+
+Prepared `notebooks/MonoDETR_A2_M65b_Gradient_Diagnostic_Colab.ipynb`, revision
+M65B-ZERO-UPDATE-GRADIENTS-2026-10-05-r1, sections 1–3. It measures original A2
+and completed M65 on first32 train images, using separate loss gradients, no
+optimizer and zero updates. A fresh prospective CUDA13 environment/source build
+has its own receipts and does not rewrite historical identities. Both checkpoint
+tensors must remain on Drive; the uploaded results ZIP alone is insufficient.
+Local: 12 diagnostic tests and 21 unchanged M65 tests pass; all three cells
+compile. Publication to main is approved; GPU probe execution is pending. No new trained model,
+selected coefficient, external teacher or deployment result is claimed.

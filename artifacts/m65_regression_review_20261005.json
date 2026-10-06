@@ -1,0 +1,688 @@
+{
+  "complete": true,
+  "diagnostic_script_sha256": "dcf08307550a326ba3779acc119fdc1d9b52529c0fd793df70f77eb2f6f5cc35",
+  "limitations": [
+    "Geometry is conditional on score>=0.001 and greedy class-specific 2D IoU>=0.5 matches, not AP matching.",
+    "Exported scores are native uncertainty-weighted ranking values, not probabilities; they can exceed one. Raw class logits and depth uncertainty are absent from the CSVs.",
+    "No explicit label IDs, boxes, occlusion or truncation in this export. Ambiguous GT-depth keys are excluded; no difficulty-specific pairing is possible.",
+    "Paired threshold crossings are diagnostic counts, not an AP decomposition or proof of which loss caused regression.",
+    "The archive contains no checkpoint tensors or raw prediction files; state differences and independent AP recomputation were not performed.",
+    "Separate GT and preservation gradients were not recorded. Scalar loss magnitude is not gradient magnitude.",
+    "A zero-update gradient probe at the completed checkpoint would describe that endpoint, not reconstruct all 928 historical updates."
+  ],
+  "manifest_sha256": "d52fd78bd039615e932604ea8a51b7a1e9d5c4358b3bfb3c6f31301dd3c10d4b",
+  "paired_comparisons": {
+    "Pedestrian": {
+      "all": {
+        "common_matched": 1534,
+        "gained_2d_matches": 25,
+        "geometry_on_common_objects": {
+          "center3d_error_m": {
+            "baseline_mean": 0.916909339792989,
+            "control_mean": 0.9202045483002894,
+            "delta_mean": 0.0032952085073002383,
+            "delta_median": 0.0
+          },
+          "depth_abs_error_m": {
+            "baseline_mean": 0.8489178617992177,
+            "control_mean": 0.8521903520208605,
+            "delta_mean": 0.003272490221642789,
+            "delta_median": 0.0
+          },
+          "depth_relative_error": {
+            "baseline_mean": 0.07477847580726472,
+            "control_mean": 0.07564035735859109,
+            "delta_mean": 0.000861881551326378,
+            "delta_median": 0.0
+          },
+          "dimension_mae_m": {
+            "baseline_mean": 0.14706214689265537,
+            "control_mean": 0.14981529769665364,
+            "delta_mean": 0.002753150803998263,
+            "delta_median": 0.0033333333333332993
+          },
+          "iou_2d": {
+            "baseline_mean": 0.7072511655479905,
+            "control_mean": 0.7082132165776188,
+            "delta_mean": 0.0009620510296283308,
+            "delta_median": 0.002252571103446843
+          },
+          "iou_3d": {
+            "baseline_mean": 0.2222761758938503,
+            "control_mean": 0.2192031812858161,
+            "delta_mean": -0.0030729946080341967,
+            "delta_median": 0.0
+          },
+          "iou_bev": {
+            "baseline_mean": 0.23350191214746804,
+            "control_mean": 0.2301030527501516,
+            "delta_mean": -0.0033988593973164082,
+            "delta_median": 0.0
+          },
+          "loc_x_abs_error_m": {
+            "baseline_mean": 0.2553520208604954,
+            "control_mean": 0.2571968709256845,
+            "delta_mean": 0.0018448500651890546,
+            "delta_median": 0.0
+          },
+          "loc_y_abs_error_m": {
+            "baseline_mean": 0.08053455019556714,
+            "control_mean": 0.07985658409387224,
+            "delta_mean": -0.0006779661016949151,
+            "delta_median": 0.0
+          },
+          "score": {
+            "baseline_mean": 3.725149934810952,
+            "control_mean": 3.9017144719687096,
+            "delta_mean": 0.17656453715775752,
+            "delta_median": 0.04999999999999999
+          },
+          "yaw_abs_error_deg": {
+            "baseline_mean": 73.0066994374175,
+            "control_mean": 72.83412320197287,
+            "delta_mean": -0.1725762354446172,
+            "delta_median": 0.0
+          }
+        },
+        "gt": 2432,
+        "lost_2d_matches": 35,
+        "neither_matched": 838,
+        "overlap_threshold_crossings": {
+          "iou_3d": {
+            "baseline_success_lost_to_2d_miss": 0,
+            "common_gained": 15,
+            "common_lost": 23,
+            "common_success_baseline": 270,
+            "common_success_control": 262,
+            "control_success_gained_from_2d_miss": 2,
+            "threshold": 0.5
+          },
+          "iou_bev": {
+            "baseline_success_lost_to_2d_miss": 0,
+            "common_gained": 18,
+            "common_lost": 28,
+            "common_success_baseline": 311,
+            "common_success_control": 301,
+            "control_success_gained_from_2d_miss": 2,
+            "threshold": 0.5
+          }
+        }
+      },
+      "farther": {
+        "common_matched": 9,
+        "gained_2d_matches": 0,
+        "geometry_on_common_objects": {
+          "center3d_error_m": {
+            "baseline_mean": 0.7282728623582418,
+            "control_mean": 0.7746501634917273,
+            "delta_mean": 0.04637730113348546,
+            "delta_median": 0.09999034834262907
+          },
+          "depth_abs_error_m": {
+            "baseline_mean": 0.6800000000000005,
+            "control_mean": 0.7144444444444455,
+            "delta_mean": 0.03444444444444509,
+            "delta_median": 0.120000000000001
+          },
+          "depth_relative_error": {
+            "baseline_mean": 0.02125233226826978,
+            "control_mean": 0.022334871678950836,
+            "delta_mean": 0.0010825394106810582,
+            "delta_median": 0.0039049788480312723
+          },
+          "dimension_mae_m": {
+            "baseline_mean": 0.16666666666666666,
+            "control_mean": 0.1688888888888889,
+            "delta_mean": 0.0022222222222222227,
+            "delta_median": 0.003333333333333327
+          },
+          "iou_2d": {
+            "baseline_mean": 0.6866955343587312,
+            "control_mean": 0.7086274748496546,
+            "delta_mean": 0.02193194049092342,
+            "delta_median": 0.00576603159514022
+          },
+          "iou_3d": {
+            "baseline_mean": 0.2614935018173504,
+            "control_mean": 0.2409459595882135,
+            "delta_mean": -0.020547542229136975,
+            "delta_median": 0.0
+          },
+          "iou_bev": {
+            "baseline_mean": 0.28059399234005844,
+            "control_mean": 0.2593237337964022,
+            "delta_mean": -0.02127025854365627,
+            "delta_median": 0.0
+          },
+          "loc_x_abs_error_m": {
+            "baseline_mean": 0.18777777777777777,
+            "control_mean": 0.19888888888888884,
+            "delta_mean": 0.011111111111111072,
+            "delta_median": 0.0
+          },
+          "loc_y_abs_error_m": {
+            "baseline_mean": 0.05999999999999998,
+            "control_mean": 0.05555555555555555,
+            "delta_mean": -0.004444444444444424,
+            "delta_median": 0.0
+          },
+          "score": {
+            "baseline_mean": 0.030000000000000002,
+            "control_mean": 0.030000000000000002,
+            "delta_mean": 1.927470528863119e-19,
+            "delta_median": 0.0
+          },
+          "yaw_abs_error_deg": {
+            "baseline_mean": 157.13803811563494,
+            "control_mean": 157.32902404734526,
+            "delta_mean": 0.1909859317102871,
+            "delta_median": 0.0
+          }
+        },
+        "gt": 178,
+        "lost_2d_matches": 2,
+        "neither_matched": 167,
+        "overlap_threshold_crossings": {
+          "iou_3d": {
+            "baseline_success_lost_to_2d_miss": 0,
+            "common_gained": 0,
+            "common_lost": 0,
+            "common_success_baseline": 0,
+            "common_success_control": 0,
+            "control_success_gained_from_2d_miss": 0,
+            "threshold": 0.5
+          },
+          "iou_bev": {
+            "baseline_success_lost_to_2d_miss": 0,
+            "common_gained": 1,
+            "common_lost": 2,
+            "common_success_baseline": 2,
+            "common_success_control": 1,
+            "control_success_gained_from_2d_miss": 0,
+            "threshold": 0.5
+          }
+        }
+      },
+      "nearby": {
+        "common_matched": 1525,
+        "gained_2d_matches": 25,
+        "geometry_on_common_objects": {
+          "center3d_error_m": {
+            "baseline_mean": 0.9180226042499811,
+            "control_mean": 0.9210635577844054,
+            "delta_mean": 0.003040953534424391,
+            "delta_median": 0.0
+          },
+          "depth_abs_error_m": {
+            "baseline_mean": 0.8499147540983606,
+            "control_mean": 0.8530032786885245,
+            "delta_mean": 0.003088524590163956,
+            "delta_median": 0.0
+          },
+          "depth_relative_error": {
+            "baseline_mean": 0.07509436780192108,
+            "control_mean": 0.07595494711014307,
+            "delta_mean": 0.0008605793082219897,
+            "delta_median": 0.0
+          },
+          "dimension_mae_m": {
+            "baseline_mean": 0.1469464480874317,
+            "control_mean": 0.14970273224043718,
+            "delta_mean": 0.0027562841530054654,
+            "delta_median": 0.0033333333333332993
+          },
+          "iou_2d": {
+            "baseline_mean": 0.7073724774697632,
+            "control_mean": 0.7082107717747018,
+            "delta_mean": 0.0008382943049387204,
+            "delta_median": 0.002251900139089158
+          },
+          "iou_3d": {
+            "baseline_mean": 0.2220447293802034,
+            "control_mean": 0.21907486324993308,
+            "delta_mean": -0.0029698661302703113,
+            "delta_median": 0.0
+          },
+          "iou_bev": {
+            "baseline_mean": 0.2332239916742003,
+            "control_mean": 0.22993060282922292,
+            "delta_mean": -0.0032933888449773532,
+            "delta_median": 0.0
+          },
+          "loc_x_abs_error_m": {
+            "baseline_mean": 0.25575081967213115,
+            "control_mean": 0.25754098360655736,
+            "delta_mean": 0.0017901639344262363,
+            "delta_median": 0.0
+          },
+          "loc_y_abs_error_m": {
+            "baseline_mean": 0.08065573770491805,
+            "control_mean": 0.08000000000000002,
+            "delta_mean": -0.0006557377049180328,
+            "delta_median": 0.0
+          },
+          "score": {
+            "baseline_mean": 3.74695737704918,
+            "control_mean": 3.9245639344262297,
+            "delta_mean": 0.1776065573770492,
+            "delta_median": 0.050000000000000044
+          },
+          "yaw_abs_error_deg": {
+            "baseline_mean": 72.51018661898866,
+            "control_mean": 72.33546477075429,
+            "delta_mean": -0.1747218482343839,
+            "delta_median": 0.0
+          }
+        },
+        "gt": 2254,
+        "lost_2d_matches": 33,
+        "neither_matched": 671,
+        "overlap_threshold_crossings": {
+          "iou_3d": {
+            "baseline_success_lost_to_2d_miss": 0,
+            "common_gained": 15,
+            "common_lost": 23,
+            "common_success_baseline": 270,
+            "common_success_control": 262,
+            "control_success_gained_from_2d_miss": 2,
+            "threshold": 0.5
+          },
+          "iou_bev": {
+            "baseline_success_lost_to_2d_miss": 0,
+            "common_gained": 17,
+            "common_lost": 26,
+            "common_success_baseline": 309,
+            "common_success_control": 300,
+            "control_success_gained_from_2d_miss": 2,
+            "threshold": 0.5
+          }
+        }
+      }
+    },
+    "Vehicle": {
+      "all": {
+        "common_matched": 13775,
+        "gained_2d_matches": 67,
+        "geometry_on_common_objects": {
+          "center3d_error_m": {
+            "baseline_mean": 2.0045383219727118,
+            "control_mean": 2.045617567887513,
+            "delta_mean": 0.04107924591480091,
+            "delta_median": 0.007028085016044905
+          },
+          "depth_abs_error_m": {
+            "baseline_mean": 1.9065793103448276,
+            "control_mean": 1.9478976406533577,
+            "delta_mean": 0.04131833030852996,
+            "delta_median": 0.00999999999999801
+          },
+          "depth_relative_error": {
+            "baseline_mean": 0.0653251980573777,
+            "control_mean": 0.0659042886836865,
+            "delta_mean": 0.0005790906263088073,
+            "delta_median": 0.0003262642740619326
+          },
+          "dimension_mae_m": {
+            "baseline_mean": 0.2540950998185118,
+            "control_mean": 0.2565144585601936,
+            "delta_mean": 0.002419358741681791,
+            "delta_median": -0.003333333333333341
+          },
+          "iou_2d": {
+            "baseline_mean": 0.8195769114755782,
+            "control_mean": 0.8186288225625621,
+            "delta_mean": -0.0009480889130160862,
+            "delta_median": -0.00015309151344078398
+          },
+          "iou_3d": {
+            "baseline_mean": 0.4158877587774652,
+            "control_mean": 0.41361412506965406,
+            "delta_mean": -0.002273633707811155,
+            "delta_median": 0.0
+          },
+          "iou_bev": {
+            "baseline_mean": 0.44479433319568396,
+            "control_mean": 0.4423511349264418,
+            "delta_mean": -0.002443198269242163,
+            "delta_median": 0.0
+          },
+          "loc_x_abs_error_m": {
+            "baseline_mean": 0.41807695099818515,
+            "control_mean": 0.41991578947368424,
+            "delta_mean": 0.0018388384754990882,
+            "delta_median": 0.0
+          },
+          "loc_y_abs_error_m": {
+            "baseline_mean": 0.0984595281306715,
+            "control_mean": 0.09841379310344826,
+            "delta_mean": -4.573502722323212e-05,
+            "delta_median": 0.0
+          },
+          "score": {
+            "baseline_mean": 3.773565154264973,
+            "control_mean": 4.000445735027223,
+            "delta_mean": 0.22688058076225046,
+            "delta_median": 0.15999999999999998
+          },
+          "yaw_abs_error_deg": {
+            "baseline_mean": 42.22692487645169,
+            "control_mean": 43.20502211456898,
+            "delta_mean": 0.9780972381172979,
+            "delta_median": 0.0
+          }
+        },
+        "gt": 16881,
+        "lost_2d_matches": 102,
+        "neither_matched": 2937,
+        "overlap_threshold_crossings": {
+          "iou_3d": {
+            "baseline_success_lost_to_2d_miss": 2,
+            "common_gained": 186,
+            "common_lost": 189,
+            "common_success_baseline": 3088,
+            "common_success_control": 3085,
+            "control_success_gained_from_2d_miss": 0,
+            "threshold": 0.7
+          },
+          "iou_bev": {
+            "baseline_success_lost_to_2d_miss": 3,
+            "common_gained": 197,
+            "common_lost": 227,
+            "common_success_baseline": 3938,
+            "common_success_control": 3908,
+            "control_success_gained_from_2d_miss": 1,
+            "threshold": 0.7
+          }
+        }
+      },
+      "farther": {
+        "common_matched": 2598,
+        "gained_2d_matches": 34,
+        "geometry_on_common_objects": {
+          "center3d_error_m": {
+            "baseline_mean": 5.044382421700243,
+            "control_mean": 5.328291209104774,
+            "delta_mean": 0.28390878740453035,
+            "delta_median": 0.22183594815360508
+          },
+          "depth_abs_error_m": {
+            "baseline_mean": 4.955504234026174,
+            "control_mean": 5.237628945342571,
+            "delta_mean": 0.2821247113163972,
+            "delta_median": 0.21999999999999886
+          },
+          "depth_relative_error": {
+            "baseline_mean": 0.0903406554087441,
+            "control_mean": 0.09478146937064472,
+            "delta_mean": 0.004440813961900627,
+            "delta_median": 0.004624935360857146
+          },
+          "dimension_mae_m": {
+            "baseline_mean": 0.5045073133179369,
+            "control_mean": 0.5240364382858609,
+            "delta_mean": 0.019529124967924045,
+            "delta_median": 0.0
+          },
+          "iou_2d": {
+            "baseline_mean": 0.768672101165611,
+            "control_mean": 0.763944013402837,
+            "delta_mean": -0.004728087762774071,
+            "delta_median": -0.004688696641226009
+          },
+          "iou_3d": {
+            "baseline_mean": 0.2037465311362088,
+            "control_mean": 0.19534234960359453,
+            "delta_mean": -0.008404181532614264,
+            "delta_median": 0.0
+          },
+          "iou_bev": {
+            "baseline_mean": 0.2220234589749819,
+            "control_mean": 0.21265395506206383,
+            "delta_mean": -0.009369503912918051,
+            "delta_median": 0.0
+          },
+          "loc_x_abs_error_m": {
+            "baseline_mean": 0.6348229407236335,
+            "control_mean": 0.6647036181678213,
+            "delta_mean": 0.029880677444187834,
+            "delta_median": 0.010000000000000009
+          },
+          "loc_y_abs_error_m": {
+            "baseline_mean": 0.15523864511162433,
+            "control_mean": 0.15677444187836798,
+            "delta_mean": 0.0015357967667436452,
+            "delta_median": 0.0
+          },
+          "score": {
+            "baseline_mean": 0.52364896073903,
+            "control_mean": 0.568810623556582,
+            "delta_mean": 0.04516166281755196,
+            "delta_median": 0.03
+          },
+          "yaw_abs_error_deg": {
+            "baseline_mean": 46.792885687623965,
+            "control_mean": 48.26045683722034,
+            "delta_mean": 1.4675711495963735,
+            "delta_median": 0.0
+          }
+        },
+        "gt": 4148,
+        "lost_2d_matches": 36,
+        "neither_matched": 1480,
+        "overlap_threshold_crossings": {
+          "iou_3d": {
+            "baseline_success_lost_to_2d_miss": 0,
+            "common_gained": 29,
+            "common_lost": 28,
+            "common_success_baseline": 141,
+            "common_success_control": 142,
+            "control_success_gained_from_2d_miss": 0,
+            "threshold": 0.7
+          },
+          "iou_bev": {
+            "baseline_success_lost_to_2d_miss": 0,
+            "common_gained": 38,
+            "common_lost": 50,
+            "common_success_baseline": 236,
+            "common_success_control": 224,
+            "control_success_gained_from_2d_miss": 0,
+            "threshold": 0.7
+          }
+        }
+      },
+      "nearby": {
+        "common_matched": 11177,
+        "gained_2d_matches": 33,
+        "geometry_on_common_objects": {
+          "center3d_error_m": {
+            "baseline_mean": 1.2979520312782387,
+            "control_mean": 1.282587584897225,
+            "delta_mean": -0.01536444638101345,
+            "delta_median": 0.0
+          },
+          "depth_abs_error_m": {
+            "baseline_mean": 1.1978822582088215,
+            "control_mean": 1.1832271629238615,
+            "delta_mean": -0.014655095284960165,
+            "delta_median": 0.0
+          },
+          "depth_relative_error": {
+            "baseline_mean": 0.059510564595907714,
+            "control_mean": 0.05919202998951835,
+            "delta_mean": -0.00031853460638937164,
+            "delta_median": 0.0
+          },
+          "dimension_mae_m": {
+            "baseline_mean": 0.1958888789478393,
+            "control_mean": 0.19433121588977365,
+            "delta_mean": -0.001557663058065671,
+            "delta_median": -0.003333333333333355
+          },
+          "iou_2d": {
+            "baseline_mean": 0.8314093081102114,
+            "control_mean": 0.8313398482579157,
+            "delta_mean": -6.945985229574577e-05,
+            "delta_median": 0.0003665008402140568
+          },
+          "iou_3d": {
+            "baseline_mean": 0.4651982096508645,
+            "control_mean": 0.4643495704182111,
+            "delta_mean": -0.0008486392326533772,
+            "delta_median": 0.0
+          },
+          "iou_bev": {
+            "baseline_mean": 0.49657555635264766,
+            "control_mean": 0.4957423197960538,
+            "delta_mean": -0.0008332365565938709,
+            "delta_median": 0.0
+          },
+          "loc_x_abs_error_m": {
+            "baseline_mean": 0.3676961617607587,
+            "control_mean": 0.3630169097253288,
+            "delta_mean": -0.004679252035429906,
+            "delta_median": 0.0
+          },
+          "loc_y_abs_error_m": {
+            "baseline_mean": 0.08526169813008858,
+            "control_mean": 0.0848483492887179,
+            "delta_mean": -0.000413348841370673,
+            "delta_median": 0.0
+          },
+          "score": {
+            "baseline_mean": 4.528980943007963,
+            "control_mean": 4.798100563657512,
+            "delta_mean": 0.26911962064954814,
+            "delta_median": 0.2100000000000004
+          },
+          "yaw_abs_error_deg": {
+            "baseline_mean": 41.1656055432294,
+            "control_mean": 42.02992867183407,
+            "delta_mean": 0.8643231286046704,
+            "delta_median": 0.0
+          }
+        },
+        "gt": 12733,
+        "lost_2d_matches": 66,
+        "neither_matched": 1457,
+        "overlap_threshold_crossings": {
+          "iou_3d": {
+            "baseline_success_lost_to_2d_miss": 2,
+            "common_gained": 157,
+            "common_lost": 161,
+            "common_success_baseline": 2947,
+            "common_success_control": 2943,
+            "control_success_gained_from_2d_miss": 0,
+            "threshold": 0.7
+          },
+          "iou_bev": {
+            "baseline_success_lost_to_2d_miss": 3,
+            "common_gained": 159,
+            "common_lost": 177,
+            "common_success_baseline": 3702,
+            "common_success_control": 3684,
+            "control_success_gained_from_2d_miss": 1,
+            "threshold": 0.7
+          }
+        }
+      }
+    }
+  },
+  "pairing_coverage": {
+    "ambiguous_keys": 14,
+    "excluded_by_class": {
+      "Pedestrian": 14,
+      "Vehicle": 14
+    },
+    "excluded_gt": 28,
+    "method": "Exact image/class/GT-depth keys, unique across matched and missed rows; ambiguous keys excluded",
+    "paired_gt": 19313,
+    "total_gt": 19341
+  },
+  "preservation_design": {
+    "causal_attribution_established": false,
+    "not_explicitly_protected": [
+      "Depth log uncertainty used in the native ranking score",
+      "Unmatched/background query logits",
+      "Intermediate features",
+      "Objects excluded by reliability masks"
+    ],
+    "protected": "Reliability-filtered, independently GT-matched class logits, boxes, point depth, dimensions, and angle outputs; component means balanced across eligible classes",
+    "ranking_score": "sigmoid(class_logit) * exp(-pred_depth[..., 1]); can exceed 1",
+    "source": "Frozen M65 third_party/monodetr/m65_preservation.py and pinned MonoDETR 6994b9f lib/helpers/decode_helper.py"
+  },
+  "product_ap_baseline": {
+    "pedestrian_3d_moderate": 7.528416451699579,
+    "pedestrian_bev_moderate": 8.488669175064146,
+    "vehicle_3d_moderate": 15.447527335986564,
+    "vehicle_bev_moderate": 21.377606101348228
+  },
+  "product_ap_control": {
+    "pedestrian_3d_moderate": 7.056063418004291,
+    "pedestrian_bev_moderate": 8.498796791906367,
+    "vehicle_3d_moderate": 15.396138166444178,
+    "vehicle_bev_moderate": 21.091168341772022
+  },
+  "product_ap_delta": {
+    "pedestrian_3d_moderate": -0.47235303369528836,
+    "pedestrian_bev_moderate": 0.010127616842220633,
+    "vehicle_3d_moderate": -0.051389169542385815,
+    "vehicle_bev_moderate": -0.28643775957620576
+  },
+  "schema_version": 1,
+  "scope": {
+    "checkpoint_selected": false,
+    "inference_performed": false,
+    "kd_authorized": false,
+    "new_optimizer_steps": 0,
+    "training_authorized": false
+  },
+  "source_archive_sha256": "4f3504eddfd3c27038237863487674ec36ca390507e31b6c17d35132fcd9dff2",
+  "source_member_sha256": {
+    "evaluation/baseline/metrics/nearby/false_negatives.csv": "f27158128e82a83184e747e613dac0468b92772c73c0a2c0f5b4665242027941",
+    "evaluation/baseline/metrics/nearby/matched_geometry.csv": "5020899aef670ab1dd0a580b5e7bfc73e64768dfbc3b951fd9a90fc78c9bd6a4",
+    "evaluation/control/metrics/nearby/false_negatives.csv": "3d0996521f78de1138cc43fdf838e65e7a4847c00263b3bc9baf07daad63b470",
+    "evaluation/control/metrics/nearby/matched_geometry.csv": "48c41b8f7a2aaa88995f3ea739367ae4d453c7f616cc3f123f8b5d6473f8affa"
+  },
+  "training_evidence": {
+    "batchnorm_buffers_unchanged": true,
+    "completed_optimizer_steps": 928,
+    "external_teacher_used": false,
+    "frozen_anchor_unchanged": true,
+    "gradients": {
+      "combined_preclip_norm_max": 5027.9097,
+      "combined_preclip_norm_median": 246.2123,
+      "combined_preclip_norm_min": 145.6548,
+      "component_gradient_norms_recorded": false,
+      "conclusion": "Logged combined preclip norms do not establish GT/preservation dominance or conflict",
+      "gt_preservation_gradient_cosine_recorded": false,
+      "progress_rows_with_combined_norm": 48
+    },
+    "loss_means": {
+      "gt": 1.9599195159750926,
+      "preservation": 0.002577003196017173,
+      "total": 1.9624965229184077
+    },
+    "preservation_pairs": {
+      "angle": {
+        "0": 1869,
+        "1": 11954
+      },
+      "box": {
+        "0": 1974,
+        "1": 12017
+      },
+      "classification": {
+        "0": 1974,
+        "1": 12017
+      },
+      "depth": {
+        "0": 1963,
+        "1": 12014
+      },
+      "dimensions": {
+        "0": 1973,
+        "1": 12017
+      }
+    }
+  }
+}
