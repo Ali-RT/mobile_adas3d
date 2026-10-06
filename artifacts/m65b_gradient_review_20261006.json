@@ -1,0 +1,746 @@
+{
+  "schema_version": 1,
+  "review_date": "2026-10-06",
+  "complete": true,
+  "experiment": "M65b zero-update gradient diagnostic",
+  "source_archive": "/Users/ral3ply/Downloads/m65b_gradient_results.zip",
+  "archive_sha256": "ad242612ca6c19bfdc09695c07fecd853caf2903bc4533e237718ef42ed3be69",
+  "archive_files": {
+    "original_gradients.json": "86b647225993605886b2c43e16e9c9389f7b5ce7314bb67bf781ee7d4396cb10",
+    "control_gradients.json": "3640f960077d04ab6e3b786a2cb7162ddf4b0ef276a89a98a003d739e1af9b70",
+    "runtime_receipt.json": "d5c82628dce88c5adce4c4f4481902e06dc7f1d86873034737253a13dcc8a1c0"
+  },
+  "revision": "M65B-ZERO-UPDATE-GRADIENTS-2026-10-05-r2",
+  "identity": {
+    "revision": "M65B-ZERO-UPDATE-GRADIENTS-2026-10-05-r2",
+    "historical_manifest_sha256": "d52fd78bd039615e932604ea8a51b7a1e9d5c4358b3bfb3c6f31301dd3c10d4b",
+    "original_checkpoint_sha256": "ed2134a98acbf1ab2fc61f7c8749b38fdfd2418e7f7932593e5e37a8d9ef33f4",
+    "control_checkpoint_sha256": "e5c2b592977c68f79bc371196536c0263badaa7277e7fc17bd0ed6c7b64a6a18",
+    "implementation_sha256": "6d7223fa24b27b2c5bf1769406fe2c412d9648cf759221121bb2d2748fc13f88",
+    "probe_script_sha256": "e28c1a35fb7e31968aa23c1f6192b85eb743f90ac38f6d057120d8fe805ab3cb",
+    "environment": {
+      "python": "3.13.15 (main, Aug  6 2026, 11:06:22) [GCC 13.3.0]",
+      "packages": {
+        "torch": "2.10.0+cu130",
+        "torchvision": "0.25.0+cu130",
+        "numpy": "2.2.6",
+        "scipy": "1.16.3",
+        "pillow": "11.3.0",
+        "opencv-python-headless": "4.12.0.88",
+        "scikit-image": "0.25.2",
+        "numba": "0.63.1",
+        "timm": "1.0.20",
+        "PyYAML": "6.0.2"
+      },
+      "cuda": "13.0",
+      "gpu": "NVIDIA A100-SXM4-40GB",
+      "cuda_home": "/usr/local/cuda-13.0"
+    },
+    "original_environment": {
+      "python": "3.13.15 (main, Aug  6 2026, 11:06:22) [GCC 13.3.0]",
+      "packages": {
+        "torch": "2.10.0+cu130",
+        "torchvision": "0.25.0+cu130",
+        "numpy": "2.2.6",
+        "scipy": "1.16.3",
+        "pillow": "11.3.0",
+        "opencv-python-headless": "4.12.0.88",
+        "scikit-image": "0.25.2",
+        "numba": "0.63.1",
+        "timm": "1.0.20",
+        "PyYAML": "6.0.2"
+      },
+      "cuda": "13.0",
+      "gpu": "NVIDIA A100-SXM4-40GB",
+      "cuda_home": "/usr/local/cuda-13.0"
+    },
+    "historical_runtime_equivalence_claimed": false,
+    "build_receipt_sha256": "6f4288825a71c2b6f8a321b092b9cae6f5ffd695efbec458c6c72b465f939310",
+    "source_sha256": "f1ce39fa8877e76c3fc1c456de98ec57a8a9db288fdd5a0d68d9ba34f92dfb82",
+    "dataset_identity": {
+      "train": "2fdd08e79c4b8c7d62aba7438bcc8a7bfb709570919bc8a482672d6dfa5842f5",
+      "val": "3db88e0c00b839f623b5544985b51f490c6e200258b10cc7beee3e256fc0e51d"
+    },
+    "seed": 444,
+    "batches": 8,
+    "batch_size": 4,
+    "image_selection": "First32 train IDs in saved train order, not selected using validation errors",
+    "augmentation": "Same M65 online augmentation settings, seeded prospectively"
+  },
+  "validation": {
+    "zip_crc_passed": true,
+    "probe_and_frozen_implementation_hashes_match_local_code": true,
+    "source_and_data_identity_match_reviewed_m65": true,
+    "paired_identity_differs_only_by_role": true,
+    "same_32_unique_train_images": true,
+    "all_recorded_values_finite": true,
+    "reported_norm_partitions_and_ratios_consistent": true,
+    "both_final_logs_exit_zero": true,
+    "optimizer_steps_per_role": 0,
+    "probe_reports_model_anchor_and_checkpoint_state_unchanged": true,
+    "independent_gpu_or_checkpoint_rerun_performed": false
+  },
+  "global_gradients": {
+    "original": {
+      "gt_norm": {
+        "median": 294.4538862056471,
+        "minimum": 191.70598519635678,
+        "maximum": 439.96932849308473
+      },
+      "preservation_norm": {
+        "median": 0.00001912825373271209,
+        "minimum": 0.0000015865592331082612,
+        "maximum": 0.0006337692645199072
+      },
+      "preservation_to_gt_norm_ratio": {
+        "median": 8.114122208414826e-8,
+        "minimum": 4.67535122824313e-9,
+        "maximum": 0.0000027300188711307997
+      },
+      "cosine": {
+        "median": 0.029340617314350684,
+        "minimum": -0.025029840727108368,
+        "maximum": 0.1761254045496656
+      },
+      "negative_cosine_batches": 2
+    },
+    "control": {
+      "gt_norm": {
+        "median": 320.9687174693115,
+        "minimum": 142.23585648143478,
+        "maximum": 1222.5689554580194
+      },
+      "preservation_norm": {
+        "median": 2.011314316084598,
+        "minimum": 0.1807184221492239,
+        "maximum": 8.205656095241947
+      },
+      "preservation_to_gt_norm_ratio": {
+        "median": 0.0060528061468004615,
+        "minimum": 0.0003753234740751881,
+        "maximum": 0.015709823645465738
+      },
+      "cosine": {
+        "median": 0.043757634855714156,
+        "minimum": -0.056099605104405224,
+        "maximum": 0.10672921700225389
+      },
+      "negative_cosine_batches": 2
+    }
+  },
+  "control_parameter_groups": {
+    "other": {
+      "gt_norm": {
+        "median": 46.4763695257557,
+        "minimum": 35.84822237491676,
+        "maximum": 1210.5534041033527
+      },
+      "preservation_norm": {
+        "median": 0.6445670226057281,
+        "minimum": 0.01547162993242385,
+        "maximum": 2.0652012143304304
+      },
+      "preservation_to_gt_norm_ratio": {
+        "median": 0.005714200264723088,
+        "minimum": 0.00007866624096467596,
+        "maximum": 0.022420792067785182
+      },
+      "cosine": {
+        "median": 0.015828598350704465,
+        "minimum": -0.028888347657036642,
+        "maximum": 0.16263442315116358
+      },
+      "negative_cosine_batches": 3
+    },
+    "visual_encoder": {
+      "gt_norm": {
+        "median": 51.10880194012088,
+        "minimum": 33.26422855965544,
+        "maximum": 81.67782425545855
+      },
+      "preservation_norm": {
+        "median": 0.1534326888309317,
+        "minimum": 0.01108657631300856,
+        "maximum": 1.9045022167466066
+      },
+      "preservation_to_gt_norm_ratio": {
+        "median": 0.004190380878859596,
+        "minimum": 0.00013573545101218393,
+        "maximum": 0.03977345930000792
+      },
+      "cosine": {
+        "median": -0.019778658340008054,
+        "minimum": -0.2374154586141206,
+        "maximum": 0.050995143762328755
+      },
+      "negative_cosine_batches": 6
+    },
+    "depth_aware_decoder": {
+      "gt_norm": {
+        "median": 107.87469778862777,
+        "minimum": 59.39652609130101,
+        "maximum": 182.00886717194078
+      },
+      "preservation_norm": {
+        "median": 0.16184130584910938,
+        "minimum": 0.028944128379988894,
+        "maximum": 1.3553396749635962
+      },
+      "preservation_to_gt_norm_ratio": {
+        "median": 0.0017219534514593769,
+        "minimum": 0.00022616869569442498,
+        "maximum": 0.018046855689770807
+      },
+      "cosine": {
+        "median": -0.017748934504154112,
+        "minimum": -0.1650304651659324,
+        "maximum": 0.15088119391838245
+      },
+      "negative_cosine_batches": 5
+    },
+    "dense_depth_predictor": {
+      "gt_norm": {
+        "median": 34.52709343802222,
+        "minimum": 27.542617140117045,
+        "maximum": 168.11995393457124
+      },
+      "preservation_norm": {
+        "median": 0.16179792977535817,
+        "minimum": 0.015971914221526034,
+        "maximum": 1.5777274305990905
+      },
+      "preservation_to_gt_norm_ratio": {
+        "median": 0.0035960358979432124,
+        "minimum": 0.00044703258630152495,
+        "maximum": 0.04734303406683929
+      },
+      "cosine": {
+        "median": 0.30491722714881386,
+        "minimum": -0.5727162636110202,
+        "maximum": 0.6156162516409976
+      },
+      "negative_cosine_batches": 2
+    },
+    "class_head": {
+      "gt_norm": {
+        "median": 0.7975048287973465,
+        "minimum": 0.47471704415763627,
+        "maximum": 2.894583178377606
+      },
+      "preservation_norm": {
+        "median": 0.024511056543369082,
+        "minimum": 0.01009364974306077,
+        "maximum": 0.1550666316846517
+      },
+      "preservation_to_gt_norm_ratio": {
+        "median": 0.03053008136794081,
+        "minimum": 0.006508732672323131,
+        "maximum": 0.12455016808354026
+      },
+      "cosine": {
+        "median": 0.26562650338627236,
+        "minimum": -0.32568411982085627,
+        "maximum": 0.6070895478608254
+      },
+      "negative_cosine_batches": 2
+    },
+    "angle_head": {
+      "gt_norm": {
+        "median": 8.632208561059466,
+        "minimum": 3.7973190385512763,
+        "maximum": 10.413714564206952
+      },
+      "preservation_norm": {
+        "median": 0.0494792455794579,
+        "minimum": 0.026341071147284394,
+        "maximum": 0.635289197276718
+      },
+      "preservation_to_gt_norm_ratio": {
+        "median": 0.0064991996765395976,
+        "minimum": 0.0025740298307405365,
+        "maximum": 0.15198567596447998
+      },
+      "cosine": {
+        "median": 0.1301971162880023,
+        "minimum": -0.18487593184539627,
+        "maximum": 0.5822109860948328
+      },
+      "negative_cosine_batches": 2
+    },
+    "object_depth_head": {
+      "gt_norm": {
+        "median": 90.56852184925023,
+        "minimum": 37.02307866352147,
+        "maximum": 158.2750056812838
+      },
+      "preservation_norm": {
+        "median": 0.007349261198870843,
+        "minimum": 0.0012308366325494435,
+        "maximum": 0.05947520906188261
+      },
+      "preservation_to_gt_norm_ratio": {
+        "median": 0.00007307152718124982,
+        "minimum": 0.000012857912548987041,
+        "maximum": 0.0004067365096119958
+      },
+      "cosine": {
+        "median": -0.20632980010492244,
+        "minimum": -0.64758240366335,
+        "maximum": 0.7905412665832078
+      },
+      "negative_cosine_batches": 5
+    },
+    "input_projection": {
+      "gt_norm": {
+        "median": 20.18019324189684,
+        "minimum": 14.501988661953096,
+        "maximum": 32.45166360790641
+      },
+      "preservation_norm": {
+        "median": 0.14305649033917933,
+        "minimum": 0.012039148059198378,
+        "maximum": 1.0424448156779988
+      },
+      "preservation_to_gt_norm_ratio": {
+        "median": 0.0075780987879789825,
+        "minimum": 0.00037098708419574524,
+        "maximum": 0.0562507166411839
+      },
+      "cosine": {
+        "median": 0.022670132790531882,
+        "minimum": -0.15864380162086206,
+        "maximum": 0.10164464160298026
+      },
+      "negative_cosine_batches": 3
+    },
+    "backbone": {
+      "gt_norm": {
+        "median": 152.89671681510958,
+        "minimum": 98.6959920750328,
+        "maximum": 342.34599717544916
+      },
+      "preservation_norm": {
+        "median": 1.300247462019261,
+        "minimum": 0.1692614426761307,
+        "maximum": 7.322838815444878
+      },
+      "preservation_to_gt_norm_ratio": {
+        "median": 0.007179118501407632,
+        "minimum": 0.0007917900581563803,
+        "maximum": 0.06540464286362846
+      },
+      "cosine": {
+        "median": 0.06806237543920175,
+        "minimum": -0.0863649471860156,
+        "maximum": 0.19171633568602217
+      },
+      "negative_cosine_batches": 3
+    }
+  },
+  "control_components": {
+    "gt_components": {
+      "loss_ce": {
+        "weighted_loss_median": 0.20726744085550308,
+        "total_gt_vs_named_component": {
+          "gt_norm": {
+            "median": 320.9687174693115,
+            "minimum": 142.23585648143478,
+            "maximum": 1222.5689554580194
+          },
+          "preservation_norm": {
+            "median": 26.607108983911004,
+            "minimum": 16.812174772171506,
+            "maximum": 1294.247943822121
+          },
+          "preservation_to_gt_norm_ratio": {
+            "median": 0.1413924378086833,
+            "minimum": 0.06395598551709833,
+            "maximum": 1.0586298122851059
+          },
+          "cosine": {
+            "median": 0.17706714761486503,
+            "minimum": -0.8020819639042528,
+            "maximum": 0.9719044903198678
+          },
+          "negative_cosine_batches": 1
+        }
+      },
+      "loss_bbox": {
+        "weighted_loss_median": 0.10668336600065231,
+        "total_gt_vs_named_component": {
+          "gt_norm": {
+            "median": 320.9687174693115,
+            "minimum": 142.23585648143478,
+            "maximum": 1222.5689554580194
+          },
+          "preservation_norm": {
+            "median": 2.9073932895926626,
+            "minimum": 1.258655809559693,
+            "maximum": 19.799792797555778
+          },
+          "preservation_to_gt_norm_ratio": {
+            "median": 0.01013974082198353,
+            "minimum": 0.003184280783453218,
+            "maximum": 0.06632941655717242
+          },
+          "cosine": {
+            "median": 0.08154257963502265,
+            "minimum": -0.6453719530971974,
+            "maximum": 0.4677919870049691
+          },
+          "negative_cosine_batches": 2
+        }
+      },
+      "loss_giou": {
+        "weighted_loss_median": 0.619019091129303,
+        "total_gt_vs_named_component": {
+          "gt_norm": {
+            "median": 320.9687174693115,
+            "minimum": 142.23585648143478,
+            "maximum": 1222.5689554580194
+          },
+          "preservation_norm": {
+            "median": 32.50661310798968,
+            "minimum": 18.08632143273736,
+            "maximum": 67.9295875962099
+          },
+          "preservation_to_gt_norm_ratio": {
+            "median": 0.0859781096791207,
+            "minimum": 0.02969433004105821,
+            "maximum": 0.23797076086540656
+          },
+          "cosine": {
+            "median": 0.08531060990136316,
+            "minimum": -0.5442498269989277,
+            "maximum": 0.3124961288401686
+          },
+          "negative_cosine_batches": 2
+        }
+      },
+      "loss_depth": {
+        "weighted_loss_median": -0.7707046121358871,
+        "total_gt_vs_named_component": {
+          "gt_norm": {
+            "median": 320.9687174693115,
+            "minimum": 142.23585648143478,
+            "maximum": 1222.5689554580194
+          },
+          "preservation_norm": {
+            "median": 291.52548612833994,
+            "minimum": 132.52755203409353,
+            "maximum": 837.5032294766255
+          },
+          "preservation_to_gt_norm_ratio": {
+            "median": 0.9413046630665554,
+            "minimum": 0.2537864669574242,
+            "maximum": 1.7393612554717985
+          },
+          "cosine": {
+            "median": 0.9603614117186298,
+            "minimum": -0.06410356004854455,
+            "maximum": 0.992459331374264
+          },
+          "negative_cosine_batches": 1
+        }
+      },
+      "loss_dim": {
+        "weighted_loss_median": 0.3746328502893448,
+        "total_gt_vs_named_component": {
+          "gt_norm": {
+            "median": 320.9687174693115,
+            "minimum": 142.23585648143478,
+            "maximum": 1222.5689554580194
+          },
+          "preservation_norm": {
+            "median": 21.969606316270568,
+            "minimum": 14.899287086562738,
+            "maximum": 157.77018154534227
+          },
+          "preservation_to_gt_norm_ratio": {
+            "median": 0.08693035965322742,
+            "minimum": 0.013036784692042969,
+            "maximum": 0.3979727210436668
+          },
+          "cosine": {
+            "median": 0.2194531108804053,
+            "minimum": -0.40670996936736525,
+            "maximum": 0.3987955944524655
+          },
+          "negative_cosine_batches": 2
+        }
+      },
+      "loss_angle": {
+        "weighted_loss_median": 0.08279363065958023,
+        "total_gt_vs_named_component": {
+          "gt_norm": {
+            "median": 320.9687174693115,
+            "minimum": 142.23585648143478,
+            "maximum": 1222.5689554580194
+          },
+          "preservation_norm": {
+            "median": 10.905279954370233,
+            "minimum": 5.902906467553364,
+            "maximum": 25.10914092969357
+          },
+          "preservation_to_gt_norm_ratio": {
+            "median": 0.036557455823342896,
+            "minimum": 0.02014466487615742,
+            "maximum": 0.09999129374064183
+          },
+          "cosine": {
+            "median": 0.06266367301908138,
+            "minimum": -0.10459761314130467,
+            "maximum": 0.2769448464935486
+          },
+          "negative_cosine_batches": 1
+        }
+      },
+      "loss_center": {
+        "weighted_loss_median": 0.13773512840270996,
+        "total_gt_vs_named_component": {
+          "gt_norm": {
+            "median": 320.9687174693115,
+            "minimum": 142.23585648143478,
+            "maximum": 1222.5689554580194
+          },
+          "preservation_norm": {
+            "median": 9.052715943684241,
+            "minimum": 4.16554573750286,
+            "maximum": 20.950754661820202
+          },
+          "preservation_to_gt_norm_ratio": {
+            "median": 0.02448787458029067,
+            "minimum": 0.008498503890890333,
+            "maximum": 0.05284793843180454
+          },
+          "cosine": {
+            "median": 0.09361461736593202,
+            "minimum": -0.10035527804292053,
+            "maximum": 0.8689299079367162
+          },
+          "negative_cosine_batches": 1
+        }
+      },
+      "loss_depth_map": {
+        "weighted_loss_median": 0.27451837062835693,
+        "total_gt_vs_named_component": {
+          "gt_norm": {
+            "median": 320.9687174693115,
+            "minimum": 142.23585648143478,
+            "maximum": 1222.5689554580194
+          },
+          "preservation_norm": {
+            "median": 1.3218714806966776,
+            "minimum": 0.6932076622506897,
+            "maximum": 5.613502204915049
+          },
+          "preservation_to_gt_norm_ratio": {
+            "median": 0.004585533234933747,
+            "minimum": 0.0022566088321201265,
+            "maximum": 0.01915702397135469
+          },
+          "cosine": {
+            "median": 0.009640811414782957,
+            "minimum": -0.08294858117091633,
+            "maximum": 0.1621935393082575
+          },
+          "negative_cosine_batches": 4
+        }
+      }
+    },
+    "preservation_components": {
+      "classification": {
+        "weighted_loss_median": 0.00013836584184900858,
+        "total_gt_vs_named_component": {
+          "gt_norm": {
+            "median": 320.9687174693115,
+            "minimum": 142.23585648143478,
+            "maximum": 1222.5689554580194
+          },
+          "preservation_norm": {
+            "median": 0.6185221712090411,
+            "minimum": 0.17148723041805466,
+            "maximum": 2.1915148315379835
+          },
+          "preservation_to_gt_norm_ratio": {
+            "median": 0.002313215394781746,
+            "minimum": 0.0002848746263729459,
+            "maximum": 0.015407611594928802
+          },
+          "cosine": {
+            "median": 0.04088309948679364,
+            "minimum": -0.09071310546574496,
+            "maximum": 0.08787872051772941
+          },
+          "negative_cosine_batches": 2
+        }
+      },
+      "box": {
+        "weighted_loss_median": 4.658406904667345e-7,
+        "total_gt_vs_named_component": {
+          "gt_norm": {
+            "median": 320.9687174693115,
+            "minimum": 142.23585648143478,
+            "maximum": 1222.5689554580194
+          },
+          "preservation_norm": {
+            "median": 0.00022063854304706464,
+            "minimum": 0.00004190693960219728,
+            "maximum": 0.0009357343195305825
+          },
+          "preservation_to_gt_norm_ratio": {
+            "median": 5.862397306898674e-7,
+            "minimum": 1.0436949783021028e-7,
+            "maximum": 0.000002892973282412275
+          },
+          "cosine": {
+            "median": 0.021564446961794964,
+            "minimum": -0.26211611711549065,
+            "maximum": 0.08846828028292263
+          },
+          "negative_cosine_batches": 3
+        }
+      },
+      "depth": {
+        "weighted_loss_median": 0.000007428126991726458,
+        "total_gt_vs_named_component": {
+          "gt_norm": {
+            "median": 320.9687174693115,
+            "minimum": 142.23585648143478,
+            "maximum": 1222.5689554580194
+          },
+          "preservation_norm": {
+            "median": 0.010087008586565992,
+            "minimum": 0.0034252321437751136,
+            "maximum": 0.08464331532553482
+          },
+          "preservation_to_gt_norm_ratio": {
+            "median": 0.000026090002218131924,
+            "minimum": 0.000009381776254300895,
+            "maximum": 0.00021351138845320468
+          },
+          "cosine": {
+            "median": -0.04557032645446396,
+            "minimum": -0.5810792551496309,
+            "maximum": 0.6452755299972979
+          },
+          "negative_cosine_batches": 5
+        }
+      },
+      "dimensions": {
+        "weighted_loss_median": 0.00002753866010607453,
+        "total_gt_vs_named_component": {
+          "gt_norm": {
+            "median": 320.9687174693115,
+            "minimum": 142.23585648143478,
+            "maximum": 1222.5689554580194
+          },
+          "preservation_norm": {
+            "median": 0.028010249982250567,
+            "minimum": 0.014728148312204143,
+            "maximum": 0.05674386896023984
+          },
+          "preservation_to_gt_norm_ratio": {
+            "median": 0.00007197206937410478,
+            "minimum": 0.00004206697250575807,
+            "maximum": 0.00020791818242691713
+          },
+          "cosine": {
+            "median": -0.033571004770302684,
+            "minimum": -0.1754407975393261,
+            "maximum": 0.22446476610341173
+          },
+          "negative_cosine_batches": 5
+        }
+      },
+      "angle": {
+        "weighted_loss_median": 0.00009542617590341251,
+        "total_gt_vs_named_component": {
+          "gt_norm": {
+            "median": 320.9687174693115,
+            "minimum": 142.23585648143478,
+            "maximum": 1222.5689554580194
+          },
+          "preservation_norm": {
+            "median": 0.11905678814742002,
+            "minimum": 0.027839719134482428,
+            "maximum": 8.242512055638533
+          },
+          "preservation_to_gt_norm_ratio": {
+            "median": 0.0003287184687569003,
+            "minimum": 0.0000858911225556169,
+            "maximum": 0.009400656611948941
+          },
+          "cosine": {
+            "median": 0.007113839451360034,
+            "minimum": -0.04187476642799194,
+            "maximum": 0.05081559049076075
+          },
+          "negative_cosine_batches": 2
+        }
+      }
+    }
+  },
+  "original_equality": {
+    "preservation_norm_maximum": 0.0006337692645199072,
+    "preservation_ratio_maximum": 0.0000027300188711307997,
+    "interpretation": "Near-zero gradients are expected when the student equals its original-A2 anchor; cosines at numerical equality are not meaningful evidence of conflict."
+  },
+  "coverage": {
+    "images": 32,
+    "batches": 8,
+    "batch_size": 4,
+    "eligible_pairs": {
+      "classification": {
+        "Pedestrian": 12,
+        "Vehicle": 78
+      },
+      "box": {
+        "Pedestrian": 12,
+        "Vehicle": 78
+      },
+      "depth": {
+        "Pedestrian": 12,
+        "Vehicle": 78
+      },
+      "dimensions": {
+        "Pedestrian": 12,
+        "Vehicle": 78
+      },
+      "angle": {
+        "Pedestrian": 12,
+        "Vehicle": 78
+      }
+    },
+    "batches_without_eligible_pedestrians": 4,
+    "sampling": "First32 train IDs, not a representative or class-balanced sample",
+    "preservation_averaging": "Per-class means averaged over classes with eligible objects; pair frequency is not the preservation weighting ratio"
+  },
+  "uncertainty": {
+    "measurement": "Median of per-batch all-query mean absolute depth-log-uncertainty differences, not matched-object score or AP changes",
+    "original": 0.0000019192694935554755,
+    "control": 0.08532217144966125
+  },
+  "exceptional_batch": {
+    "batch": 7,
+    "gt_classification_gradient_norm": 1294.247943822121,
+    "gt_depth_gradient_norm": 310.27145581751927,
+    "interpretation": "Classification dominates this batch; the probe does not support a depth-only explanation."
+  },
+  "limitations": [
+    "Prospective endpoint probe, not a replay or causal attribution of the 928 historical AdamW updates.",
+    "Raw preclip gradient ratios are not exact AdamW parameter-update contribution ratios.",
+    "Only 12 eligible Pedestrian pairs; four batches have none. No per-class depth-causality claim.",
+    "No new AP, nearby recall, accuracy-qualified checkpoint or external-teacher training result.",
+    "Archive omits checkpoint binaries and raw gradient tensors; runtime checks are supported by reports and logs, not an independent CUDA rerun."
+  ],
+  "decision": {
+    "selected_checkpoint": "Original A2 epoch130",
+    "m65_control_preservation_passed": false,
+    "m65b_measurement_completed": true,
+    "external_kd_authorized": false,
+    "additional_training_started": false,
+    "new_experiment_implemented": false,
+    "proposed_next": "One revised bounded A2-preservation control with train-only scale calibration and explicit depth-uncertainty preservation. Keep both-class GT supervision, architecture, immutable A2 parent, full-validation preservation limits and nearby-recall checks. Freeze the exact recipe before execution; do not choose coefficients by a raw 32-image gradient ratio or start a weight/epoch sweep."
+  }
+}

@@ -3886,3 +3886,81 @@ r2 on main includes the correction. An existing ready session needs a pull and
 section 3 only, not another runtime
 build. GPU gradient measurements remain pending. No new trained model,
 selected coefficient, external teacher or deployment result is claimed.
+
+## 2026-10-06 M65b gradient measurement reviewed
+
+Received `m65b_gradient_results.zip`, SHA-256
+`ad242612ca6c19bfdc09695c07fecd853caf2903bc4533e237718ef42ed3be69`.
+Both r2 probes completed on A100 40 GB with eight four-image batches, the same
+32 unique training IDs and zero optimizer steps. The recorded identities match
+the local probe, frozen implementation and reviewed M65 source/data identities.
+Norm partitions/ratios are consistent, all values finite and both latest logs
+exit zero. The old original-role import failure remains in the appended log;
+it is superseded by the successful r2 command. Both reports record unchanged
+model, anchor and checkpoint state. No independent CUDA replay was performed.
+
+At original-A2 equality, preservation gradients are near numerical zero as
+expected. At the M65 endpoint, median total GT norm is 320.969 and preservation
+norm 2.011. Median per-batch preservation/GT ratio is 0.006053 (0.605%), range
+0.0375%–1.571%. Median native-depth component norm is 291.525 versus
+classification 26.607; batch7 classification spikes to 1,294.248 and dominates.
+Shared visual-encoder/decoder preservation-versus-GT cosines are negative in
+6/8 and 5/8 batches, respectively. This is local gradient evidence, not an
+exact AdamW update contribution or causal attribution of historical AP loss.
+
+The per-batch median all-query mean absolute depth-log-uncertainty difference
+is 0.08532 at the control versus 1.919e-6 at original equality. The M65 loss
+does not explicitly preserve this output. This is not matched-object score
+drift or an AP decomposition. Eligibility totals are 12 Pedestrian/78 Vehicle
+pairs per component; four batches have no eligible Pedestrian. Preservation
+uses per-class means, so frequency is not automatically the loss-weight ratio.
+The sample cannot establish a Pedestrian-specific mechanism.
+
+Keep original A2 epoch130 selected. Propose one revised bounded preservation
+control using train-only scale calibration and explicit uncertainty coverage,
+with unchanged architecture, both-class GT and existing full-validation loss
+limits. No blind coefficient multiplier, weight/epoch sweep, M65 extension or
+external KD follows this diagnostic. The exact next recipe is not yet frozen
+or implemented. Evidence is `artifacts/m65b_gradient_review_20261006.json`;
+this review introduces no new trained checkpoint or accuracy result.
+
+## 2026-10-06 M65c scaled preservation prepared
+
+Following approval to proceed, prepared
+`notebooks/MonoDETR_A2_M65c_Scaled_Preservation_Colab.ipynb`, revision
+`M65C-A2-SCALED-PRESERVATION-2026-10-06-r1`, and
+`MONODETR_M65C_SCALED_PRESERVATION_CONTRACT.md`. Keep the original A2 epoch130
+architecture/checkpoint and full both-class native GT loss. M65c normalizes
+preservation errors on fixed scales and adds depth log uncertainty only where
+the original anchor's depth is reliable. Native GT/anchor inputs share the
+same online augmentation; query associations use transformed GT identity.
+
+Before the single epoch, calibrate one coefficient with zero updates at the
+fixed, reviewed completed M65 endpoint on 64 raw-label-selected train images:
+32 Pedestrian-containing and 32 Vehicle-only, two of each per batch. Target
+25% median raw preservation/GT gradient-norm ratio; reject invalid coverage,
+zero/nonfinite norms or a coefficient outside [0.01,100]. This is a prospective
+design choice, not proven optimality or historical AP attribution. The signed
+receipt binds the coefficient to the new manifest and training summary.
+
+Calibration does not initialize the new student. A fresh training process
+loads original A2 for exactly one epoch, LR1e-6, batch4, 928 updates, BN
+affine/buffers frozen and dropout disabled. Full fresh baseline and a real
+zero-update uncertainty-gradient CUDA smoke must pass first. Keep the four
+0.15-AP-point and two 0.005-nearby-recall preservation loss limits and all
+historical product gates. Stop for review whether stable or failed.
+
+Six notebook sections restore the isolated CUDA13 runtime, fresh A2 source,
+exact data and immutable M65/M65b evidence. No MonoPRIO source/prior is needed.
+Completed checkpoints recover atomically without extra updates; a partial
+epoch restarts from original A2, not its last batch. Return `m65c_results.zip`
+including partial diagnostics on failure. External KD remains disabled and
+original A2 selected. CUDA execution and accuracy results are still pending.
+
+Local verification passes all91 related CPU tests (34 M64, 21 M65,
+13 M65b diagnostics, 23 M65c). The six new code cells compile, absolute-script
+launches resolve repository packages without PYTHONPATH, the reviewed artifact
+digest matches, and the frozen M65 implementation hash is unchanged. These
+checks do not establish real CUDA memory use, the calibrated coefficient or
+full accuracy. The user approved publication to main on 2026-10-06; the
+prospective Colab CUDA run remains pending.

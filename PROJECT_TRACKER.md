@@ -1,6 +1,6 @@
 # MobileADAS3D project tracker
 
-Last updated: 2026-10-05
+Last updated: 2026-10-06
 
 This is the canonical status page. Update it whenever a task changes state,
 an experiment finishes, a gate passes/fails, or the next action changes.
@@ -28,20 +28,35 @@ unverified and incompatible with the pinned default prototype-count recipe.
 This is not proof of validation leakage. M65 completed one epoch of GT plus
 original-A2 preservation on A100 40 GB, without MonoPRIO targets, and failed
 preservation: Pedestrian 3D AP dropped 0.4724 points and Vehicle BEV AP dropped
-0.2864 points. Original A2 remains selected. The next bounded action is M65b,
-a zero-update gradient diagnosis, not more training or external-teacher KD. See
+0.2864 points. Original A2 remains selected. M65b completed its zero-update
+gradient diagnosis. M65c is prepared as one revised bounded
+preservation control with train-only scale calibration and explicit uncertainty
+coverage, not an M65 extension or external-teacher KD. See
 `MONODETR_M64_TEACHER_QUALIFICATION_CONTRACT.md` and
 `A2_ACCURACY_DISTILLATION_DEPLOYMENT_PLAN.md` for evidence, teacher taxonomy
 limits, proposed loss design and the review boundary. Product gates do not change.
-The executable control contract is `MONODETR_M65_A2_PRESERVATION_CONTRACT.md`.
-The archive diagnosis is complete; M65b section 3 stopped before any model
-forward because the standalone probe could not import the repository's
-`third_party` package. Revision r2 resolves the repository root from the script
-file and adds a fresh-process launch regression test. No loss, checkpoint,
-frozen implementation or manifest changes are required. CUDA measurements
-remain pending; an existing live session needs the correction and section 3 only.
-All 68 related CPU tests pass (34 M64, 21 M65, 13 diagnostic), and all three
-notebook cells compile with matching r2 revision markers.
+The next executable contract is `MONODETR_M65C_SCALED_PRESERVATION_CONTRACT.md`;
+the original M65 contract remains historical evidence.
+M65b r2 completed both endpoint probes on A100 40 GB: eight batches of four
+identical training images per role, zero updates and unchanged state recorded
+by both reports. Report/source/data identities and norm arithmetic agree with
+the reviewed M65 run. At its endpoint, median preservation/GT gradient-norm
+ratio is 0.00605 (0.605%); native depth is usually the strongest component,
+but classification dominates one batch. This supports revising preservation,
+not a depth-only causal account of the 928 historical updates. Evidence:
+`artifacts/m65b_gradient_review_20261006.json`. No new accuracy result or
+teacher/student checkpoint is selected, and no follow-up training is started.
+
+- **M65c prepared; GPU results pending:** six-section
+  `notebooks/MonoDETR_A2_M65c_Scaled_Preservation_Colab.ipynb` keeps original
+  A2 and both-class native GT. It adds normalized preservation scales and
+  reliable-depth log-uncertainty preservation. One coefficient targets a
+  25% median raw preservation/GT norm ratio on 64 stratified training images
+  at the fixed M65 endpoint, with zero calibration updates. This design choice
+  is not a claimed optimum. Training starts anew from original A2 for exactly
+  one epoch, then applies unchanged full-validation preservation/product
+  gates and stops for review. No external teacher, new checkpoint or measured
+  improvement is introduced by preparation.
 
 - **M65 reviewed and failed preservation:** both evaluations cover 3,769 images.
   Moderate Vehicle/Pedestrian 3D AP was 15.4475/7.5284 before and
@@ -62,13 +77,20 @@ notebook cells compile with matching r2 revision markers.
   preservation terms. This identifies coverage gaps, not their causal impact.
   Logs contain combined preclip norms only, so component-gradient dominance
   remains unmeasured. Evidence: `artifacts/m65_regression_review_20261005.json`.
-- **M65b prepared:** `notebooks/MonoDETR_A2_M65b_Gradient_Diagnostic_Colab.ipynb`,
-  sections 1–3, measures GT/preservation norms and directions on the first32
-  training images at original A2 and the completed M65 checkpoint. No optimizer,
-  updates, teacher, weight sweep or checkpoint promotion. Fresh runtime/source
-  receipts do not rewrite historical manifests. Revision r2 on main includes
-  the standalone import correction and regression test. GPU measurements are
-  pending.
+- **M65b completed and reviewed:** original-A2 preservation gradients are near
+  numerical zero as expected at equality. At the control endpoint, median GT
+  norm is 320.969 and preservation norm 2.011; per-batch norm ratio ranges
+  0.0375%–1.571%, median 0.605%. Median GT depth-component norm is 291.525
+  versus classification 26.607, with a classification spike to 1,294.248.
+  Shared encoder/decoder gradients oppose preservation in 6/8 and 5/8 batches,
+  respectively, but are small relative to GT; these are local directions,
+  not a causal AP attribution or exact AdamW update contribution.
+  All-query log-uncertainty absolute drift has per-batch median 0.08532;
+  M65 does not explicitly preserve this output. It is not object-matched
+  ranking drift. Only 12 eligible Pedestrian pairs versus 78 Vehicle pairs,
+  with no eligible Pedestrians in four batches; preservation uses per-class
+  averaging, not frequency weighting. Do not generalize this sample to
+  Pedestrian-specific causes. No rerun of the completed notebook is needed.
 
 - **M64 reviewed:** product moderate 3D AP A2 Vehicle 15.4475/Pedestrian 7.5284,
   MonoPRIO 19.4917/8.6633; BEV 21.3776/8.4887 versus 24.6816/9.8051.
@@ -292,7 +314,9 @@ notebook cells compile with matching r2 revision markers.
 | M61 | MonoDGP-to-A2 Vehicle geometry distillation | Parked after reported audit rejection | Full component report unreviewed. No continuation-training result supplied. Preserve original policy and caches. |
 | M62 | R0-to-A2 train-only geometry diagnosis | Completed; historical diagnostic | Reviewed `m62_results.zip` led to the bounded M63 Vehicle-depth pilot. Exact R0 epoch185/A2 epoch130 and train-only component screening are preserved; this is not the next recommended notebook. |
 | M64 | Unchanged A2 and one teacher candidate | Complete; reproduction passed, prior provenance unresolved | A100 80 GB,3769/3769 each; A2 baseline and MonoPRIO seed 444 native references reproduced. Product 3D AP 15.4475/7.5284 versus19.4917/8.6633. Zero updates; no teacher/student promotion. Released prior construction lacks IDs and exceeds default recipe counts. |
-| M65 | Original A2 preservation control | Prepared; CUDA execution pending | One GT-plus-original-A2 preservation epoch, 928 updates, frozen BN, online matched transforms, full fresh baseline/control validation. External KD disabled; original A2 unchanged on disk. |
+| M65 | Original A2 preservation control | Complete; preservation failed | One epoch/928 updates on A100 40 GB. Full baseline/control validation: Pedestrian 3D AP -0.4724 and Vehicle BEV AP -0.2864 exceed the 0.15-point loss limit. BN and anchor unchanged; external KD disabled; original A2 retained. |
+| M65b | Separate GT and preservation gradient measurement | Complete; diagnosis only | Both endpoints, first32 train images, zero updates. Control median preservation/GT norm ratio 0.605%; GT depth usually strongest with one classification outlier. Uncertainty coverage gap and limited Pedestrian sample recorded; no AP improvement. M65c is prepared separately. |
+| M65c | Scale-normalized and train-calibrated preservation | Prepared; GPU run pending | One epoch from original A2, reliable depth uncertainty included, 64-image zero-update coefficient calibration; unchanged 0.15 AP / 0.005 nearby recall loss limits. No external KD or improved checkpoint selected. |
 
 **M53 completion note:** the model and official evaluator passed after the public-API import correction. The prior JSON failed only because it compared an independent reimplementation directly with published native-evaluator values. The corrected schema-v2 finalizer reused the complete prediction set and native log, and all frozen M53 gates passed.
 

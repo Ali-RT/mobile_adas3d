@@ -1,6 +1,6 @@
 # A2 accuracy → distillation → iPhone plan
 
-Decision updated: 2026-10-05. Keep A2 as the student and reassess both the
+Decision updated: 2026-10-06. Keep A2 as the student and reassess both the
 teacher and the transfer method. Do not extend the rejected scalar-depth pilot
 or make historical-runtime recovery the main accuracy-development task.
 MonoDGP and M61 are parked, not deleted.
@@ -36,18 +36,36 @@ on a depth-uncertainty output not explicitly preserved by M65. Neither scalar
 loss means nor combined gradient norms establish which term caused regression.
 See `artifacts/m65_regression_review_20261005.json`.
 
-Next run `notebooks/MonoDETR_A2_M65b_Gradient_Diagnostic_Colab.ipynb`, sections
-1–3, revision r2 on main. It measures separate GT and
-preservation gradients at original A2 and the completed M65 endpoint on 32 fixed
-training images. No optimizer or parameter update is created, and the original
-checkpoints/manifests remain read-only. Return `m65b_gradient_results.zip` for
-review. The r1 probe stopped at a repository-package import before its first
-model forward. Revision r2 fixes that entry point without changing the frozen
-M65 implementation. An existing ready session can pull main and rerun section
-3 only; no runtime rebuild is required. No GPU
-gradient result is claimed. Only afterward
-decide whether one revised preservation control is justified. No loss weight,
-teacher, architecture or additional training budget is selected by this diagnosis.
+M65b r2 is complete; the uploaded `m65b_gradient_results.zip` was reviewed.
+Both endpoints ran eight batches on the same 32 training images, with zero
+updates and unchanged model/anchor/checkpoint state recorded. At the control
+endpoint, median preservation/GT raw gradient-norm ratio is 0.605%, and native
+depth has the largest median component norm. Classification dominates one
+batch, so this is not a depth-only explanation. Depth-log-uncertainty changes
+without an explicit preservation term. Only 12 Pedestrian pairs are eligible;
+four batches have none. The measurement does not replay historical AdamW
+updates, attribute AP loss, or validate a new model.
+See `artifacts/m65b_gradient_review_20261006.json`.
+
+M65c prepares one revised bounded preservation control: calibrate loss scales on
+training data with both-class coverage, and explicitly protect the original
+A2's depth-uncertainty output as well as reliable object geometry. Keep native
+GT for both classes, the unchanged inference architecture and immutable A2
+parent. Do not multiply a coefficient by the reciprocal of this small sample's
+norm ratio or start a weight/epoch sweep. Freeze the exact recipe and retain
+the full-validation 0.15-AP-point and 0.005-nearby-recall loss limits before
+execution. Only a passing control can support a paired feature-KD pilot;
+teacher prior-bank provenance remains a separate prerequisite. The recipe is
+now implemented in `MONODETR_M65C_SCALED_PRESERVATION_CONTRACT.md` and the
+six-section `notebooks/MonoDETR_A2_M65c_Scaled_Preservation_Colab.ipynb`.
+It normalizes output errors on explicit fixed scales, adds reliable-depth
+log-uncertainty preservation and sets one scalar on 64 train-only images at
+the fixed M65 endpoint, targeting a 25% median preclip norm ratio. This is a
+design hypothesis, not a claimed optimum or AdamW update ratio. Calibration
+takes zero updates; the one-epoch training process starts from original A2.
+Invalid coverage or coefficient stops instead of launching a search.
+No M65c CUDA run, calibrated scalar or accuracy improvement has been measured
+locally. The completed M65b notebook does not need to be rerun.
 The existing M63h notebook is archival, not the next accuracy experiment.
 Preserve its files and hashes.
 
