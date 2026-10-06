@@ -3964,3 +3964,45 @@ digest matches, and the frozen M65 implementation hash is unchanged. These
 checks do not establish real CUDA memory use, the calibrated coefficient or
 full accuracy. The user approved publication to main on 2026-10-06; the
 prospective Colab CUDA run remains pending.
+
+## 2026-10-06 M65c reviewed and M66 feature distillation prepared
+
+Reviewed `m65c_results.zip`, SHA-256
+`f99d2b4ab1701cf2af3f5ebc4b113bdab10756472484ce72a0d105d1d81373e6`.
+It completed calibration, smoke and 928 updates, but failed preservation:
+Pedestrian 3D AP 7.5284 to 7.0752 and BEV 8.4887 to 8.3088. Vehicle 3D rose 0.0600
+points. Both evaluations include 3,769 images; nearby recall remains within
+preservation limits. Reports record unchanged anchor and BN buffers. No
+external teacher was used. Raw checkpoints/predictions were not included for
+an independent CUDA/AP rerun. See `artifacts/m65c_review_20261006.json`.
+
+After the user approved actual KD, prepared the six-section
+`notebooks/MonoDETR_A2_M66_R0_Vehicle_Feature_KD_Colab.ipynb`, revision
+`M66-R0-A2-VEHICLE-FEATURE-KD-2026-10-06-r1`. For this new bounded experiment,
+remove the passing-prior-control prerequisite without rewriting historical
+evidence. Keep original A2 selected; use existing R0 only for Vehicle knowledge.
+MonoDGP remains parked and MonoPRIO prior construction is not newly qualified.
+
+Each paired arm starts from original A2 and runs exactly one epoch/928 updates.
+Freeze every parameter except native depth MLPs. Both arms receive native GT
+for both classes and 0.10 scale-normalized original-A2 preservation; only KD
+adds 0.10 cosine loss on hidden depth-head features. The actual feature is
+downstream of learned head parameters, not a frozen decoder output. Independent
+GT matches align query identity. Teacher masks use same-view training GT and
+require reliable Vehicle depth better than the immutable A2 anchor. No external
+Pedestrian, scalar-depth/logit copying, projector or temperature sweep is used.
+
+Fresh full A2 reproduction and a zero-update 64-image finite/nonzero KD-gradient
+CUDA smoke are prerequisites. Paired transformed-input fingerprints must agree.
+Full evaluation needs at least 0.15 Vehicle 3D AP gain versus original A2 and
+control, with existing per-class/nearby preservation limits versus both.
+Stop for review regardless of pass; a promising result needs seed confirmation
+before longer training. No improved student is selected by preparation.
+
+The self-contained notebook reuses the working prospective CUDA13 source/build
+helpers, not old M62 environment reconstruction. It reads the unchanged original
+M65c manifest for A2 configuration/data identity only and freezes a separate M66
+authorization. Completed arms recover without extra updates; partial epochs
+restart from original A2. Return `m66_results.zip` with partial diagnostics after
+failures. Exact scope and acceptance are in
+`MONODETR_M66_VEHICLE_FEATURE_KD_CONTRACT.md`. CUDA execution remains pending.

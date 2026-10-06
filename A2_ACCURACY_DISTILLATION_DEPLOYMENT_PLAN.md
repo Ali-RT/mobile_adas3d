@@ -20,14 +20,15 @@ or uniformly superior teacher geometry is established.
 The exact released prior has 13 Pedestrian/12 Cyclist prototypes, exceeding the
 pinned builder's default maximum 8 each, and contains no construction IDs.
 This is an unresolved recipe/provenance gap, not proven validation leakage.
-External-teacher KD remains disabled. See `artifacts/m64_review_20261005.json`
+MonoPRIO external-teacher KD remains disabled. See `artifacts/m64_review_20261005.json`
 and `MONODETR_M65_A2_PRESERVATION_CONTRACT.md`.
 
 M65 completed the fixed one-epoch control on A100 40 GB. Both evaluations cover
 3,769 images, but the control failed preservation: Pedestrian 3D AP fell
 7.5284→7.0561 and Vehicle BEV AP fell 21.3776→21.0912. There were 928 updates,
 with unchanged BN buffers and original-A2 anchor. No external teacher was used.
-Keep original A2 epoch130; do not extend the failed control or start KD.
+Keep original A2 epoch130; do not extend that failed control. Its old KD
+authorization remains unchanged; the later M66 decision is separately scoped.
 
 The completed archive diagnosis pairs 19,313 GT records and excludes 28 ambiguous
 depth keys. Geometry changed slightly across several components; nearby Vehicle
@@ -47,25 +48,37 @@ four batches have none. The measurement does not replay historical AdamW
 updates, attribute AP loss, or validate a new model.
 See `artifacts/m65b_gradient_review_20261006.json`.
 
-M65c prepares one revised bounded preservation control: calibrate loss scales on
-training data with both-class coverage, and explicitly protect the original
-A2's depth-uncertainty output as well as reliable object geometry. Keep native
-GT for both classes, the unchanged inference architecture and immutable A2
-parent. Do not multiply a coefficient by the reciprocal of this small sample's
-norm ratio or start a weight/epoch sweep. Freeze the exact recipe and retain
-the full-validation 0.15-AP-point and 0.005-nearby-recall loss limits before
-execution. Only a passing control can support a paired feature-KD pilot;
-teacher prior-bank provenance remains a separate prerequisite. The recipe is
-now implemented in `MONODETR_M65C_SCALED_PRESERVATION_CONTRACT.md` and the
-six-section `notebooks/MonoDETR_A2_M65c_Scaled_Preservation_Colab.ipynb`.
-It normalizes output errors on explicit fixed scales, adds reliable-depth
-log-uncertainty preservation and sets one scalar on 64 train-only images at
-the fixed M65 endpoint, targeting a 25% median preclip norm ratio. This is a
-design hypothesis, not a claimed optimum or AdamW update ratio. Calibration
-takes zero updates; the one-epoch training process starts from original A2.
-Invalid coverage or coefficient stops instead of launching a search.
-No M65c CUDA run, calibrated scalar or accuracy improvement has been measured
-locally. The completed M65b notebook does not need to be rerun.
+M65c completed calibration, smoke and 928 updates on A100 40 GB, but failed
+preservation. On full 3,769-image validation, Vehicle/Pedestrian moderate 3D AP
+changed 15.4475/7.5284 to 15.5076/7.0752; BEV 21.3776/8.4887 to 21.2897/8.3088.
+Both nearby recalls stayed within the preservation limits, but Pedestrian
+recall 0.69092 remains below 0.80. The measured preservation coefficient was
+0.15778017; the anchor and BN buffers remained unchanged according to the
+reports. No external teacher was used. Evidence:
+`artifacts/m65c_review_20261006.json`. Raw checkpoint/prediction bytes were
+not included for an independent CUDA/AP rerun. Reject this recipe and retain
+original A2. Do not repeat the completed M65b/M65c workflows.
+
+The user approved a bounded actual-KD pilot on 2026-10-06. Requiring a passing
+preservation-only control was an experiment-design guardrail, not a technical
+prerequisite; that requirement is removed for M66, without changing historical
+gates or authorizations. Prepare one matched no-KD control and one R0 Vehicle
+feature-KD arm from original A2. Update only native depth MLPs; freeze the
+backbone, transformer, dense-depth predictor and other heads. Retain both-class
+native GT and identical original-A2 preservation in both arms. Teacher targets
+are train-only Vehicle objects where frozen R0 has better depth than original
+A2. Teach hidden depth-head features, not frozen decoder features or another
+scalar-depth output loss. No MonoPRIO prior is used or newly qualified.
+
+The executable recipe is `MONODETR_M66_VEHICLE_FEATURE_KD_CONTRACT.md` and
+the six-section `notebooks/MonoDETR_A2_M66_R0_Vehicle_Feature_KD_Colab.ipynb`.
+Each arm has 928 updates at LR 1e-6. KD needs at least 0.15 Vehicle 3D AP gain versus
+both original A2 and control, with at most 0.15 AP loss in each other moderate
+metric and 0.005 nearby-recall loss for either class versus either comparator.
+The control's stability is reported, not required to run the KD arm. Actual
+source/data identity, fresh baseline reproduction and finite nonzero KD CUDA
+gradients remain prerequisites. Stop for review regardless of outcome; no M66
+CUDA run or improvement is claimed by preparation.
 The existing M63h notebook is archival, not the next accuracy experiment.
 Preserve its files and hashes.
 
@@ -98,15 +111,15 @@ loss preserving reliable original A2 predictions.
 ## Priority order
 
 1. Keep the exact A2 epoch130 checkpoint and inference graph as the baseline.
-2. Qualify one newer multi-class teacher candidate and establish a simple,
-   working prospective A2 runtime. Do not train a new teacher from scratch,
-   resume MonoDGP export, or restore every historical package as this stage.
-3. Re-evaluate unchanged A2, then test a short GT-plus-preservation control.
-   Freeze the continuation recipe and numerical criteria before execution.
-   If the control substantially forgets A2, stop and correct that recipe.
-4. Run one matched control versus object-aware feature-KD pilot using the
-   qualified teacher only on supported classes/components. Keep both classes'
-   GT losses and identical A2-preservation supervision in both arms.
+2. Use the working prospective CUDA13 runtime and existing R0 Vehicle teacher.
+   MonoPRIO stays unselected until its prior construction is resolved; do not
+   make that unresolved candidate a blocker for this R0-specific experiment.
+3. Re-evaluate unchanged A2 and test the real KD gradient with zero updates.
+   Freeze one narrow head-update recipe and numerical limits before training.
+4. Run the paired one-epoch M66 no-KD control and Vehicle feature-KD treatment.
+   Keep both-class GT and identical A2-preservation supervision. A passing
+   previous preservation control is not required; compare KD against both
+   original A2 and the newly measured control instead.
 5. Measure benefit against unchanged A2 and the matched control, including
    per-class AP, nearby recall and geometry tails. Confirm a promising result
    with a second seed before longer training; failure does not authorize a grid.
@@ -175,13 +188,13 @@ KD targets. If the candidate cannot be reproduced or shows no useful advantage,
 retain A2 and report that outcome. No automatic teacher-training campaign or
 second challenger is authorized by a failed qualification.
 
-## Proposed distillation design
+## Distillation design
 
-The first new treatment should teach **object-matched internal geometry
-features**, not repeat only final-depth copying. Hungarian/GT associations must
-align objects rather than assume equal query indices. An alignment projector
-may be used during training and removed for inference. The inference target
-remains A2, not MonoPRIO. This is a proposed adaptation, not a validated
+M66 implements **object-matched internal depth-head features**, not another
+final-depth copying loss. Hungarian/GT associations align objects rather than
+assume equal query indices. Its 256-channel cosine loss uses no projector;
+direct feature-coordinate alignment is a hypothesis tested by the paired
+comparison. The inference target remains A2, not MonoPRIO. This is not a validated
 implementation of [DETRDistill](https://arxiv.org/abs/2211.10156), which studies
 Hungarian-matched and target-aware feature KD for 2D DETR detectors.
 
@@ -191,9 +204,9 @@ Use three distinct sources of supervision:
 - A soft preservation loss from frozen original A2 on reliable predictions,
   particularly Pedestrian classification, localization and geometry. It is
   intended to limit forgetting, not to make A2's errors immutable.
-- One object-aware feature-KD loss from the qualified stronger teacher, masked
-  to supported classes/ranges. R0 remains a possible Vehicle-only fallback,
-  not an assumed Pedestrian teacher. New geometry/logit KD is a later ablation,
+- One object-aware feature-KD loss from R0, masked to reliable Vehicle objects
+  with a measured training-view depth advantage over original A2. R0 is not
+  an assumed Pedestrian teacher. New geometry/logit KD is a later ablation,
   not added simultaneously to this first treatment.
 
 The matched control receives the same GT and preservation losses, augmentations,
@@ -212,12 +225,12 @@ not solve the gap. Freeze weights, gradient-scale checks and reliable-target
 rules using training data before evaluating the pilot. Preservation is a
 hypothesis to test, not a guarantee.
 
-The intended budget is one teacher qualification, one short preservation control,
-one short paired pilot and
-one confirmation seed only if promising. Exact epochs, loss coefficients and
-acceptance tolerances for external feature-KD require its future executable
-contract. M65 separately freezes the teacher-independent one-epoch control
-and stability criteria; it does not authorize the paired treatment.
+The current budget is one short paired M66 pilot and one confirmation seed
+only if promising. Its epochs, fixed coefficients, masks and acceptance limits
+are frozen in `MONODETR_M66_VEHICLE_FEATURE_KD_CONTRACT.md`. Do not continue
+preservation-only iterations indefinitely or launch a teacher/weight grid.
+Historical M65/M65c authorizations are unchanged; M66 authorizes only its new
+paired treatment, not longer training, model promotion or deployment.
 No temperature grid is justified for feature KD.
 
 ## M62 completed diagnostic

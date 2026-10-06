@@ -16,47 +16,47 @@ not constrain the current accuracy-development stage.
 
 ## Current position
 
-**Current decision:** keep A2 epoch130 and its MobileNetV4 Conv Medium plus
-MonoDETR inference graph. Stop extending the rejected scalar-depth pilot and
-defer M63h historical-runtime recovery as the main development task. The next
-workflow must test an A2-preserving control before one paired object-aware
-feature-distillation pilot. M64 r2 completed on A100 80 GB: both models evaluated
-all 3,769 images, A2 reproduced its baseline and MonoPRIO reproduced its published
-native seed 444 results. No optimizer updates occurred. MonoPRIO remains a
-candidate, not a selected teacher: its released prior-bank construction is
-unverified and incompatible with the pinned default prototype-count recipe.
-This is not proof of validation leakage. M65 completed one epoch of GT plus
-original-A2 preservation on A100 40 GB, without MonoPRIO targets, and failed
-preservation: Pedestrian 3D AP dropped 0.4724 points and Vehicle BEV AP dropped
-0.2864 points. Original A2 remains selected. M65b completed its zero-update
-gradient diagnosis. M65c is prepared as one revised bounded
-preservation control with train-only scale calibration and explicit uncertainty
-coverage, not an M65 extension or external-teacher KD. See
-`MONODETR_M64_TEACHER_QUALIFICATION_CONTRACT.md` and
-`A2_ACCURACY_DISTILLATION_DEPLOYMENT_PLAN.md` for evidence, teacher taxonomy
-limits, proposed loss design and the review boundary. Product gates do not change.
-The next executable contract is `MONODETR_M65C_SCALED_PRESERVATION_CONTRACT.md`;
-the original M65 contract remains historical evidence.
-M65b r2 completed both endpoint probes on A100 40 GB: eight batches of four
-identical training images per role, zero updates and unchanged state recorded
-by both reports. Report/source/data identities and norm arithmetic agree with
-the reviewed M65 run. At its endpoint, median preservation/GT gradient-norm
-ratio is 0.00605 (0.605%); native depth is usually the strongest component,
-but classification dominates one batch. This supports revising preservation,
-not a depth-only causal account of the 928 historical updates. Evidence:
-`artifacts/m65b_gradient_review_20261006.json`. No new accuracy result or
-teacher/student checkpoint is selected, and no follow-up training is started.
+**Current decision:** retain original A2 epoch130, MobileNetV4 Conv Medium plus
+the full MonoDETR graph. M65c completed but failed Pedestrian preservation.
+The user approved moving to actual bounded R0-to-A2 feature distillation on
+2026-10-06. M66 pairs a fresh no-KD control with one Vehicle feature-KD arm,
+both initialized from original A2. Only depth MLPs learn; both-class native GT
+and identical original-A2 preservation remain active. A passing previous
+preservation-only control is not required for this new experiment. Fresh A2
+reproduction, exact source/data identity and a real finite-gradient KD smoke
+are still required. Compare KD against both original A2 and its matched control.
+Product gates and historical manifests do not change.
 
-- **M65c prepared; GPU results pending:** six-section
-  `notebooks/MonoDETR_A2_M65c_Scaled_Preservation_Colab.ipynb` keeps original
-  A2 and both-class native GT. It adds normalized preservation scales and
-  reliable-depth log-uncertainty preservation. One coefficient targets a
-  25% median raw preservation/GT norm ratio on 64 stratified training images
-  at the fixed M65 endpoint, with zero calibration updates. This design choice
-  is not a claimed optimum. Training starts anew from original A2 for exactly
-  one epoch, then applies unchanged full-validation preservation/product
-  gates and stops for review. No external teacher, new checkpoint or measured
-  improvement is introduced by preparation.
+The next executable contract is `MONODETR_M66_VEHICLE_FEATURE_KD_CONTRACT.md`
+and the notebook is `notebooks/MonoDETR_A2_M66_R0_Vehicle_Feature_KD_Colab.ipynb`.
+MonoDGP/M61 and M63h runtime recovery remain parked. MonoPRIO remains
+unselected because its released prior construction is unresolved; this is not
+proof of validation leakage. Its qualification issue is not a blocker for
+the separately scoped existing-R0 Vehicle pilot.
+
+- **M66 prepared; CUDA execution pending:** two arms, one epoch/928 updates
+  each, seed 444, LR 1e-6, private CUDA13 runtime. R0 teaches only reliable
+  training Vehicle objects with a depth advantage over frozen original A2.
+  Transfer the final depth MLP's hidden feature using cosine loss; do not
+  copy scalar depth/logits, teach Pedestrians, alter inference architecture
+  or learn a projector. Fixed coefficients are 0.10 for A2 preservation and
+  0.10 for KD, not a grid. All 928 transformed-input fingerprints must match
+  between arms. KD needs at least +0.15 Vehicle 3D AP points versus both
+  comparators, at most 0.15 loss on the other three moderate AP metrics and
+  0.005 loss on either nearby recall versus either comparator. Stop for review
+  regardless of outcome; original A2 stays selected. No GPU gain is claimed.
+
+- **M65c completed and failed:** both evaluations cover 3,769 images; 928
+  updates, successful calibration/smoke and unchanged anchor/BN buffers are
+  recorded. Vehicle/Pedestrian 3D AP changed 15.4475/7.5284 to 15.5076/7.0752;
+  BEV 21.3776/8.4887 to 21.2897/8.3088. Pedestrian 3D loss 0.4532 and BEV loss
+  0.1798 exceed the 0.15-point preservation limits. Nearby Vehicle/Pedestrian
+  recall 0.88215/0.69092 stays within preservation limits, but Pedestrian
+  remains below the 0.80 product target. Measured coefficient 0.15778017.
+  No external teacher was used; reject this recipe, not the concept of KD.
+  Archive reports/signatures/CSV aggregates agree; raw weights/predictions
+  were absent for an independent AP rerun. Evidence:
+  `artifacts/m65c_review_20261006.json`. Do not rerun completed M65b/M65c.
 
 - **M65 reviewed and failed preservation:** both evaluations cover 3,769 images.
   Moderate Vehicle/Pedestrian 3D AP was 15.4475/7.5284 before and

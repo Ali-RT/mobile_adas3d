@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "review_date": "2026-10-06",
+  "archive": "m65c_results.zip",
+  "archive_sha256": "f99d2b4ab1701cf2af3f5ebc4b113bdab10756472484ce72a0d105d1d81373e6",
+  "archive_files": 47,
+  "manifest_file_sha256": "4b969d47a2490ed1ba1c89a38a11fbf6b6a35b4b9c3dc716fb43857eea7c783b",
+  "manifest_self_signature": "853fc19cb6f7af250f8397bb688129efcc82a4c67eb7cee7a7daf7032ecbf724",
+  "independent_cuda_or_ap_rerun": false,
+  "checkpoint_binary_and_raw_predictions_included": false,
+  "full_validation_images_per_role": 3769,
+  "optimizer_steps": 928,
+  "external_teacher_used": false,
+  "recorded_running_buffers_and_anchor_unchanged": true,
+  "calibrated_preservation_coefficient": 0.15778016883160892,
+  "baseline": {
+    "vehicle_3d_moderate": 15.447527335986564,
+    "pedestrian_3d_moderate": 7.528416451699579,
+    "vehicle_bev_moderate": 21.377606101348228,
+    "pedestrian_bev_moderate": 8.488669175064146,
+    "vehicle_nearby_recall": 0.8829344841114163,
+    "pedestrian_nearby_recall": 0.6926807760141094
+  },
+  "control": {
+    "vehicle_3d_moderate": 15.507575051788017,
+    "pedestrian_3d_moderate": 7.0752124331051105,
+    "vehicle_bev_moderate": 21.289693352026823,
+    "pedestrian_bev_moderate": 8.308843633910442,
+    "vehicle_nearby_recall": 0.8821498626912515,
+    "pedestrian_nearby_recall": 0.6909171075837742
+  },
+  "preservation_gate_passed": false,
+  "failed_metrics": ["pedestrian_3d_moderate", "pedestrian_bev_moderate"],
+  "selected_model": "original_A2_epoch130",
+  "decision": "Reject this preservation recipe. Proceed only under the new separately bounded paired M66 R0 Vehicle feature-KD contract; do not rewrite M65c authorization."
+}
