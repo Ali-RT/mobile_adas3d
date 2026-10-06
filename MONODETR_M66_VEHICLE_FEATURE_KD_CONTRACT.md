@@ -2,6 +2,10 @@
 
 Revision: `M66-R0-A2-VEHICLE-FEATURE-KD-2026-10-06-r1`.
 
+Status reviewed 2026-10-06: completed, gain gate failed. Original A2 remains
+selected. The frozen protocol below is unchanged; do not rerun or extend it.
+Evidence: `artifacts/m66_review_20261006.json`.
+
 Run one paired experiment to test whether R0 can improve A2 Vehicle 3D accuracy
 without sacrificing A2's Pedestrian performance. This is external-teacher
 knowledge distillation, not another teacher-independent preservation control.
@@ -172,3 +176,35 @@ signed smoke, both training summaries/checkpoint sidecars, full AP/nearby and
 geometry diagnostics, paired gate and durable logs. Raw weights/prediction
 caches stay on Drive. Section 6 can bundle partial failure diagnostics. Local
 CPU tests do not establish CUDA behavior, memory use or an accuracy gain.
+
+## Completed result
+
+Both arms completed one epoch/928 updates on A100 40 GB. Original A2 reproduced
+its baseline, the zero-update CUDA smoke passed with 23 eligible Vehicle pairs,
+and training recorded 1,497 eligible Vehicle object presentations. All 928
+transformed-input fingerprints match. Reports record unchanged frozen
+parameters, buffers, anchor and teacher, with zero Pedestrian external targets.
+
+| Moderate AP_R40 percentage points | Original A2 | Control | Feature KD |
+| --- | ---: | ---: | ---: |
+| Vehicle 3D | 15.447527 | 15.538300 | 15.538494 |
+| Pedestrian 3D | 7.528416 | 7.394004 | 7.394002 |
+| Vehicle BEV | 21.377606 | 21.295564 | 21.296920 |
+| Pedestrian BEV | 8.488669 | 8.475375 | 8.475376 |
+
+All three evaluations cover 3,769 images. KD gains only 0.090966 Vehicle 3D
+points versus original and 0.000194 versus control, failing both +0.15 tests.
+The control is stable within its limits and the other ten KD preservation
+checks pass. Nearby Vehicle/Pedestrian recall is 0.883013/0.693122 for both
+arms; Pedestrian still misses 0.80. Vehicle 3D and BEV also remain below the
+historical 15.8713/21.3134 accuracy gates. This recipe supplies no useful
+incremental KD gain and is not promoted or extended.
+
+Teacher gradients were real, but their strength relative to GT is unmeasured.
+Mean raw KD loss is 0.015620 (0.001562 weighted) versus GT 2.125265. Small loss
+values do not prove small gradients. The separate M66b zero-update
+component-gradient diagnosis is prepared before a different weight, scope or
+transfer objective is chosen; see
+`MONODETR_M66B_GRADIENT_DIAGNOSTIC_CONTRACT.md`. It does not extend this contract's
+consumed training budget or change its frozen recipe.
+One unsuccessful seed does not establish that R0 cannot teach A2 generally.

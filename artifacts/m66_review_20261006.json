@@ -1,0 +1,215 @@
+{
+  "schema_version": 1,
+  "review_date": "2026-10-06",
+  "source_archive": "/Users/ral3ply/Downloads/m66_results.zip",
+  "archive_sha256": "f439729c256acd9c318fee1b1b06d8bd44cfbc3bf7df074125c0156646e6b885",
+  "archive_files": 56,
+  "revision": "M66-R0-A2-VEHICLE-FEATURE-KD-2026-10-06-r1",
+  "manifest_sha256": "68c2247a9ab28603e10f7f9748fc17a43e5bdefeedc57eebe87e2c62f430d968",
+  "implementation_sha256": "60f8527b55ba8e646027da5b590ed60d8ca5b0b1fd12c74e3e8e0cc429708ec8",
+  "environment": {
+    "python": "3.13.15 (main, Aug  6 2026, 11:06:22) [GCC 13.3.0]",
+    "packages": {
+      "torch": "2.10.0+cu130",
+      "torchvision": "0.25.0+cu130",
+      "numpy": "2.2.6",
+      "scipy": "1.16.3",
+      "pillow": "11.3.0",
+      "opencv-python-headless": "4.12.0.88",
+      "scikit-image": "0.25.2",
+      "numba": "0.63.1",
+      "timm": "1.0.20",
+      "PyYAML": "6.0.2"
+    },
+    "cuda": "13.0",
+    "gpu": "NVIDIA A100-SXM4-40GB",
+    "cuda_home": "/usr/local/cuda-13.0"
+  },
+  "review_checks": {
+    "archive_crc": true,
+    "unique_members": true,
+    "manifest_self_signature": true,
+    "smoke_self_signature": true,
+    "local_implementation_hash": true,
+    "training_contracts": true,
+    "paired_928_input_fingerprints": true,
+    "full_3769_evaluations": true,
+    "ap_json_csv_agreement": true,
+    "geometry_csv_aggregate_recalculation": true,
+    "nearby_recall_arithmetic": true,
+    "recomputed_acceptance_checks": true
+  },
+  "independent_cuda_or_ap_rerun": false,
+  "limitations": [
+    "Raw checkpoint binaries and prediction directories remain on Drive and were not included.",
+    "The archive does not measure separate weighted GT, preservation and KD gradient norms or their relative update contribution.",
+    "One seed and one epoch do not establish a general failure of R0 teaching or feature distillation."
+  ],
+  "smoke": {
+    "checked_train_images": 64,
+    "eligible_vehicle_pairs": 23,
+    "optimizer_steps": 0,
+    "finite_nonzero_eligible_kd_gradients": true,
+    "passed": true
+  },
+  "training": {
+    "control": {
+      "complete": true,
+      "role": "control",
+      "manifest_sha256": "68c2247a9ab28603e10f7f9748fc17a43e5bdefeedc57eebe87e2c62f430d968",
+      "completed_epochs": 1,
+      "optimizer_steps": 928,
+      "loss_means": {
+        "gt": 2.1252671017448,
+        "preservation": 0.0183631050751838,
+        "feature_kd": 0.015621664437589814,
+        "total": 2.1271034112430462
+      },
+      "eligible_kd_pairs": {
+        "Vehicle": 1497,
+        "Pedestrian": 0,
+        "vehicle_near": 1080,
+        "vehicle_far": 417
+      },
+      "smoke_report_sha256": "b85258ddb262fcafd3bb35a35f573a2f76155c33756e8e02d26425a603bfeac2",
+      "running_buffers_unchanged": true,
+      "frozen_parameters_unchanged": true,
+      "anchor_unchanged": true,
+      "teacher_unchanged": true,
+      "external_kd_enabled": false,
+      "original_checkpoint_sha256": "ed2134a98acbf1ab2fc61f7c8749b38fdfd2418e7f7932593e5e37a8d9ef33f4",
+      "inference_graph_unchanged": true
+    },
+    "kd": {
+      "complete": true,
+      "role": "kd",
+      "manifest_sha256": "68c2247a9ab28603e10f7f9748fc17a43e5bdefeedc57eebe87e2c62f430d968",
+      "completed_epochs": 1,
+      "optimizer_steps": 928,
+      "loss_means": {
+        "gt": 2.125265283289301,
+        "preservation": 0.01837737041495596,
+        "feature_kd": 0.015619656451423812,
+        "total": 2.1286649866336216
+      },
+      "eligible_kd_pairs": {
+        "Vehicle": 1497,
+        "Pedestrian": 0,
+        "vehicle_near": 1080,
+        "vehicle_far": 417
+      },
+      "smoke_report_sha256": "b85258ddb262fcafd3bb35a35f573a2f76155c33756e8e02d26425a603bfeac2",
+      "running_buffers_unchanged": true,
+      "frozen_parameters_unchanged": true,
+      "anchor_unchanged": true,
+      "teacher_unchanged": true,
+      "external_kd_enabled": true,
+      "original_checkpoint_sha256": "ed2134a98acbf1ab2fc61f7c8749b38fdfd2418e7f7932593e5e37a8d9ef33f4",
+      "inference_graph_unchanged": true
+    }
+  },
+  "results": {
+    "complete": true,
+    "revision": "M66-R0-A2-VEHICLE-FEATURE-KD-2026-10-06-r1",
+    "manifest_sha256": "68c2247a9ab28603e10f7f9748fc17a43e5bdefeedc57eebe87e2c62f430d968",
+    "original_a2": {
+      "complete": true,
+      "manifest_sha256": "68c2247a9ab28603e10f7f9748fc17a43e5bdefeedc57eebe87e2c62f430d968",
+      "role": "baseline",
+      "evaluation_identity": "9276a07c17810d37dfcfecfdb90497f1ec719841082980d6ca236a44ee9f3fb8",
+      "product": {
+        "vehicle_bev_moderate": 21.377606101348228,
+        "vehicle_3d_moderate": 15.447527335986564,
+        "pedestrian_bev_moderate": 8.488669175064146,
+        "pedestrian_3d_moderate": 7.528416451699579
+      },
+      "nearby": {
+        "Vehicle": 0.8829344841114163,
+        "Pedestrian": 0.6926807760141094
+      }
+    },
+    "control": {
+      "complete": true,
+      "manifest_sha256": "68c2247a9ab28603e10f7f9748fc17a43e5bdefeedc57eebe87e2c62f430d968",
+      "role": "control",
+      "evaluation_identity": "0d585896b418e285e86aff84a2ac32e0fd285cae698a49371dd3c606b519957a",
+      "product": {
+        "vehicle_bev_moderate": 21.295564332410784,
+        "vehicle_3d_moderate": 15.538300072577444,
+        "pedestrian_bev_moderate": 8.47537513040276,
+        "pedestrian_3d_moderate": 7.394003946466987
+      },
+      "nearby": {
+        "Vehicle": 0.8830129462534327,
+        "Pedestrian": 0.6931216931216931
+      }
+    },
+    "kd": {
+      "complete": true,
+      "manifest_sha256": "68c2247a9ab28603e10f7f9748fc17a43e5bdefeedc57eebe87e2c62f430d968",
+      "role": "kd",
+      "evaluation_identity": "1e23e8d3b728d18586d3a424969db9e36bc1df5794d76999079d555376197e85",
+      "product": {
+        "vehicle_bev_moderate": 21.296920233875426,
+        "vehicle_3d_moderate": 15.538493820271015,
+        "pedestrian_bev_moderate": 8.47537640482196,
+        "pedestrian_3d_moderate": 7.394002290093395
+      },
+      "nearby": {
+        "Vehicle": 0.8830129462534327,
+        "Pedestrian": 0.6931216931216931
+      }
+    },
+    "paired_inputs_identical": true,
+    "acceptance_checks": {
+      "original_a2_vehicle_3d_gain": false,
+      "original_a2_pedestrian_3d_moderate": true,
+      "original_a2_vehicle_bev_moderate": true,
+      "original_a2_pedestrian_bev_moderate": true,
+      "original_a2_Vehicle_nearby": true,
+      "original_a2_Pedestrian_nearby": true,
+      "matched_control_vehicle_3d_gain": false,
+      "matched_control_pedestrian_3d_moderate": true,
+      "matched_control_vehicle_bev_moderate": true,
+      "matched_control_pedestrian_bev_moderate": true,
+      "matched_control_Vehicle_nearby": true,
+      "matched_control_Pedestrian_nearby": true
+    },
+    "pilot_passed": false,
+    "control_stable": true,
+    "kd_minus_original": {
+      "vehicle_3d_moderate": 0.09096648428445064,
+      "pedestrian_3d_moderate": -0.13441416160618402,
+      "vehicle_bev_moderate": -0.08068586747280193,
+      "pedestrian_bev_moderate": -0.013292770242186336
+    },
+    "kd_minus_control": {
+      "vehicle_3d_moderate": 0.0001937476935705007,
+      "pedestrian_3d_moderate": -0.000001656373592062721,
+      "vehicle_bev_moderate": 0.0013559014646418177,
+      "pedestrian_bev_moderate": 0.0000012744191995039955
+    },
+    "historical_accuracy_gates": {
+      "vehicle_3d_moderate": false,
+      "pedestrian_3d_moderate": true,
+      "vehicle_bev_moderate": false,
+      "pedestrian_bev_moderate": true,
+      "mean_3d_moderate": true
+    },
+    "nearby_product_gates": {
+      "Vehicle": true,
+      "Pedestrian": false
+    },
+    "improved_student_selected": false,
+    "original_a2_remains_selected": true,
+    "second_seed_required_if_promising": true,
+    "full_training_authorized": false,
+    "deployment_authorized": false,
+    "optimizer_steps_per_arm": 928
+  },
+  "decision": "Reject promotion/extension of the tested M66 recipe; retain original A2 epoch130.",
+  "proposed_next_action": "A zero-update train-only GT/preservation/KD gradient-strength and direction diagnostic on the original A2 and both M66 endpoints; distinguish weak gradients, conflicts and scope limitations before designing one further paired treatment.",
+  "new_training_authorized": false,
+  "new_teacher_authorized": false,
+  "deployment_authorized": false
+}

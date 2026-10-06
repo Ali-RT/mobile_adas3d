@@ -10,6 +10,16 @@ continuation-training result has been supplied. Do not overwrite its artifacts.
 
 ## Current action
 
+M66 is complete and did not produce a useful incremental distillation gain.
+Keep original A2 epoch130 selected. M66b is now prepared: a zero-update,
+train-only diagnostic of separate weighted GT, preservation and KD gradients
+at original A2 and the two M66 endpoints. Run sections 1–3 of
+`notebooks/MonoDETR_A2_M66b_Gradient_Diagnostic_Colab.ipynb` and return
+`m66b_gradient_results.zip`. It compares strength, conflict, target coverage
+and per-layer reach on the same first 64 training views without an optimizer.
+Native CUDA execution remains pending. Do not rerun M66, add epochs, start
+a weight grid or replace the teacher on the strength of this one result.
+
 M64 r2 completed on A100 80 GB: both models evaluated 3,769/3,769 images,
 unchanged A2 reproduced its baseline, and MonoPRIO reproduced its published
 seed 444 native results. No optimizer updates occurred. Product moderate 3D AP
@@ -62,7 +72,7 @@ original A2. Do not repeat the completed M65b/M65c workflows.
 The user approved a bounded actual-KD pilot on 2026-10-06. Requiring a passing
 preservation-only control was an experiment-design guardrail, not a technical
 prerequisite; that requirement is removed for M66, without changing historical
-gates or authorizations. Prepare one matched no-KD control and one R0 Vehicle
+gates or authorizations. M66 ran one matched no-KD control and one R0 Vehicle
 feature-KD arm from original A2. Update only native depth MLPs; freeze the
 backbone, transformer, dense-depth predictor and other heads. Retain both-class
 native GT and identical original-A2 preservation in both arms. Teacher targets
@@ -77,8 +87,24 @@ both original A2 and control, with at most 0.15 AP loss in each other moderate
 metric and 0.005 nearby-recall loss for either class versus either comparator.
 The control's stability is reported, not required to run the KD arm. Actual
 source/data identity, fresh baseline reproduction and finite nonzero KD CUDA
-gradients remain prerequisites. Stop for review regardless of outcome; no M66
-CUDA run or improvement is claimed by preparation.
+gradients were prerequisites and passed. The A100 40 GB run completed 928
+updates per arm and all 3,769 validation images per model. Vehicle 3D AP was
+15.447527 original, 15.538300 control and 15.538494 KD. The KD gain was
+0.090966 points versus original and 0.000194 versus control, below both
+0.15-point requirements. Pedestrian 3D AP fell 7.528416 to 7.394002, within
+the allowed loss, and all other pilot preservation checks passed. Control
+stability passed. The recipe is not selected or extended. Evidence:
+`artifacts/m66_review_20261006.json`.
+
+The real teacher signal was active: the smoke found nonzero KD gradients and
+training recorded 1,497 eligible Vehicle object presentations, zero Pedestrian
+external targets and identical transformed inputs across arms. Raw mean KD
+loss 0.015620 contributes 0.001562 at its fixed 0.10 coefficient, while GT loss
+averages 2.125265. These scalar magnitudes do not establish gradient dominance,
+alignment or AdamW update contribution. The direct hidden-channel alignment,
+coefficient and narrow trainable scope remain hypotheses to distinguish, not
+proven explanations of the near-zero incremental gain. Nearby Pedestrian
+recall is 0.693122 and still misses the 0.80 product target.
 The existing M63h notebook is archival, not the next accuracy experiment.
 Preserve its files and hashes.
 
@@ -114,18 +140,21 @@ loss preserving reliable original A2 predictions.
 2. Use the working prospective CUDA13 runtime and existing R0 Vehicle teacher.
    MonoPRIO stays unselected until its prior construction is resolved; do not
    make that unresolved candidate a blocker for this R0-specific experiment.
-3. Re-evaluate unchanged A2 and test the real KD gradient with zero updates.
+3. Completed: re-evaluate unchanged A2 and test the real KD gradient with zero updates.
    Freeze one narrow head-update recipe and numerical limits before training.
-4. Run the paired one-epoch M66 no-KD control and Vehicle feature-KD treatment.
+4. Completed: run the paired one-epoch M66 no-KD control and Vehicle feature-KD treatment.
    Keep both-class GT and identical A2-preservation supervision. A passing
    previous preservation control is not required; compare KD against both
    original A2 and the newly measured control instead.
-5. Measure benefit against unchanged A2 and the matched control, including
-   per-class AP, nearby recall and geometry tails. Confirm a promising result
-   with a second seed before longer training; failure does not authorize a grid.
-6. Freeze the improved student, convert with prediction-preservation checks,
+5. Completed: measure benefit against unchanged A2 and the matched control.
+   M66 did not pass its gain gate, so a confirmation seed is not justified yet.
+6. Prepared next (M66b): measure weighted GT/preservation/KD gradients without updates
+   on fixed training views at original A2 and both M66 endpoints. Diagnose
+   relative strength, conflicts, per-layer reach and eligible-target coverage
+   before freezing one further paired recipe. New training needs approval.
+7. After an improved student is validated, freeze it and convert with prediction-preservation checks,
    then measure actual iPhone model and end-to-end timing/memory/stability.
-7. Optimize only a measured runtime bottleneck, one change at a time, retaining
+8. Optimize only a measured runtime bottleneck, one change at a time, retaining
    the uncompressed accurate checkpoint. Validate on untouched external data.
 
 Accuracy is the immediate objective. KD is an experiment, not a guaranteed
@@ -225,9 +254,12 @@ not solve the gap. Freeze weights, gradient-scale checks and reliable-target
 rules using training data before evaluating the pilot. Preservation is a
 hypothesis to test, not a guarantee.
 
-The current budget is one short paired M66 pilot and one confirmation seed
-only if promising. Its epochs, fixed coefficients, masks and acceptance limits
-are frozen in `MONODETR_M66_VEHICLE_FEATURE_KD_CONTRACT.md`. Do not continue
+The paired M66 training budget is consumed. Its result is not promising enough
+to justify the conditional confirmation seed. Epochs, fixed coefficients,
+masks and acceptance limits remain frozen in
+`MONODETR_M66_VEHICLE_FEATURE_KD_CONTRACT.md`. The prepared follow-up is a
+diagnosis without updates, governed by
+`MONODETR_M66B_GRADIENT_DIAGNOSTIC_CONTRACT.md`, not an automatic training extension. Do not continue
 preservation-only iterations indefinitely or launch a teacher/weight grid.
 Historical M65/M65c authorizations are unchanged; M66 authorizes only its new
 paired treatment, not longer training, model promotion or deployment.

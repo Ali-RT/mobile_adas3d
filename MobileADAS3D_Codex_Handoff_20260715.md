@@ -4006,3 +4006,73 @@ authorization. Completed arms recover without extra updates; partial epochs
 restart from original A2. Return `m66_results.zip` with partial diagnostics after
 failures. Exact scope and acceptance are in
 `MONODETR_M66_VEHICLE_FEATURE_KD_CONTRACT.md`. CUDA execution remains pending.
+
+## 2026-10-06 M66 completed without useful incremental distillation gain
+
+Reviewed the 56-file `m66_results.zip`, SHA-256
+`f439729c256acd9c318fee1b1b06d8bd44cfbc3bf7df074125c0156646e6b885`.
+Archive CRC, manifest/smoke signatures, unchanged implementation hash,
+training contracts, paired 928-input fingerprints, AP JSON/CSV agreement,
+geometry aggregates and recomputed acceptance checks passed. Raw checkpoint
+binaries and predictions remain on Drive, so this is an archive review rather
+than an independent CUDA/AP rerun. Evidence: `artifacts/m66_review_20261006.json`.
+
+Both arms completed 928 updates on A100 40 GB and evaluated all 3,769 images.
+Vehicle 3D AP was 15.447527 original A2, 15.538300 no-KD control and 15.538494
+KD. Teacher transfer adds only 0.000194 points over control, and KD gains
+0.090966 over original, below both +0.15 requirements. Pedestrian 3D changes
+7.528416 to 7.394002. Vehicle/Pedestrian BEV is 21.296920/8.475376 for KD
+versus original 21.377606/8.488669. The control is stable and all non-gain pilot
+checks pass. Nearby Vehicle/Pedestrian recall is 0.883013/0.693122 in both
+arms; Pedestrian still misses 0.80. Original A2 remains selected.
+
+This was real external-teacher distillation. The zero-update smoke found
+nonzero KD gradients on eligible Vehicles; training recorded 1,497 eligible
+object presentations (1,080 near/417 far), zero Pedestrian external targets,
+unchanged frozen parameters/BN/anchor/teacher and distinct endpoint hashes.
+Mean raw feature KD loss is 0.015620, weighted 0.001562, versus GT 2.125265.
+Combined preclip norms and scalar loss means do not measure separate gradient
+strength, direction or relative AdamW update contribution.
+
+Do not extend this recipe, rerun a confirmation seed without a promising
+signal, promote the control/KD endpoint or change teachers automatically.
+The proposed next action is a zero-update, train-only GT/preservation/KD
+gradient diagnosis on original A2 and both endpoints. Distinguish weak signal,
+conflicting gradients and limited trainable scope before freezing one further
+paired treatment. No further training is authorized.
+
+## 2026-10-06 M66b zero-update component-gradient diagnostic prepared
+
+The user accepted the proposed diagnostic. Prepared
+`notebooks/MonoDETR_A2_M66b_Gradient_Diagnostic_Colab.ipynb`, revision
+`M66B-ZERO-UPDATE-KD-GRADIENTS-2026-10-06-r1`, with three ordered,
+self-contained sections. Reuse the working private Torch 2.10/CUDA 13 helpers
+and a fresh pinned `ZrrSkywalker/MonoDETR` checkout. Do not resume M62/M63
+recovery, rebuild historical manifests, or mutate M66 weights/receipts/source.
+
+`scripts/probe_m66_kd_gradients.py` freezes the reviewed M66 manifest, gate,
+smoke and four weight hashes. Original A2, M66 control and M66 KD each run in
+a fresh process on the same first 64 train IDs, seed 444 and unchanged M66
+augmentation. Independently measure native weighted GT, 0.10 preservation
+and 0.10 Vehicle feature-KD gradients with `autograd.grad`; no optimizer,
+backward/clip/update step, full validation inference or `.grad` population.
+Compare norms/ratios, component cosines, total-direction deflection, eligible
+targets and per-decoder-head hidden/output reach. KD structurally reaches
+only the final hidden depth-head linear; do not mistake that for all-head
+output supervision. Zero anchor-equality preservation and undefined cosines
+are reported honestly. Active-batch summary statistics show coverage.
+
+Verify all model parameters/buffers and frozen historical files unchanged,
+and all 16 augmented input fingerprints paired. Signed completed reports are
+write-once/reusable under the same prospective identity; changed runtime/GPU
+or source needs a fresh diagnostic RUN_ID, not a historical-environment claim.
+The notebook bundles partial failures as well as complete reports. Return
+`m66b_gradient_results.zip`. Contract:
+`MONODETR_M66B_GRADIENT_DIAGNOSTIC_CONTRACT.md`.
+
+All 25 new M66b and 115 existing related CPU regressions passed. Validation
+covers math, actual unchanged M66 loss/tap integration, a complete 16-batch
+toy probe and report reuse, read-only lineage, packaging and three-section
+notebook syntax. Python compilation and whitespace checks passed. Native CUDA
+execution remains pending. Original A2 is retained; no new training, mask/
+weight grid, teacher replacement, model promotion or deployment is authorized.
