@@ -181,6 +181,19 @@ def finite_box_is_valid(row: Any, np: Any) -> bool:
     return bool(np.isfinite(row[:4]).all() and row[2] > row[0] and row[3] > row[1])
 
 
+def audit_bbox_path(raw_row: Any, processed_row: Any, np: Any) -> dict[str, Any]:
+    """Compare decoder-grid box validity with the upstream postprocessed box."""
+    raw_valid = finite_box_is_valid(raw_row, np)
+    processed_valid = finite_box_is_valid(processed_row, np)
+    return {
+        "decoder_bbox_output_grid": [rounded_finite(value, 5) for value in raw_row[:4]],
+        "upstream_postprocess_bbox_xyxy_px": [rounded_finite(value, 3) for value in processed_row[:4]],
+        "decoder_box_valid": raw_valid,
+        "postprocess_box_valid": processed_valid,
+        "became_invalid_during_postprocess": bool(raw_valid and not processed_valid),
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", type=Path, required=True)
@@ -230,6 +243,9 @@ def main() -> None:
     total_selected = 0
     valid_2d = 0
     valid_3d = 0
+    invalid_2d_decoder = 0
+    invalid_2d_postprocess = 0
+    invalid_selected_details = []
     class_counts = {name: 0 for name in CLASS_NAMES}
 
     for index, (sample_id, (image_path, calib_path)) in enumerate(zip(sample_ids, sample_paths)):
@@ -269,10 +285,18 @@ def main() -> None:
             raw.copy(), [center], [scale], INPUT_HEIGHT // 4, INPUT_WIDTH // 4
         )[0][1]
         rows = np.asarray(rows, dtype=np.float32).reshape(-1, 41)
+        if len(rows) != len(raw[0]):
+            raise RuntimeError(
+                f"Upstream postprocess changed detection count for {sample_id}: "
+                f"decoder={len(raw[0])}, postprocess={len(rows)}"
+            )
 
         selected_rows = []
         sample_selected = 0
-        for row in rows:
+        sample_valid_2d = 0
+        sample_valid_3d = 0
+        sample_invalid_details = []
+        for row_index, row in enumerate(rows):
             combined_score = (float(row[4]) + probability(float(row[39])) + float(np.mean(row[23:32]))) / 3.0
             if not math.isfinite(combined_score):
                 selected_geometry_finite = False
@@ -289,11 +313,34 @@ def main() -> None:
             )
             valid_2d += int(finite_box)
             valid_3d += int(finite_geometry)
+            sample_valid_2d += int(finite_box)
+            sample_valid_3d += int(finite_geometry)
             selected_geometry_finite = bool(selected_geometry_finite and finite_box and finite_geometry)
             class_index = int(row[40]) if math.isfinite(float(row[40])) else -1
             class_name = CLASS_NAMES[class_index] if 0 <= class_index < len(CLASS_NAMES) else "unknown"
             if class_name != "unknown":
                 class_counts[class_name] += 1
+            if not finite_box or not finite_geometry:
+                bbox_audit = audit_bbox_path(raw[0, row_index], row, np)
+                detail = {
+                    "sample_id": sample_id,
+                    "decoder_topk_index": row_index,
+                    "class_name": class_name,
+                    "screen_score": rounded_finite(combined_score, 6),
+                    "center_heatmap_score": rounded_finite(row[4], 6),
+                    "object_probability": rounded_finite(row[39], 6),
+                    "mean_keypoint_score": rounded_finite(np.mean(row[23:32]), 6),
+                    "invalid_2d_box": not finite_box,
+                    "invalid_3d_geometry": not finite_geometry,
+                    **bbox_audit,
+                }
+                invalid_selected_details.append(detail)
+                sample_invalid_details.append(detail)
+                if not finite_box:
+                    if bbox_audit["decoder_box_valid"]:
+                        invalid_2d_postprocess += 1
+                    else:
+                        invalid_2d_decoder += 1
             if len(selected_rows) < 10:
                 selected_rows.append({
                     "class_name": class_name,
@@ -303,8 +350,15 @@ def main() -> None:
                     "yaw_camera_rad": rounded_finite(row[35], 6),
                     "location_xyz_m": [rounded_finite(value, 4) for value in row[36:39]],
                 })
-        per_sample.append({"sample_id": sample_id, "detections_score_ge_0_1": sample_selected,
-                           "top_detections": selected_rows})
+        per_sample.append({
+            "sample_id": sample_id,
+            "detections_score_ge_0_1": sample_selected,
+            "valid_2d_box_count": sample_valid_2d,
+            "valid_3d_box_count": sample_valid_3d,
+            "invalid_selected_candidate_count": len(sample_invalid_details),
+            "invalid_selected_candidates": sample_invalid_details,
+            "top_detections": selected_rows,
+        })
 
     def percentile(values: list[float], fraction: float) -> float:
         return float(np.percentile(np.asarray(values, dtype=np.float64), fraction)) if values else 0.0
@@ -333,6 +387,12 @@ def main() -> None:
         "selected_detections_score_ge_0_1": total_selected,
         "valid_2d_box_count": valid_2d,
         "valid_3d_box_count": valid_3d,
+        "invalid_selected_candidate_count": len(invalid_selected_details),
+        "invalid_selected_candidate_details": invalid_selected_details,
+        "invalid_2d_box_origin_counts": {
+            "already_invalid_in_decoder_output_grid": invalid_2d_decoder,
+            "became_invalid_in_upstream_postprocess": invalid_2d_postprocess,
+        },
         "selected_class_counts": class_counts,
         "runtime": {"torch": torch.__version__, "torch_cuda_build": torch.version.cuda,
                     "gpu": torch.cuda.get_device_name(0),

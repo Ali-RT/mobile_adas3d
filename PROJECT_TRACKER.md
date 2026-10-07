@@ -49,7 +49,10 @@ files; no smoke report was written. Notebook r4 preserves it and automatically
 uses a fresh clean pinned checkout. The next run exposed a report-serialization
 bug: NumPy box comparisons produced `numpy.bool_` in a JSON field. r5 converts
 the geometry-validity result to a native Python bool; the model smoke has not
-yet passed and no inference result is claimed. The combined log remains saved
+yet passed and no inference result is claimed. Notebook r6 keeps the gate
+unchanged and records decoder-grid versus postprocessed boxes and score parts
+for each invalid candidate, to locate whether inversion originates in model
+width/height predictions or coordinate mapping. The combined log remains saved
 to Drive and bundled with each unique report. See
 `RTM3D_KM3D_EDGE_SCREEN_CONTRACT.md` and
 `MONODETR_M67_A2_COREML_FEASIBILITY_CONTRACT.md`.

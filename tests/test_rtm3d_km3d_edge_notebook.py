@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from scripts.run_rtm3d_km3d_res18_smoke import finite_box_is_valid
+from scripts.run_rtm3d_km3d_res18_smoke import audit_bbox_path, finite_box_is_valid
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -42,7 +42,7 @@ class RTM3DEdgeNotebookTests(unittest.TestCase):
         self.assertLess(setup.index("pull', '--ff-only'"), setup.index("if not SCRIPT.is_file()"))
         self.assertIn("status', '--porcelain', '--untracked-files=no", setup)
         self.assertNotIn("reset', '--hard", setup)
-        self.assertIn("2026-10-07-r5", notebook["metadata"]["rtm3d_revision"])
+        self.assertIn("2026-10-07-r6", notebook["metadata"]["rtm3d_revision"])
 
     def test_dirty_rtm3d_checkout_is_preserved_and_fresh_clone_selected(self):
         notebook = json.loads(NOTEBOOK.read_text())
@@ -52,7 +52,7 @@ class RTM3DEdgeNotebookTests(unittest.TestCase):
         self.assertIn("Preserving existing RTM3D checkout", setup)
         self.assertNotIn("reset', '--hard", setup)
         self.assertIn("modified or untracked files", SCRIPT.read_text())
-        self.assertIn("2026-10-07-r5", notebook["metadata"]["rtm3d_revision"])
+        self.assertIn("2026-10-07-r6", notebook["metadata"]["rtm3d_revision"])
 
     def test_smoke_cell_persists_combined_output_and_bundles_log(self):
         notebook = json.loads(NOTEBOOK.read_text())
@@ -65,7 +65,7 @@ class RTM3DEdgeNotebookTests(unittest.TestCase):
         self.assertIn("stdout=subprocess.PIPE", smoke)
         self.assertIn("full combined log: {SMOKE_LOG}", smoke)
         self.assertIn("archive.write(SMOKE_LOG", bundle)
-        self.assertIn("2026-10-07-r5", notebook["metadata"]["rtm3d_revision"])
+        self.assertIn("2026-10-07-r6", notebook["metadata"]["rtm3d_revision"])
 
     def test_smoke_requires_safe_and_strict_checkpoint_loading(self):
         source = SCRIPT.read_text()
@@ -80,6 +80,25 @@ class RTM3DEdgeNotebookTests(unittest.TestCase):
         result = finite_box_is_valid(row, np)
         self.assertIs(type(result), bool)
         self.assertEqual(json.dumps({"valid_box": result}), '{"valid_box": true}')
+
+    def test_bbox_audit_locates_inversion_before_or_after_postprocess(self):
+        decoder_invalid = audit_bbox_path(
+            np.asarray([6.0, 2.0, 4.0, 9.0], dtype=np.float32),
+            np.asarray([6.0, 2.0, 4.0, 9.0], dtype=np.float32),
+            np,
+        )
+        self.assertFalse(decoder_invalid["decoder_box_valid"])
+        self.assertFalse(decoder_invalid["postprocess_box_valid"])
+        self.assertFalse(decoder_invalid["became_invalid_during_postprocess"])
+
+        postprocess_invalid = audit_bbox_path(
+            np.asarray([2.0, 2.0, 6.0, 9.0], dtype=np.float32),
+            np.asarray([6.0, 2.0, 2.0, 9.0], dtype=np.float32),
+            np,
+        )
+        self.assertTrue(postprocess_invalid["decoder_box_valid"])
+        self.assertFalse(postprocess_invalid["postprocess_box_valid"])
+        self.assertTrue(postprocess_invalid["became_invalid_during_postprocess"])
 
 
 if __name__ == "__main__":
