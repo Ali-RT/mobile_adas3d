@@ -30,6 +30,16 @@ class RTM3DEdgeNotebookTests(unittest.TestCase):
         self.assertIn("iphone timing", all_text.lower())
         self.assertIn("888c379e79d8a6d134f06a9b7d669118679e06dc", all_text)
 
+    def test_setup_updates_clean_mobile_repo_before_script_check(self):
+        notebook = json.loads(NOTEBOOK.read_text())
+        setup = "".join(notebook["cells"][1].get("source", []))
+        self.assertIn("https://github.com/Ali-RT/mobile_adas3d.git", setup)
+        self.assertIn("pull', '--ff-only', 'origin', 'main", setup)
+        self.assertLess(setup.index("pull', '--ff-only'"), setup.index("if not SCRIPT.is_file()"))
+        self.assertIn("status', '--porcelain', '--untracked-files=no", setup)
+        self.assertNotIn("reset', '--hard", setup)
+        self.assertIn("2026-10-07-r2", notebook["metadata"]["rtm3d_revision"])
+
     def test_smoke_requires_safe_and_strict_checkpoint_loading(self):
         source = SCRIPT.read_text()
         self.assertIn("weights_only=True", source)
