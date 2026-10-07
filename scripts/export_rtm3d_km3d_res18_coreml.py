@@ -107,7 +107,6 @@ def main() -> None:
     parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args()
 
-    import coremltools as ct
     import cv2
 
     repo = args.repo.resolve()
@@ -186,6 +185,11 @@ def main() -> None:
             for name, value in zip(OUTPUT_NAMES, reference)
         },
     )
+
+    # Import only after RTM3D's top-level ``models`` package is loaded. Some
+    # Core ML/TensorFlow dependencies expose their own ``models`` namespace,
+    # which otherwise shadows RTM3D's ``src/lib/models`` during construction.
+    import coremltools as ct
 
     mlmodel = ct.convert(
         traced,

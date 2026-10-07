@@ -19,6 +19,7 @@ class RTM3DCoreMLExportTests(unittest.TestCase):
         self.assertIn('OUTPUT_NAMES = tuple(HEADS)', exporter)
         self.assertIn('return tuple(outputs[name] for name in OUTPUT_NAMES)', exporter)
         self.assertIn('EXPECTED_CHECKPOINT_SHA256 = "5fa355845f79c1afeffab427de32933758e5b4c1e7c9ec19a94a13737691d05b"', exporter)
+        self.assertLess(exporter.index("build_strict_resnet18(repo, state, torch)"), exporter.index("import coremltools as ct"))
         self.assertIn("skip_model_load=True", exporter)
         self.assertIn('"geometry_decode_included": False', exporter)
         self.assertIn('"iphone_performance_measured": False', exporter)
