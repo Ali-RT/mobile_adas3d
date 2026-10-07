@@ -1,7 +1,7 @@
 # RTM3D/KM3D ResNet-18 edge-candidate screen
 
 Status: **implemented; awaiting the user's Colab run**
-Revision: `RTM3D-KM3D-RES18-EDGE-SCREEN-2026-10-07-r1`
+Revision: `RTM3D-KM3D-RES18-EDGE-SCREEN-2026-10-07-r3`
 Notebook: `notebooks/RTM3D_KM3D_ResNet18_Edge_Screen_Colab.ipynb`
 
 ## Why this experiment
@@ -40,6 +40,16 @@ does not demonstrate that the full graph is Core ML compatible.
 
 The checkpoint is loaded with PyTorch `weights_only=True` and a strict state
 dictionary match. No model weights are changed and no optimizer is created.
+
+## Colab checkout recovery
+
+The first Colab smoke attempt stopped at the source-cleanliness guard before
+model inference and wrote no report. The existing RTM3D directory contained
+modified or untracked files; the helper's earlier error message incorrectly
+called these only "tracked modifications." Notebook revision r3 preserves that
+directory and selects a fresh sibling checkout (or reuses a previously clean,
+pinned sibling) rather than resetting or deleting anything. This is a setup
+recovery, not a model-quality or performance result.
 
 ## Pass/fail and boundaries
 

@@ -70,7 +70,10 @@ def verify_source(repo: Path) -> str:
         ["git", "-C", str(repo), "status", "--porcelain", "--untracked-files=all"], text=True
     ).strip()
     if dirty:
-        raise RuntimeError("RTM3D checkout has tracked modifications; preserve it and use a fresh checkout")
+        raise RuntimeError(
+            "RTM3D checkout has modified or untracked files; preserve it and use a fresh checkout:\n"
+            + dirty
+        )
     return head
 
 

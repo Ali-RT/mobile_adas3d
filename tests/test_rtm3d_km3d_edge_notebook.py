@@ -38,7 +38,17 @@ class RTM3DEdgeNotebookTests(unittest.TestCase):
         self.assertLess(setup.index("pull', '--ff-only'"), setup.index("if not SCRIPT.is_file()"))
         self.assertIn("status', '--porcelain', '--untracked-files=no", setup)
         self.assertNotIn("reset', '--hard", setup)
-        self.assertIn("2026-10-07-r2", notebook["metadata"]["rtm3d_revision"])
+        self.assertIn("2026-10-07-r3", notebook["metadata"]["rtm3d_revision"])
+
+    def test_dirty_rtm3d_checkout_is_preserved_and_fresh_clone_selected(self):
+        notebook = json.loads(NOTEBOOK.read_text())
+        setup = "".join(notebook["cells"][2].get("source", []))
+        self.assertIn("status', '--porcelain', '--untracked-files=all", setup)
+        self.assertIn("_fresh{suffix}", setup)
+        self.assertIn("Preserving existing RTM3D checkout", setup)
+        self.assertNotIn("reset', '--hard", setup)
+        self.assertIn("modified or untracked files", SCRIPT.read_text())
+        self.assertIn("2026-10-07-r3", notebook["metadata"]["rtm3d_revision"])
 
     def test_smoke_requires_safe_and_strict_checkpoint_loading(self):
         source = SCRIPT.read_text()

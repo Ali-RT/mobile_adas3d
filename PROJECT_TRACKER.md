@@ -43,7 +43,10 @@ inference-only 2D+3D smoke. It does not claim Core ML or iPhone feasibility.
 M67 remains failed and visible; RTM3D cannot retroactively pass it. If this
 screen passes, the next gate is export of the neural-network heads and a
 separate audit of calibration-based geometry decoding. No phone connection is
-needed before that package and Mac parity. See
+needed before that package and Mac parity. The initial Colab attempt stopped
+before inference because its existing RTM3D checkout had modified/untracked
+files; no smoke report was written. Notebook r3 preserves it and automatically
+uses a fresh clean pinned checkout. See
 `RTM3D_KM3D_EDGE_SCREEN_CONTRACT.md` and
 `MONODETR_M67_A2_COREML_FEASIBILITY_CONTRACT.md`.
 
