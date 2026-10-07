@@ -38,6 +38,8 @@ class RTM3DCoreMLExportTests(unittest.TestCase):
         all_code = "\n".join(code)
         all_text = "\n".join("".join(cell.get("source", [])) for cell in notebook["cells"])
         self.assertIn("export_rtm3d_km3d_res18_coreml.py", all_code)
+        self.assertIn("stderr=subprocess.STDOUT", all_code)
+        self.assertIn("full combined log: {EXPORT_LOG}", all_code)
         self.assertIn("calibration-dependent 3d decoder", all_text.lower())
         self.assertIn("Do not connect/use the iPhone yet", all_text)
         self.assertIn("2026-10-07-r1", notebook["metadata"]["rtm3d_coreml_revision"])
