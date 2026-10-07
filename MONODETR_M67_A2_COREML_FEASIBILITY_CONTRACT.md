@@ -1,14 +1,14 @@
 # M67 — exact A2 Core ML feasibility
 
 Status: **prepared; no M67 execution results yet**
-Decision date: 2026-10-06
+Decision date: 2026-10-07
 Notebook: `notebooks/MonoDETR_A2_M67_CoreML_Feasibility_Colab.ipynb`
 
 ## Purpose
 
-The user asked to establish whether the **trained A2 student itself** can run
-fast enough on iPhone before spending further effort on distillation or model
-redesign. M67 is the first, bounded prerequisite: export the exact selected A2
+The user set the priority as deployment feasibility first: establish whether
+the **trained A2 student itself** can run fast enough on iPhone before spending
+further effort on distillation or model redesign. M67 is the first, bounded prerequisite: export the exact selected A2
 checkpoint to Core ML and verify that export preserves its predictions. It is
 not an iPhone speed result, accuracy evaluation, or deployment approval.
 
@@ -75,11 +75,12 @@ to resolve transformer cost.
 
 ## Execution and outputs
 
-Run notebook sections 1–5 on Colab GPU, preferably A100, using the documented
-M66 manifest/checkpoint and a fresh `MonoDETR_M67_A2` checkout. Expected return:
-`m67_a2_export_results.zip`. The notebook can bundle partial logs after an
-audit failure. Preserve existing output directories; use a new `RUN_ID` for a
-new runtime or changed identity.
+Run notebook sections 1–4 on Colab GPU, preferably A100, using the documented
+M66 manifest/checkpoint and a fresh `MonoDETR_M67_A2` checkout. Run section 5
+only if the audit fails specifically at CPU/trace parity; run section 6 to
+bundle the evidence. Expected return: `m67_a2_export_results.zip`, or
+`m67_cpu_trace_diagnostic_results.zip` if section 5 ran. Preserve existing
+output directories; use a new `RUN_ID` for a new runtime or changed identity.
 
 The notebook performs zero optimizer updates and no training, full-set AP,
 quantization, checkpoint selection, phone test or deployment. **Do not connect

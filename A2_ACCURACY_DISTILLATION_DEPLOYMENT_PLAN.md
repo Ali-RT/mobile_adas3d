@@ -1,29 +1,40 @@
-# A2 accuracy → distillation → iPhone plan
+# A2 deployment feasibility → accuracy improvement plan
 
-Decision updated: 2026-10-06. Keep A2 as the student and reassess both the
-teacher and the transfer method. Do not extend the rejected scalar-depth pilot
-or make historical-runtime recovery the main accuracy-development task.
-MonoDGP and M61 are parked, not deleted.
+Decision updated: 2026-10-07. Work backward from the product requirement:
+first establish whether the exact selected A2 student can be exported and run
+on the target iPhone at the required speed; only then spend more effort on
+distillation or model redesign. Keep original A2 epoch 130 as the baseline.
+Do not extend the rejected scalar-depth pilot or make historical-runtime
+recovery the main task. MonoDGP and M61 are parked, not deleted.
 M61's train-only audit rejected every component according to the user-provided
 log. The full component report has not been independently reviewed. No M61
 continuation-training result has been supplied. Do not overwrite its artifacts.
 
-## Current action
+## Current action: deployment feasibility first
 
 M66 is complete and did not produce a useful incremental distillation gain.
-Keep original A2 epoch130 selected. M66b is now prepared: a zero-update,
-train-only diagnostic of separate weighted GT, preservation and KD gradients
-at original A2 and the two M66 endpoints. Run sections 1–3 of
-`notebooks/MonoDETR_A2_M66b_Gradient_Diagnostic_Colab.ipynb` and return
-`m66b_gradient_results.zip`. It compares strength, conflict, target coverage
-and per-layer reach on the same first 64 training views without an optimizer.
-The original A2 CUDA probe completed in the supplied r1 log. The control
-stopped before measurement on checkpoint integer class keys versus JSON string
-keys. Use the corrected M66b r2 notebook, default `gradient_r2`, and rerun its
-three sections while preserving r1 results. Only that representation is
-normalized; model hashes and all remaining summary values stay exact. The
-control/KD measurements and full comparison remain pending. Do not rerun M66,
-add epochs, start a weight grid or replace the teacher on this partial result.
+Keep original A2 epoch 130 selected. Run
+`notebooks/MonoDETR_A2_M67_CoreML_Feasibility_Colab.ipynb` first and return its
+result ZIP. M67 exports the exact A2 checkpoint and checks fixed-input
+prediction parity; it does not estimate iPhone speed. Run notebook sections
+1–4 in order, section 5 only if the specified CPU/trace parity gate fails,
+and section 6 to bundle the evidence. Do not connect the phone during M67.
+
+If M67 passes, run Mac Core ML parity on the same saved inputs and references.
+If that passes, measure the exact A2 package on the target iPhone using the
+existing benchmark harness or product-app source—do not create another app.
+Record model-only and capture-to-result latency, sustained throughput,
+preprocessing, memory, thermal behavior, device/iOS/build identity, and output
+parity. Compare against the frozen product limits in the M67 contract. Only
+after this measurement decide whether to continue accuracy/distillation work,
+profile and optimize a measured runtime bottleneck, or evaluate a different
+architecture. A2 accuracy improvements remain important, but they are not the
+next experiment until the deployment feasibility question is answered.
+
+M66b remains prepared but is deferred. It diagnoses weighted GT,
+preservation, and KD gradients without optimizer updates; it cannot establish
+that the student runs fast enough on iPhone. Resume it only after the A2
+device-feasibility result and an explicit decision to prioritize accuracy.
 
 M64 r2 completed on A100 80 GB: both models evaluated 3,769/3,769 images,
 unchanged A2 reproduced its baseline, and MonoPRIO reproduced its published
@@ -139,31 +150,29 @@ solve the problem. M63 taught only final Vehicle depth, using a fixed
 parameters trainable. It did not test object-aware feature distillation or a
 loss preserving reliable original A2 predictions.
 
-## Priority order
+## Revised priority order
 
-1. Keep the exact A2 epoch130 checkpoint and inference graph as the baseline.
-2. Use the working prospective CUDA13 runtime and existing R0 Vehicle teacher.
-   MonoPRIO stays unselected until its prior construction is resolved; do not
-   make that unresolved candidate a blocker for this R0-specific experiment.
-3. Completed: re-evaluate unchanged A2 and test the real KD gradient with zero updates.
-   Freeze one narrow head-update recipe and numerical limits before training.
-4. Completed: run the paired one-epoch M66 no-KD control and Vehicle feature-KD treatment.
-   Keep both-class GT and identical A2-preservation supervision. A passing
-   previous preservation control is not required; compare KD against both
-   original A2 and the newly measured control instead.
-5. Completed: measure benefit against unchanged A2 and the matched control.
-   M66 did not pass its gain gate, so a confirmation seed is not justified yet.
-6. Prepared next (M66b): measure weighted GT/preservation/KD gradients without updates
-   on fixed training views at original A2 and both M66 endpoints. Diagnose
-   relative strength, conflicts, per-layer reach and eligible-target coverage
-   before freezing one further paired recipe. New training needs approval.
-7. After an improved student is validated, freeze it and convert with prediction-preservation checks,
-   then measure actual iPhone model and end-to-end timing/memory/stability.
-8. Optimize only a measured runtime bottleneck, one change at a time, retaining
-   the uncompressed accurate checkpoint. Validate on untouched external data.
-
-Accuracy is the immediate objective. KD is an experiment, not a guaranteed
-improvement. Teacher runs on the training machine; student is the phone target.
+1. Keep the exact A2 epoch-130 checkpoint and inference graph as the baseline.
+2. **Now — M67:** export exact A2 to FP32 Core ML and verify fixed-input
+   prediction parity. No training, quantization, or phone timing.
+3. **Next — Mac parity:** run the same saved inputs/references through the
+   converted package on macOS; do not treat Mac speed as phone speed.
+4. **Then — physical iPhone:** benchmark the exact A2 package and real product
+   pipeline against model p95 ≤50 ms, capture-to-result p95 ≤100 ms, sustained
+   ≥10 FPS, and preprocessing p95 ≤20 ms. The old random-weight Small-backbone
+   phone probe is not A2 evidence; it is only a warning that this architecture
+   family may be too slow.
+5. If A2 meets runtime targets, resume accuracy work: use the prepared M66b
+   no-update gradient diagnosis to design a bounded, matched distillation
+   experiment. Keep original A2 as fallback and require validation gains
+   without violating the frozen runtime/accuracy gates.
+6. If A2 misses runtime targets, profile the actual phone graph first. Change
+   only measured bottlenecks, one at a time, and retain the uncompressed A2
+   baseline. Consider a smaller architecture only as a separately evaluated
+   accuracy/runtime candidate—not as an assumed fix.
+7. Apply quantization or other compression only after parity/accuracy checks
+   and when measurements show it addresses the bottleneck. Validate any chosen
+   model on untouched external data before deployment.
 
 ## Frozen models and status
 
