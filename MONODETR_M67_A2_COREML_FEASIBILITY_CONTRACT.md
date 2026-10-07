@@ -1,6 +1,6 @@
 # M67 — exact A2 Core ML feasibility
 
-Status: **prepared; no M67 execution results yet**
+Status: **M67 executed; frozen CPU/CUDA parity gate failed; Core ML conversion not reached**
 Decision date: 2026-10-07
 Notebook: `notebooks/MonoDETR_A2_M67_CoreML_Feasibility_Colab.ipynb`
 
@@ -35,6 +35,27 @@ The export patch is a prospective fixed-shape implementation of deformable
 attention, with source and runtime provenance recorded. It does not change
 learned weights or architecture. The cloud-GPU latency in the report is only a
 CUDA diagnostic and must not be compared to iPhone targets.
+
+## Reviewed result (2026-10-07)
+
+The supplied `m67_a2_export_results (1).zip` and
+`m67_cpu_trace_diagnostic_results.zip` bind to the frozen epoch-130 checkpoint
+above. The portable CUDA path matched native CUDA on all 16 fixed samples;
+traced CPU matched eager portable CPU bit-for-bit on all 16. CPU-versus-CUDA
+raw-output parity failed on all 16. The first divergent **top-level** component
+was `backbone`; this report does not isolate a specific backbone operation.
+Maximum CPU-versus-CUDA deltas were logits `0.0866718`, boxes `0.00369291`,
+dimensions `0.0646670`, depth `0.474918 m`, and angle `0.359506` (frozen limits
+remain unchanged).
+
+M67 stopped before Core ML conversion. There is no M67 `.mlpackage`, no Mac
+parity result, and no iPhone performance measurement. The diagnostic performed
+zero optimizer steps, did not quantize, and verified the model state unchanged.
+This is a backend-parity failure, not evidence that the trained A2 weights are
+bad or that the model is too slow. Do not rerun the same fixed-input audit or
+claim Mac/phone authorization. A new diagnostic route must keep the failed M67
+result visible and define its own evidence and acceptance criteria; it cannot
+retroactively mark M67 passed or silently replace its reference backend.
 
 ## Stages and decision boundaries
 
@@ -75,12 +96,12 @@ to resolve transformer cost.
 
 ## Execution and outputs
 
-Run notebook sections 1–4 on Colab GPU, preferably A100, using the documented
-M66 manifest/checkpoint and a fresh `MonoDETR_M67_A2` checkout. Run section 5
-only if the audit fails specifically at CPU/trace parity; run section 6 to
-bundle the evidence. Expected return: `m67_a2_export_results.zip`, or
-`m67_cpu_trace_diagnostic_results.zip` if section 5 ran. Preserve existing
-output directories; use a new `RUN_ID` for a new runtime or changed identity.
+The frozen M67 notebook has already run; its reviewed evidence is in the two
+ZIPs named above. Preserve those outputs. Do not rerun sections 1–5 under the
+same identity or move on to Mac/phone. The next experiment must be separately
+specified and use a new run ID. It should either localize the backbone
+CPU/CUDA drift, or explicitly label any exploratory Core ML conversion and
+full-val accuracy check as diagnostic-only while leaving the M67 gate failed.
 
 The notebook performs zero optimizer updates and no training, full-set AP,
 quantization, checkpoint selection, phone test or deployment. **Do not connect

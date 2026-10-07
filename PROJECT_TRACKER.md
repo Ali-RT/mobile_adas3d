@@ -1,6 +1,6 @@
 # MobileADAS3D project tracker
 
-Last updated: 2026-10-06
+Last updated: 2026-10-07
 
 This is the canonical status page. Update it whenever a task changes state,
 an experiment finishes, a gate passes/fails, or the next action changes.
@@ -26,21 +26,26 @@ A2 and control. Do not promote either endpoint or extend this recipe.
 Product gates and historical manifests do not change.
 
 **User reprioritized the next question:** establish whether the exact trained
-A2 checkpoint can export cleanly and then measure it on iPhone before more
-distillation or architecture work. The next action is prepared **M67**, a
-zero-update FP32 Core ML export/parity audit on 16 fixed Chen-val images. Run
-sections 1–5 of
-`notebooks/MonoDETR_A2_M67_CoreML_Feasibility_Colab.ipynb` on a CUDA 13 GPU
-(A100 recommended) and return `m67_a2_export_results.zip`. This is a prerequisite,
-not the iPhone measurement; do not connect the phone yet. If M67 passes, review
-the package and perform macOS parity first. Only then measure exact A2 on a
-physical device using an existing benchmark harness or product-app source if
-available—do not create another app. This repository currently tracks only
-`ios/M60Benchmark`, a standalone MonoDGP test harness, not the product app. The
-frozen 50 ms model p95/100 ms capture-to-result/10 FPS targets
-remain unchanged; passing export or Mac checks proves none of them. No training,
-quantization, AP evaluation, promotion or deployment is authorized.
-See `MONODETR_M67_A2_COREML_FEASIBILITY_CONTRACT.md`.
+A2 checkpoint can run on iPhone before more distillation or architecture work.
+M67 ran on 2026-10-07 and **failed its frozen CPU/trace-versus-native parity
+gate**. The exact epoch-130 checkpoint's portable CUDA path matched native CUDA
+on all 16 fixed images; the traced CPU path was bit-exact with CPU eager. But
+CPU-versus-CUDA failed on all 16, first diverging at the top-level backbone
+(the diagnostic did not identify a specific backbone layer). Maximum observed
+CPU-vs-CUDA deltas were logits `0.08667`, boxes `0.003693`, dimensions
+`0.06467`, depth `0.47492 m`, and angle `0.35951`. No Core ML conversion,
+Mac parity, or iPhone timing occurred; optimizer steps were zero and model
+weights were unchanged. Do not rerun this same M67 audit or proceed to Mac/phone
+under its failed gate. Preserve the reports and limits. The user selected a
+separate candidate screen: official RTM3D/KM3D ResNet-18. Its notebook pins
+source and checkpoint, strictly loads weights, then runs a 16-image
+inference-only 2D+3D smoke. It does not claim Core ML or iPhone feasibility.
+M67 remains failed and visible; RTM3D cannot retroactively pass it. If this
+screen passes, the next gate is export of the neural-network heads and a
+separate audit of calibration-based geometry decoding. No phone connection is
+needed before that package and Mac parity. See
+`RTM3D_KM3D_EDGE_SCREEN_CONTRACT.md` and
+`MONODETR_M67_A2_COREML_FEASIBILITY_CONTRACT.md`.
 
 M66b zero-update gradient diagnosis is deferred by this device-feasibility
 priority. Its r2 correction remains available and historical M66 evidence is
@@ -340,7 +345,7 @@ reviewing the separately scoped existing-R0 Vehicle pilot.
 | M65c | Scale-normalized and train-calibrated preservation | Complete; preservation failed | One epoch/928 updates from original A2; measured coefficient 0.15778017. Pedestrian 3D AP -0.4532 and BEV -0.1798 exceed 0.15-point limits. No external teacher; original A2 retained. |
 | M66 | Paired R0-to-A2 Vehicle depth-head feature KD | Complete; gain gate failed | A100 40 GB; 928 updates per arm and 3,769-image evaluation per model. Control passes preservation. KD Vehicle 3D AP 15.538494 is +0.090966 vs original and +0.000194 vs control, below required +0.15 each. Other pilot checks pass; original A2 retained. M66b was the proposed diagnostic; user reprioritized exact-A2 runtime feasibility before further KD. |
 | M66b | Zero-update GT/preservation/KD gradient diagnosis | Pending; deferred by M67 priority | r2 correction is ready; original CUDA probe completed, control/KD endpoint probes pending. Same first64 training images and no optimizer. Preserve `gradient_r1`; do not rerun until M67 export/Mac/phone decision is reviewed. No training or promotion. |
-| M67 | Exact A2 Core ML feasibility | Prepared; not run | Original A2 epoch130/hash only. Isolated CUDA13 build, fixed16 raw parity, FP32 Core ML conversion and artifact bundle. No training, AP, quantization, phone timing or deployment. After ZIP review, Mac parity precedes physical-device run using an existing harness/product-app source; do not create another app. This repo's `ios/M60Benchmark` is a separate MonoDGP test harness, not the product app. See `MONODETR_M67_A2_COREML_FEASIBILITY_CONTRACT.md`. |
+| M67 | Exact A2 Core ML feasibility | Complete—failed at CPU/CUDA parity; conversion not reached | Supplied M67 and CPU-trace ZIPs reviewed. Portable CUDA/native passed 16/16; traced CPU/eager CPU was bit-exact 16/16; CPU/CUDA failed 16/16. First top-level mismatch is backbone; exact layer is not yet identified. No Core ML package, Mac parity, or iPhone latency. Zero optimizer steps; checkpoint state unchanged. Preserve the failed gate and thresholds. A separately reviewed diagnostic route is needed before conversion. See `MONODETR_M67_A2_COREML_FEASIBILITY_CONTRACT.md`. |
 
 **M53 completion note:** the model and official evaluator passed after the public-API import correction. The prior JSON failed only because it compared an independent reimplementation directly with published native-evaluator values. The corrected schema-v2 finalizer reused the complete prediction set and native log, and all frozen M53 gates passed.
 
