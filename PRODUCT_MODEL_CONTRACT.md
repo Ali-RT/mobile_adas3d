@@ -139,6 +139,13 @@ but their supervised learning gates failed. The active accuracy candidate is
 and changes only the ResNet50 backbone to MobileNetV4 Conv Small. Edge limits
 are deferred until the candidate first demonstrates comparable accuracy.
 
+By user decision, a bounded **early feasibility check** of the exact trained A2
+checkpoint is allowed before further KD or model redesign. This information-only
+export/device study does not relax the accuracy-first selection gates, qualify
+deployment, or make speed a reason to promote a lower-accuracy checkpoint.
+M67's Core ML export audit is only the first prerequisite; its GPU timings are
+not iPhone evidence. See `MONODETR_M67_A2_COREML_FEASIBILITY_CONTRACT.md`.
+
 ## 5. Metrics and acceptance gates
 
 All metrics are reported per class, per distance bucket, and in aggregate.

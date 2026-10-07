@@ -25,21 +25,26 @@ The KD arm failed the required +0.15 Vehicle 3D AP gain versus both original
 A2 and control. Do not promote either endpoint or extend this recipe.
 Product gates and historical manifests do not change.
 
-The next action is the prepared **M66b zero-update diagnostic**, a train-only
-measurement of separate GT, preservation and KD gradients at original A2 and
-both M66 endpoints. Run sections 1–3 of
-`notebooks/MonoDETR_A2_M66b_Gradient_Diagnostic_Colab.ipynb` on a GPU and return
-`m66b_gradient_results.zip`. Compare weighted strength/direction, coverage and
-per-head hidden/output-layer reach on the same first 64 training images.
-Small scalar loss alone does not prove weak gradients. The supplied r1 log
-completed the original A2 CUDA probe; the control stopped before measurement
-on integer-versus-JSON-string class keys. The corrected r2 checker normalizes
-only that representation and retains all weight/lineage guards. Use the default
-`RUN_ID='gradient_r2'`, preserve `gradient_r1`, and rerun sections 1–3. Control/KD
-CUDA measurements and comparison are pending; no new training, coefficient
-change or promotion is authorized.
-See `MONODETR_M66B_GRADIENT_DIAGNOSTIC_CONTRACT.md`. The completed M66
-contract/notebook remain historical evidence.
+**User reprioritized the next question:** establish whether the exact trained
+A2 checkpoint can export cleanly and then measure it on iPhone before more
+distillation or architecture work. The next action is prepared **M67**, a
+zero-update FP32 Core ML export/parity audit on 16 fixed Chen-val images. Run
+sections 1–5 of
+`notebooks/MonoDETR_A2_M67_CoreML_Feasibility_Colab.ipynb` on a CUDA 13 GPU
+(A100 recommended) and return `m67_a2_export_results.zip`. This is a prerequisite,
+not the iPhone measurement; do not connect the phone yet. If M67 passes, review
+the package and perform macOS parity first. Only then measure exact A2 on a
+physical device using an existing benchmark harness or product-app source if
+available—do not create another app. This repository currently tracks only
+`ios/M60Benchmark`, a standalone MonoDGP test harness, not the product app. The
+frozen 50 ms model p95/100 ms capture-to-result/10 FPS targets
+remain unchanged; passing export or Mac checks proves none of them. No training,
+quantization, AP evaluation, promotion or deployment is authorized.
+See `MONODETR_M67_A2_COREML_FEASIBILITY_CONTRACT.md`.
+
+M66b zero-update gradient diagnosis is deferred by this device-feasibility
+priority. Its r2 correction remains available and historical M66 evidence is
+unchanged; no new M66b measurements or training are claimed.
 MonoDGP/M61 and M63h runtime recovery remain parked. MonoPRIO remains
 unselected because its released prior construction is unresolved; this is not
 proof of validation leakage. Its qualification issue is not a blocker for
@@ -333,8 +338,9 @@ reviewing the separately scoped existing-R0 Vehicle pilot.
 | M65 | Original A2 preservation control | Complete; preservation failed | One epoch/928 updates on A100 40 GB. Full baseline/control validation: Pedestrian 3D AP -0.4724 and Vehicle BEV AP -0.2864 exceed the 0.15-point loss limit. BN and anchor unchanged; external KD disabled; original A2 retained. |
 | M65b | Separate GT and preservation gradient measurement | Complete; diagnosis only | Both endpoints, first32 train images, zero updates. Control median preservation/GT norm ratio 0.605%; GT depth usually strongest with one classification outlier. Uncertainty coverage gap and limited Pedestrian sample recorded; no AP improvement. M65c is prepared separately. |
 | M65c | Scale-normalized and train-calibrated preservation | Complete; preservation failed | One epoch/928 updates from original A2; measured coefficient 0.15778017. Pedestrian 3D AP -0.4532 and BEV -0.1798 exceed 0.15-point limits. No external teacher; original A2 retained. |
-| M66 | Paired R0-to-A2 Vehicle depth-head feature KD | Complete; gain gate failed | A100 40 GB; 928 updates per arm and 3,769-image evaluation per model. Control passes preservation. KD Vehicle 3D AP 15.538494 is +0.090966 vs original and +0.000194 vs control, below required +0.15 each. Other pilot checks pass; original A2 retained. Next proposed action is zero-update component-gradient diagnosis, not more training. |
-| M66b | Zero-update GT/preservation/KD gradient diagnosis | r2 correction ready; original CUDA complete, endpoint probes pending | Same first 64 training images at original A2, M66 control and M66 KD. r1 control stopped on integer/JSON class-key representation; r2 normalizes only those keys and retains exact checkpoint/summary guards. Rerun three sections using `gradient_r2`; preserve r1. Weighted norms/cosines, coverage and per-layer reach; no optimizer. Return `m66b_gradient_results.zip`; no new training/promotion. |
+| M66 | Paired R0-to-A2 Vehicle depth-head feature KD | Complete; gain gate failed | A100 40 GB; 928 updates per arm and 3,769-image evaluation per model. Control passes preservation. KD Vehicle 3D AP 15.538494 is +0.090966 vs original and +0.000194 vs control, below required +0.15 each. Other pilot checks pass; original A2 retained. M66b was the proposed diagnostic; user reprioritized exact-A2 runtime feasibility before further KD. |
+| M66b | Zero-update GT/preservation/KD gradient diagnosis | Pending; deferred by M67 priority | r2 correction is ready; original CUDA probe completed, control/KD endpoint probes pending. Same first64 training images and no optimizer. Preserve `gradient_r1`; do not rerun until M67 export/Mac/phone decision is reviewed. No training or promotion. |
+| M67 | Exact A2 Core ML feasibility | Prepared; not run | Original A2 epoch130/hash only. Isolated CUDA13 build, fixed16 raw parity, FP32 Core ML conversion and artifact bundle. No training, AP, quantization, phone timing or deployment. After ZIP review, Mac parity precedes physical-device run using an existing harness/product-app source; do not create another app. This repo's `ios/M60Benchmark` is a separate MonoDGP test harness, not the product app. See `MONODETR_M67_A2_COREML_FEASIBILITY_CONTRACT.md`. |
 
 **M53 completion note:** the model and official evaluator passed after the public-API import correction. The prior JSON failed only because it compared an independent reimplementation directly with published native-evaluator values. The corrected schema-v2 finalizer reused the complete prediction set and native log, and all frozen M53 gates passed.
 
