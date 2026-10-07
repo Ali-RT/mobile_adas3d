@@ -31,8 +31,13 @@ both M66 endpoints. Run sections 1–3 of
 `notebooks/MonoDETR_A2_M66b_Gradient_Diagnostic_Colab.ipynb` on a GPU and return
 `m66b_gradient_results.zip`. Compare weighted strength/direction, coverage and
 per-head hidden/output-layer reach on the same first 64 training images.
-Small scalar loss alone does not prove weak gradients. Native CUDA execution
-is pending; no new training, coefficient change or promotion is authorized.
+Small scalar loss alone does not prove weak gradients. The supplied r1 log
+completed the original A2 CUDA probe; the control stopped before measurement
+on integer-versus-JSON-string class keys. The corrected r2 checker normalizes
+only that representation and retains all weight/lineage guards. Use the default
+`RUN_ID='gradient_r2'`, preserve `gradient_r1`, and rerun sections 1–3. Control/KD
+CUDA measurements and comparison are pending; no new training, coefficient
+change or promotion is authorized.
 See `MONODETR_M66B_GRADIENT_DIAGNOSTIC_CONTRACT.md`. The completed M66
 contract/notebook remain historical evidence.
 MonoDGP/M61 and M63h runtime recovery remain parked. MonoPRIO remains
@@ -329,7 +334,7 @@ reviewing the separately scoped existing-R0 Vehicle pilot.
 | M65b | Separate GT and preservation gradient measurement | Complete; diagnosis only | Both endpoints, first32 train images, zero updates. Control median preservation/GT norm ratio 0.605%; GT depth usually strongest with one classification outlier. Uncertainty coverage gap and limited Pedestrian sample recorded; no AP improvement. M65c is prepared separately. |
 | M65c | Scale-normalized and train-calibrated preservation | Complete; preservation failed | One epoch/928 updates from original A2; measured coefficient 0.15778017. Pedestrian 3D AP -0.4532 and BEV -0.1798 exceed 0.15-point limits. No external teacher; original A2 retained. |
 | M66 | Paired R0-to-A2 Vehicle depth-head feature KD | Complete; gain gate failed | A100 40 GB; 928 updates per arm and 3,769-image evaluation per model. Control passes preservation. KD Vehicle 3D AP 15.538494 is +0.090966 vs original and +0.000194 vs control, below required +0.15 each. Other pilot checks pass; original A2 retained. Next proposed action is zero-update component-gradient diagnosis, not more training. |
-| M66b | Zero-update GT/preservation/KD gradient diagnosis | Prepared; CUDA pending | Same first 64 training images at original A2, M66 control and M66 KD. Actual weighted component norms/cosines, total-direction deflection, eligibility coverage and per-head hidden/output reach; no optimizer. Three-section self-contained notebook, fresh private CUDA13 setup, read-only M66 provenance. Return `m66b_gradient_results.zip`; no new training/promotion. |
+| M66b | Zero-update GT/preservation/KD gradient diagnosis | r2 correction ready; original CUDA complete, endpoint probes pending | Same first 64 training images at original A2, M66 control and M66 KD. r1 control stopped on integer/JSON class-key representation; r2 normalizes only those keys and retains exact checkpoint/summary guards. Rerun three sections using `gradient_r2`; preserve r1. Weighted norms/cosines, coverage and per-layer reach; no optimizer. Return `m66b_gradient_results.zip`; no new training/promotion. |
 
 **M53 completion note:** the model and official evaluator passed after the public-API import correction. The prior JSON failed only because it compared an independent reimplementation directly with published native-evaluator values. The corrected schema-v2 finalizer reused the complete prediction set and native log, and all frozen M53 gates passed.
 

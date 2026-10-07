@@ -17,8 +17,13 @@ at original A2 and the two M66 endpoints. Run sections 1–3 of
 `notebooks/MonoDETR_A2_M66b_Gradient_Diagnostic_Colab.ipynb` and return
 `m66b_gradient_results.zip`. It compares strength, conflict, target coverage
 and per-layer reach on the same first 64 training views without an optimizer.
-Native CUDA execution remains pending. Do not rerun M66, add epochs, start
-a weight grid or replace the teacher on the strength of this one result.
+The original A2 CUDA probe completed in the supplied r1 log. The control
+stopped before measurement on checkpoint integer class keys versus JSON string
+keys. Use the corrected M66b r2 notebook, default `gradient_r2`, and rerun its
+three sections while preserving r1 results. Only that representation is
+normalized; model hashes and all remaining summary values stay exact. The
+control/KD measurements and full comparison remain pending. Do not rerun M66,
+add epochs, start a weight grid or replace the teacher on this partial result.
 
 M64 r2 completed on A100 80 GB: both models evaluated 3,769/3,769 images,
 unchanged A2 reproduced its baseline, and MonoPRIO reproduced its published

@@ -1,7 +1,15 @@
 # M66b: zero-update Vehicle-KD gradient diagnostic
 
-Revision: `M66B-ZERO-UPDATE-KD-GRADIENTS-2026-10-06-r1`.
-Prepared: 2026-10-06. Native CUDA execution and the diagnostic result remain pending.
+Revision: `M66B-ZERO-UPDATE-KD-GRADIENTS-2026-10-06-r2`.
+Updated: 2026-10-06. The supplied r1 log completed the original A2 CUDA probe;
+the control and KD probes and three-role comparison remain pending.
+
+The r1 control probe stopped before measurement because Python checkpoints
+retain integer class keys in `preservation_pairs`, while JSON sidecars convert
+them to strings. Revision r2 normalizes only those exact class keys, validates
+both summaries, and requires every remaining field and value to agree. The
+frozen checkpoint SHA-256 guards are unchanged. This is a diagnostic metadata
+correction, not a training-recipe or model change.
 
 ## Decision and question
 
@@ -32,6 +40,8 @@ Raw checkpoints must still be on Drive. `m66_results.zip` contains reports,
 not weights. Historical manifests, sources, receipts, summaries and checkpoints
 are read-only; the probe never calls checkpoint recovery or rewrites lineage.
 Endpoint embedded training summaries must agree with their reviewed sidecars.
+Only preservation-count keys `0/1` versus `"0"/"1"` are equivalent. Missing,
+extra or mixed class keys, invalid counts and changed summary values are rejected.
 
 ## Prospective runtime and data
 
@@ -49,6 +59,10 @@ Each model role runs in a fresh subprocess. The new diagnostic identity records
 its runtime, GPU, build receipt/binary, probe source, and frozen input hashes.
 It does not claim historical runtime equivalence. A changed runtime/GPU/input
 identity requires a fresh diagnostic `RUN_ID`; preserve earlier reports.
+For the r2 checker, use the default `RUN_ID='gradient_r2'` and rerun sections
+1–3. Preserve `gradient_r1`, including its completed original A2 report. The
+unchanged private runtime, patched checkout and local dataset can be reused;
+reports from the old checker are not mixed with the new checker identity.
 
 Use the exact Chen train3712/val3769 split files, labels and calibration. Only
 the **first 64 training images in saved order** are forwarded: 16 batches of 4,
@@ -137,8 +151,15 @@ Original A2 stays selected. Local CPU tests verify diagnostic math, unchanged
 M66 loss integration, provenance guards and notebook structure; they cannot
 establish native CUDA behavior or student accuracy.
 
-Preparation verification: all 25 new M66b CPU tests and 115 existing related
-M64–M66 tests passed. Notebook JSON/code-cell syntax, Python compilation and
-`git diff --check` passed. The full CPU toy probe measured 16 batches without
-changing any model state and reused its completed report without recomputation.
-These checks do not substitute for the three-role native CUDA run in Colab.
+Preparation verification for r1: all 25 M66b CPU tests and 115 existing related
+M64–M66 tests passed. The r2 regressions additionally cover restricted PyTorch
+checkpoint/JSON round-trips for both endpoints, rejected real lineage changes,
+and complete 16-batch CPU toy probes for original/control/KD with unchanged
+state and report reuse. These checks do not substitute for the three-role
+native CUDA run in Colab.
+
+Revision r2 verification: all 29 M66b CPU regressions and 115 existing related
+M64–M66 regressions passed (144 total). Both archived M66 summaries passed the
+corrected guard after a restricted PyTorch/JSON round-trip, while changed counts
+were rejected. Notebook/Python syntax and `git diff --check` passed. The frozen
+M66 implementation hash still matches the reviewed value.

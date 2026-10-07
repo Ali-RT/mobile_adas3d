@@ -4076,3 +4076,33 @@ toy probe and report reuse, read-only lineage, packaging and three-section
 notebook syntax. Python compilation and whitespace checks passed. Native CUDA
 execution remains pending. Original A2 is retained; no new training, mask/
 weight grid, teacher replacement, model promotion or deployment is authorized.
+
+## 2026-10-06 M66b endpoint summary serialization correction
+
+The supplied r1 log completed all 16 original A2 gradient batches with zero
+updates, then stopped the control before measurement at the embedded-summary
+comparison. M66 stores integer `0/1` preservation-count keys in its PyTorch
+checkpoint; the JSON sidecar stores `"0"/"1"`. A restricted PyTorch/JSON
+round-trip using both archived M66 summaries reproduced the false mismatch.
+This failure is in the diagnostic guard, not GPU execution or teacher training.
+
+The user approved correction and publication to main. M66b revision
+`M66B-ZERO-UPDATE-KD-GRADIENTS-2026-10-06-r2` normalizes only those known class
+keys. Both summaries must validate, and their canonical JSON must otherwise
+match exactly. Malformed counts/keys, changed losses, input hashes, roles,
+manifest or epoch remain rejected. All frozen weight/file hashes and the M66
+implementation are unchanged. No historical artifacts are rewritten.
+
+The notebook defaults to fresh `RUN_ID='gradient_r2'`. Reload the main notebook
+and rerun sections 1–3, reusing compatible runtime/checkout/data but preserving
+all r1 reports. Recompute the three small probes under one r2 identity; do not
+merge r1 and r2 reports. CPU regressions include real checkpoint/JSON round-trips
+and all three complete 16-batch zero-update toy probes. Native control/KD
+measurements and the complete comparison still require Colab. Original A2 stays
+selected; this correction authorizes no new training or model promotion.
+
+Correction verification: 144 related CPU tests passed (29 M66b plus 115 existing
+M64–M66). Both archived endpoint summaries passed restricted PyTorch/JSON
+round-trip verification with the corrected guard; changed counts were rejected.
+Python/notebook syntax and whitespace checks passed, and the frozen M66
+implementation hash remained unchanged.

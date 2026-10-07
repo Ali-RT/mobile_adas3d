@@ -17,7 +17,7 @@ import m64_teacher_qualification as q
 import m65_a2_preservation_control as c
 import m66_r0_a2_feature_pilot as p
 
-REVISION = "M66B-ZERO-UPDATE-KD-GRADIENTS-2026-10-06-r1"
+REVISION = "M66B-ZERO-UPDATE-KD-GRADIENTS-2026-10-06-r2"
 MANIFEST_SHA = "68c2247a9ab28603e10f7f9748fc17a43e5bdefeedc57eebe87e2c62f430d968"
 IMPLEMENTATION_SHA = "60f8527b55ba8e646027da5b590ed60d8ca5b0b1fd12c74e3e8e0cc429708ec8"
 GATE_SHA = "e4d61aeb1cdea202e0b0e414b7492dc6207a1631eca7bc6a786af6ed8df3056d"
@@ -241,6 +241,39 @@ def measure_batch(model, anchor, teacher, criterion, batch, taps, names, paramet
         gt_counts=gt_counts, preservation_pairs=keep_counts, kd_pairs=kd_counts, gradients=statistics_by_group)
 
 
+def normalized_training_summary(summary):
+    """Normalize only the class keys that JSON changes from integers to strings."""
+    if not isinstance(summary, dict):
+        raise RuntimeError("Missing endpoint training summary")
+    result = copy.deepcopy(summary)
+    pairs = result.get("preservation_pairs")
+    if not isinstance(pairs, dict) or set(pairs) != set(p.WEIGHTS):
+        raise RuntimeError("Endpoint preservation components differ from M66")
+    for component, counts in pairs.items():
+        if (not isinstance(counts, dict)
+                or not (all(type(key) is int for key in counts) and set(counts) == {0, 1}
+                        or all(type(key) is str for key in counts) and set(counts) == {"0", "1"})
+                or any(type(value) is not int or value < 0 for value in counts.values())):
+            raise RuntimeError(f"Invalid endpoint preservation class counts: {component}")
+        pairs[component] = {str(key): value for key, value in counts.items()}
+    return result
+
+
+def validate_endpoint_payload(manifest, role, payload, reviewed_summary):
+    if (role not in ENDPOINTS or payload.get("m66_manifest_sha256") != MANIFEST_SHA
+            or type(payload.get("epoch")) is not int or payload["epoch"] != 1):
+        raise RuntimeError("Endpoint embedded manifest/epoch differs from reviewed M66")
+    embedded = normalized_training_summary(payload.get("training_summary"))
+    reviewed = normalized_training_summary(reviewed_summary)
+    p.validate_summary(manifest, role, embedded)
+    p.validate_summary(manifest, role, reviewed)
+    # Keep every field/value exact after the narrowly scoped key normalization.
+    # Canonical JSON also distinguishes booleans, integers and floats that Python
+    # dictionary equality can otherwise treat as equal. Weight hashes stay frozen.
+    if q.signature(embedded) != q.signature(reviewed):
+        raise RuntimeError("Endpoint embedded lineage differs from reviewed summary")
+
+
 def run_probe(args):
     original, view, identity, summaries = verify_inputs(args)
     if args.report.exists():
@@ -254,9 +287,7 @@ def run_probe(args):
     model, anchor, teacher, criterion, dataset, names = p.training_runtime(view)
     if args.role != "original":
         payload = q.safe_payload(p.checkpoint_path(original, args.role))
-        if (payload.get("m66_manifest_sha256") != MANIFEST_SHA or payload.get("epoch") != 1
-                or payload.get("training_summary") != summaries[args.role]):
-            raise RuntimeError("Endpoint embedded lineage differs from reviewed summary")
+        validate_endpoint_payload(original, args.role, payload, summaries[args.role])
         model.load_state_dict(payload["model_state"], strict=True)
         del payload
     parameters = [value for name, value in model.named_parameters() if value.requires_grad]

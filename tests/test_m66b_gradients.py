@@ -31,6 +31,12 @@ CHECKS = dict(model_parameters_and_buffers_unchanged=True, anchor_parameters_and
               historical_files_unchanged=True, no_pedestrian_external_targets=True)
 
 
+def endpoint_summary(manifest, role):
+    summary = summary_fixture(manifest, role)
+    summary["preservation_pairs"] = {key: {0: 10, 1: 20} for key in probe.p.WEIGHTS}
+    return summary
+
+
 def report_fixture(role="original", active=True):
     ids = [f"{i:06d}" for i in range(64)]
     identity = dict(revision=probe.REVISION, sample_ids=ids)
@@ -112,6 +118,69 @@ class GradientMathTests(unittest.TestCase):
         self.assertEqual(probe.cpu_gradients(torch.tensor(0.), (a, b)), [None, None])
         self.assertIsNone(a.grad)
         self.assertIsNone(b.grad)
+
+
+class EndpointLineageTests(unittest.TestCase):
+    def test_torch_json_roundtrip_accepts_both_reviewed_endpoints(self):
+        manifest = dict(manifest_sha256=probe.MANIFEST_SHA)
+        for role in probe.ENDPOINTS:
+            with self.subTest(role=role):
+                summary = endpoint_summary(manifest, role)
+                buffer = io.BytesIO()
+                torch.save(dict(epoch=1, m66_manifest_sha256=probe.MANIFEST_SHA,
+                                training_summary=summary), buffer)
+                buffer.seek(0)
+                payload = torch.load(buffer, weights_only=True)
+                reviewed = json.loads(json.dumps(summary))
+                self.assertNotEqual(payload["training_summary"], reviewed)
+                before = copy.deepcopy((payload, reviewed))
+                probe.validate_endpoint_payload(manifest, role, payload, reviewed)
+                self.assertEqual((payload, reviewed), before)
+
+    def test_changed_summary_fields_are_not_hidden_by_normalization(self):
+        manifest = dict(manifest_sha256=probe.MANIFEST_SHA)
+        for role in probe.ENDPOINTS:
+            for changed in ("count", "loss", "input_hash", "role", "extra", "numeric_type"):
+                with self.subTest(role=role, changed=changed):
+                    summary = endpoint_summary(manifest, role)
+                    reviewed = json.loads(json.dumps(summary))
+                    payload = dict(epoch=1, m66_manifest_sha256=probe.MANIFEST_SHA,
+                                   training_summary=copy.deepcopy(summary))
+                    embedded = payload["training_summary"]
+                    if changed == "count": embedded["preservation_pairs"]["depth"][1] += 1
+                    elif changed == "loss": embedded["loss_means"]["total"] += 1.
+                    elif changed == "input_hash": embedded["batch_input_sha256"][0] = "b" * 64
+                    elif changed == "role": embedded["role"] = "kd" if role == "control" else "control"
+                    elif changed == "extra": embedded["unreviewed_field"] = True
+                    elif changed == "numeric_type": embedded["optimizer_steps"] = 928.0
+                    with self.assertRaises(RuntimeError):
+                        probe.validate_endpoint_payload(manifest, role, payload, reviewed)
+
+    def test_wrong_manifest_epoch_and_missing_summary_rejected(self):
+        manifest = dict(manifest_sha256=probe.MANIFEST_SHA)
+        for changed in ("manifest", "epoch", "boolean_epoch", "summary"):
+            summary = endpoint_summary(manifest, "control")
+            payload = dict(epoch=1, m66_manifest_sha256=probe.MANIFEST_SHA, training_summary=summary)
+            if changed == "manifest": payload["m66_manifest_sha256"] = "b" * 64
+            elif changed == "epoch": payload["epoch"] = 2
+            elif changed == "boolean_epoch": payload["epoch"] = True
+            elif changed == "summary": payload.pop("training_summary")
+            with self.subTest(changed=changed), self.assertRaises(RuntimeError):
+                probe.validate_endpoint_payload(manifest, "control", payload, json.loads(json.dumps(summary)))
+
+    def test_only_exact_integer_or_json_class_keys_are_normalized(self):
+        manifest = dict(manifest_sha256=probe.MANIFEST_SHA)
+        invalid = ({0: 10}, {0: 10, 1: 20, 2: 30}, {0: 10, "1": 20},
+                   {False: 10, True: 20}, {0: -1, 1: 20}, {0: 10., 1: 20}, {0: True, 1: 20})
+        for counts in invalid:
+            summary = endpoint_summary(manifest, "control")
+            summary["preservation_pairs"]["depth"] = counts
+            with self.subTest(counts=counts), self.assertRaises(RuntimeError):
+                probe.normalized_training_summary(summary)
+        summary = endpoint_summary(manifest, "control")
+        summary["preservation_pairs"].pop("depth")
+        with self.assertRaises(RuntimeError):
+            probe.normalized_training_summary(summary)
 
 
 class ActualLossIntegrationTests(unittest.TestCase):
@@ -202,29 +271,45 @@ class ActualLossIntegrationTests(unittest.TestCase):
                            mask_2d=torch.ones(2, dtype=torch.bool), img_size=torch.tensor([1280., 384.]))
                 return torch.ones(2, 3), torch.eye(3), raw, dict(img_id=index)
 
-        torch.manual_seed(42)
-        model = Pipeline(11.2)
-        anchor = copy.deepcopy(model).eval().requires_grad_(False)
-        teacher = Pipeline(10.3).eval().requires_grad_(False)
-        names = probe.p.configure_trainable(model)
-        identity = dict(revision=probe.REVISION, sample_ids=[f"{i:06d}" for i in range(64)], inputs={})
-        runtime = (model, anchor, teacher, Criterion(), Dataset(), names)
         with tempfile.TemporaryDirectory() as directory:
-            args = Namespace(role="original", report=Path(directory) / "original.json")
-            with patch.object(probe, "verify_inputs", return_value=({}, {}, identity, {})), \
-                 patch.object(probe.p, "training_runtime", return_value=runtime) as constructor, \
-                 patch.object(torch.Tensor, "cuda", lambda value: value), redirect_stdout(io.StringIO()):
-                probe.run_probe(args)
-                first = args.report.read_bytes()
-                probe.run_probe(args)
-                self.assertEqual(constructor.call_count, 1)
-                self.assertEqual(first, args.report.read_bytes())
-            report = probe.q.read_json(args.report)
-            self.assertEqual(len(report["rows"]), 16)
-            self.assertEqual(report["optimizer_steps"], 0)
-            self.assertTrue(all(report["checks"].values()))
-            self.assertEqual(sum(row["kd_pairs"]["Vehicle"] for row in report["rows"]), 64)
-            self.assertEqual(len(model.depth_embed[-1].layers[-1]._forward_pre_hooks), 0)
+            original = dict(output=directory, manifest_sha256=probe.MANIFEST_SHA)
+            identity = dict(revision=probe.REVISION, sample_ids=[f"{i:06d}" for i in range(64)], inputs={})
+            for role in probe.ROLES:
+                with self.subTest(role=role):
+                    torch.manual_seed(42)
+                    model = Pipeline(11.2)
+                    anchor = copy.deepcopy(model).eval().requires_grad_(False)
+                    teacher = Pipeline(10.3).eval().requires_grad_(False)
+                    names = probe.p.configure_trainable(model)
+                    runtime = (model, anchor, teacher, Criterion(), Dataset(), names)
+                    summaries = {}
+                    if role != "original":
+                        summary = endpoint_summary(original, role)
+                        checkpoint = probe.p.checkpoint_path(original, role)
+                        checkpoint.parent.mkdir(parents=True)
+                        torch.save(dict(epoch=1, m66_manifest_sha256=probe.MANIFEST_SHA,
+                                        model_state=model.state_dict(), training_summary=summary), checkpoint)
+                        summaries[role] = json.loads(json.dumps(summary))
+                    args = Namespace(role=role, report=Path(directory) / f"{role}.json")
+                    with patch.object(probe, "verify_inputs", return_value=(original, {}, identity, summaries)), \
+                         patch.object(probe.p, "training_runtime", return_value=runtime) as constructor, \
+                         patch.object(model, "load_state_dict", wraps=model.load_state_dict) as load, \
+                         patch.object(torch.Tensor, "cuda", lambda value: value), \
+                         patch.object(torch.Tensor, "backward", side_effect=AssertionError("No backward()")), \
+                         patch.object(torch.optim, "AdamW", side_effect=AssertionError("No optimizer")), \
+                         redirect_stdout(io.StringIO()):
+                        probe.run_probe(args)
+                        first = args.report.read_bytes()
+                        probe.run_probe(args)
+                        self.assertEqual(constructor.call_count, 1)
+                        self.assertEqual(load.call_count, int(role != "original"))
+                        self.assertEqual(first, args.report.read_bytes())
+                    report = probe.q.read_json(args.report)
+                    self.assertEqual(len(report["rows"]), 16)
+                    self.assertEqual(report["optimizer_steps"], 0)
+                    self.assertTrue(all(report["checks"].values()))
+                    self.assertEqual(sum(row["kd_pairs"]["Vehicle"] for row in report["rows"]), 64)
+                    self.assertEqual(len(model.depth_embed[-1].layers[-1]._forward_pre_hooks), 0)
 
 
 class ReportTests(unittest.TestCase):
@@ -431,6 +516,8 @@ class PackagingTests(unittest.TestCase):
             ast.parse(text)
             compile(text, f"notebook_section_{index}", "exec")
         self.assertIn(probe.REVISION, code[0])
+        self.assertIn("RUN_ID = 'gradient_r2'", code[0])
+        self.assertIn("gradient_r1", "".join(notebook["cells"][0]["source"]))
         for name in ("run_logged", "checkout", "READY", "RUNTIME_RECEIPT", "SCRIPT"):
             self.assertIn(name, code[0])
         text = "\n".join(code)
