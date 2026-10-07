@@ -1,7 +1,7 @@
 # RTM3D/KM3D ResNet-18 edge-candidate screen
 
 Status: **implemented; awaiting the user's Colab run**
-Revision: `RTM3D-KM3D-RES18-EDGE-SCREEN-2026-10-07-r4`
+Revision: `RTM3D-KM3D-RES18-EDGE-SCREEN-2026-10-07-r5`
 Notebook: `notebooks/RTM3D_KM3D_ResNet18_Edge_Screen_Colab.ipynb`
 
 ## Why this experiment
@@ -56,7 +56,10 @@ timestamped Drive log, then includes both that log and the report in a uniquely
 named ZIP. This captures the underlying exception if the script exits nonzero;
 the notebook should not rely on a bare `CalledProcessError` without the child's
 output. Each retry gets a fresh report/log/ZIP name so previous evidence is
-preserved.
+preserved. The first logged inference attempt reached report serialization but
+failed because NumPy comparison results (`numpy.bool_`) entered the geometry
+validity flag. Revision r5 converts that flag to a native Python `bool` before
+writing JSON; it does not change the model or inference outputs.
 
 ## Pass/fail and boundaries
 

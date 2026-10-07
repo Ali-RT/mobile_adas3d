@@ -176,6 +176,11 @@ def rounded_finite(value: float, digits: int) -> float | None:
     return round(number, digits) if math.isfinite(number) else None
 
 
+def finite_box_is_valid(row: Any, np: Any) -> bool:
+    """Return a built-in bool even when NumPy comparisons yield numpy.bool_."""
+    return bool(np.isfinite(row[:4]).all() and row[2] > row[0] and row[3] > row[1])
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", type=Path, required=True)
@@ -276,7 +281,7 @@ def main() -> None:
                 continue
             sample_selected += 1
             total_selected += 1
-            finite_box = bool(np.isfinite(row[:4]).all()) and row[2] > row[0] and row[3] > row[1]
+            finite_box = finite_box_is_valid(row, np)
             finite_geometry = (
                 bool(np.isfinite(row[32:39]).all())
                 and bool((row[32:35] > 0).all())
@@ -284,7 +289,7 @@ def main() -> None:
             )
             valid_2d += int(finite_box)
             valid_3d += int(finite_geometry)
-            selected_geometry_finite &= finite_box and finite_geometry
+            selected_geometry_finite = bool(selected_geometry_finite and finite_box and finite_geometry)
             class_index = int(row[40]) if math.isfinite(float(row[40])) else -1
             class_name = CLASS_NAMES[class_index] if 0 <= class_index < len(CLASS_NAMES) else "unknown"
             if class_name != "unknown":
