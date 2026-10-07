@@ -60,35 +60,97 @@ def main() -> None:
     with np.load(fixture_path, allow_pickle=False) as fixture:
         if "image" not in fixture.files:
             raise RuntimeError("Parity fixture is missing its input tensor")
-        image = np.asarray(fixture["image"], dtype=np.float32)
+        images = np.asarray(fixture["image"], dtype=np.float32)
         expected = {
             name: np.asarray(fixture[name], dtype=np.float32)
             for name in export_report["outputs"]
         }
-    if list(image.shape) != [1, 3, 384, 1280] or not np.isfinite(image).all():
-        raise RuntimeError(f"Invalid parity input shape/content: {image.shape}")
+    input_report = export_report.get("input", {})
+    sample_ids = input_report.get("fixture_sample_ids")
+    if sample_ids is None:
+        sample_ids = [input_report.get("fixture_sample_id")]
+    if (
+        not isinstance(sample_ids, list)
+        or not sample_ids
+        or any(not isinstance(sample_id, str) or not sample_id for sample_id in sample_ids)
+        or len(set(sample_ids)) != len(sample_ids)
+    ):
+        raise RuntimeError("Export report has missing or duplicate parity fixture sample IDs")
+    if (
+        images.ndim != 4
+        or list(images.shape[1:]) != [3, 384, 1280]
+        or images.shape[0] != len(sample_ids)
+        or not np.isfinite(images).all()
+    ):
+        raise RuntimeError(f"Invalid parity input shape/content: {images.shape}")
     if any(not np.isfinite(value).all() for value in expected.values()):
         raise RuntimeError("Parity fixture contains non-finite reference outputs")
+    for name, value in expected.items():
+        if value.ndim != 4 or value.shape[0] != len(sample_ids):
+            raise RuntimeError(f"Invalid reference batch for {name}: {value.shape}")
+        declared_shape = export_report["outputs"][name].get("shape")
+        if declared_shape is not None and list(value.shape[1:]) != declared_shape[1:]:
+            raise RuntimeError(
+                f"Reference shape for {name} differs from export report: {value.shape} vs {declared_shape}"
+            )
 
     model = ct.models.MLModel(str(package_path), compute_units=ct.ComputeUnit.CPU_ONLY)
-    prediction = model.predict({"image": image})
-    per_head = {}
+    head_totals = {
+        name: {"max_abs_delta": 0.0, "absolute_error_sum": 0.0,
+              "element_count": 0, "elements_over_tolerance": 0, "finite": True}
+        for name in expected
+    }
+    per_image = {}
     all_finite = True
-    for name, reference in expected.items():
-        if name not in prediction:
-            raise RuntimeError(f"Core ML prediction omitted output {name!r}; got {sorted(prediction)}")
-        actual = np.asarray(prediction[name], dtype=np.float32)
-        if actual.shape != reference.shape:
-            raise RuntimeError(f"Shape mismatch for {name}: Core ML {actual.shape}, reference {reference.shape}")
-        finite = bool(np.isfinite(actual).all())
-        all_finite &= finite
-        delta = float(np.max(np.abs(actual - reference)))
-        per_head[name] = {
-            "shape": list(actual.shape),
-            "max_abs_delta": delta,
-            "finite": finite,
-            "passed": bool(finite and delta <= PARITY_TOLERANCE),
+    for image_index, sample_id in enumerate(sample_ids):
+        prediction = model.predict({"image": images[image_index : image_index + 1]})
+        image_heads = {}
+        for name, reference_batch in expected.items():
+            if name not in prediction:
+                raise RuntimeError(f"Core ML prediction omitted output {name!r}; got {sorted(prediction)}")
+            reference = reference_batch[image_index : image_index + 1]
+            actual = np.asarray(prediction[name], dtype=np.float32)
+            if actual.shape != reference.shape:
+                raise RuntimeError(
+                    f"Shape mismatch for {sample_id}/{name}: Core ML {actual.shape}, reference {reference.shape}"
+                )
+            finite = bool(np.isfinite(actual).all())
+            all_finite &= finite
+            totals = head_totals[name]
+            totals["finite"] &= finite
+            if finite:
+                delta = np.abs(actual - reference)
+                max_delta = float(np.max(delta))
+                totals["max_abs_delta"] = max(totals["max_abs_delta"], max_delta)
+                totals["absolute_error_sum"] += float(np.sum(delta, dtype=np.float64))
+                totals["element_count"] += int(delta.size)
+                totals["elements_over_tolerance"] += int(np.count_nonzero(delta > PARITY_TOLERANCE))
+            else:
+                max_delta = None
+            passed = bool(finite and max_delta <= PARITY_TOLERANCE)
+            image_heads[name] = {
+                "max_abs_delta": max_delta,
+                "finite": finite,
+                "passed": passed,
+            }
+        per_image[sample_id] = image_heads
+
+    per_head = {
+        name: {
+            "shape_per_image": list(expected[name].shape[1:]),
+            "max_abs_delta": totals["max_abs_delta"],
+            "mean_abs_delta": (
+                totals["absolute_error_sum"] / totals["element_count"]
+                if totals["element_count"] else None
+            ),
+            "elements_over_tolerance": totals["elements_over_tolerance"],
+            "finite": bool(totals["finite"]),
+            "passed": bool(
+                totals["finite"] and totals["max_abs_delta"] <= PARITY_TOLERANCE
+            ),
         }
+        for name, totals in head_totals.items()
+    }
 
     complete = all_finite and all(item["passed"] for item in per_head.values())
     report = {
@@ -100,11 +162,14 @@ def main() -> None:
         "export_report_sha256": sha256_file(export_report_path),
         "mlpackage_sha256": sha256_tree(package_path),
         "parity_fixture_sha256": sha256_file(fixture_path),
-        "fixture_sample_id": export_report["input"]["fixture_sample_id"],
+        "fixture_sample_id": sample_ids[0],
+        "fixture_sample_ids": sample_ids,
+        "images_evaluated": len(sample_ids),
         "compute_units": "CPU_ONLY",
         "parity_tolerance_max_abs": PARITY_TOLERANCE,
         "all_head_outputs_finite": all_finite,
         "per_head": per_head,
+        "per_image": per_image,
         "coreml_prediction_performed": True,
         "geometry_decode_audited": False,
         "iphone_performance_measured": False,
