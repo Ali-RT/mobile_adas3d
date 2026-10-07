@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import sys
@@ -27,9 +28,7 @@ from scripts.run_rtm3d_km3d_res18_smoke import (
     HEADS,
     RTM3D_COMMIT,
     RTM3D_URL,
-    build_strict_resnet18,
     find_sample_paths,
-    preprocess,
     read_split,
     safe_load_state,
     verify_source,
@@ -41,6 +40,71 @@ INPUT_NAME = "image"
 TRACE_TOLERANCE = 1e-6
 EXPECTED_CHECKPOINT_SHA256 = "5fa355845f79c1afeffab427de32933758e5b4c1e7c9ec19a94a13737691d05b"
 EXPECTED_VAL_SPLIT_SHA256 = "6e2394d97c866c3af1ffb049f828abdf3d5b707d9575d16885fd0de87b72b0c8"
+INPUT_HEIGHT = 384
+INPUT_WIDTH = 1280
+
+
+def load_pinned_module(module_name: str, source_path: Path):
+    """Load an upstream module by file path, bypassing ambiguous ``models`` imports.
+
+    RTM3D's ``src/lib/models`` is a namespace package, while MobileADAS3D has a
+    regular top-level ``models`` package. Python selects the regular package
+    even when RTM3D's source directory is earlier on ``sys.path``. Loading the
+    exact pinned files under private names avoids this collision.
+    """
+    if not source_path.is_file():
+        raise FileNotFoundError(f"Pinned RTM3D source file is missing: {source_path}")
+    spec = importlib.util.spec_from_file_location(module_name, source_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Could not load pinned RTM3D source file: {source_path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def build_pinned_resnet18(repo: Path, state: dict, torch):
+    """Build the checkpoint-matched ResNet-18 from the pinned RTM3D file."""
+    upstream = load_pinned_module(
+        "rtm3d_pinned_msra_resnet_888c379",
+        repo / "src/lib/models/networks/msra_resnet.py",
+    )
+    block, layers = upstream.resnet_spec[18]
+    failures = []
+    for head_conv in (64, 256, 128, 0):
+        model = upstream.PoseResNet(block, layers, HEADS, head_conv=head_conv)
+        try:
+            model.load_state_dict(state, strict=True)
+        except RuntimeError as exc:
+            failures.append(f"head_conv={head_conv}: {exc}")
+            del model
+            continue
+        return model, head_conv
+    raise RuntimeError(
+        "No strict pinned RTM3D ResNet-18/head configuration matched the checkpoint:\n"
+        + "\n".join(failures)
+    )
+
+
+def preprocess_pinned_image(image, cv2, np, torch, repo: Path):
+    """Match the RTM3D smoke preprocessing using its pinned affine routine."""
+    image_module = load_pinned_module(
+        "rtm3d_pinned_image_888c379", repo / "src/lib/utils/image.py"
+    )
+    height, width = image.shape[:2]
+    center = np.array([width / 2.0, height / 2.0], dtype=np.float32)
+    scale = float(max(height, width))
+    transform = image_module.get_affine_transform(
+        center, scale, 0, [INPUT_WIDTH, INPUT_HEIGHT]
+    )
+    resized = cv2.resize(image, (width, height))
+    warped = cv2.warpAffine(
+        resized, transform, (INPUT_WIDTH, INPUT_HEIGHT), flags=cv2.INTER_LINEAR
+    )
+    mean = np.array([0.485, 0.456, 0.406], dtype=np.float32).reshape(1, 1, 3)
+    std = np.array([0.229, 0.224, 0.225], dtype=np.float32).reshape(1, 1, 3)
+    normalized = ((warped / 255.0 - mean) / std).astype(np.float32)
+    return torch.from_numpy(normalized.transpose(2, 0, 1).copy()).unsqueeze(0)
 
 
 class RTM3DHeadsWrapper(nn.Module):
@@ -138,19 +202,16 @@ def main() -> None:
     if image_bgr is None:
         raise RuntimeError(f"OpenCV could not read representative image {image_path}")
 
-    sys.path.insert(0, str(repo / "src" / "lib"))
-    from utils.image import get_affine_transform
-
-    input_tensor, _, _, _ = preprocess(
-        image_bgr, cv2, np, torch, get_affine_transform, torch.device("cpu")
-    )
+    # Do not import ``models.*`` or ``utils.*`` here: MobileADAS3D's regular
+    # packages shadow RTM3D's namespace directories in this Colab process.
+    input_tensor = preprocess_pinned_image(image_bgr, cv2, np, torch, repo)
     if list(input_tensor.shape) != [1, 3, 384, 1280]:
         raise RuntimeError(f"Unexpected preprocessed input shape: {list(input_tensor.shape)}")
     if not bool(torch.isfinite(input_tensor).all()):
         raise RuntimeError("Preprocessed representative input contains non-finite values")
 
     state, checkpoint_epoch = safe_load_state(checkpoint, torch)
-    model, head_conv = build_strict_resnet18(repo, state, torch)
+    model, head_conv = build_pinned_resnet18(repo, state, torch)
     model = model.cpu().eval()
     wrapper = RTM3DHeadsWrapper(model).eval()
     with torch.inference_mode():
@@ -209,7 +270,7 @@ def main() -> None:
     report = {
         "schema_version": 1,
         "experiment": "RTM3D/KM3D ResNet-18 trained-checkpoint Core ML head export",
-        "export_revision": "2026-10-07-r1",
+        "export_revision": "2026-10-07-r2",
         "complete": True,
         "scope": "fixed-shape FP32 neural heads; calibration-based decode is excluded",
         "source_url": RTM3D_URL,

@@ -19,7 +19,12 @@ class RTM3DCoreMLExportTests(unittest.TestCase):
         self.assertIn('OUTPUT_NAMES = tuple(HEADS)', exporter)
         self.assertIn('return tuple(outputs[name] for name in OUTPUT_NAMES)', exporter)
         self.assertIn('EXPECTED_CHECKPOINT_SHA256 = "5fa355845f79c1afeffab427de32933758e5b4c1e7c9ec19a94a13737691d05b"', exporter)
-        self.assertLess(exporter.index("build_strict_resnet18(repo, state, torch)"), exporter.index("import coremltools as ct"))
+        self.assertIn("importlib.util.spec_from_file_location", exporter)
+        self.assertIn("def build_pinned_resnet18", exporter)
+        self.assertIn("build_pinned_resnet18(repo, state, torch)", exporter)
+        self.assertIn("MobileADAS3D has a", exporter)
+        self.assertNotIn("from models.networks.msra_resnet", exporter)
+        self.assertNotIn("from utils.image import", exporter)
         self.assertIn("skip_model_load=True", exporter)
         self.assertIn('"geometry_decode_included": False', exporter)
         self.assertIn('"iphone_performance_measured": False', exporter)
@@ -43,7 +48,7 @@ class RTM3DCoreMLExportTests(unittest.TestCase):
         self.assertIn("full combined log: {EXPORT_LOG}", all_code)
         self.assertIn("calibration-dependent 3d decoder", all_text.lower())
         self.assertIn("Do not connect/use the iPhone yet", all_text)
-        self.assertIn("2026-10-07-r1", notebook["metadata"]["rtm3d_coreml_revision"])
+        self.assertIn("2026-10-07-r2", notebook["metadata"]["rtm3d_coreml_revision"])
 
 
 if __name__ == "__main__":
