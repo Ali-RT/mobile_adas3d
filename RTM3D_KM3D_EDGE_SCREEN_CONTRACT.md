@@ -1,7 +1,7 @@
 # RTM3D/KM3D ResNet-18 edge-candidate screen
 
 Status: **implemented; awaiting the user's Colab run**
-Revision: `RTM3D-KM3D-RES18-EDGE-SCREEN-2026-10-07-r6`
+Revision: `RTM3D-KM3D-RES18-EDGE-SCREEN-2026-10-07-r7`
 Notebook: `notebooks/RTM3D_KM3D_ResNet18_Edge_Screen_Colab.ipynb`
 
 ## Why this experiment
@@ -61,20 +61,31 @@ failed because NumPy comparison results (`numpy.bool_`) entered the geometry
 validity flag. Revision r5 converts that flag to a native Python `bool` before
 writing JSON; it does not change the model or inference outputs.
 
-Revision r6 keeps the strict gate unchanged and adds per-invalid-candidate
-diagnostics: the decoder-grid box, upstream-postprocessed pixel box, class,
-score components, top-K index, and per-image counts. This distinguishes an
-inverted box already produced by decoding from one introduced by the affine
-post-process; it does not drop or reorder predictions to force a pass.
+Revision r6 added per-invalid-candidate diagnostics and found that its
+selection rule did not match upstream inference: it thresholded the combined
+KITTI export score without first applying upstream's `center_score > 0.3`
+visibility filter. In the supplied r6 report, all 253 candidates flagged as
+invalid had center scores below 0.084. Thus they were not candidates that the
+upstream result writer would pass through; r6's failing validity gate was a
+screen-selection mismatch, not evidence that the checkpoint's usable
+predictions are malformed.
+
+Revision r7 first applies the pinned upstream `vis_thresh=0.3` condition to
+the center-heatmap score (`row[4]`), then checks the selected candidates' 2D
+boxes and 3D geometry. It separately reports the KITTI export score, which is
+`(center_score + sigmoid(probability_logit) + mean(keypoint_scores))/3`.
+The geometry validity checks remain strict; the change only makes the set of
+candidates under test match the official inference path.
 
 ## Pass/fail and boundaries
 
 The smoke passes only if all 16 source images/calibration files are processed,
-all checkpoint tensors load strictly, raw heads are finite, and the selected
-decoded 2D boxes and 3D dimensions/yaw/camera locations are finite and
-geometrically valid. It records class counts and GPU forward/decode timing for
-diagnosis. It does **not** require every class to appear among predictions on
-this small sample.
+all checkpoint tensors load strictly, raw heads are finite, at least one
+candidate survives the upstream center-score filter, and the selected decoded
+2D boxes and 3D dimensions/yaw/camera locations are finite and geometrically
+valid. It records class counts and GPU forward/decode timing for diagnosis. It
+does **not** require every class to appear among predictions on this small
+sample.
 
 Regardless of result, this stage performs no full-val AP evaluation, Core ML
 conversion, quantization, phone timing, training, distillation, checkpoint

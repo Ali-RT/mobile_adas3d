@@ -37,7 +37,7 @@ INPUT_HEIGHT = 384
 INPUT_WIDTH = 1280
 TOP_K = 100
 SAMPLES = 16
-SCORE_THRESHOLD = 0.1
+VISIBILITY_THRESHOLD = 0.3
 
 
 def sha256_file(path: Path) -> str:
@@ -171,6 +171,17 @@ def probability(value: float) -> float:
     return exp_value / (1.0 + exp_value)
 
 
+def kitti_export_score(row: Any, np: Any) -> float:
+    """Match upstream's non-faster KITTI score formula."""
+    return (float(row[4]) + probability(float(row[39])) + float(np.mean(row[23:32]))) / 3.0
+
+
+def upstream_candidate_is_selected(row: Any) -> bool:
+    """Upstream's result writer is called only above opt.vis_thresh (default 0.3)."""
+    score = float(row[4])
+    return bool(math.isfinite(score) and score > VISIBILITY_THRESHOLD)
+
+
 def rounded_finite(value: float, digits: int) -> float | None:
     number = float(value)
     return round(number, digits) if math.isfinite(number) else None
@@ -297,11 +308,12 @@ def main() -> None:
         sample_valid_3d = 0
         sample_invalid_details = []
         for row_index, row in enumerate(rows):
-            combined_score = (float(row[4]) + probability(float(row[39])) + float(np.mean(row[23:32]))) / 3.0
-            if not math.isfinite(combined_score):
+            center_score = float(row[4])
+            export_score = kitti_export_score(row, np)
+            if not math.isfinite(center_score) or not math.isfinite(export_score):
                 selected_geometry_finite = False
                 continue
-            if combined_score < SCORE_THRESHOLD:
+            if not upstream_candidate_is_selected(row):
                 continue
             sample_selected += 1
             total_selected += 1
@@ -326,9 +338,10 @@ def main() -> None:
                     "sample_id": sample_id,
                     "decoder_topk_index": row_index,
                     "class_name": class_name,
-                    "screen_score": rounded_finite(combined_score, 6),
-                    "center_heatmap_score": rounded_finite(row[4], 6),
-                    "object_probability": rounded_finite(row[39], 6),
+                    "kitti_export_score": rounded_finite(export_score, 6),
+                    "center_heatmap_score": rounded_finite(center_score, 6),
+                    "object_probability_logit": rounded_finite(row[39], 6),
+                    "object_probability_sigmoid": rounded_finite(probability(float(row[39])), 6),
                     "mean_keypoint_score": rounded_finite(np.mean(row[23:32]), 6),
                     "invalid_2d_box": not finite_box,
                     "invalid_3d_geometry": not finite_geometry,
@@ -344,7 +357,8 @@ def main() -> None:
             if len(selected_rows) < 10:
                 selected_rows.append({
                     "class_name": class_name,
-                    "score": rounded_finite(combined_score, 6),
+                    "kitti_export_score": rounded_finite(export_score, 6),
+                    "center_heatmap_score": rounded_finite(center_score, 6),
                     "bbox_xyxy_px": [rounded_finite(value, 3) for value in row[:4]],
                     "dimensions_hwl_m": [rounded_finite(value, 4) for value in row[32:35]],
                     "yaw_camera_rad": rounded_finite(row[35], 6),
@@ -352,7 +366,7 @@ def main() -> None:
                 })
         per_sample.append({
             "sample_id": sample_id,
-            "detections_score_ge_0_1": sample_selected,
+            "detections_center_score_gt_0_3": sample_selected,
             "valid_2d_box_count": sample_valid_2d,
             "valid_3d_box_count": sample_valid_3d,
             "invalid_selected_candidate_count": len(sample_invalid_details),
@@ -366,6 +380,7 @@ def main() -> None:
     report = {
         "schema_version": 1,
         "experiment": "RTM3D/KM3D official ResNet-18 fixed16 inference screen",
+        "screen_revision": "2026-10-07-r7-upstream-score-filter",
         "stage": "colab_inference_smoke",
         "complete": len(per_sample) == SAMPLES,
         "smoke_passed": bool(all_outputs_finite and selected_geometry_finite and total_selected > 0),
@@ -384,7 +399,12 @@ def main() -> None:
         "output_shapes": output_shapes,
         "raw_outputs_finite": all_outputs_finite,
         "decoded_2d_and_3d_selected_outputs_finite_and_valid": selected_geometry_finite,
-        "selected_detections_score_ge_0_1": total_selected,
+        "candidate_filter": {
+            "source": "RTM3D CarPoseDetector.show_results / opt.vis_thresh",
+            "center_heatmap_score_strictly_greater_than": VISIBILITY_THRESHOLD,
+            "kitti_export_score": "(center_score + sigmoid(prob_logit) + mean(keypoint_scores))/3",
+        },
+        "selected_detections_center_score_gt_0_3": total_selected,
         "valid_2d_box_count": valid_2d,
         "valid_3d_box_count": valid_3d,
         "invalid_selected_candidate_count": len(invalid_selected_details),

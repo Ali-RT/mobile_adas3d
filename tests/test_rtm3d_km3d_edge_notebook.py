@@ -6,7 +6,12 @@ from pathlib import Path
 
 import numpy as np
 
-from scripts.run_rtm3d_km3d_res18_smoke import audit_bbox_path, finite_box_is_valid
+from scripts.run_rtm3d_km3d_res18_smoke import (
+    audit_bbox_path,
+    finite_box_is_valid,
+    kitti_export_score,
+    upstream_candidate_is_selected,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -42,7 +47,7 @@ class RTM3DEdgeNotebookTests(unittest.TestCase):
         self.assertLess(setup.index("pull', '--ff-only'"), setup.index("if not SCRIPT.is_file()"))
         self.assertIn("status', '--porcelain', '--untracked-files=no", setup)
         self.assertNotIn("reset', '--hard", setup)
-        self.assertIn("2026-10-07-r6", notebook["metadata"]["rtm3d_revision"])
+        self.assertIn("2026-10-07-r7", notebook["metadata"]["rtm3d_revision"])
 
     def test_dirty_rtm3d_checkout_is_preserved_and_fresh_clone_selected(self):
         notebook = json.loads(NOTEBOOK.read_text())
@@ -52,7 +57,7 @@ class RTM3DEdgeNotebookTests(unittest.TestCase):
         self.assertIn("Preserving existing RTM3D checkout", setup)
         self.assertNotIn("reset', '--hard", setup)
         self.assertIn("modified or untracked files", SCRIPT.read_text())
-        self.assertIn("2026-10-07-r6", notebook["metadata"]["rtm3d_revision"])
+        self.assertIn("2026-10-07-r7", notebook["metadata"]["rtm3d_revision"])
 
     def test_smoke_cell_persists_combined_output_and_bundles_log(self):
         notebook = json.loads(NOTEBOOK.read_text())
@@ -65,7 +70,7 @@ class RTM3DEdgeNotebookTests(unittest.TestCase):
         self.assertIn("stdout=subprocess.PIPE", smoke)
         self.assertIn("full combined log: {SMOKE_LOG}", smoke)
         self.assertIn("archive.write(SMOKE_LOG", bundle)
-        self.assertIn("2026-10-07-r6", notebook["metadata"]["rtm3d_revision"])
+        self.assertIn("2026-10-07-r7", notebook["metadata"]["rtm3d_revision"])
 
     def test_smoke_requires_safe_and_strict_checkpoint_loading(self):
         source = SCRIPT.read_text()
@@ -99,6 +104,20 @@ class RTM3DEdgeNotebookTests(unittest.TestCase):
         self.assertTrue(postprocess_invalid["decoder_box_valid"])
         self.assertFalse(postprocess_invalid["postprocess_box_valid"])
         self.assertTrue(postprocess_invalid["became_invalid_during_postprocess"])
+
+    def test_candidate_filter_matches_upstream_center_score_gate(self):
+        row = np.zeros(41, dtype=np.float64)
+        row[4] = 0.083
+        row[39] = 0.0
+        row[23:32] = 0.5
+        # The combined KITTI export score is 0.361, but upstream still filters
+        # this candidate because its center-heatmap confidence is below 0.3.
+        self.assertAlmostEqual(kitti_export_score(row, np), (0.083 + 0.5 + 0.5) / 3)
+        self.assertFalse(upstream_candidate_is_selected(row))
+        row[4] = 0.3
+        self.assertFalse(upstream_candidate_is_selected(row))
+        row[4] = 0.3001
+        self.assertTrue(upstream_candidate_is_selected(row))
 
 
 if __name__ == "__main__":
