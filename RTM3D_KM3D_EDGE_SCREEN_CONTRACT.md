@@ -1,7 +1,7 @@
 # RTM3D/KM3D ResNet-18 edge-candidate screen
 
 Status: **implemented; awaiting the user's Colab run**
-Revision: `RTM3D-KM3D-RES18-EDGE-SCREEN-2026-10-07-r3`
+Revision: `RTM3D-KM3D-RES18-EDGE-SCREEN-2026-10-07-r4`
 Notebook: `notebooks/RTM3D_KM3D_ResNet18_Edge_Screen_Colab.ipynb`
 
 ## Why this experiment
@@ -50,6 +50,13 @@ called these only "tracked modifications." Notebook revision r3 preserves that
 directory and selects a fresh sibling checkout (or reuses a previously clean,
 pinned sibling) rather than resetting or deleting anything. This is a setup
 recovery, not a model-quality or performance result.
+
+The next run's smoke cell streams combined stdout/stderr to the notebook and a
+timestamped Drive log, then includes both that log and the report in a uniquely
+named ZIP. This captures the underlying exception if the script exits nonzero;
+the notebook should not rely on a bare `CalledProcessError` without the child's
+output. Each retry gets a fresh report/log/ZIP name so previous evidence is
+preserved.
 
 ## Pass/fail and boundaries
 

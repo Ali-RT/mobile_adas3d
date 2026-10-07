@@ -38,7 +38,7 @@ class RTM3DEdgeNotebookTests(unittest.TestCase):
         self.assertLess(setup.index("pull', '--ff-only'"), setup.index("if not SCRIPT.is_file()"))
         self.assertIn("status', '--porcelain', '--untracked-files=no", setup)
         self.assertNotIn("reset', '--hard", setup)
-        self.assertIn("2026-10-07-r3", notebook["metadata"]["rtm3d_revision"])
+        self.assertIn("2026-10-07-r4", notebook["metadata"]["rtm3d_revision"])
 
     def test_dirty_rtm3d_checkout_is_preserved_and_fresh_clone_selected(self):
         notebook = json.loads(NOTEBOOK.read_text())
@@ -48,7 +48,20 @@ class RTM3DEdgeNotebookTests(unittest.TestCase):
         self.assertIn("Preserving existing RTM3D checkout", setup)
         self.assertNotIn("reset', '--hard", setup)
         self.assertIn("modified or untracked files", SCRIPT.read_text())
-        self.assertIn("2026-10-07-r3", notebook["metadata"]["rtm3d_revision"])
+        self.assertIn("2026-10-07-r4", notebook["metadata"]["rtm3d_revision"])
+
+    def test_smoke_cell_persists_combined_output_and_bundles_log(self):
+        notebook = json.loads(NOTEBOOK.read_text())
+        cells = ["".join(cell.get("source", [])) for cell in notebook["cells"]]
+        smoke = next(cell for cell in cells if "Fixed 16-image inference-only smoke" in cell)
+        bundle = next(cell for cell in cells if "Package the unique review report" in cell)
+        self.assertIn("RUN_TAG = datetime.now()", smoke)
+        self.assertIn("subprocess.Popen", smoke)
+        self.assertIn("stderr=subprocess.STDOUT", smoke)
+        self.assertIn("stdout=subprocess.PIPE", smoke)
+        self.assertIn("full combined log: {SMOKE_LOG}", smoke)
+        self.assertIn("archive.write(SMOKE_LOG", bundle)
+        self.assertIn("2026-10-07-r4", notebook["metadata"]["rtm3d_revision"])
 
     def test_smoke_requires_safe_and_strict_checkpoint_loading(self):
         source = SCRIPT.read_text()

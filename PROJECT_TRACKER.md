@@ -45,8 +45,11 @@ screen passes, the next gate is export of the neural-network heads and a
 separate audit of calibration-based geometry decoding. No phone connection is
 needed before that package and Mac parity. The initial Colab attempt stopped
 before inference because its existing RTM3D checkout had modified/untracked
-files; no smoke report was written. Notebook r3 preserves it and automatically
-uses a fresh clean pinned checkout. See
+files; no smoke report was written. Notebook r4 preserves it and automatically
+uses a fresh clean pinned checkout. The latest retry still surfaced only a
+`CalledProcessError` without child output; r4 persists combined stdout/stderr
+to Drive and bundles it with a unique report for diagnosis. No inference result
+is claimed yet. See
 `RTM3D_KM3D_EDGE_SCREEN_CONTRACT.md` and
 `MONODETR_M67_A2_COREML_FEASIBILITY_CONTRACT.md`.
 
