@@ -91,6 +91,7 @@ class RTM3DONNXDecodedTests(unittest.TestCase):
                 compile(source, f"rtm3d-onnx-decoded-cell-{index}", "exec")
         text = "\n".join(all_text)
         self.assertIn("audit_rtm3d_km3d_res18_onnx_decoded.py", text)
+        self.assertIn("sys.path.insert(0, str(PROJECT_DIR))", text)
         self.assertIn("No phone connection is needed yet", text)
         self.assertIn("hps", text)
         self.assertIn("not an accuracy gate", text)
