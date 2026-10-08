@@ -222,6 +222,35 @@ def summarize_latency(values: list[float]) -> dict:
     }
 
 
+def validate_onnx_head(value, name: str, sample_id: str, expected_shape: list[int],
+                       declared_shape, input_array: np.ndarray) -> np.ndarray:
+    """Validate one runtime head and include useful context on first failure."""
+    actual = np.asarray(value, dtype=np.float32)
+    finite_mask = np.isfinite(actual)
+    finite_values = actual[finite_mask]
+    summary = {
+        "actual_shape": list(actual.shape),
+        "expected_shape": expected_shape,
+        "onnx_declared_shape": list(declared_shape) if isinstance(declared_shape, (tuple, list)) else declared_shape,
+        "dtype": str(actual.dtype),
+        "finite_values": int(finite_mask.sum()),
+        "total_values": int(actual.size),
+        "nonfinite_values": int(actual.size - finite_mask.sum()),
+        "finite_min": float(finite_values.min()) if finite_values.size else None,
+        "finite_max": float(finite_values.max()) if finite_values.size else None,
+        "input_shape": list(input_array.shape),
+        "input_finite": bool(np.isfinite(input_array).all()),
+        "input_min": float(np.min(input_array)) if input_array.size else None,
+        "input_max": float(np.max(input_array)) if input_array.size else None,
+        "first_nonfinite_indices": np.argwhere(~finite_mask)[:8].tolist(),
+    }
+    if actual.shape != tuple(expected_shape):
+        raise RuntimeError(f"ONNX head shape mismatch for {name} at {sample_id}: {json.dumps(summary)}")
+    if not bool(finite_mask.all()):
+        raise RuntimeError(f"ONNX head contains non-finite values for {name} at {sample_id}: {json.dumps(summary)}")
+    return actual
+
+
 def write_metrics_csv(rows: list[dict], path: Path) -> None:
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
@@ -351,6 +380,7 @@ def analyze(bundle: Path, repo: Path, checkpoint: Path, dataset: Path,
         raise RuntimeError("ONNX Runtime input name differs from export metadata")
     if [item.name for item in session.get_outputs()] != output_names:
         raise RuntimeError("ONNX Runtime output names/order differ from export metadata")
+    declared_output_shapes = {item.name: item.shape for item in session.get_outputs()}
 
     state, checkpoint_epoch = safe_load_state(checkpoint, torch)
     model, head_conv = build_pinned_resnet18(repo, state, torch)
@@ -390,6 +420,8 @@ def analyze(bundle: Path, repo: Path, checkpoint: Path, dataset: Path,
             image, cv2, torch, image_module.get_affine_transform
         )
         input_array = input_cpu.numpy()
+        if not np.isfinite(input_array).all():
+            raise RuntimeError(f"Preprocessed model input contains non-finite values for {sample_id}")
         projection = load_calibration(calib_path, np)
         meta = {
             "trans_output_inv": torch.from_numpy(inverse).unsqueeze(0).to(device),
@@ -421,10 +453,14 @@ def analyze(bundle: Path, repo: Path, checkpoint: Path, dataset: Path,
         onnx_values = session.run(output_names, {input_name: input_array})
         onnx_latency.append((time.perf_counter() - start) * 1000.0)
         pytorch_np = {name: value.detach().float().cpu().numpy() for name, value in pytorch_heads.items()}
-        onnx_np = {name: np.asarray(value, dtype=np.float32) for name, value in zip(output_names, onnx_values)}
+        onnx_np = {
+            name: validate_onnx_head(
+                value, name, sample_id, expected_shapes[name],
+                declared_output_shapes[name], input_array,
+            )
+            for name, value in zip(output_names, onnx_values)
+        }
         for name in HEADS:
-            if onnx_np[name].shape != expected_shapes[name] or not np.isfinite(onnx_np[name]).all():
-                raise RuntimeError(f"ONNX head {name} has wrong shape or non-finite values at {sample_id}")
             delta = np.abs(pytorch_np[name] - onnx_np[name])
             stat = raw_head_stats[name]
             stat["max_abs"] = max(float(stat["max_abs"]), float(delta.max()))
