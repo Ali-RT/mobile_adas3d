@@ -141,6 +141,7 @@ def run_audit(artifact_dir: Path, output: Path, provider: str = "CPUExecutionPro
         "parity_fixture_sha256": sha256_file(fixture_path),
         "fixture_sample_ids": sample_ids,
         "images_evaluated": len(sample_ids),
+        "onnxruntime_version": ort.__version__,
         "provider_requested": provider,
         "session_providers": session.get_providers(),
         "available_providers": available,

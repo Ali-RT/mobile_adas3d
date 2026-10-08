@@ -80,6 +80,7 @@ class RTM3DONNXExportTests(unittest.TestCase):
                     return [np.array([[[[value]]]], dtype=np.float32)]
 
             fake_ort = types.ModuleType("onnxruntime")
+            fake_ort.__version__ = "test"
             fake_ort.get_available_providers = lambda: ["CPUExecutionProvider"]
             fake_ort.InferenceSession = FakeSession
             output = Path(temporary) / "ort_report.json"

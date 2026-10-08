@@ -192,6 +192,8 @@ def main() -> None:
         "onnx_ir_version": onnx_model.ir_version,
         "onnx_op_count": len(onnx_model.graph.node),
         "onnx_custom_operator_domains": custom_domains,
+        "onnx_version": onnx.__version__,
+        "onnxruntime_version": ort.__version__,
         "onnx_file": model_path.name,
         "onnx_sha256": sha256_file_local(model_path),
         "onnx_size_bytes": model_path.stat().st_size,
