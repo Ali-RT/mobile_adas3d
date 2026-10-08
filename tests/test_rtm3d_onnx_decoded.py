@@ -6,6 +6,8 @@ import tempfile
 import unittest
 import warnings
 import zipfile
+import sys
+import types
 from pathlib import Path
 
 import numpy as np
@@ -58,6 +60,30 @@ class RTM3DONNXDecodedTests(unittest.TestCase):
         self.assertIn('"training_performed": False', source)
         self.assertIn('"iphone_performance_measured": False', source)
 
+    def test_pinned_loader_resolves_relative_imports_despite_models_collision(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            package_dir = Path(temporary) / "models"
+            package_dir.mkdir()
+            (package_dir / "utils.py").write_text("VALUE = 42\n", encoding="utf-8")
+            (package_dir / "decode.py").write_text(
+                "from .utils import VALUE\nANSWER = VALUE + 1\n", encoding="utf-8"
+            )
+            package_name = f"rtm3d_test_models_{id(self)}"
+            previous = sys.modules.get("models")
+            sys.modules["models"] = types.ModuleType("models")
+            try:
+                module = audit.load_pinned_package_module(package_name, package_dir, "decode")
+                self.assertEqual(module.ANSWER, 43)
+                self.assertEqual(module.__name__, package_name + ".decode")
+            finally:
+                if previous is None:
+                    sys.modules.pop("models", None)
+                else:
+                    sys.modules["models"] = previous
+                for name in tuple(sys.modules):
+                    if name == package_name or name.startswith(package_name + "."):
+                        sys.modules.pop(name, None)
+
     def test_bundle_extracts_only_expected_artifacts_and_rejects_duplicate(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -91,6 +117,7 @@ class RTM3DONNXDecodedTests(unittest.TestCase):
                 compile(source, f"rtm3d-onnx-decoded-cell-{index}", "exec")
         text = "\n".join(all_text)
         self.assertIn("audit_rtm3d_km3d_res18_onnx_decoded.py", text)
+        self.assertIn("load_pinned_package_module", AUDITOR.read_text(encoding="utf-8"))
         self.assertIn("sys.path.insert(0, str(PROJECT_DIR))", text)
         self.assertIn("No phone connection is needed yet", text)
         self.assertIn("hps", text)

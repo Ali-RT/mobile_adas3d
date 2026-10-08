@@ -7,11 +7,14 @@ but intentionally does not define a deployment acceptance threshold or score AP.
 from __future__ import annotations
 
 import argparse
+import importlib.machinery
+import importlib.util
 import json
 import math
 from pathlib import Path
 import sys
 import tempfile
+import types
 import zipfile
 
 import numpy as np
@@ -74,6 +77,37 @@ def box_iou_xyxy(left: np.ndarray, right: np.ndarray) -> float:
     area_right = max(0.0, float(right[2] - right[0])) * max(0.0, float(right[3] - right[1]))
     union = area_left + area_right - intersection
     return intersection / union if union > 0 else 0.0
+
+
+def load_pinned_package_module(package_name: str, package_dir: Path, module_name: str):
+    """Load an RTM3D module under a private package to avoid local-name collisions."""
+    package_dir = package_dir.resolve()
+    package = sys.modules.get(package_name)
+    if package is None:
+        package_spec = importlib.machinery.ModuleSpec(package_name, loader=None, is_package=True)
+        package_spec.submodule_search_locations = [str(package_dir)]
+        package = types.ModuleType(package_name)
+        package.__package__ = package_name
+        package.__path__ = [str(package_dir)]
+        package.__spec__ = package_spec
+        sys.modules[package_name] = package
+    elif list(getattr(package, "__path__", [])) != [str(package_dir)]:
+        raise RuntimeError(f"Private RTM3D package already points to another source directory: {package_name}")
+
+    qualified_name = f"{package_name}.{module_name}"
+    if qualified_name in sys.modules:
+        return sys.modules[qualified_name]
+    source_path = package_dir / f"{module_name}.py"
+    if not source_path.is_file():
+        raise FileNotFoundError(f"Pinned RTM3D module is missing: {source_path}")
+    spec = importlib.util.spec_from_file_location(qualified_name, source_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Could not load pinned RTM3D module: {source_path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[qualified_name] = module
+    spec.loader.exec_module(module)
+    setattr(package, module_name, module)
+    return module
 
 
 def greedy_match(reference_rows: np.ndarray, onnx_rows: np.ndarray, threshold: float = MATCH_IOU_THRESHOLD):
@@ -179,12 +213,20 @@ def analyze(artifact_dir: Path, repo: Path, dataset: Path, output: Path) -> dict
     if "CPUExecutionProvider" not in ort.get_available_providers():
         raise RuntimeError("ONNX Runtime CPUExecutionProvider is not available")
 
-    lib_path = str(repo / "src" / "lib")
-    if lib_path not in sys.path:
-        sys.path.insert(0, lib_path)
-    from utils.image import get_affine_transform
-    from models.decode import car_pose_decode
-    from utils.post_process import car_pose_post_process
+    pinned_models_dir = repo / "src" / "lib" / "models"
+    pinned_utils_dir = repo / "src" / "lib" / "utils"
+    image_module = load_pinned_package_module(
+        "rtm3d_pinned_utils_888c379", pinned_utils_dir, "image"
+    )
+    decoder_module = load_pinned_package_module(
+        "rtm3d_pinned_models_888c379", pinned_models_dir, "decode"
+    )
+    postprocess_module = load_pinned_package_module(
+        "rtm3d_pinned_utils_888c379", pinned_utils_dir, "post_process"
+    )
+    get_affine_transform = image_module.get_affine_transform
+    car_pose_decode = decoder_module.car_pose_decode
+    car_pose_post_process = postprocess_module.car_pose_post_process
 
     session = ort.InferenceSession(
         str(artifact_dir / "RTM3D_KM3D_ResNet18.onnx"),
