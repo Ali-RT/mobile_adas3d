@@ -10,7 +10,9 @@ from scripts.audit_rtm3d_km3d_res18_onnx_fullval import (
     prediction_from_row,
     selected_detections,
     stable_sigmoid,
+    validate_raw_fixture_report,
 )
+from scripts.run_rtm3d_km3d_res18_smoke import HEADS
 
 
 class FullValPredictionTests(unittest.TestCase):
@@ -34,6 +36,50 @@ class FullValPredictionTests(unittest.TestCase):
     def test_sigmoid_is_stable_for_large_logits(self):
         self.assertEqual(stable_sigmoid(1000.0), 1.0)
         self.assertEqual(stable_sigmoid(-1000.0), 0.0)
+
+    def test_raw_tolerance_miss_does_not_block_finite_complete_fixture(self):
+        fixture_ids = [f"{index:06d}" for index in range(16)]
+        export = {"input": {"fixture_sample_ids": fixture_ids}}
+        per_head = {
+            name: {"finite": True, "passed": name != "hps"}
+            for name in HEADS
+        }
+        raw = {
+            "complete": False,
+            "all_head_outputs_finite": True,
+            "images_evaluated": 16,
+            "fixture_sample_ids": fixture_ids,
+            "parity_tolerance_max_abs": 0.0002,
+            "per_head": per_head,
+            "per_image": {
+                sample_id: {
+                    name: {"finite": True, "passed": name != "hps"}
+                    for name in HEADS
+                }
+                for sample_id in fixture_ids
+            },
+        }
+        status = validate_raw_fixture_report(raw, export)
+        self.assertTrue(status["all_16_images_evaluated"])
+        self.assertTrue(status["all_outputs_finite"])
+        self.assertFalse(status["all_heads_within_raw_tolerance"])
+        self.assertEqual(status["failed_heads"], ["hps"])
+
+    def test_raw_fixture_report_still_rejects_nonfinite_outputs(self):
+        fixture_ids = [f"{index:06d}" for index in range(16)]
+        export = {"input": {"fixture_sample_ids": fixture_ids}}
+        raw = {
+            "all_head_outputs_finite": False,
+            "images_evaluated": 16,
+            "fixture_sample_ids": fixture_ids,
+            "per_head": {name: {"finite": True} for name in HEADS},
+            "per_image": {
+                sample_id: {name: {"finite": True} for name in HEADS}
+                for sample_id in fixture_ids
+            },
+        }
+        with self.assertRaisesRegex(RuntimeError, "non-finite"):
+            validate_raw_fixture_report(raw, export)
 
     def test_kitti_serialization_matches_upstream_field_layout(self):
         row = np.zeros(41, dtype=np.float32)

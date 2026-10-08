@@ -69,6 +69,44 @@ def read_full_split(path: Path) -> list[str]:
     return ids
 
 
+def validate_raw_fixture_report(raw_report: dict, export_report: dict) -> dict:
+    """Require a complete finite fixture run, but not the raw tolerance gate."""
+    fixture_ids = export_report.get("input", {}).get("fixture_sample_ids", [])
+    if len(fixture_ids) != 16 or len(set(fixture_ids)) != 16:
+        raise RuntimeError("ONNX export manifest must identify 16 unique frozen fixture images")
+    if raw_report.get("fixture_sample_ids") != fixture_ids:
+        raise RuntimeError("Raw-parity fixture IDs differ from the ONNX export manifest")
+    if raw_report.get("images_evaluated") != len(fixture_ids):
+        raise RuntimeError("Raw-parity report did not evaluate all 16 frozen fixture images")
+    if set(raw_report.get("per_image", {})) != set(fixture_ids):
+        raise RuntimeError("Raw-parity report is missing one or more per-image fixture records")
+    if set(raw_report.get("per_head", {})) != set(HEADS):
+        raise RuntimeError("Raw-parity report is missing one or more expected RTM3D heads")
+    if not raw_report.get("all_head_outputs_finite"):
+        raise RuntimeError("Raw ONNX fixture run produced non-finite outputs")
+    for head_name, head_values in raw_report["per_head"].items():
+        if head_values.get("finite") is not True:
+            raise RuntimeError(f"Raw ONNX fixture output for {head_name} was non-finite")
+    for sample_id in fixture_ids:
+        sample_heads = raw_report["per_image"][sample_id]
+        if set(sample_heads) != set(HEADS):
+            raise RuntimeError(f"Raw-parity fixture record for {sample_id} is missing heads")
+        if any(values.get("finite") is not True for values in sample_heads.values()):
+            raise RuntimeError(f"Raw ONNX fixture output was non-finite for {sample_id}")
+    failed_heads = [
+        name for name, values in raw_report["per_head"].items()
+        if not values.get("passed", False)
+    ]
+    return {
+        "all_16_images_evaluated": True,
+        "all_outputs_finite": True,
+        "all_heads_within_raw_tolerance": not failed_heads,
+        "failed_heads": failed_heads,
+        "tolerance_max_abs": raw_report.get("parity_tolerance_max_abs"),
+        "per_head": raw_report["per_head"],
+    }
+
+
 def find_label_path(dataset: Path, sample_id: str) -> Path:
     for folder_name in ("label_2", "label_02", "label"):
         candidate = dataset / "training" / folder_name / f"{sample_id}.txt"
@@ -264,14 +302,11 @@ def analyze(bundle: Path, repo: Path, checkpoint: Path, dataset: Path,
         raise RuntimeError("ONNX bundle does not contain a complete ONNX-checker-validated export")
     if set(export_report.get("outputs", {})) != set(HEADS):
         raise RuntimeError("ONNX export head names differ from pinned RTM3D")
-    if set(raw_report.get("per_head", {})) != set(HEADS):
-        raise RuntimeError("Raw-parity report is missing one or more expected RTM3D heads")
     if raw_report.get("onnx_sha256") != export_report.get("onnx_sha256"):
         raise RuntimeError("Raw-parity and export reports identify different ONNX models")
-    if not raw_report.get("complete"):
-        raise RuntimeError("Raw ONNX fixture parity did not complete; resolve that before full validation")
     if raw_report.get("parity_fixture_sha256") != export_report.get("parity_fixture_sha256"):
         raise RuntimeError("Raw-parity and export reports identify different fixtures")
+    raw_fixture_status = validate_raw_fixture_report(raw_report, export_report)
     if sha256_file(onnx_path) != export_report["onnx_sha256"]:
         raise RuntimeError("ONNX model file hash differs from its export manifest")
     fixture_path = artifact_dir / "parity_reference.npz"
@@ -504,18 +539,7 @@ def analyze(bundle: Path, repo: Path, checkpoint: Path, dataset: Path,
         "onnx_sha256": export_report["onnx_sha256"],
         "validation_split_sha256": sha256_file(split_path),
         "dataset_root": str(dataset.resolve()),
-        "16_image_raw_head_fixture_check": {
-            "complete": bool(raw_report.get("complete")),
-            "all_heads_within_export_tolerance": all(
-                bool(values.get("passed", False))
-                for values in raw_report.get("per_head", {}).values()
-            ),
-            "failed_heads": [
-                name for name, values in raw_report.get("per_head", {}).items()
-                if not values.get("passed", False)
-            ],
-            "per_head": raw_report.get("per_head", {}),
-        },
+        "16_image_raw_head_fixture_check": raw_fixture_status,
         "runtime": {
             "pytorch_version": torch.__version__,
             "cuda_version": torch.version.cuda,
