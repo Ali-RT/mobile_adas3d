@@ -145,6 +145,28 @@ class FullValPredictionTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "non-finite"):
             prediction_from_row(row)
 
+    def test_negative_depth_is_preserved_and_marked_invalid(self):
+        row = np.zeros(41, dtype=np.float32)
+        row[:5] = [10, 20, 100, 200, 0.8]
+        row[23:32] = 0.9
+        row[32:35] = [1.62, 1.56, 3.46]
+        row[36:39] = [3.77, -0.67, -24.18]
+        row[40] = 0
+
+        record, line = prediction_from_row(row)
+        self.assertFalse(record["valid_3d_geometry"])
+        self.assertEqual(record["geometry_issues"], ["nonpositive_camera_depth"])
+        self.assertAlmostEqual(float(line.split()[13]), -24.18, places=5)
+
+    def test_nonpositive_dimensions_are_rejected(self):
+        row = np.zeros(41, dtype=np.float32)
+        row[:5] = [10, 20, 100, 200, 0.8]
+        row[32:35] = [1.5, 0.0, 4.0]
+        row[36:39] = [1.0, 2.0, 30.0]
+        row[40] = 0
+        with self.assertRaisesRegex(RuntimeError, "nonpositive 3D dimensions"):
+            prediction_from_row(row)
+
 
 if __name__ == "__main__":
     unittest.main()

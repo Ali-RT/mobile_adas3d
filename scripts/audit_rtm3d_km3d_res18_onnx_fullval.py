@@ -160,8 +160,8 @@ def prediction_from_row(row: np.ndarray) -> tuple[dict, str]:
     score = upstream_export_score(row)
     if not (box[2] > box[0] and box[3] > box[1]):
         raise RuntimeError(f"RTM3D selected an invalid 2D box: {box}")
-    if min(h, w, length, z) <= 0:
-        raise RuntimeError(f"RTM3D selected invalid 3D geometry: {[h, w, length, x, y, z]}")
+    if min(h, w, length) <= 0:
+        raise RuntimeError(f"RTM3D selected nonpositive 3D dimensions: {[h, w, length, x, y, z]}")
 
     # Preserve the pinned upstream Debugger.save_kitti_format orientation
     # wrapping and camera-bottom-center conversion exactly.
@@ -187,6 +187,11 @@ def prediction_from_row(row: np.ndarray) -> tuple[dict, str]:
         "bbox_2d": box,
         "dimensions_3d_hwl": [h, w, length],
         "location_3d": [x, bottom_y, z],
+        # Keep finite negative-depth detections in the serialized predictions:
+        # they are real model outputs and should count as false positives for
+        # BEV/3D AP, rather than being silently dropped from the evaluation.
+        "valid_3d_geometry": z > 0.0,
+        "geometry_issues": [] if z > 0.0 else ["nonpositive_camera_depth"],
         "rotation_y": yaw,
         "yaw": yaw,
         "score": score,
@@ -408,6 +413,11 @@ def analyze(bundle: Path, repo: Path, checkpoint: Path, dataset: Path,
         role: {name: 0 for name in CLASS_NAMES}
         for role in ("pytorch", "onnx")
     }
+    invalid_depth_counts = {role: 0 for role in ("pytorch", "onnx")}
+    invalid_depth_by_class = {
+        role: {name: 0 for name in CLASS_NAMES}
+        for role in ("pytorch", "onnx")
+    }
     total_detections = {"pytorch": 0, "onnx": 0}
     expected_shapes = {name: [1, channels, 96, 320] for name, channels in HEADS.items()}
     for index, (sample_id, (image_path, calib_path), label_path) in enumerate(
@@ -482,6 +492,9 @@ def analyze(bundle: Path, repo: Path, checkpoint: Path, dataset: Path,
             total_detections[role] += len(rows)
             for record in records:
                 class_counts[role][record["class_name"]] += 1
+                if not record["valid_3d_geometry"]:
+                    invalid_depth_counts[role] += 1
+                    invalid_depth_by_class[role][record["class_name"]] += 1
         gt[sample_id] = [
             # Keep all KITTI label classes: the evaluator ignores Van for Car
             # and Person_sitting for Pedestrian when either overlaps a match.
@@ -508,7 +521,16 @@ def analyze(bundle: Path, repo: Path, checkpoint: Path, dataset: Path,
             }
             for key, value in pair_deltas.items():
                 all_deltas[key].append(value)
-        per_sample.append({"sample_id": sample_id, **comparison})
+        per_sample.append({
+            "sample_id": sample_id,
+            **comparison,
+            "pytorch_nonpositive_depth_count": sum(
+                not record["valid_3d_geometry"] for record in p_records
+            ),
+            "onnx_nonpositive_depth_count": sum(
+                not record["valid_3d_geometry"] for record in o_records
+            ),
+        })
         if (index + 1) % 100 == 0 or index + 1 == len(sample_ids):
             print(f"Full-val inference and decode {index + 1}/{len(sample_ids)}", flush=True)
 
@@ -596,6 +618,9 @@ def analyze(bundle: Path, repo: Path, checkpoint: Path, dataset: Path,
             "count": total_detections,
             "class_count": class_counts,
             "mean_per_image": {role: total_detections[role] / len(sample_ids) for role in total_detections},
+            "nonpositive_depth_count": invalid_depth_counts,
+            "nonpositive_depth_by_class": invalid_depth_by_class,
+            "handling": "Finite selected predictions with nonpositive camera depth are retained in KITTI output and counted; for BEV/3D AP they cannot match positive-depth ground truth and remain false positives.",
         },
         "full_val_raw_head_deltas": raw_head_stats,
         "decoded_matched_pair_delta_distributions": {
