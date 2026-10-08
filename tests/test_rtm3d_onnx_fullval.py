@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 import unittest
 
@@ -12,6 +13,12 @@ from scripts.audit_rtm3d_km3d_res18_onnx_fullval import (
     stable_sigmoid,
     validate_raw_fixture_report,
     validate_onnx_head,
+)
+from scripts.audit_rtm3d_km3d_res18_onnx_targeted import (
+    compare_selected,
+    selected_rows_with_indices,
+    summarize_head_delta,
+    wrapped_angle_delta_degrees,
 )
 from scripts.run_rtm3d_km3d_res18_smoke import HEADS
 
@@ -33,6 +40,9 @@ class FullValPredictionTests(unittest.TestCase):
         self.assertIn("fullval_results.zip", all_text)
         self.assertIn("not an official KITTI leaderboard", all_text)
         self.assertIn("iPhone speed test", all_text)
+        self.assertIn("audit_rtm3d_km3d_res18_onnx_targeted.py", all_text)
+        self.assertIn("'006767','002646','006908','003529'", all_text)
+        self.assertIn("full_val_rerun'] is False", all_text)
 
     def test_sigmoid_is_stable_for_large_logits(self):
         self.assertEqual(stable_sigmoid(1000.0), 1.0)
@@ -166,6 +176,50 @@ class FullValPredictionTests(unittest.TestCase):
         row[40] = 0
         with self.assertRaisesRegex(RuntimeError, "nonpositive 3D dimensions"):
             prediction_from_row(row)
+
+
+class TargetedParityTests(unittest.TestCase):
+    @staticmethod
+    def detection_row(score: float, left: float = 10.0) -> np.ndarray:
+        row = np.zeros(41, dtype=np.float32)
+        row[:5] = [left, 20.0, left + 40.0, 70.0, score]
+        row[23:32] = 0.8
+        row[32:35] = [1.5, 1.6, 4.0]
+        row[35] = 0.2
+        row[36:39] = [1.0, 2.0, 30.0]
+        row[40] = 0
+        return row
+
+    def test_raw_head_summary_reports_error_location_and_tolerance_count(self):
+        reference = np.zeros((1, 1, 2, 2), dtype=np.float32)
+        candidate = np.asarray([[[[0.0, 0.1], [0.2, 0.3]]]], dtype=np.float32)
+        summary = summarize_head_delta(reference, candidate, tolerance=0.15)
+        self.assertEqual(summary["shape"], [1, 1, 2, 2])
+        self.assertAlmostEqual(summary["max_abs_delta"], 0.3, places=6)
+        self.assertEqual(summary["elements_over_tolerance"], 2)
+        self.assertEqual(summary["max_delta_index"], [0, 0, 1, 1])
+
+    def test_selected_rows_keep_postprocess_index_and_match_details(self):
+        reference = np.stack([
+            self.detection_row(0.31),
+            self.detection_row(0.30, 100.0),  # strict threshold excludes it
+            self.detection_row(0.80, 200.0),
+        ])
+        candidate = np.stack([self.detection_row(0.32, 11.0)])
+        ref_selected, ref_records = selected_rows_with_indices(reference)
+        onnx_selected, onnx_records = selected_rows_with_indices(candidate)
+        self.assertEqual(ref_selected.shape, (2, 41))
+        self.assertEqual(ref_records[0]["postprocess_row_index"], 0)
+        self.assertEqual(ref_records[1]["postprocess_row_index"], 2)
+        comparison = compare_selected(ref_selected, onnx_selected, ref_records, onnx_records)
+        self.assertEqual(comparison["matched_count"], 1)
+        self.assertEqual(comparison["pytorch_unmatched_count"], 1)
+        self.assertEqual(comparison["matched_predictions"][0]["pytorch_postprocess_row_index"], 0)
+        self.assertEqual(comparison["matched_predictions"][0]["onnx_postprocess_row_index"], 0)
+
+    def test_yaw_difference_wraps_at_pi(self):
+        actual = wrapped_angle_delta_degrees(math.pi - 0.01, -math.pi + 0.01)
+        self.assertAlmostEqual(actual, math.degrees(0.02), places=5)
 
 
 if __name__ == "__main__":
