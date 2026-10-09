@@ -13,9 +13,9 @@ cells = [
 Revision: `{REVISION}`. This is the deployment-first check for the unchanged A2 epoch-130 checkpoint. It exports the already-reviewed M67 portable graph to ONNX, checks it on 16 fixed validation frames, then compares native CUDA and ONNX Runtime CPU on the complete 3,769-frame Chen validation split.
 
 No training, distillation, quantization, or architecture changes happen here. If CPU inference does not preserve validation quality, stop and investigate that backend before considering a smaller student or a stronger teacher. If quality holds, copy the phone bundle into the existing iOS benchmark app and measure ONNX Runtime CPU on the iPhone. This is fixed-input model timing—not camera-to-label timing."""),
-    ("markdown", """## 1. Mount Drive, update the project, and set the frozen M67 inputs
+    ("markdown", """## 1. Mount Drive, update the project, and restore M67's temporary Colab files
 
-Run top-to-bottom. The notebook reuses the existing M67 CUDA 13 environment, checkpoint, and portable MonoDETR checkout. It never reclones or rebuilds MonoDETR. If an M68 output from an interrupted run exists, preserve it and change `RUN_ID` before starting a new export."""),
+Run top-to-bottom. Colab clears `/content` after a runtime reset, so the M67 Python environment, MonoDETR checkout, and compiled attention extension may need to be reconstructed. This cell uses the signed M67 manifest and saved runtime receipt to rebuild only missing temporary files, then verifies the exact CUDA/GPU/package identity, source, checkpoint, and extension before continuing. It never resets or deletes a checkout. If exact identity cannot be reproduced, it stops and preserves the saved run. If an M68 output from an interrupted run exists, preserve it and change `RUN_ID` before starting a new export."""),
     ("code", r'''from pathlib import Path
 from collections import deque
 import json, shlex, shutil, subprocess, sys, zipfile
@@ -34,7 +34,11 @@ else:
     subprocess.run(['git','-C',str(PROJECT_DIR),'pull','--ff-only'],check=True)
 
 RUN_ID = 'm68_a2_onnx_cpu_r1'  # Use a new ID after any partial/failed export.
-PYTHON = Path('/content/m67_a2_fp32_export_r1_cuda130_venv/bin/python')
+M66_MANIFEST = Path('/content/drive/MyDrive/mobile_adas3d_outputs/students/monodetr_m66_r0_a2_feature/m66_r0_a2_vehicle_feature_r1/m66_manifest.json')
+M67_REPO = Path('/content/MonoDETR_M67_A2')
+M67_DATASET = Path('/content/kitti_m67')
+M67_VENV = Path('/content/m67_a2_fp32_export_r1_cuda130_venv')
+PYTHON = M67_VENV / 'bin/python'
 M67_OUTPUT = Path('/content/drive/MyDrive/mobile_adas3d_outputs/students/monodetr_a2_m67_export/m67_a2_fp32_export_r1')
 M67_MANIFEST = M67_OUTPUT / 'm67_manifest.json'
 SPLIT_DIR = Path('/content/drive/MyDrive/mobile_adas3d_splits/kitti_chen')
@@ -43,6 +47,7 @@ OUTPUT = Path('/content/drive/MyDrive/mobile_adas3d_outputs/students/monodetr_a2
 LOG_DIR = OUTPUT.parent / 'colab_logs'
 SCRIPT_EXPORT = PROJECT_DIR / 'scripts/export_monodetr_a2_onnx.py'
 SCRIPT_FULLVAL = PROJECT_DIR / 'scripts/evaluate_monodetr_a2_onnx_cpu_fullval.py'
+SCRIPT_RESTORE_M67 = PROJECT_DIR / 'scripts/restore_m67_ephemeral_for_m68.py'
 
 def run_logged(command, name, allow_failure=False):
     command = [str(item) for item in command]
@@ -58,8 +63,21 @@ def run_logged(command, name, allow_failure=False):
     if code and not allow_failure: raise RuntimeError(f'Exit {code}; log={log_path}\n'+'\n'.join(tail))
     return code, log_path
 
-for required in (PYTHON, M67_MANIFEST, SPLIT_DIR/'val.txt', SCRIPT_EXPORT, SCRIPT_FULLVAL):
+for required in (M66_MANIFEST, M67_MANIFEST, SPLIT_DIR/'val.txt', SCRIPT_EXPORT, SCRIPT_FULLVAL, SCRIPT_RESTORE_M67):
     if not required.is_file(): raise FileNotFoundError(required)
+restore_command = [sys.executable, '-u', SCRIPT_RESTORE_M67,
+                   '--mobile-repo', PROJECT_DIR, '--m66-manifest', M66_MANIFEST,
+                   '--m67-output', M67_OUTPUT, '--repo', M67_REPO,
+                   '--venv', M67_VENV, '--splits', SPLIT_DIR]
+for candidate in ('/content/kitti_m66','/content/kitti_m65','/content/kitti_m64',
+                  '/content/kitti_m62','/content/kitti_m61','/content/kitti',
+                  '/content/monodetr_kitti_a2',
+                  '/content/drive/MyDrive/datasets/kitti'):
+    restore_command += ['--candidate', candidate]
+RESTORE_CODE, RESTORE_LOG = run_logged(restore_command, 'm68_restore_ephemeral_m67', allow_failure=True)
+if RESTORE_CODE:
+    raise RuntimeError(f'Could not safely restore the saved M67 runtime after the Colab reset. No M68 export started; inspect {RESTORE_LOG}. Preserve the M67 manifest and receipt.')
+if not PYTHON.is_file(): raise FileNotFoundError(f'M67 runtime restore reported success but Python is missing: {PYTHON}')
 print('Frozen M67 manifest:', M67_MANIFEST)
 print('M68 output:', OUTPUT)
 print('M68 uses original A2; no teacher or student changes.')'''),
@@ -68,7 +86,7 @@ print('M68 uses original A2; no teacher or student changes.')'''),
 M67 prepared 16 export examples; this separate folder restores all train/validation files using existing dataset locations. The restore helper validates both split counts and all required files before creating links. It does not download or rewrite KITTI data."""),
     ("code", r'''if not shutil.which('nvidia-smi'): raise RuntimeError('A CUDA GPU runtime is required for the native A2 reference pass')
 subprocess.run(['nvidia-smi'],check=True)
-CANDIDATES = [Path(p) for p in ('/content/kitti_m67','/content/kitti_m66','/content/kitti_m65','/content/kitti_m64','/content/kitti_m62','/content/kitti_m61','/content/kitti','/content/drive/MyDrive/datasets/kitti')]
+CANDIDATES = [Path(p) for p in ('/content/kitti_m67','/content/kitti_m66','/content/kitti_m65','/content/kitti_m64','/content/kitti_m62','/content/kitti_m61','/content/kitti','/content/monodetr_kitti_a2','/content/drive/MyDrive/datasets/kitti')]
 command = [PYTHON, PROJECT_DIR/'scripts/restore_m63_data.py', '--dataset', DATASET_ROOT, '--splits', SPLIT_DIR]
 for candidate in CANDIDATES: command += ['--candidate', candidate]
 run_logged(command,'m68_restore_full_kitti')

@@ -34,6 +34,21 @@ class M68NotebookTests(unittest.TestCase):
         self.assertNotIn("training performed", notebook_text.lower())
         self.assertIn("no training, distillation, quantization", notebook_text.lower())
 
+    def test_colab_reset_rebuilds_only_ephemeral_m67_inputs_safely(self):
+        notebook_text = "\n".join(self.cells)
+        recovery = (ROOT / "scripts/restore_m67_ephemeral_for_m68.py").read_text()
+        self.assertIn("restore_m67_ephemeral_for_m68.py", notebook_text)
+        self.assertIn("m68_restore_ephemeral_m67", notebook_text)
+        self.assertLess(notebook_text.index("m68_restore_ephemeral_m67"),
+                        notebook_text.index("Frozen M67 manifest:"))
+        self.assertIn("signature_sha256", recovery)
+        self.assertIn("runtime_receipt_sha256", recovery)
+        self.assertIn("current_environment != m67[\"environment\"]", recovery)
+        self.assertIn("build_m64_attention.py", recovery)
+        self.assertIn("audit_m67_a2_coreml.py", recovery)
+        self.assertNotIn('["git", "reset"', recovery)
+        self.assertNotIn("shutil.rmtree", recovery)
+
     def test_existing_mobile_app_uses_cpu_only_and_keeps_m60_option(self):
         runner = (ROOT / "ios/M60Benchmark/A2ONNXRunner.swift").read_text()
         app = (ROOT / "ios/M60Benchmark/M60App.swift").read_text()
