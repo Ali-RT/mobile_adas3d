@@ -19,13 +19,14 @@ class M68NotebookTests(unittest.TestCase):
 
     def test_all_code_cells_compile_and_revision_matches(self):
         self.assertEqual(self.notebook["metadata"]["m68_revision"],
-                         "M68-A2-STANDALONE-ONNX-RUNTIME-2026-10-09-r2")
+                         "M68-A2-STANDALONE-ONNX-RUNTIME-2026-10-09-r3")
         for index, cell in enumerate(self.code):
             compile(cell, f"m68-cell-{index}", "exec")
 
     def test_frozen_a2_then_fullval_then_phone_gate_order(self):
         notebook_text = "\n".join(self.cells)
-        self.assertIn("m68_a2_onnx_cpu_r2", notebook_text)
+        self.assertIn("m68_a2_onnx_cpu_r3", notebook_text)
+        self.assertIn("leave r2 records and logs untouched", notebook_text)
         self.assertIn("m68_export", notebook_text)
         self.assertIn("m68_fullval", notebook_text)
         self.assertIn("quality_gate_passed", notebook_text)
@@ -43,6 +44,7 @@ class M68NotebookTests(unittest.TestCase):
         self.assertIn("env=ENV", notebook_text)
         self.assertIn("from setup_m64_runtime import runtime_env", notebook_text)
         self.assertIn("--manifest", notebook_text)
+        self.assertIn("test_m68_export_inputs.py", notebook_text)
 
     def test_existing_mobile_app_uses_cpu_only_and_keeps_m60_option(self):
         runner = (ROOT / "ios/M60Benchmark/A2ONNXRunner.swift").read_text()

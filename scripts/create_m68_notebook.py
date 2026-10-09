@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-REVISION = "M68-A2-STANDALONE-ONNX-RUNTIME-2026-10-09-r2"
+REVISION = "M68-A2-STANDALONE-ONNX-RUNTIME-2026-10-09-r3"
 
 cells = [
     ("markdown", f"""# M68 — run the original A2 model with ONNX Runtime CPU
@@ -15,7 +15,7 @@ Revision: `{REVISION}`. This is the deployment-first check for the unchanged A2 
 No training, distillation, quantization, or architecture changes happen here. If CPU inference does not preserve validation quality, stop and investigate that backend before considering a smaller student or a stronger teacher. If quality holds, copy the phone bundle into the existing iOS benchmark app and measure ONNX Runtime CPU on the iPhone. This is fixed-input model timing—not camera-to-label timing."""),
     ("markdown", """## 1. Mount Drive, update main, and select the standalone M68 run
 
-Run top-to-bottom on a CUDA 13.0 GPU runtime. M68 creates its own Python environment and MonoDETR checkout. The M67 manifest and receipt are read as historical model/source evidence; M68 records the current execution environment separately. The failed M67 environment can stay in place. Use a new `RUN_ID` after a completed or failed export. An interrupted full-validation pass can resume with the same run and environment."""),
+Run top-to-bottom on a CUDA 13.0 GPU runtime. M68 creates its own Python environment and MonoDETR checkout. The M67 manifest and receipt are read as historical model/source evidence; M68 records the current execution environment separately. The failed M67 environment can stay in place. This r3 notebook fixes NumPy inputs in the exporter and uses a fresh run ID; leave r2 records and logs untouched. Use a new `RUN_ID` after a completed or failed export. An interrupted full-validation pass can resume with the same run and environment."""),
     ("code", r'''from pathlib import Path
 from collections import deque
 import json, os, shlex, shutil, subprocess, sys, zipfile
@@ -33,9 +33,9 @@ else:
     if dirty: raise RuntimeError('Tracked Colab repo edits exist. Preserve them; do not pull over them.')
     subprocess.run(['git','-C',str(PROJECT_DIR),'pull','--ff-only'],check=True)
 
-NOTEBOOK_REVISION = 'M68-A2-STANDALONE-ONNX-RUNTIME-2026-10-09-r2'
+NOTEBOOK_REVISION = 'M68-A2-STANDALONE-ONNX-RUNTIME-2026-10-09-r3'
 print('Latest notebook:', NOTEBOOK_REVISION, flush=True)
-RUN_ID = 'm68_a2_onnx_cpu_r2'  # Use a new ID after any partial/failed export.
+RUN_ID = 'm68_a2_onnx_cpu_r3'  # Preserve r2; its manifest binds the old exporter.
 M66_MANIFEST = Path('/content/drive/MyDrive/mobile_adas3d_outputs/students/monodetr_m66_r0_a2_feature/m66_r0_a2_vehicle_feature_r1/m66_manifest.json')
 REPO = Path(f'/content/MonoDETR_M68_A2_{RUN_ID}')
 VENV = Path(f'/content/{RUN_ID}_cuda130_venv')
@@ -90,6 +90,8 @@ sys.path.insert(0, str(PROJECT_DIR/'scripts'))
 from setup_m64_runtime import runtime_env
 prepared = json.loads(MANIFEST.read_text())
 ENV = runtime_env(Path(prepared['environment']['cuda_home']), PYTHON.parent)
+run_logged([PYTHON, '-m', 'unittest', 'discover', '-s', 'tests',
+            '-p', 'test_m68_export_inputs.py', '-v'], 'm68_input_regression_tests')
 SETUP_READY = True
 print('M68 standalone runtime ready:', PYTHON)
 print('M68 execution record:', MANIFEST)'''),

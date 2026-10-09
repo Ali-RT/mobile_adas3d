@@ -65,16 +65,16 @@ def build_model(manifest: dict, dataset_root: Path | None = None):
     return model, dataset
 
 
-def input_tensors(dataset, index: int, expected_id: str):
+def input_tensors(dataset, index: int, expected_id: str, *, device="cuda"):
     image, calibration, _, info = dataset[index]
     sample_id = f'{int(info["img_id"]):06d}'
     if sample_id != expected_id:
         raise RuntimeError(f"Fixed validation order changed: expected {expected_id}, got {sample_id}")
-    values = {
-        "image": image.unsqueeze(0).float().cuda(),
-        "calibration": calibration.unsqueeze(0).float().cuda(),
-        "image_size": torch.as_tensor(info["img_size"]).unsqueeze(0).float().cuda(),
-    }
+    # Direct dataset access returns NumPy arrays; DataLoader collation is what
+    # normally converts them to tensors. Keep preprocessing unchanged here.
+    raw = {"image": image, "calibration": calibration, "image_size": info["img_size"]}
+    values = {name: torch.as_tensor(value).unsqueeze(0).to(device=device, dtype=torch.float32)
+              for name, value in raw.items()}
     for name, value in values.items():
         if tuple(value.shape) != INPUT_SHAPES[name] or not bool(torch.isfinite(value).all()):
             raise RuntimeError(f"Unexpected {name} input shape or values: {tuple(value.shape)}")
