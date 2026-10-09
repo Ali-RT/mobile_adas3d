@@ -1,0 +1,7 @@
+platform :ios, '18.0'
+use_frameworks!
+
+target 'M60Benchmark' do
+  # ONNX Runtime CPU is used explicitly by A2ONNXRunner; Core ML EP is not appended.
+  pod 'onnxruntime-objc', '= 1.30.0'
+end
