@@ -19,13 +19,13 @@ class M68NotebookTests(unittest.TestCase):
 
     def test_all_code_cells_compile_and_revision_matches(self):
         self.assertEqual(self.notebook["metadata"]["m68_revision"],
-                         "M68-A2-ONNX-ORT-CPU-IPHONE-FEASIBILITY-2026-10-08-r1")
+                         "M68-A2-STANDALONE-ONNX-RUNTIME-2026-10-09-r2")
         for index, cell in enumerate(self.code):
             compile(cell, f"m68-cell-{index}", "exec")
 
     def test_frozen_a2_then_fullval_then_phone_gate_order(self):
         notebook_text = "\n".join(self.cells)
-        self.assertIn("m67_a2_fp32_export_r1_cuda130_venv", notebook_text)
+        self.assertIn("m68_a2_onnx_cpu_r2", notebook_text)
         self.assertIn("m68_export", notebook_text)
         self.assertIn("m68_fullval", notebook_text)
         self.assertIn("quality_gate_passed", notebook_text)
@@ -34,20 +34,15 @@ class M68NotebookTests(unittest.TestCase):
         self.assertNotIn("training performed", notebook_text.lower())
         self.assertIn("no training, distillation, quantization", notebook_text.lower())
 
-    def test_colab_reset_rebuilds_only_ephemeral_m67_inputs_safely(self):
+    def test_standalone_setup_precedes_export_and_preserves_driver_environment(self):
         notebook_text = "\n".join(self.cells)
-        recovery = (ROOT / "scripts/restore_m67_ephemeral_for_m68.py").read_text()
-        self.assertIn("restore_m67_ephemeral_for_m68.py", notebook_text)
-        self.assertIn("m68_restore_ephemeral_m67", notebook_text)
-        self.assertLess(notebook_text.index("m68_restore_ephemeral_m67"),
-                        notebook_text.index("Frozen M67 manifest:"))
-        self.assertIn("signature_sha256", recovery)
-        self.assertIn("runtime_receipt_sha256", recovery)
-        self.assertIn("current_environment != m67[\"environment\"]", recovery)
-        self.assertIn("build_m64_attention.py", recovery)
-        self.assertIn("audit_m67_a2_coreml.py", recovery)
-        self.assertNotIn('["git", "reset"', recovery)
-        self.assertNotIn("shutil.rmtree", recovery)
+        self.assertIn("prepare_m68_a2_onnx.py", notebook_text)
+        self.assertLess(notebook_text.index("m68_prepare"), notebook_text.index("m68_export"))
+        self.assertNotIn("m67_a2_fp32_export_r1_cuda130_venv", notebook_text)
+        self.assertNotIn("restore_m67_ephemeral_for_m68.py", notebook_text)
+        self.assertIn("env=ENV", notebook_text)
+        self.assertIn("from setup_m64_runtime import runtime_env", notebook_text)
+        self.assertIn("--manifest", notebook_text)
 
     def test_existing_mobile_app_uses_cpu_only_and_keeps_m60_option(self):
         runner = (ROOT / "ios/M60Benchmark/A2ONNXRunner.swift").read_text()

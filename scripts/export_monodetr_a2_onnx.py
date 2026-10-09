@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts"))
 
-import audit_m67_a2_coreml as m67
+import m68_a2_runtime as runtime
 import m64_teacher_qualification as q
 from m68_onnx_common import (
     INPUT_NAMES, INPUT_SHAPES, OPSET_VERSION, OUTPUT_KEYS, OUTPUT_NAMES,
@@ -86,10 +86,10 @@ def export(args) -> None:
         import onnx
         import onnxruntime as ort
     except ImportError as exc:
-        raise RuntimeError("Install `onnx` and `onnxruntime` in the M67 isolated environment first") from exc
+        raise RuntimeError("Install `onnx` and `onnxruntime` in the M68 isolated environment first") from exc
 
-    manifest_path = args.m67_manifest.resolve()
-    manifest = m67.load_manifest(manifest_path)
+    manifest_path = args.manifest.resolve()
+    manifest = runtime.load_manifest(manifest_path)
     output = args.output_dir.resolve()
     if output.exists() and any(output.iterdir()):
         raise RuntimeError(f"Preserve existing M68 output and use a fresh RUN_ID: {output}")
@@ -119,10 +119,10 @@ def export(args) -> None:
     for index, sample_id in enumerate(manifest["sample_ids"]):
         inputs = input_tensors(dataset, index, sample_id)
         ordered = tuple(inputs[name] for name in INPUT_NAMES)
-        m67.set_export(model, False)
+        runtime.set_export(model, False)
         with torch.inference_mode():
             native = tensor_dict(wrapper(*ordered))
-        m67.set_export(model, True)
+        runtime.set_export(model, True)
         with torch.inference_mode():
             portable = tensor_dict(wrapper(*ordered))
         for name in INPUT_NAMES:
@@ -144,7 +144,7 @@ def export(args) -> None:
 
     model_path = output / "A2_M68_FP32.onnx"
     first = tuple(torch.from_numpy(fixture_inputs[0][name]).cuda() for name in INPUT_NAMES)
-    m67.set_export(model, True)
+    runtime.set_export(model, True)
     with torch.inference_mode():
         torch.onnx.export(
             wrapper, first, str(model_path), export_params=True, opset_version=OPSET_VERSION,
@@ -209,7 +209,8 @@ def export(args) -> None:
                   "size_bytes": model_path.stat().st_size, "opset": OPSET_VERSION,
                   "ir_version": graph.ir_version, "custom_operator_domains": domains},
         "checkpoint_sha256": q.A2_SHA, "checkpoint_epoch": 130,
-        "original_m67_manifest_signature": manifest["signature_sha256"],
+        "original_m67_manifest_signature": manifest["source_m67_manifest_signature"],
+        "m68_runtime_manifest_signature": manifest["signature_sha256"],
         "onnx_version": onnx.__version__, "onnxruntime_version": ort.__version__,
         "providers": session.get_providers(), "precision": "FP32",
         "inputs": {name: {"shape": list(INPUT_SHAPES[name]), "dtype": "float32"} for name in INPUT_NAMES},
@@ -226,7 +227,9 @@ def export(args) -> None:
     report = {
         "schema_version": 1, "revision": REVISION, "complete": True,
         "checkpoint_sha256": q.A2_SHA, "checkpoint_epoch": 130,
-        "m67_manifest_signature": manifest["signature_sha256"],
+        "m67_manifest_signature": manifest["source_m67_manifest_signature"],
+        "m68_runtime_manifest_signature": manifest["signature_sha256"],
+        "native_cuda_environment": manifest["environment"],
         "onnx_sha256": sha256(model_path), "onnx_size_bytes": model_path.stat().st_size,
         "onnx_opset": OPSET_VERSION, "onnx_ir_version": graph.ir_version,
         "onnx_custom_operator_domains": domains, "onnx_node_count": len(graph.graph.node),
@@ -254,7 +257,7 @@ def export(args) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--m67-manifest", type=Path, required=True)
+    parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     export(parser.parse_args())
 

@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts"))
 
-import audit_m67_a2_coreml as m67
+import m68_a2_runtime as runtime
 import m64_teacher_qualification as q
 from m68_onnx_common import (
     FULLVAL_AP_DRIFT_LIMIT, NEAR_RECALL_DRIFT_LIMIT, OUTPUT_KEYS, OUTPUT_NAMES,
@@ -37,8 +37,10 @@ def validate_package(output: Path, manifest: dict) -> dict:
         raise RuntimeError("A2 ONNX model SHA256 changed")
     if record["checkpoint_sha256"] != q.A2_SHA or record["checkpoint_epoch"] != 130:
         raise RuntimeError("M68 package is not the original A2 epoch-130 model")
-    if record["original_m67_manifest_signature"] != manifest["signature_sha256"]:
+    if record["original_m67_manifest_signature"] != manifest["source_m67_manifest_signature"]:
         raise RuntimeError("M68 package belongs to a different M67/A2 manifest")
+    if record.get("m68_runtime_manifest_signature") != manifest["signature_sha256"]:
+        raise RuntimeError("M68 package belongs to a different execution environment")
     if record["providers"] != ["CPUExecutionProvider"] or record["precision"] != "FP32":
         raise RuntimeError("M68 evaluation requires ONNX Runtime CPU FP32 only")
     return record
@@ -132,13 +134,15 @@ def evaluate(args) -> None:
     try:
         import onnxruntime as ort
     except ImportError as exc:
-        raise RuntimeError("Install onnxruntime in the isolated M67 environment") from exc
-    m67_manifest = m67.load_manifest(args.m67_manifest.resolve())
+        raise RuntimeError("Install onnxruntime in the isolated M68 environment") from exc
+    manifest = runtime.load_manifest(args.manifest.resolve())
     output, dataset_root, split_dir = args.output_dir.resolve(), args.dataset_root.resolve(), args.split_dir.resolve()
     export_report = json.loads((output / "m68_onnx_export.json").read_text())
     if export_report.get("revision") != REVISION or not export_report.get("complete"):
         raise RuntimeError("Missing/incomplete M68 ONNX export report")
-    package = validate_package(output, m67_manifest)
+    if export_report.get("m68_runtime_manifest_signature") != manifest["signature_sha256"]:
+        raise RuntimeError("M68 export and full validation use different execution records")
+    package = validate_package(output, manifest)
     ids = q.split_ids(split_dir / "val.txt", "val")
     if len(ids) != 3769:
         raise RuntimeError("Expected the complete Chen 3769-image validation split")
@@ -151,16 +155,17 @@ def evaluate(args) -> None:
     session = ort.InferenceSession(str(model_path), providers=["CPUExecutionProvider"])
     if session.get_providers() != ["CPUExecutionProvider"]:
         raise RuntimeError("Full-val must run CPUExecutionProvider only")
-    model, dataset = build_model(m67_manifest, dataset_root=dataset_root)
+    model, dataset = build_model(manifest, dataset_root=dataset_root)
     if len(dataset) != 3769:
         raise RuntimeError(f"Full validation dataset loader has {len(dataset)} rows; expected 3769")
-    m67.set_export(model, False)
+    runtime.set_export(model, False)
     from lib.helpers.decode_helper import extract_dets_from_outputs, decode_detections
 
     cache_root = output / "fullval" / "cache"
     cache_root.mkdir(parents=True, exist_ok=True)
     run_identity = {
-        "revision": REVISION, "m67_manifest_signature": m67_manifest["signature_sha256"],
+        "revision": REVISION, "m67_manifest_signature": manifest["source_m67_manifest_signature"],
+        "m68_runtime_manifest_signature": manifest["signature_sha256"],
         "m68_manifest_signature": package["manifest_sha256"],
         "checkpoint_sha256": q.A2_SHA, "onnx_sha256": package["model"]["sha256"],
         "split_sha256": sha256(split_dir / "val.txt"), "onnxruntime_version": ort.__version__,
@@ -222,7 +227,7 @@ def evaluate(args) -> None:
 
     if set(native_texts) != set(ids) or set(cpu_texts) != set(ids):
         raise RuntimeError("Incomplete ONNX/native KITTI prediction set")
-    metrics = run_metrics(output, dataset_root, split_dir, Path(m67_manifest["checkpoint"]))
+    metrics = run_metrics(output, dataset_root, split_dir, Path(manifest["checkpoint"]))
     metric_drift = {key: abs(metrics["onnx_cpu"]["metrics"][key] - value)
                     for key, value in metrics["native_cuda"]["metrics"].items()}
     near_drift = {key: abs(metrics["onnx_cpu"]["near_recall"].get(key, float("nan")) - value)
@@ -239,7 +244,9 @@ def evaluate(args) -> None:
     report = {
         "schema_version": 1, "revision": REVISION, "complete": True,
         "experiment": "Original A2 full Chen val: native CUDA versus ONNX Runtime CPU",
-        "m67_manifest_signature": m67_manifest["signature_sha256"],
+        "m67_manifest_signature": manifest["source_m67_manifest_signature"],
+        "m68_runtime_manifest_signature": manifest["signature_sha256"],
+        "native_cuda_environment": manifest["environment"],
         "m68_manifest_signature": package["manifest_sha256"], "checkpoint_sha256": q.A2_SHA,
         "onnx_sha256": package["model"]["sha256"], "onnxruntime_version": ort.__version__,
         "provider": session.get_providers(), "split_protocol": "chen_3712_3769",
@@ -268,7 +275,7 @@ def evaluate(args) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--m67-manifest", type=Path, required=True)
+    parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--dataset-root", type=Path, required=True)
     parser.add_argument("--split-dir", type=Path, required=True)
