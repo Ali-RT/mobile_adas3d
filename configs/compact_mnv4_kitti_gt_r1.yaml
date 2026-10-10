@@ -1,0 +1,27 @@
+# COMPACT-MNV4-KITTI-GT-2026-10-09-r1
+# Freeze the phone-screened graph; learn new detector weights from KITTI GT.
+revision: COMPACT-MNV4-KITTI-GT-2026-10-09-r1
+seed: 123
+backbone: mobilenetv4_conv_small
+timm_version: '1.0.27'
+pretrained_backbone: true  # ImageNet initialization, NOT teacher distillation.
+input_hw: [384, 1280]
+preprocessing: COMPACT-KITTI-RGB-IMAGENET-AFFINE-384x1280-r1
+classes: [Vehicle, Pedestrian]
+max_objects: 128
+epochs: 140
+batch_size: 4
+workers: 2
+learning_rate: 0.0002
+weight_decay: 0.0001
+warmup_epochs: 5
+geometry_warmup_epochs: 5
+grad_clip: 5.0
+amp: false
+evaluate_every: 10
+save_every: 5
+score_threshold: 0.001
+topk: 50
+external_teacher: null
+class_weighting: none
+sampling: natural_train_distribution
