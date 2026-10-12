@@ -1,9 +1,12 @@
 """CPU synthetic tests; no downloaded models or claimed KITTI/teacher accuracy."""
 import ast
 from dataclasses import asdict
+import importlib.util
 import json
 import math
 from pathlib import Path
+import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -19,12 +22,36 @@ from scripts.compact_a2_teacher import (decode_teacher, teacher_inputs,
 from scripts.distill_compact_a2 import (DistillationDataset, SETTINGS, audit_frame,
                                       freeze_bn, immutable_json, pilot_update, signature,
                                       train, read_audited_cache, unchanged_source)
-from tests.test_compact_kitti_training import oracle, fixture
+# Colab can install a regular package named "tests", which shadows this
+# repository's namespace directory. Load the sibling fixtures by exact path;
+# do not depend on package resolution or change the frozen GT training source.
+_spec = importlib.util.spec_from_file_location(
+    "_compact_kitti_oracle", Path(__file__).with_name("test_compact_kitti_training.py"))
+if _spec is None or _spec.loader is None:
+    raise ImportError("Cannot locate the compact GT oracle fixtures")
+_helpers = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_helpers)
+oracle, fixture = _helpers.oracle, _helpers.fixture
 
 
 class CompactKDTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls): torch.set_num_threads(2)
+
+    def test_discovery_ignores_foreign_tests_package(self):
+        """Exercise notebook discovery with an already imported rival package."""
+        root = Path(__file__).resolve().parents[1]
+        code = ("import sys, types, unittest; "
+                "foreign = types.ModuleType('tests'); foreign.__path__ = []; "
+                "sys.modules['tests'] = foreign; "
+                "loader = unittest.TestLoader(); "
+                "suite = loader.discover('tests', pattern='test_compact_a2_distillation.py'); "
+                "assert not loader.errors, '\\n'.join(loader.errors); "
+                "assert suite.countTestCases() >= 16; "
+                "assert 'tests.test_compact_kitti_training' not in sys.modules")
+        result = subprocess.run([sys.executable, '-c', code], cwd=root,
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_teacher_class_order_and_native_metric_decode(self):
         p, obj = fixture()
