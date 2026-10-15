@@ -2,6 +2,7 @@
 import copy
 import importlib.util
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -30,7 +31,7 @@ class TrainedExportTests(unittest.TestCase):
         return dict(zip(r.REVIEWED,[m,t,a]))
 
     def test_reviewed_real_bundle_identity_when_available(self):
-        source=Path('/Users/ral3ply/Downloads/a2_lite_full_recovery_results.zip')
+        source=Path(os.environ.get('A2_LITE_REVIEWED_RUN', '/Users/ral3ply/Downloads/a2_lite_full_recovery_results.zip'))
         if not source.exists(): self.skipTest('Reviewed archive is not on this host')
         m,t,a=r.reviewed(source)
         self.assertEqual(t['optimizer_steps'],37120)

@@ -1,0 +1,64 @@
+{
+  "as_of": "2026-10-15",
+  "revision": "A2-LITE-TRAINED-GT-ONNX-2026-10-15-r2",
+  "workflow": "notebooks/MonoDETR_A2_Lite_Trained_ONNX_Colab.ipynb",
+  "focused_tests_passed": 24,
+  "clean_main_plus_intended_files_tests_passed": 275,
+  "clean_verification_failures": 0,
+  "clean_verification_errors": 0,
+  "clean_verification_skipped": 0,
+  "notebook_code_cells_compiled": 5,
+  "reason": "Frozen training record has imported cv2 4.14.0 but headless distribution metadata 5.0.0.93; installing that distribution imports cv2 5.0.0 instead",
+  "correction": {
+    "imported_opencv": "4.14.0",
+    "single_distribution": "opencv-python-headless==4.14.0.94",
+    "download_before_uninstall": true,
+    "install_without_dependency_changes": true,
+    "historical_manifests_unchanged": true,
+    "model_weights_unchanged": true,
+    "all_other_runtime_version_checks_unchanged": true,
+    "accuracy_and_raw_output_limits_unchanged": true,
+    "optimizer_steps": 0
+  },
+  "linux_colab_wheel_download": {
+    "python": "3.13",
+    "platform": "manylinux2014_x86_64",
+    "file": "opencv_python_headless-4.14.0.94-cp37-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "sha256": "5e02669eac0ba67b2a22d7245af1e8ee1a2ef1185ee526a063d8f0555224bd52",
+    "installed_on_colab_by_this_preflight": false
+  },
+  "real_image_preprocessing_check": {
+    "frames": 16,
+    "original_image_hashes_verified_against_training_manifest": true,
+    "signed_full_resolution_parent_inputs_verified": true,
+    "signed_640_inputs_verified": true,
+    "parent_sparse_rgb_check_passed": true,
+    "maximum_parent_mean_absolute_normalized_delta": 3.9956753994374594e-7,
+    "maximum_parent_changed_fraction": 2.3057725694444444e-5,
+    "maximum_parent_rgb_level_delta": 1.0000178813934326,
+    "signed_parent_resize_maximum_absolute_delta": 0.0,
+    "signed_parent_resize_limit": 1e-6,
+    "report_sha256": "fa50555ab8b96bc33fbc22591ae77da6b6a5498280a9de66017d9ef387c029f8",
+    "environment": {
+      "python": "3.12",
+      "torch": "2.12.0",
+      "numpy": "2.1.3",
+      "pillow": "11.3.0",
+      "opencv": "4.14.0"
+    }
+  },
+  "existing_onnx_model_check": {
+    "scope": "Existing untrained A2-Lite 640 initialization, not selected trained checkpoint",
+    "onnx_sha256": "3b04d26936af7676e026b3f4a5a1922068732144602fa2077722771c783677ac",
+    "onnxruntime": "1.30.0",
+    "provider": "CPUExecutionProvider",
+    "fixed16_saved_input_raw_parity_passed": true,
+    "fixed16_reconstructed_image_decoded_parity_passed": true,
+    "report_sha256": "774e8025d487f15bebe9d1187ab07d420c7d05157b58ee4c115db26ce0533feb"
+  },
+  "selected_trained_checkpoint_available_locally": false,
+  "selected_trained_export_executed": false,
+  "full_validation_executed": false,
+  "iphone_test_executed": false,
+  "deployment_qualified": false
+}

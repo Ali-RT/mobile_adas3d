@@ -19,7 +19,7 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT), str(ROOT / 'scripts')]
-REVISION = 'A2-LITE-TRAINED-GT-ONNX-2026-10-15-r1'
+REVISION = 'A2-LITE-TRAINED-GT-ONNX-2026-10-15-r2'
 RUN_SIGNATURE = 'b5239955208c794cd3f0ab9bc5564b2d656a9fcec1397212a33cfb0a94890cab'
 CHECKPOINT_SHA = '0cd8dd0d0c2e1e6acb5980806084264fa83eb588b1bde763746b14d47e176930'
 REVIEWED = {
@@ -151,30 +151,73 @@ def implementation():
     import recover_a2_lite_640 as engine
     return {**engine.implementation(),
             'scripts/export_a2_lite_trained_onnx.py': file_hash(__file__),
+            'scripts/setup_a2_lite_trained_opencv.py': file_hash(ROOT / 'scripts/setup_a2_lite_trained_opencv.py'),
             'scripts/stage_a2_lite_data.py': file_hash(ROOT / 'scripts/stage_a2_lite_data.py')}
 
 
 def environment():
     import recover_a2_lite_640 as engine
-    return {**engine.runtime_environment(), 'onnx': importlib.metadata.version('onnx')}
+    from setup_a2_lite_trained_opencv import PACKAGES
+    distributions = {}
+    for name in PACKAGES:
+        try: distributions[name] = importlib.metadata.version(name)
+        except importlib.metadata.PackageNotFoundError: pass
+    return {**engine.runtime_environment(), 'onnx': importlib.metadata.version('onnx'),
+            'opencv_distributions': distributions}
 
 
-def input_fixtures(source, destination):
+def check_environment(expected, current):
+    """Preserve imported versions; repair only the known wheel-metadata gap."""
+    from setup_a2_lite_trained_opencv import CV_VERSION, WHEEL_VERSION
+    changes = {k:dict(saved=v, current=current.get(k)) for k,v in expected.items() if current.get(k) != v}
+    repair = {'opencv-python-headless':dict(saved='5.0.0.93', current=WHEEL_VERSION)}
+    repaired = (changes == repair and expected.get('opencv') == current.get('opencv') == CV_VERSION
+                and current.get('opencv_distributions') == {'opencv-python-headless':WHEEL_VERSION})
+    if changes and not repaired:
+        raise RuntimeError('CPU environment differs from the reviewed run:\n' + json.dumps(changes, indent=2)
+            + '\nRun notebook section2 to restore one coherent OpenCV4.14 wheel; do not edit the frozen manifest.')
+    if current.get('opencv_distributions') not in (None, {'opencv-python-headless':WHEEL_VERSION}):
+        raise RuntimeError('Conflicting cv2 distributions; run notebook section2 before export')
+    return dict(imported_runtime_versions_preserved=True,
+        historical_opencv_distribution_metadata_repaired=repaired,
+        distribution_changes=changes, frozen_manifest_modified=False,
+        preprocessing_check_required=True)
+
+
+def preprocessing_check(actual, expected):
+    import numpy as np
+    names = ('image', 'calibration', 'image_size')
+    if set(actual) != set(names) or set(expected) != set(names):
+        raise RuntimeError('Wrong preprocessing tensor keys')
+    values = {}
+    for name in names:
+        a, b = np.asarray(actual[name]), np.asarray(expected[name])
+        if a.shape != b.shape or a.dtype != np.float32 or b.dtype != np.float32 or not np.isfinite(a).all() or not np.isfinite(b).all():
+            raise RuntimeError('Invalid preprocessing tensor: ' + name)
+        delta = float(np.abs(a.astype(np.float64)-b.astype(np.float64)).max())
+        values[name] = dict(max_abs=delta, limit=1e-6, passed=delta <= 1e-6)
+    return dict(tensors=values, passed=all(v['passed'] for v in values.values()))
+
+
+def input_fixtures(source, destination, role='compact_640'):
     import evaluate_a2_lite_accuracy as accuracy
     from m68_onnx_common import INPUT_NAMES, read_f32
-    raw = read_record(source, 'manifest.json') if Path(source).is_dir() else read_record(source, 'A2_LITE_640_ONNX/manifest.json')
-    package = accuracy.validate_package(raw, 'compact_640')
+    resource = accuracy.MODELS[role]['resource']
+    raw = read_record(source, 'manifest.json') if Path(source).is_dir() else read_record(source, resource+'/manifest.json')
+    package = accuracy.validate_package(raw, role)
+    if role == 'full_resolution_control':
+        accuracy.immutable_bytes(destination / 'input_manifest.json', raw)
     fixtures = []
     for f in package['fixtures']:
         for record in f['inputs'].values():
             relative = record['file']
-            content = read_record(source, relative if Path(source).is_dir() else 'A2_LITE_640_ONNX/' + relative)
+            content = read_record(source, relative if Path(source).is_dir() else resource+'/' + relative)
             if digest(content) != record['sha256']:
                 raise RuntimeError('Changed signed input fixture')
             accuracy.immutable_bytes(destination / relative, content)
         fixtures.append((f['sample_id'], {n: read_f32(destination, f['inputs'][n]) for n in INPUT_NAMES}))
     if len(fixtures) != 16:
-        raise RuntimeError('Need all 16 original 640x192 input fixtures')
+        raise RuntimeError('Need all 16 original signed input fixtures')
     return fixtures
 
 
@@ -207,15 +250,16 @@ def export(a):
     if file_hash(checkpoint) != CHECKPOINT_SHA:
         raise RuntimeError('Wrong trained checkpoint bytes; do not use a KD or initialization checkpoint')
     package_source = a.input_package or Path(m['student_export'])
+    parent_source = getattr(a, 'parent_input_package', None) or Path(m['initialization']).parent / 'export/A2_LITE_ONNX'
     protected = [Path(m['output']).resolve(), checkpoint.parent.resolve(),
                  Path(m['initialization']).parent.resolve()]
     if Path(a.full_run).is_dir(): protected.append(Path(a.full_run).resolve())
     if package_source.is_dir(): protected.append(package_source.resolve())
+    if parent_source.is_dir(): protected.append(parent_source.resolve())
     if any(a.output.resolve().is_relative_to(p) for p in protected):
         raise RuntimeError('Export into a separate run; completed training data is read-only')
     current = environment()
-    if {k: current[k] for k in m['cpu_environment']} != m['cpu_environment']:
-        raise RuntimeError('CPU preprocessing/export package versions differ from the reviewed run: ' + json.dumps(current))
+    compatibility = check_environment(m['cpu_environment'], current)
     if (a.output / 'trained_onnx_export.json').exists():
         load_export(a.output)
         print('Verified completed trained export; reusing without model reconstruction.', flush=True)
@@ -232,6 +276,12 @@ def export(a):
     package_root = a.output / RESOURCE
     package_root.mkdir(parents=True)
     fixtures = input_fixtures(package_source, package_root)
+    parents = dict(input_fixtures(parent_source, a.output / 'parent_inputs', 'full_resolution_control'))
+    resize_checks = [dict(sample_id=s, **preprocessing_check(engine.resolution.resize_inputs(parents[s], 'r640x192'), values))
+                     for s,values in fixtures]
+    if not all(c['passed'] for c in resize_checks):
+        signed_json(a.output / 'signed_resize_failure.json', dict(complete=True,passed=False,checks=resize_checks))
+        raise RuntimeError('Signed parent-to-640 resize changed; do not relax preprocessing limits')
     wrapper = engine.base.Wrapper(model).eval()
     session, graph = engine.resolution.graph_export(wrapper, fixtures[0][1], package_root / MODEL_FILE, 'r640x192')
     checks, records = [], []
@@ -278,6 +328,9 @@ def export(a):
     report = dict(complete=True, revision=REVISION, full_run=str(a.full_run.resolve()),
         checkpoint_sha256=CHECKPOINT_SHA, run_signature=RUN_SIGNATURE, environment=current,
         implementation=implementation(), source_sha256=m['source_sha256'],
+        runtime_compatibility=compatibility,
+        signed_parent_resize_checks=resize_checks,
+        parent_input_manifest_sha256=file_hash(a.output / 'parent_inputs/input_manifest.json'),
         package_manifest_sha256=package['manifest_sha256'], onnx_sha256=package['model']['sha256'],
         checks=checks, model_weights_unchanged=True, training_performed=False, optimizer_steps=0,
         native_cuda_tensor_parity_measured=False, full_validation_required=True,
@@ -291,7 +344,8 @@ def load_export(output):
     if (not r['complete'] or r['revision'] != REVISION or r['implementation'] != implementation()
             or r['environment'] != environment() or r['checkpoint_sha256'] != CHECKPOINT_SHA
             or p['checkpoint_sha256'] != CHECKPOINT_SHA or p['manifest_sha256'] != r['package_manifest_sha256']
-            or file_hash(output / RESOURCE / p['model']['file']) != r['onnx_sha256']):
+            or file_hash(output / RESOURCE / p['model']['file']) != r['onnx_sha256']
+            or file_hash(output / 'parent_inputs/input_manifest.json') != r['parent_input_manifest_sha256']):
         raise RuntimeError('Export code, environment, model or provenance changed; preserve this run')
     return r, p
 
@@ -299,11 +353,44 @@ def load_export(output):
 def validate(a):
     import recover_a2_lite_640 as engine
     import stage_a2_lite_data as staging
-    from compact_a2_teacher import teacher_inputs
-    from m68_onnx_common import OUTPUT_NAMES
+    from compact_a2_teacher import teacher_inputs, preprocessing_comparison, decoded_fixture_comparison
+    from m68_onnx_common import INPUT_NAMES, OUTPUT_NAMES, read_f32
     m, _, baseline = reviewed(a.full_run)
     report, package = load_export(a.output)
     engine.torch.set_num_threads(2)
+    # Reuse the existing full-parent sparse RGB rounding check and exact
+    # signed-parent resize check. Do not impose bitwise image equality on
+    # reconstructed PNG inputs or relax any previously reviewed bound.
+    fixed = [f['sample_id'] for f in package['fixtures']]
+    staging.stage(a.dataset, a.candidate, fixed, m['data_file_sha256'], workers=4)
+    parent_root = a.output / 'parent_inputs'
+    parent_package = engine.accuracy.validate_package((parent_root / 'input_manifest.json').read_bytes(), 'full_resolution_control')
+    parent_fixtures = {f['sample_id']:f for f in parent_package['fixtures']}
+    session = engine.resolution.cpu_session(a.output / RESOURCE / MODEL_FILE, engine.resolution.input_shapes('r640x192'))
+    input_checks = []
+    for f in package['fixtures']:
+        sample = f['sample_id']
+        projection = engine.accuracy.parse_kitti_calib_file(a.dataset / 'training/calib' / f'{sample}.txt')['P2']
+        original = teacher_inputs(a.dataset / 'training/image_2' / f'{sample}.png', projection)
+        actual = engine.resolution.resize_inputs(original, 'r640x192')
+        expected = {n:read_f32(a.output / RESOURCE,f['inputs'][n]) for n in INPUT_NAMES}
+        parent = {n:read_f32(parent_root,parent_fixtures[sample]['inputs'][n]) for n in INPUT_NAMES}
+        try:
+            parent_check = preprocessing_comparison(original,parent)
+            resize_check = preprocessing_check(engine.resolution.resize_inputs(parent,'r640x192'),expected)
+            values = dict(zip(OUTPUT_NAMES, session.run(list(OUTPUT_NAMES),actual)))
+            references = {n:read_f32(a.output / RESOURCE,f['cpu_reference_outputs'][n]) for n in OUTPUT_NAMES}
+            decoded = decoded_fixture_comparison(values,references,projection,original['image_size'][0])
+            input_checks.append(dict(sample_id=sample,passed=resize_check['passed'] and decoded['passed'],
+                parent_preprocessing=parent_check,signed_parent_resize=resize_check,decoded=decoded))
+        except RuntimeError as error:
+            input_checks.append(dict(sample_id=sample,passed=False,error=str(error)))
+    inputs_passed = all(c['passed'] for c in input_checks)
+    signed_json(a.output / 'input_preprocessing_check.json', dict(complete=True,passed=inputs_passed,
+        checks=input_checks,existing_parent_preprocessing_and_decoded_limits_unchanged=True,
+        optimizer_steps=0,frozen_manifest_modified=False))
+    if not inputs_passed:
+        raise RuntimeError('Signed input preprocessing failed; bundle evidence before full validation')
     staging_report = staging.stage(a.dataset, a.candidate, m['val_ids'], m['data_file_sha256'], workers=4)
     staging_path = a.output / 'validation_staging.json'
     if not staging_path.exists():
@@ -312,7 +399,6 @@ def validate(a):
         old_staging = checked_signature(json.loads(staging_path.read_text()), 'report_sha256')
         if not old_staging['complete'] or old_staging['frames'] != 3769:
             raise RuntimeError('Invalid previous validation staging receipt')
-    session = engine.resolution.cpu_session(a.output / RESOURCE / MODEL_FILE, engine.resolution.input_shapes('r640x192'))
     destination = a.output / 'validation'; ground_truth = {}
     invalid = 0
     for index, sample in enumerate(m['val_ids']):
@@ -385,6 +471,7 @@ def main():
     p.add_argument('--full-run',type=Path)
     p.add_argument('--checkpoint',type=Path)
     p.add_argument('--input-package',type=Path)
+    p.add_argument('--parent-input-package',type=Path)
     p.add_argument('--repo',type=Path)
     p.add_argument('--dataset',type=Path)
     p.add_argument('--candidate',type=Path,action='append',default=[])
