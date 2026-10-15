@@ -1,0 +1,1169 @@
+{
+  "as_of": "2026-10-15",
+  "current_selection": {
+    "checkpoint_sha256": "0cd8dd0d0c2e1e6acb5980806084264fa83eb588b1bde763746b14d47e176930",
+    "external_teacher_used": false,
+    "fixed_endpoint_epoch": 10,
+    "metrics": {
+      "mean_3d_moderate": 3.0501016764250575,
+      "pedestrian_3d_moderate": 2.141061422498758,
+      "pedestrian_bev_moderate": 2.9355848767494086,
+      "vehicle_3d_moderate": 3.959141930351357,
+      "vehicle_bev_moderate": 8.085157688154156
+    },
+    "nearby_2d_recall": {
+      "Pedestrian": 0.560405643738977,
+      "Vehicle": 0.8338171832091016
+    },
+    "optimizer_steps": 37120,
+    "relative_checkpoint": "control/last.pth",
+    "run_signature": "b5239955208c794cd3f0ab9bc5564b2d656a9fcec1397212a33cfb0a94890cab",
+    "same_initialization_sha256": "43e0e84d95de649a5cee645d7826baf6bf7ba338895940160ad94bcdd5d3281d",
+    "tiny_checkpoint_used": false,
+    "train_images": 3712,
+    "training_output": "/content/drive/MyDrive/mobile_adas3d_outputs/edge_candidates/a2_lite_full_recovery/a2_lite_640_full_recovery_kd_r1"
+  },
+  "experiments": [
+    {
+      "archive": "compact_a2_kd_results.zip",
+      "archive_sha256": "a9d07141362c214787b472f459cd2e985b10afe61c115ba3ac1c0ee3ed010454",
+      "baseline_metrics": {
+        "mean_3d_moderate": 1.8356484426442947,
+        "pedestrian_3d_moderate": 0.7809592285569278,
+        "pedestrian_bev_moderate": 0.9130522148130507,
+        "vehicle_3d_moderate": 2.8903376567316617,
+        "vehicle_bev_moderate": 5.456087573417109
+      },
+      "complete": true,
+      "gate_results": {},
+      "metrics": {
+        "control": {
+          "metrics": {
+            "mean_3d_moderate": 1.623348632621238,
+            "pedestrian_3d_moderate": 0.7756464703661761,
+            "pedestrian_bev_moderate": 0.9193888303477344,
+            "vehicle_3d_moderate": 2.4710507948763,
+            "vehicle_bev_moderate": 5.723284039933334
+          },
+          "nearby_2d_recall": {
+            "Pedestrian": null,
+            "Vehicle": null
+          }
+        },
+        "kd": {
+          "metrics": {
+            "mean_3d_moderate": 1.75409029910668,
+            "pedestrian_3d_moderate": 0.8799217131015428,
+            "pedestrian_bev_moderate": 1.1351069518208183,
+            "vehicle_3d_moderate": 2.6282588851118174,
+            "vehicle_bev_moderate": 5.541016459471564
+          },
+          "nearby_2d_recall": {
+            "Pedestrian": null,
+            "Vehicle": null
+          }
+        }
+      },
+      "recipe": null,
+      "report": "comparison.json",
+      "report_file_sha256": "ac686f8deaf999eaf579a9ebce11bd089acff3f7169a4e66c4ff64e7d761d0ad",
+      "revision": null,
+      "run_signature": null,
+      "signatures_valid": {}
+    },
+    {
+      "archive": "a2_lite_accuracy_results.zip",
+      "archive_sha256": "bc5c3c2b33499e38b2d7045ad2d9b8df9f4ebee8f9d8b7da4a465b7d4fba7e74",
+      "complete": true,
+      "gate_results": {
+        "optimizer_steps": 0
+      },
+      "metrics": {
+        "compact_640": {
+          "metrics": {
+            "mean_3d_moderate": 0,
+            "pedestrian_3d_moderate": 0,
+            "pedestrian_bev_moderate": 0,
+            "vehicle_3d_moderate": 0,
+            "vehicle_bev_moderate": 0
+          },
+          "nearby_2d_recall": {
+            "Pedestrian": 0.012786596119929453,
+            "Vehicle": 0.26261278932914867
+          }
+        },
+        "full_resolution_control": {
+          "metrics": {
+            "mean_3d_moderate": 0,
+            "pedestrian_3d_moderate": 0,
+            "pedestrian_bev_moderate": 0,
+            "vehicle_3d_moderate": 0,
+            "vehicle_bev_moderate": 0
+          },
+          "nearby_2d_recall": {
+            "Pedestrian": 0.3611111111111111,
+            "Vehicle": 0.7511180855237348
+          }
+        }
+      },
+      "recipe": null,
+      "report": "a2_lite_accuracy_comparison.json",
+      "report_file_sha256": "9a3b6703458da696552ed0855dedb0b472679f4f7aaccf6161eedb90c6261788",
+      "revision": "A2-LITE-640-PAIRED-ACCURACY-2026-10-12-r1",
+      "run_signature": "bb7941fa32a2a856a33898915ad5ba9a861d9567debd3c2d90968b39e2c2223f",
+      "signatures_valid": {}
+    },
+    {
+      "archive": "a2_lite_recovery_results.zip",
+      "archive_sha256": "03cd9e64469d9332602465aea978f6d943771ed75136d54467150979a7ab15cd",
+      "complete": true,
+      "gate_results": {},
+      "metrics": {
+        "control": {
+          "metrics": {
+            "mean_3d_moderate": 0.8288203026608347,
+            "pedestrian_3d_moderate": 0.9932201699727475,
+            "pedestrian_bev_moderate": 1.6267273251968286,
+            "vehicle_3d_moderate": 0.6644204353489219,
+            "vehicle_bev_moderate": 2.186086328146591
+          },
+          "nearby_2d_recall": {
+            "Pedestrian": 0.5855379188712522,
+            "Vehicle": 0.786347587289133
+          }
+        },
+        "kd": {
+          "metrics": {
+            "mean_3d_moderate": 1.179076927801527,
+            "pedestrian_3d_moderate": 1.1841622295856942,
+            "pedestrian_bev_moderate": 1.8106737681544922,
+            "vehicle_3d_moderate": 1.1739916260173597,
+            "vehicle_bev_moderate": 3.5660448012207095
+          },
+          "nearby_2d_recall": {
+            "Pedestrian": 0.5185185185185185,
+            "Vehicle": 0.7879168301294626
+          }
+        }
+      },
+      "recipe": {
+        "amp": false,
+        "architecture_changed": false,
+        "augmentation": false,
+        "backbone_learning_rate": 0.00001,
+        "batch_size": 1,
+        "checkpoint_every_steps": 128,
+        "clip_gradient_norm": 1,
+        "dense_depth_map_auxiliary_loss": false,
+        "dropout": false,
+        "epochs": 5,
+        "freeze_batchnorm": true,
+        "gt_weights": {
+          "loss_angle": 1,
+          "loss_bbox": 5,
+          "loss_ce": 2,
+          "loss_center": 10,
+          "loss_depth": 1,
+          "loss_dim": 1,
+          "loss_giou": 2
+        },
+        "input_hw": [
+          192,
+          640
+        ],
+        "kd_max_weight": 0.25,
+        "kd_warmup_steps": 128,
+        "learning_rate": 0.0001,
+        "matching_costs": {
+          "box": 5,
+          "center": 10,
+          "classification": 2,
+          "giou": 2
+        },
+        "minimum_teacher_improvement": 0.000001,
+        "minimum_teacher_matches_per_class": 16,
+        "pedestrian_containing_frames": 256,
+        "queries": 50,
+        "seed": 123,
+        "teacher_2d_iou": 0.5,
+        "teacher_class_threshold": 0.1,
+        "teacher_error_ratio": 0.9,
+        "temperature": 2,
+        "tiny_geometry_ratio": 0.9,
+        "tiny_images": 16,
+        "tiny_positive_gt_ratio": 0.7,
+        "tiny_steps": 128,
+        "train_images": 512,
+        "training_query_groups": false,
+        "validation_selection": false,
+        "vehicle_only_frames": 256,
+        "weight_decay": 0.0001
+      },
+      "report": "recovery_comparison.json",
+      "report_file_sha256": "e0a1ea85f02dffff3c71e64f02fb96120e2adbb48a4502ad670eff0828b5b25b",
+      "revision": "A2-LITE-640-RECOVERY-KD-2026-10-12-r1",
+      "run_signature": "ef9f72b57ae6c6a6d545b4d86378b7cb144f3e59dd836559d53878e4ed305600",
+      "signatures_valid": {}
+    },
+    {
+      "archive": "a2_lite_full_recovery_results.zip",
+      "archive_sha256": "7995a3fbf936740870adb516965644cd27042b796d7fbe67e294f806ae2ec709",
+      "complete": true,
+      "gate_results": {},
+      "metrics": {
+        "control": {
+          "metrics": {
+            "mean_3d_moderate": 3.0501016764250575,
+            "pedestrian_3d_moderate": 2.141061422498758,
+            "pedestrian_bev_moderate": 2.9355848767494086,
+            "vehicle_3d_moderate": 3.959141930351357,
+            "vehicle_bev_moderate": 8.085157688154156
+          },
+          "nearby_2d_recall": {
+            "Pedestrian": 0.560405643738977,
+            "Vehicle": 0.8338171832091016
+          }
+        },
+        "kd": {
+          "metrics": {
+            "mean_3d_moderate": 2.695996738671462,
+            "pedestrian_3d_moderate": 1.3815789473684212,
+            "pedestrian_bev_moderate": 1.7409880949053151,
+            "vehicle_3d_moderate": 4.010414529974502,
+            "vehicle_bev_moderate": 7.879029230370785
+          },
+          "nearby_2d_recall": {
+            "Pedestrian": 0.5061728395061729,
+            "Vehicle": 0.7967830521773245
+          }
+        }
+      },
+      "recipe": {
+        "amp": false,
+        "architecture_changed": false,
+        "augmentation": false,
+        "backbone_learning_rate": 0.00001,
+        "batch_size": 1,
+        "checkpoint_every_steps": 128,
+        "clip_gradient_norm": 1,
+        "dense_depth_map_auxiliary_loss": false,
+        "dropout": false,
+        "epochs": 10,
+        "frame_sampling": "all Chen training frames exactly once per epoch",
+        "freeze_batchnorm": true,
+        "gt_weights": {
+          "loss_angle": 1,
+          "loss_bbox": 5,
+          "loss_ce": 2,
+          "loss_center": 10,
+          "loss_depth": 1,
+          "loss_dim": 1,
+          "loss_giou": 2
+        },
+        "input_hw": [
+          192,
+          640
+        ],
+        "kd_max_weight": 0.25,
+        "kd_warmup_steps": 128,
+        "learning_rate": 0.0001,
+        "matching_costs": {
+          "box": 5,
+          "center": 10,
+          "classification": 2,
+          "giou": 2
+        },
+        "minimum_teacher_improvement": 0.000001,
+        "minimum_teacher_matches_per_class": 16,
+        "paired_endpoint_selection": false,
+        "queries": 50,
+        "seed": 123,
+        "teacher_2d_iou": 0.5,
+        "teacher_class_threshold": 0.1,
+        "teacher_error_ratio": 0.9,
+        "temperature": 2,
+        "tiny_geometry_ratio": 0.9,
+        "tiny_images": 16,
+        "tiny_positive_gt_ratio": 0.7,
+        "tiny_steps": 128,
+        "train_images": 3712,
+        "training_objective_changed": false,
+        "training_query_groups": false,
+        "validation_selection": false,
+        "weight_decay": 0.0001
+      },
+      "report": "full_recovery_comparison.json",
+      "report_file_sha256": "793a99e9ddbd8dbac25c6dcf1c849e36734e162107d39d5e737f26f08c774d59",
+      "revision": "A2-LITE-FULL-RECOVERY-KD-2026-10-13-r1",
+      "run_signature": "b5239955208c794cd3f0ab9bc5564b2d656a9fcec1397212a33cfb0a94890cab",
+      "signatures_valid": {
+        "report_sha256": true
+      },
+      "trained_endpoints": {
+        "control": {
+          "checkpoint_sha256": "0cd8dd0d0c2e1e6acb5980806084264fa83eb588b1bde763746b14d47e176930",
+          "external_teacher_used": false,
+          "fixed_endpoint_epoch": 10,
+          "optimizer_steps": 37120,
+          "same_initialization_sha256": "43e0e84d95de649a5cee645d7826baf6bf7ba338895940160ad94bcdd5d3281d",
+          "tiny_checkpoint_used": false,
+          "train_images": 3712
+        },
+        "kd": {
+          "checkpoint_sha256": "0b5b36d936873819d5b555d6735006b1ce3393f459938d8a89187f585d9a64b9",
+          "external_teacher_used": true,
+          "fixed_endpoint_epoch": 10,
+          "optimizer_steps": 37120,
+          "same_initialization_sha256": "43e0e84d95de649a5cee645d7826baf6bf7ba338895940160ad94bcdd5d3281d",
+          "tiny_checkpoint_used": false,
+          "train_images": 3712
+        }
+      }
+    },
+    {
+      "archive": "a2_lite_geometry_results.zip",
+      "archive_sha256": "372a07b7f1cdf1bbfdb75296ec80c9eebdbdef3ae1bd7ddc4a71c079cfbd3bc7",
+      "complete": true,
+      "gate_results": {
+        "geometry_benefit_guardrail_passed": false,
+        "versus_label_only": {
+          "all_ap_metrics_nonregressing": false,
+          "kd_benefit_guardrail_passed": false,
+          "kd_minus_control": {
+            "mean_3d_moderate": -0.27896450410362106,
+            "pedestrian_3d_moderate": -0.728685656561173,
+            "pedestrian_bev_moderate": -1.0831970059060356,
+            "vehicle_3d_moderate": 0.1707566483539309,
+            "vehicle_bev_moderate": 0.4085833976313413
+          },
+          "minimum_mean_3d_gain_passed": false,
+          "nearby_recall_delta": {
+            "Pedestrian": -0.09611992945326275,
+            "Vehicle": 0.01702628481757551
+          },
+          "nearby_recall_guardrails": {
+            "Pedestrian": false,
+            "Vehicle": true
+          },
+          "next_review": "Review this geometry-only screen; no automatic longer training or deployment"
+        }
+      },
+      "metrics": {
+        "all_heads": {
+          "metrics": {
+            "mean_3d_moderate": 1.179076927801527,
+            "pedestrian_3d_moderate": 1.1841622295856942,
+            "pedestrian_bev_moderate": 1.8106737681544922,
+            "vehicle_3d_moderate": 1.1739916260173597,
+            "vehicle_bev_moderate": 3.5660448012207095
+          },
+          "nearby_2d_recall": {
+            "Pedestrian": 0.5185185185185185,
+            "Vehicle": 0.7879168301294626
+          }
+        },
+        "geometry_only": {
+          "metrics": {
+            "mean_3d_moderate": 0.5498557985572137,
+            "pedestrian_3d_moderate": 0.26453451341157447,
+            "pedestrian_bev_moderate": 0.543530319290793,
+            "vehicle_3d_moderate": 0.8351770837028528,
+            "vehicle_bev_moderate": 2.5946697257779325
+          },
+          "nearby_2d_recall": {
+            "Pedestrian": 0.4894179894179894,
+            "Vehicle": 0.8033738721067085
+          }
+        },
+        "label_only": {
+          "metrics": {
+            "mean_3d_moderate": 0.8288203026608347,
+            "pedestrian_3d_moderate": 0.9932201699727475,
+            "pedestrian_bev_moderate": 1.6267273251968286,
+            "vehicle_3d_moderate": 0.6644204353489219,
+            "vehicle_bev_moderate": 2.186086328146591
+          },
+          "nearby_2d_recall": {
+            "Pedestrian": 0.5855379188712522,
+            "Vehicle": 0.786347587289133
+          }
+        }
+      },
+      "recipe": {
+        "amp": false,
+        "architecture_changed": false,
+        "augmentation": false,
+        "backbone_learning_rate": 0.00001,
+        "batch_size": 1,
+        "checkpoint_every_steps": 128,
+        "clip_gradient_norm": 1,
+        "dense_depth_map_auxiliary_loss": false,
+        "disabled_kd_components": [
+          "classification",
+          "boxes"
+        ],
+        "dropout": false,
+        "epochs": 5,
+        "freeze_batchnorm": true,
+        "gt_loss_changed": false,
+        "gt_weights": {
+          "loss_angle": 1,
+          "loss_bbox": 5,
+          "loss_ce": 2,
+          "loss_center": 10,
+          "loss_depth": 1,
+          "loss_dim": 1,
+          "loss_giou": 2
+        },
+        "historical_references_retrained": false,
+        "input_hw": [
+          192,
+          640
+        ],
+        "kd_components": [
+          "dimensions",
+          "depth",
+          "angle"
+        ],
+        "kd_max_weight": 0.25,
+        "kd_warmup_steps": 128,
+        "learning_rate": 0.0001,
+        "matching_costs": {
+          "box": 5,
+          "center": 10,
+          "classification": 2,
+          "giou": 2
+        },
+        "minimum_teacher_improvement": 0.000001,
+        "minimum_teacher_matches_per_class": 16,
+        "pedestrian_containing_frames": 256,
+        "queries": 50,
+        "seed": 123,
+        "teacher_2d_iou": 0.5,
+        "teacher_class_threshold": 0.1,
+        "teacher_error_ratio": 0.9,
+        "temperature": 2,
+        "tiny_geometry_ratio": 0.9,
+        "tiny_images": 16,
+        "tiny_positive_gt_ratio": 0.7,
+        "tiny_steps": 128,
+        "train_images": 512,
+        "training_query_groups": false,
+        "validation_selection": false,
+        "vehicle_only_frames": 256,
+        "weight_decay": 0.0001
+      },
+      "report": "geometry_comparison.json",
+      "report_file_sha256": "0a7d6cd32f2f01e18d9f765bdf05507b641020f492b5aa3a85653d38e2671448",
+      "revision": "A2-LITE-512-GEOMETRY-KD-2026-10-14-r1",
+      "run_signature": "d4ddaffd796f858507f1024de2b3bca35b01d1fe19db91adb4e948f60cd0cde5",
+      "signatures_valid": {
+        "report_sha256": true
+      }
+    },
+    {
+      "archive": "a2_lite_gradient_results.zip",
+      "archive_sha256": "326c147393f7709d32bc2f28899fed660efabc31f68b3c5169c69d102cac5c6a",
+      "complete": null,
+      "gate_results": {},
+      "metrics": {},
+      "recipe": {
+        "adamw_preconditioning_applied": false,
+        "automatic_pilot_authorization": false,
+        "diagnostic_only": true,
+        "frames": 32,
+        "gradient_clipping_applied": false,
+        "kd_weight": 0.25,
+        "optimizer_steps": 0,
+        "pedestrian_containing_frames": 16,
+        "roles": [
+          "initial",
+          "geometry_epoch5"
+        ],
+        "sample_selection": "first32 reviewed TRAIN pilot IDs in unchanged order",
+        "validation_used": false,
+        "vehicle_only_frames": 16
+      },
+      "report": "gradient_manifest.json",
+      "report_file_sha256": "947f0b2789428328f150dc9d19b6d4e0a64eae673c62a9d8e1c3b6ba29d0ebb6",
+      "revision": "A2-LITE-GEOMETRY-GRADIENTS-2026-10-14-r1",
+      "run_signature": "fa4f61d91be35c7f0144b1e53a7deeeb7abbdd6707785c2ef8cd9e02e0c65d6a",
+      "signatures_valid": {
+        "signature_sha256": true
+      }
+    },
+    {
+      "archive": "a2_lite_balanced_geometry_results.zip",
+      "archive_sha256": "bd8162c0eb6376fb5ea3e38075072d3aa4ebad0d3d4f995a6d36bfc64d7c92f5",
+      "complete": true,
+      "gate_results": {
+        "benefit_guardrail_passed": false
+      },
+      "metrics": {
+        "all_heads": {
+          "metrics": {
+            "mean_3d_moderate": 1.179076927801527,
+            "pedestrian_3d_moderate": 1.1841622295856942,
+            "pedestrian_bev_moderate": 1.8106737681544922,
+            "vehicle_3d_moderate": 1.1739916260173597,
+            "vehicle_bev_moderate": 3.5660448012207095
+          },
+          "nearby_2d_recall": {
+            "Pedestrian": 0.5185185185185185,
+            "Vehicle": 0.7879168301294626
+          }
+        },
+        "geometry_angle001": {
+          "metrics": {
+            "mean_3d_moderate": 0.8869727048010372,
+            "pedestrian_3d_moderate": 0.5182093138879682,
+            "pedestrian_bev_moderate": 0.8765459372618865,
+            "vehicle_3d_moderate": 1.2557360957141062,
+            "vehicle_bev_moderate": 3.8276552127375254
+          },
+          "nearby_2d_recall": {
+            "Pedestrian": 0.5511463844797179,
+            "Vehicle": 0.8020400156924284
+          }
+        },
+        "geometry_angle1": {
+          "metrics": {
+            "mean_3d_moderate": 0.5498557985572137,
+            "pedestrian_3d_moderate": 0.26453451341157447,
+            "pedestrian_bev_moderate": 0.543530319290793,
+            "vehicle_3d_moderate": 0.8351770837028528,
+            "vehicle_bev_moderate": 2.5946697257779325
+          },
+          "nearby_2d_recall": {
+            "Pedestrian": 0.4894179894179894,
+            "Vehicle": 0.8033738721067085
+          }
+        },
+        "label_only": {
+          "metrics": {
+            "mean_3d_moderate": 0.8288203026608347,
+            "pedestrian_3d_moderate": 0.9932201699727475,
+            "pedestrian_bev_moderate": 1.6267273251968286,
+            "vehicle_3d_moderate": 0.6644204353489219,
+            "vehicle_bev_moderate": 2.186086328146591
+          },
+          "nearby_2d_recall": {
+            "Pedestrian": 0.5855379188712522,
+            "Vehicle": 0.786347587289133
+          }
+        }
+      },
+      "recipe": {
+        "amp": false,
+        "architecture_changed": false,
+        "augmentation": false,
+        "backbone_learning_rate": 0.00001,
+        "batch_size": 1,
+        "checkpoint_every_steps": 128,
+        "clip_gradient_norm": 1,
+        "dense_depth_map_auxiliary_loss": false,
+        "disabled_kd_components": [
+          "classification",
+          "boxes"
+        ],
+        "dropout": false,
+        "epochs": 5,
+        "freeze_batchnorm": true,
+        "gt_loss_changed": false,
+        "gt_weights": {
+          "loss_angle": 1,
+          "loss_bbox": 5,
+          "loss_ce": 2,
+          "loss_center": 10,
+          "loss_depth": 1,
+          "loss_dim": 1,
+          "loss_giou": 2
+        },
+        "historical_references_retrained": false,
+        "input_hw": [
+          192,
+          640
+        ],
+        "kd_components": [
+          "dimensions",
+          "depth",
+          "angle"
+        ],
+        "kd_max_weight": 0.25,
+        "kd_warmup_steps": 128,
+        "learning_rate": 0.0001,
+        "matching_costs": {
+          "box": 5,
+          "center": 10,
+          "classification": 2,
+          "giou": 2
+        },
+        "minimum_teacher_improvement": 0.000001,
+        "minimum_teacher_matches_per_class": 16,
+        "only_objective_change": "teacher angle multiplier1.0 to0.01; no renormalization",
+        "pedestrian_containing_frames": 256,
+        "queries": 50,
+        "reviewed_gradient_signature": "fa4f61d91be35c7f0144b1e53a7deeeb7abbdd6707785c2ef8cd9e02e0c65d6a",
+        "seed": 123,
+        "teacher_2d_iou": 0.5,
+        "teacher_class_threshold": 0.1,
+        "teacher_component_weights": {
+          "angle": 0.01,
+          "depth": 1,
+          "dimensions": 1
+        },
+        "teacher_error_ratio": 0.9,
+        "temperature": 2,
+        "tiny_geometry_ratio": 0.9,
+        "tiny_images": 16,
+        "tiny_positive_gt_ratio": 0.7,
+        "tiny_steps": 128,
+        "train_images": 512,
+        "training_query_groups": false,
+        "validation_selection": false,
+        "vehicle_only_frames": 256,
+        "weight_decay": 0.0001
+      },
+      "report": "balanced_geometry_comparison.json",
+      "report_file_sha256": "bc97097f25d4815a130f8229ec8a1fb9a7d9626d4fc378890c9ddd23d7ea803c",
+      "revision": "A2-LITE-512-ANGLE001-KD-2026-10-14-r1",
+      "run_signature": "1c9fe480b93344bec6a26e053797079c2f670c70e8704afbdd9935fcb736ab36",
+      "signatures_valid": {
+        "report_sha256": true
+      }
+    },
+    {
+      "archive": "a2_lite_vehicle_geometry_results.zip",
+      "archive_sha256": "1c9df000e12192476539edf039807ad71f7d0033aabb047d83947a1ab608c83e",
+      "complete": true,
+      "gate_results": {
+        "benefit_guardrail_passed": false
+      },
+      "metrics": {
+        "all_heads": {
+          "metrics": {
+            "mean_3d_moderate": 1.179076927801527,
+            "pedestrian_3d_moderate": 1.1841622295856942,
+            "pedestrian_bev_moderate": 1.8106737681544922,
+            "vehicle_3d_moderate": 1.1739916260173597,
+            "vehicle_bev_moderate": 3.5660448012207095
+          },
+          "nearby_2d_recall": {
+            "Pedestrian": 0.5185185185185185,
+            "Vehicle": 0.7879168301294626
+          }
+        },
+        "geometry_angle001": {
+          "metrics": {
+            "mean_3d_moderate": 0.8869727048010372,
+            "pedestrian_3d_moderate": 0.5182093138879682,
+            "pedestrian_bev_moderate": 0.8765459372618865,
+            "vehicle_3d_moderate": 1.2557360957141062,
+            "vehicle_bev_moderate": 3.8276552127375254
+          },
+          "nearby_2d_recall": {
+            "Pedestrian": 0.5511463844797179,
+            "Vehicle": 0.8020400156924284
+          }
+        },
+        "geometry_angle1": {
+          "metrics": {
+            "mean_3d_moderate": 0.5498557985572137,
+            "pedestrian_3d_moderate": 0.26453451341157447,
+            "pedestrian_bev_moderate": 0.543530319290793,
+            "vehicle_3d_moderate": 0.8351770837028528,
+            "vehicle_bev_moderate": 2.5946697257779325
+          },
+          "nearby_2d_recall": {
+            "Pedestrian": 0.4894179894179894,
+            "Vehicle": 0.8033738721067085
+          }
+        },
+        "label_only": {
+          "metrics": {
+            "mean_3d_moderate": 0.8288203026608347,
+            "pedestrian_3d_moderate": 0.9932201699727475,
+            "pedestrian_bev_moderate": 1.6267273251968286,
+            "vehicle_3d_moderate": 0.6644204353489219,
+            "vehicle_bev_moderate": 2.186086328146591
+          },
+          "nearby_2d_recall": {
+            "Pedestrian": 0.5855379188712522,
+            "Vehicle": 0.786347587289133
+          }
+        },
+        "vehicle_only_angle001": {
+          "metrics": {
+            "mean_3d_moderate": 1.2819680852699427,
+            "pedestrian_3d_moderate": 0.7537199100995838,
+            "pedestrian_bev_moderate": 1.4507692803391374,
+            "vehicle_3d_moderate": 1.8102162604403016,
+            "vehicle_bev_moderate": 4.73988102441086
+          },
+          "nearby_2d_recall": {
+            "Pedestrian": 0.5260141093474426,
+            "Vehicle": 0.7741859552765791
+          }
+        }
+      },
+      "recipe": {
+        "amp": false,
+        "architecture_changed": false,
+        "augmentation": false,
+        "backbone_learning_rate": 0.00001,
+        "batch_size": 1,
+        "checkpoint_every_steps": 128,
+        "clip_gradient_norm": 1,
+        "dense_depth_map_auxiliary_loss": false,
+        "disabled_kd_components": [
+          "classification",
+          "boxes"
+        ],
+        "dropout": false,
+        "epochs": 5,
+        "freeze_batchnorm": true,
+        "gt_class_weighting_changed": false,
+        "gt_loss_changed": false,
+        "gt_weights": {
+          "loss_angle": 1,
+          "loss_bbox": 5,
+          "loss_ce": 2,
+          "loss_center": 10,
+          "loss_depth": 1,
+          "loss_dim": 1,
+          "loss_giou": 2
+        },
+        "historical_references_retrained": false,
+        "input_hw": [
+          192,
+          640
+        ],
+        "kd_components": [
+          "dimensions",
+          "depth",
+          "angle"
+        ],
+        "kd_max_weight": 0.25,
+        "kd_warmup_steps": 128,
+        "learning_rate": 0.0001,
+        "matching_costs": {
+          "box": 5,
+          "center": 10,
+          "classification": 2,
+          "giou": 2
+        },
+        "minimum_teacher_improvement": 0.000001,
+        "minimum_teacher_matches_per_class": 16,
+        "only_objective_change": "Pedestrian teacher contribution to zero; original Vehicle contribution preserved",
+        "pedestrian_containing_frames": 256,
+        "queries": 50,
+        "reviewed_balanced_signature": "1c9fe480b93344bec6a26e053797079c2f670c70e8704afbdd9935fcb736ab36",
+        "reviewed_gradient_signature": "fa4f61d91be35c7f0144b1e53a7deeeb7abbdd6707785c2ef8cd9e02e0c65d6a",
+        "seed": 123,
+        "teacher_2d_iou": 0.5,
+        "teacher_class_normalization": "retain original eligible-class denominator per component; no redistribution",
+        "teacher_class_threshold": 0.1,
+        "teacher_class_weights": {
+          "Pedestrian": 0,
+          "Vehicle": 1
+        },
+        "teacher_component_weights": {
+          "angle": 0.01,
+          "depth": 1,
+          "dimensions": 1
+        },
+        "teacher_error_ratio": 0.9,
+        "temperature": 2,
+        "tiny_geometry_ratio": 0.9,
+        "tiny_images": 16,
+        "tiny_positive_gt_ratio": 0.7,
+        "tiny_steps": 128,
+        "train_images": 512,
+        "training_query_groups": false,
+        "validation_selection": false,
+        "vehicle_only_frames": 256,
+        "weight_decay": 0.0001
+      },
+      "report": "vehicle_geometry_comparison.json",
+      "report_file_sha256": "d6d4e9266760f7098c51d2405eb2d0032cca2fdee84f31a0e4d18e6c7e7b2fe9",
+      "revision": "A2-LITE-512-VEHICLE-KD-2026-10-14-r1",
+      "run_signature": "a23a8c30085691cf1b1adb304e8bc308048f9e71471a4c26064615b9054ea015",
+      "signatures_valid": {
+        "report_sha256": true
+      }
+    },
+    {
+      "archive": "a2_lite_feature_results.zip",
+      "archive_sha256": "529053277b7337f99dc1744c6a1403d6f179c0a3450716a37d5320c61549dc89",
+      "complete": true,
+      "gate_results": {
+        "benefit_guardrail_passed": false,
+        "versus_label_only": {
+          "all_ap_metrics_nonregressing": false,
+          "kd_benefit_guardrail_passed": false,
+          "kd_minus_control": {
+            "mean_3d_moderate": -0.12065010041382784,
+            "pedestrian_3d_moderate": -0.38405251549612274,
+            "pedestrian_bev_moderate": -0.6557907003599053,
+            "vehicle_3d_moderate": 0.1427523146684675,
+            "vehicle_bev_moderate": 0.2092431753161761
+          },
+          "minimum_mean_3d_gain_passed": false,
+          "nearby_recall_delta": {
+            "Pedestrian": -0.013227513227513255,
+            "Vehicle": 0.02965868968222829
+          },
+          "nearby_recall_guardrails": {
+            "Pedestrian": true,
+            "Vehicle": true
+          },
+          "next_review": "Do not extend this feature recipe automatically; review accuracy, recall and gradient evidence"
+        }
+      },
+      "metrics": {
+        "control": {
+          "metrics": {
+            "mean_3d_moderate": 1.126905061607352,
+            "pedestrian_3d_moderate": 0.9762854588513239,
+            "pedestrian_bev_moderate": 1.5121911961671308,
+            "vehicle_3d_moderate": 1.2775246643633797,
+            "vehicle_bev_moderate": 3.4493007265407534
+          },
+          "nearby_2d_recall": {
+            "Pedestrian": 0.5696649029982364,
+            "Vehicle": 0.7872891329933307
+          }
+        },
+        "kd": {
+          "metrics": {
+            "mean_3d_moderate": 1.006254961193524,
+            "pedestrian_3d_moderate": 0.5922329433552012,
+            "pedestrian_bev_moderate": 0.8564004958072255,
+            "vehicle_3d_moderate": 1.4202769790318472,
+            "vehicle_bev_moderate": 3.6585439018569295
+          },
+          "nearby_2d_recall": {
+            "Pedestrian": 0.5564373897707231,
+            "Vehicle": 0.816947822675559
+          }
+        }
+      },
+      "recipe": {
+        "amp": false,
+        "architecture_changed": false,
+        "augmentation": false,
+        "backbone_learning_rate": 0.00001,
+        "background_kd": false,
+        "batch_size": 1,
+        "checkpoint_every_steps": 128,
+        "clip_gradient_norm": 1,
+        "dense_depth_map_auxiliary_loss": false,
+        "dropout": false,
+        "epochs": 5,
+        "feature_adapter": false,
+        "feature_alignment": "same normalized GT-box 3x3 grid per feature level; align_corners=False",
+        "feature_calibration": "fixed TRAIN-only median weighted-KD/GT encoder gradient ratio; no optimizer updates",
+        "feature_calibration_max_scale": 1000,
+        "feature_channels": 256,
+        "feature_gradient_target_ratio": 0.05,
+        "feature_loss": "cosine distance; equal point/level/object means, then equal present-class means",
+        "feature_teacher_eligibility": "correct class, confidence>=0.1, 2D IoU>=0.5, positive geometry; no per-head error gate",
+        "freeze_batchnorm": true,
+        "fresh_matched_control": true,
+        "gt_loss_changed": false,
+        "gt_weights": {
+          "loss_angle": 1,
+          "loss_bbox": 5,
+          "loss_ce": 2,
+          "loss_center": 10,
+          "loss_depth": 1,
+          "loss_dim": 1,
+          "loss_giou": 2
+        },
+        "historical_results_are_context_only": true,
+        "input_hw": [
+          192,
+          640
+        ],
+        "kd_family": "box-focused final-visual-encoder features",
+        "kd_max_weight": 0.25,
+        "kd_warmup_steps": 128,
+        "learning_rate": 0.0001,
+        "matching_costs": {
+          "box": 5,
+          "center": 10,
+          "classification": 2,
+          "giou": 2
+        },
+        "minimum_teacher_matches_per_class": 16,
+        "pedestrian_containing_frames": 256,
+        "prediction_kd_components": [],
+        "queries": 50,
+        "roi_size": 3,
+        "seed": 123,
+        "student_encoder_layers": 1,
+        "teacher_2d_iou": 0.5,
+        "teacher_class_threshold": 0.1,
+        "teacher_encoder_layers": 3,
+        "teacher_input_hw": [
+          384,
+          1280
+        ],
+        "tiny_geometry_ratio": 0.9,
+        "tiny_images": 16,
+        "tiny_positive_gt_ratio": 0.7,
+        "tiny_steps": 128,
+        "train_images": 512,
+        "training_query_groups": false,
+        "validation_selection": false,
+        "vehicle_only_frames": 256,
+        "weight_decay": 0.0001
+      },
+      "report": "feature_comparison.json",
+      "report_file_sha256": "4b30559da11a9697612304b55130003e924e0c09aaa0a4d4d6bf8166ca4431d8",
+      "revision": "A2-LITE-512-FOREGROUND-FEATURE-KD-2026-10-14-r1",
+      "run_signature": "12bae93a627ba26fd7fc42d2515a40f0da6893ffd364b2c61b18e7e07aa2e8b0",
+      "signatures_valid": {
+        "report_sha256": true
+      }
+    },
+    {
+      "archive": "a2_lite_feature_gradient_results.zip",
+      "archive_sha256": "2c532ea040bb581374e6e6cb330867ef4b3114b779f9b766953471fee0df3775",
+      "complete": true,
+      "gate_results": {
+        "optimizer_steps": 0
+      },
+      "metrics": {},
+      "recipe": null,
+      "report": "feature_gradient_comparison.json",
+      "report_file_sha256": "a0d050e109aa82671a5b39a0e129fe6f0ddc7eefdba4a7f80a8b5b49dbbfbf8e",
+      "revision": "A2-LITE-FEATURE-ENDPOINT-GRADIENTS-2026-10-15-r1",
+      "run_signature": "04114f6e557039a49a793d40e012132064d05d51c2ee054df0537d013f84c120",
+      "signatures_valid": {
+        "report_sha256": true
+      }
+    },
+    {
+      "archive": "a2_lite_protected_feature_results.zip",
+      "archive_sha256": "5dfa931fb19814f3d498a6cd8bfe4c8fb19c78db62764381c18570f09431af5f",
+      "complete": true,
+      "gate_results": {
+        "benefit_guardrail_passed": false,
+        "guard_statistics": {
+          "accepted": 651,
+          "accepted_Pedestrian": 799,
+          "accepted_Vehicle": 1986,
+          "cap_violations": 0,
+          "checked_steps": 2560,
+          "no_teacher_gradient": 0,
+          "rejected_for_conflict": 1909,
+          "scaled_for_cap": 624
+        },
+        "runtime_guards_passed": true,
+        "versus_label_only": {
+          "all_ap_metrics_nonregressing": false,
+          "kd_benefit_guardrail_passed": false,
+          "kd_minus_control": {
+            "mean_3d_moderate": -0.7181878815201499,
+            "pedestrian_3d_moderate": -1.431295457116534,
+            "pedestrian_bev_moderate": -1.843061552509588,
+            "vehicle_3d_moderate": -0.005080305923766071,
+            "vehicle_bev_moderate": -0.5709355931996676
+          },
+          "minimum_mean_3d_gain_passed": false,
+          "nearby_recall_delta": {
+            "Pedestrian": 0.041887125220458454,
+            "Vehicle": 0.01577089054531189
+          },
+          "nearby_recall_guardrails": {
+            "Pedestrian": true,
+            "Vehicle": true
+          },
+          "next_review": "Do not promote KD automatically; review GT control and a separately authorized geometry-only ablation"
+        }
+      },
+      "metrics": {
+        "control": {
+          "metrics": {
+            "mean_3d_moderate": 1.5890334273164877,
+            "pedestrian_3d_moderate": 1.506955469994834,
+            "pedestrian_bev_moderate": 1.9486801604882704,
+            "vehicle_3d_moderate": 1.6711113846381416,
+            "vehicle_bev_moderate": 4.648286010406298
+          },
+          "nearby_2d_recall": {
+            "Pedestrian": 0.5194003527336861,
+            "Vehicle": 0.7955276579050609
+          }
+        },
+        "kd": {
+          "metrics": {
+            "mean_3d_moderate": 0.8708455457963378,
+            "pedestrian_3d_moderate": 0.07566001287830006,
+            "pedestrian_bev_moderate": 0.10561860797868249,
+            "vehicle_3d_moderate": 1.6660310787143755,
+            "vehicle_bev_moderate": 4.07735041720663
+          },
+          "nearby_2d_recall": {
+            "Pedestrian": 0.5612874779541446,
+            "Vehicle": 0.8112985484503727
+          }
+        }
+      },
+      "recipe": {
+        "adamw_update_safety_guaranteed": false,
+        "amp": false,
+        "architecture_changed": false,
+        "augmentation": false,
+        "backbone_learning_rate": 0.00001,
+        "background_kd": false,
+        "batch_size": 1,
+        "cap_policy": "one detached coefficient no larger than scheduled base; cap each group and all trainable coordinates",
+        "checkpoint_every_steps": 128,
+        "clip_gradient_norm": 1,
+        "conflict_cosine_tolerance": 0.000001,
+        "conflict_policy": "drop the entire combined class-balanced feature term if any checked group conflicts; no redistribution",
+        "dense_depth_map_auxiliary_loss": false,
+        "dropout": false,
+        "epochs": 5,
+        "feature_adapter": false,
+        "feature_alignment": "same normalized GT-box 3x3 grid per feature level; align_corners=False",
+        "feature_calibration": "historical calibrated coefficient is only the scheduled ceiling; actual coefficient checked every TRAIN update",
+        "feature_calibration_max_scale": 1000,
+        "feature_channels": 256,
+        "feature_gradient_cap": 0.05,
+        "feature_gradient_target_ratio": 0.05,
+        "feature_loss": "cosine distance; equal point/level/object means, then equal present-class means",
+        "feature_teacher_eligibility": "correct class, confidence>=0.1, 2D IoU>=0.5, positive geometry; no per-head error gate",
+        "freeze_batchnorm": true,
+        "fresh_matched_control": true,
+        "gt_loss_changed": false,
+        "gt_weights": {
+          "loss_angle": 1,
+          "loss_bbox": 5,
+          "loss_ce": 2,
+          "loss_center": 10,
+          "loss_depth": 1,
+          "loss_dim": 1,
+          "loss_giou": 2
+        },
+        "guard_groups": [
+          "all_trainable",
+          "visual_encoder",
+          "late_backbone",
+          "other_trainable"
+        ],
+        "guard_reference": "GT total and exact Pedestrian/Vehicle GT shares, including class-channel negatives",
+        "historical_results_are_context_only": true,
+        "input_hw": [
+          192,
+          640
+        ],
+        "kd_family": "same foreground feature loss with per-step scalar safeguards",
+        "kd_max_weight": 0.25,
+        "kd_warmup_steps": 128,
+        "learning_rate": 0.0001,
+        "matching_costs": {
+          "box": 5,
+          "center": 10,
+          "classification": 2,
+          "giou": 2
+        },
+        "minimum_teacher_matches_per_class": 16,
+        "no_GT_gradient_projection": true,
+        "pedestrian_containing_frames": 256,
+        "prediction_kd_components": [],
+        "queries": 50,
+        "roi_size": 3,
+        "seed": 123,
+        "student_encoder_layers": 1,
+        "teacher_2d_iou": 0.5,
+        "teacher_class_threshold": 0.1,
+        "teacher_encoder_layers": 3,
+        "teacher_features_reused": true,
+        "teacher_input_hw": [
+          384,
+          1280
+        ],
+        "tiny_geometry_ratio": 0.9,
+        "tiny_images": 16,
+        "tiny_positive_gt_ratio": 0.7,
+        "tiny_steps": 128,
+        "train_images": 512,
+        "training_images_staged": 512,
+        "training_query_groups": false,
+        "validation_selection": false,
+        "validation_staged_after_training": true,
+        "vehicle_only_frames": 256,
+        "weight_decay": 0.0001
+      },
+      "report": "protected_comparison.json",
+      "report_file_sha256": "4d99dd3222b1f106ac61a73cf05c38431bc4b05365ed75549560de35c758c22f",
+      "revision": "A2-LITE-PROTECTED-FEATURE-KD-2026-10-15-r1",
+      "run_signature": "e1a05f52010284c013ee1b4f7bb377817a90594681ddc3a2d1e8a87157f3de20",
+      "signatures_valid": {
+        "report_sha256": true
+      }
+    }
+  ],
+  "next_action": {
+    "export_preservation_limits": {
+      "max_absolute_moderate_ap_points": 0.05,
+      "max_absolute_nearby_recall": 0.005
+    },
+    "optimizer_steps": 0,
+    "product_qualified": false,
+    "trained_export_executed": false,
+    "trained_phone_test_executed": false,
+    "training_authorized": false,
+    "workflow": "notebooks/MonoDETR_A2_Lite_Trained_ONNX_Colab.ipynb"
+  },
+  "paired_pedestrian_diagnosis": {
+    "ambiguous_gt_records_excluded": 14,
+    "control": {
+      "depth_mae_m": 1.0627848101265822,
+      "depth_median_abs_error_m": 0.56,
+      "dimension_mae_m": 0.15053445850914207,
+      "iou_2d_mean": 0.6707323365938221,
+      "iou_3d_mean": 0.18668206889459535,
+      "selected_iou3d_ge_05": 122
+    },
+    "gained_good_objects": 31,
+    "kd": {
+      "depth_mae_m": 1.0032700421940928,
+      "depth_median_abs_error_m": 0.6500000000000004,
+      "dimension_mae_m": 0.17199367088607595,
+      "iou_2d_mean": 0.6736680475902079,
+      "iou_3d_mean": 0.12551266859104124,
+      "selected_iou3d_ge_05": 37
+    },
+    "lost_good_objects": 116,
+    "lost_group": {
+      "control_depth_mae_m": 0.07758620689655174,
+      "control_predicted_length_mean_m": 0.9899999999999999,
+      "control_signed_depth_error_mean_m": 0.011896551724137968,
+      "kd_depth_mae_m": 0.40068965517241373,
+      "kd_predicted_length_mean_m": 0.7871551724137933,
+      "kd_signed_depth_error_mean_m": 0.3808620689655173
+    },
+    "method": "Exact frame/class/GT-depth fingerprint unique across both complete GT inventories; cross-check yaw and size; exclude ambiguous IDs. Exact raw prediction association by score/yaw/depth-error equality.",
+    "official_ap_recomputed": false,
+    "paired_nearby_objects": 947,
+    "paired_objects": 948,
+    "retained_good_objects": 6,
+    "source_archive": "a2_lite_protected_feature_results.zip",
+    "source_records": [
+      {
+        "file": "evaluation/control/matched_geometry.csv",
+        "sha256": "150eb6797864591c67c63fffe0b3a247cfd92eac08b253b74bc86cb8cdbff9a0"
+      },
+      {
+        "file": "evaluation/kd/matched_geometry.csv",
+        "sha256": "90b637706a4e215871769ae7c89e9ee6384c39a93438054a49839c1107e123fd"
+      }
+    ]
+  },
+  "review_sha256": "87f1e7c5c82c4f3adb2c9bcfd9c7e4eb700a3ab3b4ca2c51800936354d842dcf",
+  "scope": "MonoDETR/A2-Lite completed recovery and distillation results; archived JSON values, not an independent AP rerun"
+}

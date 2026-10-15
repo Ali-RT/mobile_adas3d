@@ -1,6 +1,6 @@
 # MobileADAS3D project tracker
 
-Last updated: 2026-10-07
+Last updated: 2026-10-15
 
 This is the canonical status page. Update it whenever a task changes state,
 an experiment finishes, a gate passes/fails, or the next action changes.
@@ -9,12 +9,47 @@ Detailed rationale remains in the linked contracts and handoff.
 ## Goal
 
 Develop a reliable monocular 3D road-object detector with two product classes,
-**Vehicle** and **Pedestrian**. First obtain accuracy comparable to the frozen
-teacher; then compress and qualify the selected model for a deployment target.
-The validated iPhone application remains available, but its hardware limits do
-not constrain the current accuracy-development stage.
+**Vehicle** and **Pedestrian**. Work backward from the edge runtime budget,
+measure the selected trained graph on iPhone, and improve accuracy without
+losing that budget. Export preservation, device speed and product accuracy
+remain separate gates. The validated legacy application remains preserved.
 
 ## Current position
+
+The recent A2-Lite recovery and KD series is documented in
+[`A2_LITE_EXPERIMENT_REPORT_20261015.md`](A2_LITE_EXPERIMENT_REPORT_20261015.md),
+including model/data definitions, losses, fixed budgets, result tables,
+gradient audits and the same-object Pedestrian diagnosis. Its full-precision
+archive ledger is `artifacts/a2_lite_experiment_review_20261015.json`.
+
+**Decision:** close the protected foreground-feature-KD recipe. Both fresh
+512-frame/five-epoch arms completed 2,560 updates and evaluated all 3,769 VAL
+images. Its technical safeguards passed (651 accepted/1,909 conflicting
+updates, zero cap violations), but Vehicle/Pedestrian 3D AP changed
+1.6711/1.5070 to 1.6660/0.0757. On 948 uniquely paired Pedestrians, mean 3D
+overlap fell 0.1867 to 0.1255 despite nearly unchanged 2D overlap. Do not
+extend this recipe or promote the KD checkpoint.
+
+**Next candidate:** the completed full-data label-only A2-Lite epoch-10
+endpoint, trained on 3,712 images for 37,120 updates. Vehicle/Pedestrian 3D
+AP is 3.9591/2.1411; BEV 8.0852/2.9356; nearby 2D recall 0.8338/0.5604.
+These remain below product targets. Its checkpoint SHA is
+`0cd8dd0d0c2e1e6acb5980806084264fa83eb588b1bde763746b14d47e176930`.
+
+**Next workflow prepared:**
+[`notebooks/MonoDETR_A2_Lite_Trained_ONNX_Colab.ipynb`](notebooks/MonoDETR_A2_Lite_Trained_ONNX_Colab.ipynb).
+It uses CPU only, no teacher or M67 runtime restore, no custom CUDA build and
+zero optimizer updates. Verify fixed16 trained PyTorch/ONNX CPU parity and
+full-VAL accuracy preservation before phone staging. Only VAL is staged with
+four workers; verified per-image predictions resume after interruption. Return
+`a2_lite_trained_onnx_results.zip`. No trained-model phone result is claimed yet.
+The prior roughly 20-FPS 640x192 screen used pruned initialization weights,
+not this recovered checkpoint or a camera pipeline.
+
+Original A2 remains the offline teacher/reference; MonoDGP/M61 stay parked.
+Existing iOS worktree changes are preserved and are not part of this workflow.
+
+## Historical status through 7 October 2026
 
 **Current decision:** retain original A2 epoch130, MobileNetV4 Conv Medium plus
 the full MonoDETR graph. M66 completed actual R0-to-A2 Vehicle feature

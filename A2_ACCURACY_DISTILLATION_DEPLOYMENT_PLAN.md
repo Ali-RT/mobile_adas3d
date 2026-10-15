@@ -1,6 +1,6 @@
 # A2 deployment feasibility → accuracy improvement plan
 
-Decision updated: 2026-10-07. Work backward from the product requirement:
+Decision updated: 2026-10-15. Work backward from the product requirement:
 first establish whether the exact selected A2 student can be exported and run
 on the target iPhone at the required speed; only then spend more effort on
 distillation or model redesign. Keep original A2 epoch 130 as the baseline.
@@ -10,7 +10,29 @@ M61's train-only audit rejected every component according to the user-provided
 log. The full component report has not been independently reviewed. No M61
 continuation-training result has been supplied. Do not overwrite its artifacts.
 
-## Current action: deployment feasibility first
+## Current action: test the recovered A2-Lite checkpoint
+
+The protected feature-KD recipe completed but failed accuracy preservation.
+Stop that recipe. The next candidate is the full-data label-only A2-Lite
+epoch-10 endpoint (Vehicle/Pedestrian 3D AP 3.9591/2.1411), not a KD endpoint
+or the untrained pruned speed-screen model. It remains below the product
+accuracy targets. See the complete
+[experiment report](A2_LITE_EXPERIMENT_REPORT_20261015.md).
+
+Run `notebooks/MonoDETR_A2_Lite_Trained_ONNX_Colab.ipynb` on CPU. It selects
+the hash-pinned completed checkpoint, checks trained PyTorch/ONNX CPU fixed16
+parity and full-VAL preservation, and performs no optimizer updates. Return
+`a2_lite_trained_onnx_results.zip` for host review. Only after that gate passes
+should the existing phone harness be adapted and the phone connected. Record
+sustained model-only and camera-to-label performance separately. No teacher,
+M67 environment restore or CUDA extension compilation is needed.
+
+The earlier approximate 20-FPS screen did not use these recovered weights.
+Passing export preservation does not qualify the model for safety use or
+change the frozen accuracy targets. Do not automatically launch another KD
+variant, longer training or architecture sweep.
+
+## Historical plan through 7 October 2026
 
 M66 is complete and did not produce a useful incremental distillation gain.
 Keep original A2 epoch 130 selected. Run

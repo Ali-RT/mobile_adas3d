@@ -3,12 +3,13 @@
 Current progress, frozen results, and next actions are maintained in
 [`PROJECT_TRACKER.md`](PROJECT_TRACKER.md).
 
-The active supervised-student workflow is
-[`notebooks/MobileADAS3D_H1_GT_Gate_Colab.ipynb`](notebooks/MobileADAS3D_H1_GT_Gate_Colab.ipynb).
-It verifies frozen R0 and H1 edge evidence, keeps distillation disabled,
-preflights the audited Vehicle/Pedestrian data and a real CUDA Hungarian-set
-loss, runs a resumable 20-epoch health gate, and stops after complete
-product-taxonomy AP_R40 evaluation for review.
+The current next workflow is the inference-only
+[`trained A2-Lite ONNX export and validation notebook`](notebooks/MonoDETR_A2_Lite_Trained_ONNX_Colab.ipynb).
+It uses the completed full-data label-only epoch-10 checkpoint, CPU only,
+and checks export accuracy before another phone test. It does not train,
+restore M67, or use a teacher. No A2-Lite checkpoint is deployment-qualified.
+Results, architecture, losses, budgets and decisions are summarized in
+[`A2_LITE_EXPERIMENT_REPORT_20261015.md`](A2_LITE_EXPERIMENT_REPORT_20261015.md).
 
 Mobile monocular-3D detector for safety-relevant road objects. The locked
 product target, class taxonomy, dataset isolation rules, candidate architecture,
@@ -25,11 +26,15 @@ uncertainty on a stride-16 feature map.
   validated in the iPhone benchmark app and its decode contract remains frozen.
 - **Legacy custom student:** MobileNetV4 Conv Small with convolutional heads.
   It remains Core-ML-exportable but did not meet the 3D-accuracy target.
-- **Active product candidate:** MobileADAS3D-H1, using MobileNetV4 Conv Small,
+- **Current edge candidate:** A2-Lite, using MobileNetV4 Conv Medium, one
+  visual-encoder layer and one decoder layer at 640x192. Label-trained
+  recovery is complete; the selected checkpoint still misses product accuracy
+  targets and needs trained-export and iPhone validation.
+- **Earlier product candidate:** MobileADAS3D-H1, using MobileNetV4 Conv Small,
   Lite-FPN, 40-bin depth context, a fixed two-layer standard encoder, and a
   two-layer 50-query decoder. Its random graph passes custom-op-free FP16 Core
   ML parity and iPhone 16 Pro Max p95 latency. GT-only supervised training is
-  the current gate; no H1 checkpoint is qualified yet. See
+  a historical gate; no H1 checkpoint is qualified here. See
   [`HYBRID_STUDENT_ARCHITECTURE_CONTRACT.md`](HYBRID_STUDENT_ARCHITECTURE_CONTRACT.md).
 
 Historical v6/v7 F1 and device results in the supporting documents describe

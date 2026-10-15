@@ -1,0 +1,33 @@
+{
+  "as_of": "2026-10-15",
+  "workflow": "notebooks/MonoDETR_A2_Lite_Trained_ONNX_Colab.ipynb",
+  "revision": "A2-LITE-TRAINED-GT-ONNX-2026-10-15-r1",
+  "regression_tests_passed": 278,
+  "clean_main_plus_intended_files_tests_passed": 265,
+  "clean_verification_failures": 0,
+  "clean_verification_errors": 0,
+  "local_additional_tests_note": "13 pre-existing untracked phone tests were included only in the 278-test local run and are not part of this publication",
+  "notebook_code_cells_compiled": 5,
+  "integration": {
+    "scope": "Real portable architecture with synthetic state; not the selected recovered checkpoint",
+    "torch": "2.12.0",
+    "onnx": "1.20.1",
+    "onnxruntime": "1.30.0",
+    "python": "3.12",
+    "portable_source_sha256": "a95ef8103dbbc479c8f7df6f260ba5397242d60887e9527b2bb60e967eea4b16",
+    "parameters": 14464792,
+    "strict_state_load_passed": true,
+    "fixed16_raw_cpu_parity_passed": true,
+    "onnx_nodes": 1754,
+    "opset": 17,
+    "custom_operator_domains": [],
+    "weights_unchanged": true,
+    "optimizer_steps": 0
+  },
+  "selected_checkpoint_sha256": "0cd8dd0d0c2e1e6acb5980806084264fa83eb588b1bde763746b14d47e176930",
+  "selected_trained_checkpoint_available_locally": false,
+  "selected_trained_export_executed": false,
+  "full_validation_executed": false,
+  "iphone_test_executed": false,
+  "deployment_qualified": false
+}
