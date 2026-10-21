@@ -24,14 +24,25 @@ provisional 10 cm median, 20 cm p95, 5 cm bias and 95% precision/recall targets,
 with a valid-distance coverage guard and minimum evidence floors. Historical
 accuracy, runtime and experiment gates remain unchanged.
 
-The new CPU-only saved-prediction notebook is prepared. The local trained Lite
-screen completed on all 3,769 validation files, but the full A2 prediction
-directory is not available locally. The preliminary camera-depth screen fails
-populated Lite cells; sparse closer Pedestrian cells are inconclusive. All
-near-range Vehicle annotations are truncated, so this is not mounted
-ultrasonic-surface-range qualification. See the
+The returned `parking_range_results.zip` contains the completed saved-prediction
+comparison for full A2 and trained A2-Lite on all 3,769 validation frames.
+Both fail the populated preliminary camera-depth cells; sparse closer
+Pedestrian cells are inconclusive. At 5–6 m, A2/Lite Vehicle recall is
+72.02%/59.67%, with median center-depth errors 0.29/0.41 m. Pedestrian recall
+is 88.24%/84.31%, with median errors 0.355/0.40 m. All near-range Vehicle
+annotations are truncated, so this is not mounted ultrasonic-surface-range
+qualification. The prior local Lite-only analysis remains in the
 [`21 October preliminary results`](reports/MobileADAS3D/parking_range_preliminary_2026-10-21.md).
-No new training, inference, phone changes or model promotion occurred.
+No new training, phone changes or model promotion occurred in that comparison.
+
+The next implementation is the separate
+[`parking edge candidate screen`](PARKING_EDGE_CANDIDATE_SCREEN.md): first
+YOLO26n plus YOLO26n-depth, then an optional UrbanOmniDetect-2 Nano cuboid and
+export screen in a different runtime. Both use the same fixed64 near-range
+input archive, four staging workers, pinned official checkpoint hashes and
+FP32 ONNX CPU checks. This does not score surface depth against KITTI box
+centers or claim iPhone performance. GUPNet remains a later metric-3D
+reference; no new KD or training is authorized by these workflows.
 
 ## Earlier position on 15 October 2026
 

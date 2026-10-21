@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-21",
+  "scope": "one_real_KITTI_frame_helper_export_smoke_not_fixed64_experiment",
+  "frame": "006767",
+  "real_model_smoke_frames": 1,
+  "tests_passed": 31,
+  "runtime": {"system": "Darwin", "machine": "arm64", "python": "3.12.11", "torch": "2.12.0", "onnx": "1.20.1", "onnxruntime": "1.30.0"},
+  "ultralytics": {"yolo_depth": "8.4.183", "urban_nano": "8.4.61"},
+  "graphs": {
+    "yolo26n": {"onnx_sha256": "7ad6426522f3bb62f6753a3c4dda86be1b0381007febb79094d80d2fed6ed402", "size_bytes": 9893948, "checkpoint_sha256": "9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef"},
+    "yolo26n-depth": {"onnx_sha256": "0fc8c44165969cd858e1c0c2a7dba9d070255161629b2b265d8c91c15ba6633d", "size_bytes": 20730780, "checkpoint_sha256": "befed1b8561d8b2eaa66274b070cdfc9c44853bda6d6d62a04759f9383af74e9"},
+    "urbanomnidetect_v2_n_640": {"onnx_sha256": "614aa021603f0bab5ff4a9b2f3e17948ba7ec0c87bacd335f00dcccbe4e14428", "size_bytes": 10840274, "checkpoint_sha256": "6fc044215d4804b5a9df4616dd19d56fe43343ac67300fb8abd67fb99b9619dd"}
+  },
+  "detector_parity": {"passed": true, "native_count": 4, "onnx_count": 4, "max_box_delta_px": 0.00006103515625, "max_score_delta": 0.0000007748603820800781},
+  "depth_parity": {"passed": true, "max_abs_delta_m": 0.000446319580078125, "mean_abs_delta_m": 0.00001346739645669004},
+  "urban_projected_corner_parity": {"passed": true, "native_count": 4, "onnx_count": 4, "max_box_delta_px": 0.00006103515625, "max_score_delta": 0.00000035762786865234375, "max_corner_delta_px": 0.00018310546875},
+  "real_preprocessing_and_raw_onnx_fixture_check_passed": true,
+  "orchestration_test": "64_fake_frames_with_fake_models_only_for_resume_and_bundle_plumbing_not_accuracy",
+  "fixed64_colab_completed": false,
+  "independent_surface_distance_evaluated": false,
+  "iphone_performance_measured": false,
+  "parking_validation_qualified": false,
+  "training_performed": false,
+  "optimizer_steps": 0
+}
