@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "revision": "PARKING-RANGE-2-6M-2026-10-21-v0.1",
+  "status": "provisional_engineering_targets_not_sensor_certification",
+  "classes": ["Vehicle", "Pedestrian"],
+  "range_edges_m": [2.0, 3.0, 4.0, 5.0, 6.0],
+  "thresholds": {
+    "median_absolute_distance_error_m": 0.10,
+    "p95_absolute_distance_error_m": 0.20,
+    "absolute_mean_signed_distance_error_m": 0.05,
+    "recall": 0.95,
+    "precision": 0.95,
+    "valid_distance_coverage": 0.95
+  },
+  "preliminary_kitti_screen": {
+    "distance_quantity": "camera_forward_z_to_annotated_3d_box_center_not_ultrasonic_surface_range",
+    "serialized_score_threshold": 0.001,
+    "match_iou_2d": 0.5,
+    "minimum_gt_objects_per_cell": 100,
+    "minimum_gt_frames_per_cell": 25,
+    "minimum_matched_distances_per_cell": 50,
+    "minimum_predictions_per_precision_cell": 100,
+    "quantile_method": "linear_interpolation_at_(n-1)*q",
+    "range_membership": "left_closed_right_open_except_final_bin_includes_6m",
+    "precision_scope": "predicted_depth_band_with_correct_class_match_to_gt_anywhere_in_2_to_6m",
+    "recall_and_distance_scope": "ground_truth_depth_band",
+    "unknown_range_false_positives_block_screen_pass": true,
+    "includes_all_occlusion_and_truncation_levels": true,
+    "dontcare_suppression": false,
+    "minimum_counts_are_a_pilot_floor_not_a_statistical_certification": true
+  },
+  "chen_val": {
+    "images": 3769,
+    "split_file_sha256": "6e2394d97c866c3af1ffb049f828abdf3d5b707d9575d16885fd0de87b72b0c8"
+  },
+  "models": {
+    "A2": {
+      "checkpoint_sha256": "ed2134a98acbf1ab2fc61f7c8749b38fdfd2418e7f7932593e5e37a8d9ef33f4",
+      "onnx_sha256": ["82344b2bc7a96ff3bb24cfc6d9b3aeea61c138b1e3bcbae07b58e2bed562c0c1"]
+    },
+    "A2_Lite": {
+      "checkpoint_sha256": "0cd8dd0d0c2e1e6acb5980806084264fa83eb588b1bde763746b14d47e176930",
+      "onnx_sha256": ["72c9e36cb6b8113af3476c0e4d028e7e7739e10a5866cb3f797d590135629589", "47e9b9af3993ffb443ad0e323998dbc4e8bbec5daeb4089433840e4053cc1db8"]
+    }
+  },
+  "parking_pilot_requirements": [
+    "Independent reference distance with documented uncertainty",
+    "Same target surface and sensor coordinate frame",
+    "Synchronized measurement timestamps and documented clock offset and drift",
+    "Mounted camera calibration and near-field field-of-view verification",
+    "Operating speed, sampling rate and environmental coverage declared before collection"
+  ],
+  "existing_accuracy_and_runtime_gates_modified": false,
+  "training_authorized": false,
+  "ultrasonic_sensor_certification_authorized": false
+}

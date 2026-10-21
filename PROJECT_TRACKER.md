@@ -1,6 +1,6 @@
 # MobileADAS3D project tracker
 
-Last updated: 2026-10-15
+Last updated: 2026-10-21
 
 This is the canonical status page. Update it whenever a task changes state,
 an experiment finishes, a gate passes/fails, or the next action changes.
@@ -14,7 +14,26 @@ measure the selected trained graph on iPhone, and improve accuracy without
 losing that budget. Export preservation, device speed and product accuracy
 remain separate gates. The validated legacy application remains preserved.
 
-## Current position
+## Current parking priority on 21 October 2026
+
+The clarified use case is a camera mounted on a moving vehicle, producing
+Vehicle and Pedestrian labels and distances for ultrasonic validation. The
+critical range is 2 to 6 metres. The separate
+[`parking range contract`](PARKING_RANGE_VALIDATION_CONTRACT.md) records the
+provisional 10 cm median, 20 cm p95, 5 cm bias and 95% precision/recall targets,
+with a valid-distance coverage guard and minimum evidence floors. Historical
+accuracy, runtime and experiment gates remain unchanged.
+
+The new CPU-only saved-prediction notebook is prepared. The local trained Lite
+screen completed on all 3,769 validation files, but the full A2 prediction
+directory is not available locally. The preliminary camera-depth screen fails
+populated Lite cells; sparse closer Pedestrian cells are inconclusive. All
+near-range Vehicle annotations are truncated, so this is not mounted
+ultrasonic-surface-range qualification. See the
+[`21 October preliminary results`](reports/MobileADAS3D/parking_range_preliminary_2026-10-21.md).
+No new training, inference, phone changes or model promotion occurred.
+
+## Earlier position on 15 October 2026
 
 The recent A2-Lite recovery and KD series is documented in
 [`A2_LITE_EXPERIMENT_REPORT_20261015.md`](A2_LITE_EXPERIMENT_REPORT_20261015.md),
