@@ -230,6 +230,7 @@ class NearTrainingTests(unittest.TestCase):
                                 weights=root / "weights", stage="train", device="cpu")
             with patch.object(data, "read_manifest", return_value=m), patch.object(training, "initialize", initialize_fixture), \
                     patch.object(training.pilot, "build_model", return_value=(model, {"runtime": {"device": "cpu"}})), \
+                    patch.object(training.body_verification, "verify_warmstart_body", return_value={"passed": True}), \
                     patch.object(training.pilot, "cache_sample", cache_fixture), patch.object(training.pilot, "read_features", return_value=row), \
                     contextlib.redirect_stdout(io.StringIO()):
                 training.run(a)

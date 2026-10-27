@@ -20,6 +20,7 @@ sys.path.insert(0, str(ROOT))
 from scripts import parking_edge_common as common
 from scripts import parking_shared_near_data as data
 from scripts import train_parking_shared_depth as pilot
+from scripts import parking_shared_body_verification as body_verification
 
 
 def cell_masks(row, mapping):
@@ -143,17 +144,19 @@ def run(a):
     for path in [a.output, a.cache]:
         if path.is_symlink() or path.resolve().is_relative_to(a.inputs.resolve()) or path.resolve().is_relative_to(a.source.resolve()):
             raise ValueError("Use separate new run and feature-cache folders")
+    (a.output / "runtime_settings").mkdir(parents=True, exist_ok=True)
     model, model_id = pilot.build_model(a, config); device = next(model.parameters()).device
     frozen = state_digest(model.body)
-    if frozen != config["initial_body_sha256"]:
-        raise ValueError("Warm-start backbone differs from the reviewed Mini pilot")
+    verification = body_verification.verify_warmstart_body(model, model_id, config, a.weights)
+    print("Backbone verification: " + json.dumps(verification, sort_keys=True), flush=True)
     initialize(model, a.inputs, manifest); initial = {k: v.detach().cpu().clone() for k, v in model.depth_decoder.state_dict().items()}
     identity = {"model": model_id, "input_manifest_sha256": common.file_sha(a.inputs / "input_manifest.json"),
+        "backbone_verification": verification,
         "config": config, "initial_decoder_state_sha256": state_digest(model.depth_decoder),
-        "source_sha256": {p.name: common.file_sha(p) for p in [Path(__file__), Path(data.__file__), Path(pilot.__file__),
+        "source_sha256": {p.name: common.file_sha(p) for p in [Path(__file__), Path(data.__file__), Path(pilot.__file__), Path(body_verification.__file__),
             ROOT / "scripts/parking_shared_depth_data.py", ROOT / "models/parking_shared.py", ROOT / "scripts/screen_parking_shared_model.py"]}}
     common.immutable(a.output / "run_identity.json", common.encoded(identity)); run_id = common.identity(identity)
-    for path in [Path(__file__), Path(data.__file__), Path(pilot.__file__), ROOT / "models/parking_shared.py"]:
+    for path in [Path(__file__), Path(data.__file__), Path(pilot.__file__), Path(body_verification.__file__), ROOT / "models/parking_shared.py"]:
         common.immutable(a.output / "source_snapshot" / path.name, path.read_bytes())
     cache_id = {"input_manifest_sha256": identity["input_manifest_sha256"], "body_sha256": frozen,
         "runtime": model_id["runtime"], "producer_sha256": common.sha("\n".join(inspect.getsource(f) for f in
