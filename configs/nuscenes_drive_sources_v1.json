@@ -1,0 +1,171 @@
+{
+  "revision": "NUSCENES-DRIVE-DOWNLOAD-2026-10-28-r1",
+  "verified_http_head_date": "2026-10-28",
+  "default_variant": "keyframes",
+  "variants": {
+    "keyframes": [
+      {
+        "name": "v1.0-trainval01_keyframes.tgz",
+        "url": "https://motional-nuscenes.s3.amazonaws.com/public/v1.0/v1.0-trainval01_keyframes.tgz",
+        "size_bytes": 4529954279,
+        "etag": "\"965b6f44bef7169320f2ed85b1b7f3ae-541\"",
+        "observed_sha256": "37f61460e6b1f1d9a02d3147a5557a5fa654e33752beb1d1cc711e0b0fb1b6e1"
+      },
+      {
+        "name": "v1.0-trainval02_keyframes.tgz",
+        "url": "https://motional-nuscenes.s3.amazonaws.com/public/v1.0/v1.0-trainval02_keyframes.tgz",
+        "size_bytes": 4272745444,
+        "etag": "\"8972b54a8da93c0c96b981fea362f74d-510\"",
+        "observed_sha256": "1dcc10c082220e78b9a694f7e9a69b0174f7b4bb5f58643e7f9737bdce8a0348"
+      },
+      {
+        "name": "v1.0-trainval03_keyframes.tgz",
+        "url": "https://motional-nuscenes.s3.amazonaws.com/public/v1.0/v1.0-trainval03_keyframes.tgz",
+        "size_bytes": 4249901872,
+        "etag": "\"87e3993f9e2bfec2c8a5ee90939517af-507\"",
+        "observed_sha256": null
+      },
+      {
+        "name": "v1.0-trainval04_keyframes.tgz",
+        "url": "https://motional-nuscenes.s3.amazonaws.com/public/v1.0/v1.0-trainval04_keyframes.tgz",
+        "size_bytes": 4562843980,
+        "etag": "\"e17b78cf069d759526d5b468d4c2e35e-544\"",
+        "observed_sha256": null
+      },
+      {
+        "name": "v1.0-trainval05_keyframes.tgz",
+        "url": "https://motional-nuscenes.s3.amazonaws.com/public/v1.0/v1.0-trainval05_keyframes.tgz",
+        "size_bytes": 3957488692,
+        "etag": "\"000e9d84159b01b86ade6f4a1f4b9093-472\"",
+        "observed_sha256": null
+      },
+      {
+        "name": "v1.0-trainval06_keyframes.tgz",
+        "url": "https://motional-nuscenes.s3.amazonaws.com/public/v1.0/v1.0-trainval06_keyframes.tgz",
+        "size_bytes": 3856821591,
+        "etag": "\"85ac1d7e9c58a9ef6ca589e2ffb8b0d0-460\"",
+        "observed_sha256": null
+      },
+      {
+        "name": "v1.0-trainval07_keyframes.tgz",
+        "url": "https://motional-nuscenes.s3.amazonaws.com/public/v1.0/v1.0-trainval07_keyframes.tgz",
+        "size_bytes": 4177675764,
+        "etag": "\"9c3a8f5460768ce0cb14d7e3b6c84b92-499\"",
+        "observed_sha256": null
+      },
+      {
+        "name": "v1.0-trainval08_keyframes.tgz",
+        "url": "https://motional-nuscenes.s3.amazonaws.com/public/v1.0/v1.0-trainval08_keyframes.tgz",
+        "size_bytes": 4282633755,
+        "etag": "\"272ba6e37b421ea8c98e829fcd841003-511\"",
+        "observed_sha256": null
+      },
+      {
+        "name": "v1.0-trainval09_keyframes.tgz",
+        "url": "https://motional-nuscenes.s3.amazonaws.com/public/v1.0/v1.0-trainval09_keyframes.tgz",
+        "size_bytes": 4814177310,
+        "etag": "\"fc9cf39a828dd65d4c108a688b1cf0ec-574\"",
+        "observed_sha256": null
+      },
+      {
+        "name": "v1.0-trainval10_keyframes.tgz",
+        "url": "https://motional-nuscenes.s3.amazonaws.com/public/v1.0/v1.0-trainval10_keyframes.tgz",
+        "size_bytes": 6198448085,
+        "etag": "\"95c7e9f3343227e69841054c0fc29553-739\"",
+        "observed_sha256": null
+      }
+    ],
+    "full": [
+      {
+        "name": "v1.0-trainval01_blobs.tgz",
+        "url": "https://motional-nuscenes.s3.amazonaws.com/public/v1.0/v1.0-trainval01_blobs.tgz",
+        "size_bytes": 31579122687,
+        "etag": "\"460d969fa1d5f02a9cff49b3cefd82b7-3765\"",
+        "observed_sha256": null
+      },
+      {
+        "name": "v1.0-trainval02_blobs.tgz",
+        "url": "https://motional-nuscenes.s3.amazonaws.com/public/v1.0/v1.0-trainval02_blobs.tgz",
+        "size_bytes": 30134721083,
+        "etag": "\"e9e5da8d76ecf45d5a7ffdb8fafab7fa-3593\"",
+        "observed_sha256": null
+      },
+      {
+        "name": "v1.0-trainval03_blobs.tgz",
+        "url": "https://motional-nuscenes.s3.amazonaws.com/public/v1.0/v1.0-trainval03_blobs.tgz",
+        "size_bytes": 29872679856,
+        "etag": "\"b1881d0bb7904d0138102712255a7bd1-3562\"",
+        "observed_sha256": null
+      },
+      {
+        "name": "v1.0-trainval04_blobs.tgz",
+        "url": "https://motional-nuscenes.s3.amazonaws.com/public/v1.0/v1.0-trainval04_blobs.tgz",
+        "size_bytes": 32075538096,
+        "etag": "\"e2dcac0ad0c3e522404e7c7b6375a04e-3824\"",
+        "observed_sha256": null
+      },
+      {
+        "name": "v1.0-trainval05_blobs.tgz",
+        "url": "https://motional-nuscenes.s3.amazonaws.com/public/v1.0/v1.0-trainval05_blobs.tgz",
+        "size_bytes": 28191611840,
+        "etag": "\"5ce92eef109e550606c998e1cd00ea41-3361\"",
+        "observed_sha256": null
+      },
+      {
+        "name": "v1.0-trainval06_blobs.tgz",
+        "url": "https://motional-nuscenes.s3.amazonaws.com/public/v1.0/v1.0-trainval06_blobs.tgz",
+        "size_bytes": 27516468993,
+        "etag": "\"5b049631b716137baeaf21b2375558a1-3281\"",
+        "observed_sha256": null
+      },
+      {
+        "name": "v1.0-trainval07_blobs.tgz",
+        "url": "https://motional-nuscenes.s3.amazonaws.com/public/v1.0/v1.0-trainval07_blobs.tgz",
+        "size_bytes": 29534216608,
+        "etag": "\"6e4445ae1a8c60f34f6060f1c7517dd1-3521\"",
+        "observed_sha256": null
+      },
+      {
+        "name": "v1.0-trainval08_blobs.tgz",
+        "url": "https://motional-nuscenes.s3.amazonaws.com/public/v1.0/v1.0-trainval08_blobs.tgz",
+        "size_bytes": 30275496199,
+        "etag": "\"4ba0a26e764d04d3dd663a305d6c577c-3610\"",
+        "observed_sha256": null
+      },
+      {
+        "name": "v1.0-trainval09_blobs.tgz",
+        "url": "https://motional-nuscenes.s3.amazonaws.com/public/v1.0/v1.0-trainval09_blobs.tgz",
+        "size_bytes": 33517622306,
+        "etag": "\"e7a21318e300774d8b88b347f5664bca-3996\"",
+        "observed_sha256": null
+      },
+      {
+        "name": "v1.0-trainval10_blobs.tgz",
+        "url": "https://motional-nuscenes.s3.amazonaws.com/public/v1.0/v1.0-trainval10_blobs.tgz",
+        "size_bytes": 41727447974,
+        "etag": "\"daa462d2ef4351d40400feb9d203c445-4975\"",
+        "observed_sha256": null
+      }
+    ]
+  },
+  "common_archives": [
+    {
+      "name": "v1.0-trainval_meta.tgz",
+      "url": "https://d36yt3mvayqw5m.cloudfront.net/public/v1.0/v1.0-trainval_meta.tgz",
+      "size_bytes": 461678030,
+      "etag": "\"fd4ea76d8701fb567a67a65025d0b022-56\"",
+      "observed_sha256": "db48746b10e3544d5ef619eaa3d687e3960626fe1b4422ed856711da5aa7325b"
+    },
+    {
+      "name": "nuScenes-lidarseg-all-v1.0.tar.bz2",
+      "url": "https://d36yt3mvayqw5m.cloudfront.net/public/nuscenes-lidarseg-v1.0/nuScenes-lidarseg-all-v1.0.tar.bz2",
+      "size_bytes": 162788682,
+      "etag": "\"1ee24ded75c5ac54b78c41b4826125fc-20\"",
+      "observed_sha256": "0b6483af5cbe404688017f885f42c0aa13914763451392f5861f4a52759967f8"
+    }
+  ],
+  "integrity_policy": "Pin HTTPS object length and observed ETag; validate resumed chunk SHA256, final download/read-back SHA256 and gzip/bzip2 CRC. SHA256 values here are independently observed in earlier local preparation, not publisher-signed checksums. Multipart ETags are object identities, not plain file MD5.",
+  "download_scope": "Archives only. No extraction, model inference, training, split reassignment, old-data deletion, or iPhone modification.",
+  "accuracy_threshold_m": null,
+  "training_authorized": false
+}
