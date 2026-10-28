@@ -1,0 +1,3556 @@
+{
+  "fresh_test_claim": "An uninspected-log slice is a planning aid, not proof of absence from pretrained-model data or a completed blind benchmark.",
+  "manifest_sha256": "01cd83e1a57fc246ea83c34ba64c7563d01fa8ea19cbe3aff09b6299c9a027fe",
+  "metadata_table_sha256": {
+    "calibrated_sensor": "67781a5dd7b2504b046ef89d6dcb267b12d1cc91af21f1ec5758624588e99865",
+    "category": "30f64fb175e5bd7db99892d90f9034481bca491f26600c5c0d1a56106b198dfe",
+    "ego_pose": "be12bd501f694b344628ba0680a37d6e1ec83e62b37f310c205c1dbe41cd09ff",
+    "instance": "8f8b19496ce45353874714ce23a9df7f47f48cb6203df2dd456ea0247d146461",
+    "sample": "6035ac58b6e971622be2bb1be15b917e7cb4e05ae984d6b339c27c1699c4ad9d",
+    "sample_annotation": "1f4f3835cb86f4efe49ccad3ae6f5f6a2d068422696de564c5892b5b06bea2a9",
+    "sample_data": "6dcad49f0b9bd7b1cef04e2a0ff2ac2879b46b938e8d48153f00693cebb4de21",
+    "scene": "bdc3211bfbfda652d5e9dab73c45c7132925ca84f869bf45e8e14edeafb1d20b",
+    "sensor": "4d5c96570e2d8b09b88ce4c605e40ee43c4909f97bea5741185f18f92eb491ae"
+  },
+  "policy": "Preserve the original recording-log-disjoint acquisition assignments, including exclusion of previously used Mini logs. Auditing excluded scenes never authorizes training on them.",
+  "previously_inspected_evaluation_camera_tokens": [
+    "05db9d81e1134b25b9a9ce60c070a777",
+    "06c030085765402d9c541c47c7c6ad05",
+    "07dfb5f1f4e3495aa36b7142ac9d49ea",
+    "0b689320d1b44af9b0cc0d9c15b93f62",
+    "0dbb376028ed42ccae43c9a1c8e3aed1",
+    "0ecacb011ee041648edb219d2f975942",
+    "10cae05e3b914d9db3e8d19abd7ccfe1",
+    "153277b2bb82446a852ba1936407328a",
+    "157d6f8f31ee4de6ae7a340dd29550b4",
+    "15dc817df7e34de1a8196b57a2ff33be",
+    "15fa53f8b2c546ad813638afe95a18e1",
+    "162ec3e7791947ca9690b427107cff9a",
+    "199ed610a7ee42f9a63bc7f6f8edf6cf",
+    "1b16796f295541e48574446d90938a51",
+    "2117169ef43145a2bcab56ebdedf422e",
+    "2227701f02b646d0b003417a2db18324",
+    "2392538f2b974de0a249c9ce0fe2b5cc",
+    "253edf751c8147538f602439f32f455d",
+    "2668e32679914336a6922955ca70da49",
+    "2685459dcfff426cb6c49efb346488f3",
+    "2946bbd4e7a343c0bc266e033f15b7d8",
+    "29a056b327944656a4af478219ec7454",
+    "29e05df36daa4b88b5659831194f0c10",
+    "2c16e08d877c4ea2b43f67a9c0921778",
+    "2da88d2699de46ea87b3a968a85a9596",
+    "30cf215d63a14078bc53b2f3715831a5",
+    "33b2d74b8cbf4fbb99a7e85f37c6b039",
+    "37791f50ea80424a863209576e9b2587",
+    "3816f9e51431437abe24ca550b5818b7",
+    "38c93b12822b44b1a88d332f0f7d99a5",
+    "3a3dbfc220954b5191933da5b2ad1536",
+    "4254faa6af774c52a6dd46ef2dc4a622",
+    "442d559f9d2748e993d0c535cb94033b",
+    "448f92716e414bc38ceddba607f247dc",
+    "47e0e0a309384037852b671de49be2ae",
+    "488274309143421495e2bf0f8daf9818",
+    "489dbbacdb584ca68b23d54cec64ab50",
+    "496aa954da184277b31e14491861306f",
+    "49997e9d74d24be58d4f6b03be101a91",
+    "4a90d48d403045f88e5b91b923c3ecc5",
+    "5167a8ebf20b4a1eb3d8e132e53cbdbf",
+    "5334ebd07e324662a87498289d805afe",
+    "550b01c4e94641d7b21ef4daf7343b8e",
+    "5674e32d90724644af39d3fecb04f80d",
+    "5b111a7fa9f9434d812dfc2777fa543a",
+    "5b24a71cfee3422c86211b2167a52270",
+    "5c0a4c14bcc844ea99f12b205d7d5c9d",
+    "661661c0a9ab476bbbf20b957c9b445d",
+    "66a97acfae274197a61700fb665563af",
+    "67fdbf6a78a64731ac90045388ba8445",
+    "68aeea10cefc4ccbadcb312d9f9c6f71",
+    "68dcb793135246d7a2a70425d44e216f",
+    "6a8753bf7ae249859f926132fcab8652",
+    "6cc5eea73d4d457eab29fc2c43fd4695",
+    "6db5cabec0054eab9583bf86c7040f67",
+    "7e743a1598a642ef8c8b9c28f3112a2f",
+    "802976e2b29a4da6be36f96f0f43888c",
+    "80fd8cea637642e3adf79ac2d108f60b",
+    "875a59e7e22a4b5fb599d3d20e3a07ab",
+    "8813c2155f1d42d2ada18d8f0d2e1dcc",
+    "882fc7e8d15749e7ab5b1f6ad35bf23d",
+    "899f82b5249d485da0ea11b7f471253f",
+    "8b8104959909406f8737c5712eb7e190",
+    "8bd7b238dce74dd6aa3edfde287562b6",
+    "8dd9ced105f246df9fe672b3ae779aca",
+    "8fd2b0a9d9654a7fa9a431c498e1284f",
+    "90317d1bf9704b76b07a17cd6bc820a5",
+    "91402d1ce6d6459b8c9d7d04fc71755f",
+    "92c54ab3ba264a4fb652b3bd2e79201d",
+    "94a57c9463cd44cfaebb291d54e88af5",
+    "95727add54214bafb1ba76e3c810e9df",
+    "9590ba0cc620432586e14456a6ec5a9e",
+    "95a5fa5b84aa48cd9a1ed1fd9437ac7e",
+    "981a068a40454afbbf825f54bac24f61",
+    "9958870a2347469c8ecbcf2f7e00f9c9",
+    "9b2a856833904740921b1df9968bdeda",
+    "9dc1a57bbafe4b11b1564683c702bc97",
+    "9f9ccd3afd964164a482c2e373a8e0dc",
+    "a27f3c28e4534d1381ba0b9191287a76",
+    "a3871b2c05f34d17ac3a5dde9baca750",
+    "a5a5866661124284ad4a57f15503566d",
+    "a6da125db7c144e48977313d05e6d95f",
+    "a709e3ee3333422bbafad11486e98ca9",
+    "a72a5c957d3c4446a19b266259b41d4d",
+    "a7d1751848884c719f7b802a19275e22",
+    "a804832aeb20478aa0c88dc2383f8e0f",
+    "a9bd787a4c854477bb79ddb3b5aa41c0",
+    "aa2ea02b20f84a4fa8dd73e20e7b6349",
+    "abd702350a16466d8f29056d33d26e5e",
+    "af20e398b0534887b5296b91d5399bab",
+    "b094ac80639e4a30bb5ebf528007fb96",
+    "b0e41a2f737c479aa737a230a47a2f90",
+    "b2e830a051964a22b8c71b53c14bd83e",
+    "b346d54a29bc473d94cbbde88d816bd3",
+    "b3d0bb5145544e50a71604b60275ae40",
+    "b457850ddeb24a33a1e65dde9b270296",
+    "b7a39454e9a1429e909e495e1ef9bdfe",
+    "b8fba7d78cf547b996c431dec1f5ee26",
+    "b9ebf624e62c4962a1d0c21a5c7465fc",
+    "bad97a995d1343a5904ec70b9e597a93",
+    "bd73bde5df4c4ea685ca1c7ebe72b68d",
+    "bd8a5159fb10465d8dd290c17c47ae5a",
+    "be5641c2e56a49b0a60e266a3a99b398",
+    "bf812cc1a5f84afabd55311e993169f6",
+    "c251019064274deaa871143e8e1ece37",
+    "c3252670a8a64fc0a840b93b817bc2a8",
+    "cc8a1bb1fcbc4044ba7900c103fb30bb",
+    "cf9d7308dcc640c8a459a0c42374d507",
+    "d00ac147283b4c07aa7d1e65836492a2",
+    "d4a7014a2f8e437fb111b736a3a3d65f",
+    "d84c2719f51e428c9be259be9f66be6d",
+    "dcd44761acdc4381890416d1334c6a9a",
+    "ddc4841dcda141bdba4995dc9665e46e",
+    "df629a2a0afd4e6d91db37fe753544ff",
+    "e44bdb8966b645d5b79a843aa877e1f2",
+    "e776b3dea3c14702bc6d42161c28f50c",
+    "e942aaa5d4b641ceb2b7a99548e0bde9",
+    "eaa95e7de3194b5794b4a45c118cab50",
+    "ecbb497900054f539355192ee419d03d",
+    "ef599487b3254d4eb90e0213e42b0453",
+    "f148aab9444b4c38ac27c06011f5ddd6",
+    "f14e5a13dae3404296feaa74637b0c7c",
+    "f305e60aa73c43dbb54ccc814181b792",
+    "f30ea094ebcc4eddab234d87e31f0f03",
+    "f492296f57c84229b76265684b213aa6",
+    "f9bcac2f3dce437685c99fd8a56b7abb",
+    "fa4b2ef6e5eb479981c5b60e12695854",
+    "fe79d79fde7546f89e6917a9d70786e2"
+  ],
+  "previously_inspected_evaluation_logs": [
+    "783683d957054175bda1b326453a13f4",
+    "92af2609d31445e5a71b2d895376fed6",
+    "d31dc715d1c34b99bd5afb0e3aea26ed"
+  ],
+  "revision": "NUSCENES-PARKING-FROZEN-ROLES-2026-10-28-r1",
+  "scenes": {
+    "scene-0001": {
+      "log_token": "6b6513e6c8384cec88775cae30b78c0e",
+      "role": "dev"
+    },
+    "scene-0002": {
+      "log_token": "6b6513e6c8384cec88775cae30b78c0e",
+      "role": "dev"
+    },
+    "scene-0003": {
+      "log_token": "92af2609d31445e5a71b2d895376fed6",
+      "role": "heldout_eval"
+    },
+    "scene-0004": {
+      "log_token": "47620afea3c443f6a761e885273cb531",
+      "role": "train"
+    },
+    "scene-0005": {
+      "log_token": "47620afea3c443f6a761e885273cb531",
+      "role": "train"
+    },
+    "scene-0006": {
+      "log_token": "47620afea3c443f6a761e885273cb531",
+      "role": "train"
+    },
+    "scene-0007": {
+      "log_token": "47620afea3c443f6a761e885273cb531",
+      "role": "train"
+    },
+    "scene-0008": {
+      "log_token": "47620afea3c443f6a761e885273cb531",
+      "role": "train"
+    },
+    "scene-0009": {
+      "log_token": "47620afea3c443f6a761e885273cb531",
+      "role": "train"
+    },
+    "scene-0010": {
+      "log_token": "47620afea3c443f6a761e885273cb531",
+      "role": "train"
+    },
+    "scene-0011": {
+      "log_token": "47620afea3c443f6a761e885273cb531",
+      "role": "train"
+    },
+    "scene-0012": {
+      "log_token": "d31dc715d1c34b99bd5afb0e3aea26ed",
+      "role": "heldout_eval"
+    },
+    "scene-0013": {
+      "log_token": "d31dc715d1c34b99bd5afb0e3aea26ed",
+      "role": "heldout_eval"
+    },
+    "scene-0014": {
+      "log_token": "d31dc715d1c34b99bd5afb0e3aea26ed",
+      "role": "heldout_eval"
+    },
+    "scene-0015": {
+      "log_token": "d31dc715d1c34b99bd5afb0e3aea26ed",
+      "role": "heldout_eval"
+    },
+    "scene-0016": {
+      "log_token": "d31dc715d1c34b99bd5afb0e3aea26ed",
+      "role": "heldout_eval"
+    },
+    "scene-0017": {
+      "log_token": "d31dc715d1c34b99bd5afb0e3aea26ed",
+      "role": "heldout_eval"
+    },
+    "scene-0018": {
+      "log_token": "d31dc715d1c34b99bd5afb0e3aea26ed",
+      "role": "heldout_eval"
+    },
+    "scene-0019": {
+      "log_token": "bc41a49366734ebf978d6a71981537dc",
+      "role": "train"
+    },
+    "scene-0020": {
+      "log_token": "bc41a49366734ebf978d6a71981537dc",
+      "role": "train"
+    },
+    "scene-0021": {
+      "log_token": "bc41a49366734ebf978d6a71981537dc",
+      "role": "train"
+    },
+    "scene-0022": {
+      "log_token": "bc41a49366734ebf978d6a71981537dc",
+      "role": "train"
+    },
+    "scene-0023": {
+      "log_token": "bc41a49366734ebf978d6a71981537dc",
+      "role": "train"
+    },
+    "scene-0024": {
+      "log_token": "bc41a49366734ebf978d6a71981537dc",
+      "role": "train"
+    },
+    "scene-0025": {
+      "log_token": "bc41a49366734ebf978d6a71981537dc",
+      "role": "train"
+    },
+    "scene-0026": {
+      "log_token": "bc41a49366734ebf978d6a71981537dc",
+      "role": "train"
+    },
+    "scene-0027": {
+      "log_token": "bc41a49366734ebf978d6a71981537dc",
+      "role": "train"
+    },
+    "scene-0028": {
+      "log_token": "bc41a49366734ebf978d6a71981537dc",
+      "role": "train"
+    },
+    "scene-0029": {
+      "log_token": "bc41a49366734ebf978d6a71981537dc",
+      "role": "train"
+    },
+    "scene-0030": {
+      "log_token": "bc41a49366734ebf978d6a71981537dc",
+      "role": "train"
+    },
+    "scene-0031": {
+      "log_token": "bc41a49366734ebf978d6a71981537dc",
+      "role": "train"
+    },
+    "scene-0032": {
+      "log_token": "bc41a49366734ebf978d6a71981537dc",
+      "role": "train"
+    },
+    "scene-0033": {
+      "log_token": "bc41a49366734ebf978d6a71981537dc",
+      "role": "train"
+    },
+    "scene-0034": {
+      "log_token": "bc41a49366734ebf978d6a71981537dc",
+      "role": "train"
+    },
+    "scene-0035": {
+      "log_token": "783683d957054175bda1b326453a13f4",
+      "role": "heldout_eval"
+    },
+    "scene-0036": {
+      "log_token": "783683d957054175bda1b326453a13f4",
+      "role": "heldout_eval"
+    },
+    "scene-0038": {
+      "log_token": "783683d957054175bda1b326453a13f4",
+      "role": "heldout_eval"
+    },
+    "scene-0039": {
+      "log_token": "783683d957054175bda1b326453a13f4",
+      "role": "heldout_eval"
+    },
+    "scene-0041": {
+      "log_token": "d7fd2bb9696d43af901326664e42340b",
+      "role": "train"
+    },
+    "scene-0042": {
+      "log_token": "d7fd2bb9696d43af901326664e42340b",
+      "role": "train"
+    },
+    "scene-0043": {
+      "log_token": "d7fd2bb9696d43af901326664e42340b",
+      "role": "train"
+    },
+    "scene-0044": {
+      "log_token": "d7fd2bb9696d43af901326664e42340b",
+      "role": "train"
+    },
+    "scene-0045": {
+      "log_token": "f38ef5a1e9c941aabb2155768670b92a",
+      "role": "train"
+    },
+    "scene-0046": {
+      "log_token": "f38ef5a1e9c941aabb2155768670b92a",
+      "role": "train"
+    },
+    "scene-0047": {
+      "log_token": "f38ef5a1e9c941aabb2155768670b92a",
+      "role": "train"
+    },
+    "scene-0048": {
+      "log_token": "f38ef5a1e9c941aabb2155768670b92a",
+      "role": "train"
+    },
+    "scene-0049": {
+      "log_token": "f38ef5a1e9c941aabb2155768670b92a",
+      "role": "train"
+    },
+    "scene-0050": {
+      "log_token": "f38ef5a1e9c941aabb2155768670b92a",
+      "role": "train"
+    },
+    "scene-0051": {
+      "log_token": "f38ef5a1e9c941aabb2155768670b92a",
+      "role": "train"
+    },
+    "scene-0052": {
+      "log_token": "f38ef5a1e9c941aabb2155768670b92a",
+      "role": "train"
+    },
+    "scene-0053": {
+      "log_token": "f38ef5a1e9c941aabb2155768670b92a",
+      "role": "train"
+    },
+    "scene-0054": {
+      "log_token": "f38ef5a1e9c941aabb2155768670b92a",
+      "role": "train"
+    },
+    "scene-0055": {
+      "log_token": "7e25a2c8ea1f41c5b0da1e69ecfa71a2",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0056": {
+      "log_token": "7e25a2c8ea1f41c5b0da1e69ecfa71a2",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0057": {
+      "log_token": "7e25a2c8ea1f41c5b0da1e69ecfa71a2",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0058": {
+      "log_token": "7e25a2c8ea1f41c5b0da1e69ecfa71a2",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0059": {
+      "log_token": "7e25a2c8ea1f41c5b0da1e69ecfa71a2",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0060": {
+      "log_token": "7e25a2c8ea1f41c5b0da1e69ecfa71a2",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0061": {
+      "log_token": "7e25a2c8ea1f41c5b0da1e69ecfa71a2",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0062": {
+      "log_token": "7a0fde44c3504eaeb18f9ad83bed65bc",
+      "role": "train"
+    },
+    "scene-0063": {
+      "log_token": "7a0fde44c3504eaeb18f9ad83bed65bc",
+      "role": "train"
+    },
+    "scene-0064": {
+      "log_token": "7a0fde44c3504eaeb18f9ad83bed65bc",
+      "role": "train"
+    },
+    "scene-0065": {
+      "log_token": "7a0fde44c3504eaeb18f9ad83bed65bc",
+      "role": "train"
+    },
+    "scene-0066": {
+      "log_token": "7a0fde44c3504eaeb18f9ad83bed65bc",
+      "role": "train"
+    },
+    "scene-0067": {
+      "log_token": "7a0fde44c3504eaeb18f9ad83bed65bc",
+      "role": "train"
+    },
+    "scene-0068": {
+      "log_token": "7a0fde44c3504eaeb18f9ad83bed65bc",
+      "role": "train"
+    },
+    "scene-0069": {
+      "log_token": "7a0fde44c3504eaeb18f9ad83bed65bc",
+      "role": "train"
+    },
+    "scene-0070": {
+      "log_token": "7a0fde44c3504eaeb18f9ad83bed65bc",
+      "role": "train"
+    },
+    "scene-0071": {
+      "log_token": "7a0fde44c3504eaeb18f9ad83bed65bc",
+      "role": "train"
+    },
+    "scene-0072": {
+      "log_token": "7a0fde44c3504eaeb18f9ad83bed65bc",
+      "role": "train"
+    },
+    "scene-0073": {
+      "log_token": "7a0fde44c3504eaeb18f9ad83bed65bc",
+      "role": "train"
+    },
+    "scene-0074": {
+      "log_token": "7a0fde44c3504eaeb18f9ad83bed65bc",
+      "role": "train"
+    },
+    "scene-0075": {
+      "log_token": "7a0fde44c3504eaeb18f9ad83bed65bc",
+      "role": "train"
+    },
+    "scene-0076": {
+      "log_token": "7a0fde44c3504eaeb18f9ad83bed65bc",
+      "role": "train"
+    },
+    "scene-0092": {
+      "log_token": "53cf9c55dd8644bea67b9f009fc1ee38",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0093": {
+      "log_token": "53cf9c55dd8644bea67b9f009fc1ee38",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0094": {
+      "log_token": "53cf9c55dd8644bea67b9f009fc1ee38",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0095": {
+      "log_token": "53cf9c55dd8644bea67b9f009fc1ee38",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0096": {
+      "log_token": "53cf9c55dd8644bea67b9f009fc1ee38",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0097": {
+      "log_token": "53cf9c55dd8644bea67b9f009fc1ee38",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0098": {
+      "log_token": "53cf9c55dd8644bea67b9f009fc1ee38",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0099": {
+      "log_token": "53cf9c55dd8644bea67b9f009fc1ee38",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0100": {
+      "log_token": "53cf9c55dd8644bea67b9f009fc1ee38",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0101": {
+      "log_token": "53cf9c55dd8644bea67b9f009fc1ee38",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0102": {
+      "log_token": "53cf9c55dd8644bea67b9f009fc1ee38",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0103": {
+      "log_token": "53cf9c55dd8644bea67b9f009fc1ee38",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0104": {
+      "log_token": "53cf9c55dd8644bea67b9f009fc1ee38",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0105": {
+      "log_token": "53cf9c55dd8644bea67b9f009fc1ee38",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0106": {
+      "log_token": "53cf9c55dd8644bea67b9f009fc1ee38",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0107": {
+      "log_token": "53cf9c55dd8644bea67b9f009fc1ee38",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0108": {
+      "log_token": "53cf9c55dd8644bea67b9f009fc1ee38",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0109": {
+      "log_token": "53cf9c55dd8644bea67b9f009fc1ee38",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0110": {
+      "log_token": "53cf9c55dd8644bea67b9f009fc1ee38",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0120": {
+      "log_token": "34d0574ea8f340179c82162c6ac069bc",
+      "role": "train"
+    },
+    "scene-0121": {
+      "log_token": "34d0574ea8f340179c82162c6ac069bc",
+      "role": "train"
+    },
+    "scene-0122": {
+      "log_token": "34d0574ea8f340179c82162c6ac069bc",
+      "role": "train"
+    },
+    "scene-0123": {
+      "log_token": "34d0574ea8f340179c82162c6ac069bc",
+      "role": "train"
+    },
+    "scene-0124": {
+      "log_token": "34d0574ea8f340179c82162c6ac069bc",
+      "role": "train"
+    },
+    "scene-0125": {
+      "log_token": "34d0574ea8f340179c82162c6ac069bc",
+      "role": "train"
+    },
+    "scene-0126": {
+      "log_token": "34d0574ea8f340179c82162c6ac069bc",
+      "role": "train"
+    },
+    "scene-0127": {
+      "log_token": "34d0574ea8f340179c82162c6ac069bc",
+      "role": "train"
+    },
+    "scene-0128": {
+      "log_token": "34d0574ea8f340179c82162c6ac069bc",
+      "role": "train"
+    },
+    "scene-0129": {
+      "log_token": "34d0574ea8f340179c82162c6ac069bc",
+      "role": "train"
+    },
+    "scene-0130": {
+      "log_token": "343d984344e440c7952d1e403b572b2a",
+      "role": "train"
+    },
+    "scene-0131": {
+      "log_token": "343d984344e440c7952d1e403b572b2a",
+      "role": "train"
+    },
+    "scene-0132": {
+      "log_token": "343d984344e440c7952d1e403b572b2a",
+      "role": "train"
+    },
+    "scene-0133": {
+      "log_token": "343d984344e440c7952d1e403b572b2a",
+      "role": "train"
+    },
+    "scene-0134": {
+      "log_token": "343d984344e440c7952d1e403b572b2a",
+      "role": "train"
+    },
+    "scene-0135": {
+      "log_token": "343d984344e440c7952d1e403b572b2a",
+      "role": "train"
+    },
+    "scene-0138": {
+      "log_token": "343d984344e440c7952d1e403b572b2a",
+      "role": "train"
+    },
+    "scene-0139": {
+      "log_token": "343d984344e440c7952d1e403b572b2a",
+      "role": "train"
+    },
+    "scene-0149": {
+      "log_token": "da04ae0b72024818a6219d8dd138ea4b",
+      "role": "train"
+    },
+    "scene-0150": {
+      "log_token": "da04ae0b72024818a6219d8dd138ea4b",
+      "role": "train"
+    },
+    "scene-0151": {
+      "log_token": "da04ae0b72024818a6219d8dd138ea4b",
+      "role": "train"
+    },
+    "scene-0152": {
+      "log_token": "da04ae0b72024818a6219d8dd138ea4b",
+      "role": "train"
+    },
+    "scene-0154": {
+      "log_token": "da04ae0b72024818a6219d8dd138ea4b",
+      "role": "train"
+    },
+    "scene-0155": {
+      "log_token": "d0450edaed4a46f898403f45fa9e5f0d",
+      "role": "train"
+    },
+    "scene-0157": {
+      "log_token": "d0450edaed4a46f898403f45fa9e5f0d",
+      "role": "train"
+    },
+    "scene-0158": {
+      "log_token": "d0450edaed4a46f898403f45fa9e5f0d",
+      "role": "train"
+    },
+    "scene-0159": {
+      "log_token": "d0450edaed4a46f898403f45fa9e5f0d",
+      "role": "train"
+    },
+    "scene-0160": {
+      "log_token": "d0450edaed4a46f898403f45fa9e5f0d",
+      "role": "train"
+    },
+    "scene-0161": {
+      "log_token": "b05f285d53744542a3413476d6dd9270",
+      "role": "train"
+    },
+    "scene-0162": {
+      "log_token": "b05f285d53744542a3413476d6dd9270",
+      "role": "train"
+    },
+    "scene-0163": {
+      "log_token": "b05f285d53744542a3413476d6dd9270",
+      "role": "train"
+    },
+    "scene-0164": {
+      "log_token": "b05f285d53744542a3413476d6dd9270",
+      "role": "train"
+    },
+    "scene-0165": {
+      "log_token": "b05f285d53744542a3413476d6dd9270",
+      "role": "train"
+    },
+    "scene-0166": {
+      "log_token": "b05f285d53744542a3413476d6dd9270",
+      "role": "train"
+    },
+    "scene-0167": {
+      "log_token": "b05f285d53744542a3413476d6dd9270",
+      "role": "train"
+    },
+    "scene-0168": {
+      "log_token": "b05f285d53744542a3413476d6dd9270",
+      "role": "train"
+    },
+    "scene-0170": {
+      "log_token": "b05f285d53744542a3413476d6dd9270",
+      "role": "train"
+    },
+    "scene-0171": {
+      "log_token": "b05f285d53744542a3413476d6dd9270",
+      "role": "train"
+    },
+    "scene-0172": {
+      "log_token": "b05f285d53744542a3413476d6dd9270",
+      "role": "train"
+    },
+    "scene-0173": {
+      "log_token": "b05f285d53744542a3413476d6dd9270",
+      "role": "train"
+    },
+    "scene-0174": {
+      "log_token": "b05f285d53744542a3413476d6dd9270",
+      "role": "train"
+    },
+    "scene-0175": {
+      "log_token": "b05f285d53744542a3413476d6dd9270",
+      "role": "train"
+    },
+    "scene-0176": {
+      "log_token": "b05f285d53744542a3413476d6dd9270",
+      "role": "train"
+    },
+    "scene-0177": {
+      "log_token": "6f5b61bfb298454eb6fe7ba279792815",
+      "role": "dev"
+    },
+    "scene-0178": {
+      "log_token": "6f5b61bfb298454eb6fe7ba279792815",
+      "role": "dev"
+    },
+    "scene-0179": {
+      "log_token": "6f5b61bfb298454eb6fe7ba279792815",
+      "role": "dev"
+    },
+    "scene-0180": {
+      "log_token": "6f5b61bfb298454eb6fe7ba279792815",
+      "role": "dev"
+    },
+    "scene-0181": {
+      "log_token": "6f5b61bfb298454eb6fe7ba279792815",
+      "role": "dev"
+    },
+    "scene-0182": {
+      "log_token": "6f5b61bfb298454eb6fe7ba279792815",
+      "role": "dev"
+    },
+    "scene-0183": {
+      "log_token": "6f5b61bfb298454eb6fe7ba279792815",
+      "role": "dev"
+    },
+    "scene-0184": {
+      "log_token": "6f5b61bfb298454eb6fe7ba279792815",
+      "role": "dev"
+    },
+    "scene-0185": {
+      "log_token": "6f5b61bfb298454eb6fe7ba279792815",
+      "role": "dev"
+    },
+    "scene-0187": {
+      "log_token": "6f5b61bfb298454eb6fe7ba279792815",
+      "role": "dev"
+    },
+    "scene-0188": {
+      "log_token": "6f5b61bfb298454eb6fe7ba279792815",
+      "role": "dev"
+    },
+    "scene-0190": {
+      "log_token": "b5622d4dcb0d4549b813b3ffb96fbdc9",
+      "role": "train"
+    },
+    "scene-0191": {
+      "log_token": "b5622d4dcb0d4549b813b3ffb96fbdc9",
+      "role": "train"
+    },
+    "scene-0192": {
+      "log_token": "b5622d4dcb0d4549b813b3ffb96fbdc9",
+      "role": "train"
+    },
+    "scene-0193": {
+      "log_token": "b5622d4dcb0d4549b813b3ffb96fbdc9",
+      "role": "train"
+    },
+    "scene-0194": {
+      "log_token": "b5622d4dcb0d4549b813b3ffb96fbdc9",
+      "role": "train"
+    },
+    "scene-0195": {
+      "log_token": "b5622d4dcb0d4549b813b3ffb96fbdc9",
+      "role": "train"
+    },
+    "scene-0196": {
+      "log_token": "b5622d4dcb0d4549b813b3ffb96fbdc9",
+      "role": "train"
+    },
+    "scene-0199": {
+      "log_token": "ab1e1b004548466f86b31f879a2d9e50",
+      "role": "train"
+    },
+    "scene-0200": {
+      "log_token": "ab1e1b004548466f86b31f879a2d9e50",
+      "role": "train"
+    },
+    "scene-0202": {
+      "log_token": "ab1e1b004548466f86b31f879a2d9e50",
+      "role": "train"
+    },
+    "scene-0203": {
+      "log_token": "ab1e1b004548466f86b31f879a2d9e50",
+      "role": "train"
+    },
+    "scene-0204": {
+      "log_token": "ab1e1b004548466f86b31f879a2d9e50",
+      "role": "train"
+    },
+    "scene-0206": {
+      "log_token": "ab1e1b004548466f86b31f879a2d9e50",
+      "role": "train"
+    },
+    "scene-0207": {
+      "log_token": "ab1e1b004548466f86b31f879a2d9e50",
+      "role": "train"
+    },
+    "scene-0208": {
+      "log_token": "ab1e1b004548466f86b31f879a2d9e50",
+      "role": "train"
+    },
+    "scene-0209": {
+      "log_token": "ab1e1b004548466f86b31f879a2d9e50",
+      "role": "train"
+    },
+    "scene-0210": {
+      "log_token": "ab1e1b004548466f86b31f879a2d9e50",
+      "role": "train"
+    },
+    "scene-0211": {
+      "log_token": "ab1e1b004548466f86b31f879a2d9e50",
+      "role": "train"
+    },
+    "scene-0212": {
+      "log_token": "ab1e1b004548466f86b31f879a2d9e50",
+      "role": "train"
+    },
+    "scene-0213": {
+      "log_token": "ab1e1b004548466f86b31f879a2d9e50",
+      "role": "train"
+    },
+    "scene-0214": {
+      "log_token": "ab1e1b004548466f86b31f879a2d9e50",
+      "role": "train"
+    },
+    "scene-0218": {
+      "log_token": "3313a6a85b264e4c86ee44d6e6329cf3",
+      "role": "train"
+    },
+    "scene-0219": {
+      "log_token": "3313a6a85b264e4c86ee44d6e6329cf3",
+      "role": "train"
+    },
+    "scene-0220": {
+      "log_token": "3313a6a85b264e4c86ee44d6e6329cf3",
+      "role": "train"
+    },
+    "scene-0221": {
+      "log_token": "e60234ec7c324789ac7c8441a5e49731",
+      "role": "heldout_eval"
+    },
+    "scene-0222": {
+      "log_token": "3313a6a85b264e4c86ee44d6e6329cf3",
+      "role": "train"
+    },
+    "scene-0224": {
+      "log_token": "3313a6a85b264e4c86ee44d6e6329cf3",
+      "role": "train"
+    },
+    "scene-0225": {
+      "log_token": "3313a6a85b264e4c86ee44d6e6329cf3",
+      "role": "train"
+    },
+    "scene-0226": {
+      "log_token": "3313a6a85b264e4c86ee44d6e6329cf3",
+      "role": "train"
+    },
+    "scene-0227": {
+      "log_token": "3313a6a85b264e4c86ee44d6e6329cf3",
+      "role": "train"
+    },
+    "scene-0228": {
+      "log_token": "3313a6a85b264e4c86ee44d6e6329cf3",
+      "role": "train"
+    },
+    "scene-0229": {
+      "log_token": "3313a6a85b264e4c86ee44d6e6329cf3",
+      "role": "train"
+    },
+    "scene-0230": {
+      "log_token": "3313a6a85b264e4c86ee44d6e6329cf3",
+      "role": "train"
+    },
+    "scene-0231": {
+      "log_token": "3313a6a85b264e4c86ee44d6e6329cf3",
+      "role": "train"
+    },
+    "scene-0232": {
+      "log_token": "3313a6a85b264e4c86ee44d6e6329cf3",
+      "role": "train"
+    },
+    "scene-0233": {
+      "log_token": "3313a6a85b264e4c86ee44d6e6329cf3",
+      "role": "train"
+    },
+    "scene-0234": {
+      "log_token": "3313a6a85b264e4c86ee44d6e6329cf3",
+      "role": "train"
+    },
+    "scene-0235": {
+      "log_token": "3313a6a85b264e4c86ee44d6e6329cf3",
+      "role": "train"
+    },
+    "scene-0236": {
+      "log_token": "3313a6a85b264e4c86ee44d6e6329cf3",
+      "role": "train"
+    },
+    "scene-0237": {
+      "log_token": "3313a6a85b264e4c86ee44d6e6329cf3",
+      "role": "train"
+    },
+    "scene-0238": {
+      "log_token": "3313a6a85b264e4c86ee44d6e6329cf3",
+      "role": "train"
+    },
+    "scene-0239": {
+      "log_token": "3313a6a85b264e4c86ee44d6e6329cf3",
+      "role": "train"
+    },
+    "scene-0240": {
+      "log_token": "3313a6a85b264e4c86ee44d6e6329cf3",
+      "role": "train"
+    },
+    "scene-0241": {
+      "log_token": "3313a6a85b264e4c86ee44d6e6329cf3",
+      "role": "train"
+    },
+    "scene-0242": {
+      "log_token": "08ba46dd716d42a69d108638fef5bbb9",
+      "role": "dev"
+    },
+    "scene-0243": {
+      "log_token": "08ba46dd716d42a69d108638fef5bbb9",
+      "role": "dev"
+    },
+    "scene-0244": {
+      "log_token": "08ba46dd716d42a69d108638fef5bbb9",
+      "role": "dev"
+    },
+    "scene-0245": {
+      "log_token": "08ba46dd716d42a69d108638fef5bbb9",
+      "role": "dev"
+    },
+    "scene-0246": {
+      "log_token": "08ba46dd716d42a69d108638fef5bbb9",
+      "role": "dev"
+    },
+    "scene-0247": {
+      "log_token": "08ba46dd716d42a69d108638fef5bbb9",
+      "role": "dev"
+    },
+    "scene-0248": {
+      "log_token": "08ba46dd716d42a69d108638fef5bbb9",
+      "role": "dev"
+    },
+    "scene-0249": {
+      "log_token": "08ba46dd716d42a69d108638fef5bbb9",
+      "role": "dev"
+    },
+    "scene-0250": {
+      "log_token": "08ba46dd716d42a69d108638fef5bbb9",
+      "role": "dev"
+    },
+    "scene-0251": {
+      "log_token": "08ba46dd716d42a69d108638fef5bbb9",
+      "role": "dev"
+    },
+    "scene-0252": {
+      "log_token": "08ba46dd716d42a69d108638fef5bbb9",
+      "role": "dev"
+    },
+    "scene-0253": {
+      "log_token": "08ba46dd716d42a69d108638fef5bbb9",
+      "role": "dev"
+    },
+    "scene-0254": {
+      "log_token": "cb3e914a6f0b4deea0efc8521ca1e671",
+      "role": "train"
+    },
+    "scene-0255": {
+      "log_token": "cb3e914a6f0b4deea0efc8521ca1e671",
+      "role": "train"
+    },
+    "scene-0256": {
+      "log_token": "cb3e914a6f0b4deea0efc8521ca1e671",
+      "role": "train"
+    },
+    "scene-0257": {
+      "log_token": "cb3e914a6f0b4deea0efc8521ca1e671",
+      "role": "train"
+    },
+    "scene-0258": {
+      "log_token": "cb3e914a6f0b4deea0efc8521ca1e671",
+      "role": "train"
+    },
+    "scene-0259": {
+      "log_token": "cb3e914a6f0b4deea0efc8521ca1e671",
+      "role": "train"
+    },
+    "scene-0260": {
+      "log_token": "cb3e914a6f0b4deea0efc8521ca1e671",
+      "role": "train"
+    },
+    "scene-0261": {
+      "log_token": "cb3e914a6f0b4deea0efc8521ca1e671",
+      "role": "train"
+    },
+    "scene-0262": {
+      "log_token": "cb3e914a6f0b4deea0efc8521ca1e671",
+      "role": "train"
+    },
+    "scene-0263": {
+      "log_token": "cb3e914a6f0b4deea0efc8521ca1e671",
+      "role": "train"
+    },
+    "scene-0264": {
+      "log_token": "cb3e914a6f0b4deea0efc8521ca1e671",
+      "role": "train"
+    },
+    "scene-0268": {
+      "log_token": "a5bb7f9dd1884f1ea0de299caefe7ef4",
+      "role": "heldout_eval"
+    },
+    "scene-0269": {
+      "log_token": "a5bb7f9dd1884f1ea0de299caefe7ef4",
+      "role": "heldout_eval"
+    },
+    "scene-0270": {
+      "log_token": "a5bb7f9dd1884f1ea0de299caefe7ef4",
+      "role": "heldout_eval"
+    },
+    "scene-0271": {
+      "log_token": "a5bb7f9dd1884f1ea0de299caefe7ef4",
+      "role": "heldout_eval"
+    },
+    "scene-0272": {
+      "log_token": "a5bb7f9dd1884f1ea0de299caefe7ef4",
+      "role": "heldout_eval"
+    },
+    "scene-0273": {
+      "log_token": "a5bb7f9dd1884f1ea0de299caefe7ef4",
+      "role": "heldout_eval"
+    },
+    "scene-0274": {
+      "log_token": "a5bb7f9dd1884f1ea0de299caefe7ef4",
+      "role": "heldout_eval"
+    },
+    "scene-0275": {
+      "log_token": "a5bb7f9dd1884f1ea0de299caefe7ef4",
+      "role": "heldout_eval"
+    },
+    "scene-0276": {
+      "log_token": "a5bb7f9dd1884f1ea0de299caefe7ef4",
+      "role": "heldout_eval"
+    },
+    "scene-0277": {
+      "log_token": "a5bb7f9dd1884f1ea0de299caefe7ef4",
+      "role": "heldout_eval"
+    },
+    "scene-0278": {
+      "log_token": "a5bb7f9dd1884f1ea0de299caefe7ef4",
+      "role": "heldout_eval"
+    },
+    "scene-0283": {
+      "log_token": "6434493562e64d9aa36774bf8d98870e",
+      "role": "train"
+    },
+    "scene-0284": {
+      "log_token": "6434493562e64d9aa36774bf8d98870e",
+      "role": "train"
+    },
+    "scene-0285": {
+      "log_token": "6434493562e64d9aa36774bf8d98870e",
+      "role": "train"
+    },
+    "scene-0286": {
+      "log_token": "6434493562e64d9aa36774bf8d98870e",
+      "role": "train"
+    },
+    "scene-0287": {
+      "log_token": "6434493562e64d9aa36774bf8d98870e",
+      "role": "train"
+    },
+    "scene-0288": {
+      "log_token": "6434493562e64d9aa36774bf8d98870e",
+      "role": "train"
+    },
+    "scene-0289": {
+      "log_token": "6434493562e64d9aa36774bf8d98870e",
+      "role": "train"
+    },
+    "scene-0290": {
+      "log_token": "6434493562e64d9aa36774bf8d98870e",
+      "role": "train"
+    },
+    "scene-0291": {
+      "log_token": "6434493562e64d9aa36774bf8d98870e",
+      "role": "train"
+    },
+    "scene-0292": {
+      "log_token": "6434493562e64d9aa36774bf8d98870e",
+      "role": "train"
+    },
+    "scene-0293": {
+      "log_token": "6434493562e64d9aa36774bf8d98870e",
+      "role": "train"
+    },
+    "scene-0294": {
+      "log_token": "6434493562e64d9aa36774bf8d98870e",
+      "role": "train"
+    },
+    "scene-0295": {
+      "log_token": "6434493562e64d9aa36774bf8d98870e",
+      "role": "train"
+    },
+    "scene-0296": {
+      "log_token": "6434493562e64d9aa36774bf8d98870e",
+      "role": "train"
+    },
+    "scene-0297": {
+      "log_token": "6434493562e64d9aa36774bf8d98870e",
+      "role": "train"
+    },
+    "scene-0298": {
+      "log_token": "6434493562e64d9aa36774bf8d98870e",
+      "role": "train"
+    },
+    "scene-0299": {
+      "log_token": "6434493562e64d9aa36774bf8d98870e",
+      "role": "train"
+    },
+    "scene-0300": {
+      "log_token": "6434493562e64d9aa36774bf8d98870e",
+      "role": "train"
+    },
+    "scene-0301": {
+      "log_token": "6434493562e64d9aa36774bf8d98870e",
+      "role": "train"
+    },
+    "scene-0302": {
+      "log_token": "6434493562e64d9aa36774bf8d98870e",
+      "role": "train"
+    },
+    "scene-0303": {
+      "log_token": "6434493562e64d9aa36774bf8d98870e",
+      "role": "train"
+    },
+    "scene-0304": {
+      "log_token": "6434493562e64d9aa36774bf8d98870e",
+      "role": "train"
+    },
+    "scene-0305": {
+      "log_token": "6434493562e64d9aa36774bf8d98870e",
+      "role": "train"
+    },
+    "scene-0306": {
+      "log_token": "6434493562e64d9aa36774bf8d98870e",
+      "role": "train"
+    },
+    "scene-0315": {
+      "log_token": "0f1b01dd18d8438794fb3445517633df",
+      "role": "dev"
+    },
+    "scene-0316": {
+      "log_token": "0f1b01dd18d8438794fb3445517633df",
+      "role": "dev"
+    },
+    "scene-0317": {
+      "log_token": "0f1b01dd18d8438794fb3445517633df",
+      "role": "dev"
+    },
+    "scene-0318": {
+      "log_token": "0f1b01dd18d8438794fb3445517633df",
+      "role": "dev"
+    },
+    "scene-0321": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0323": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0324": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0328": {
+      "log_token": "6f7fe59adf984e55a82571ab4f17e4e2",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0329": {
+      "log_token": "485a0831e0964529b0b45d476139c68b",
+      "role": "heldout_eval"
+    },
+    "scene-0330": {
+      "log_token": "485a0831e0964529b0b45d476139c68b",
+      "role": "heldout_eval"
+    },
+    "scene-0331": {
+      "log_token": "485a0831e0964529b0b45d476139c68b",
+      "role": "heldout_eval"
+    },
+    "scene-0332": {
+      "log_token": "485a0831e0964529b0b45d476139c68b",
+      "role": "heldout_eval"
+    },
+    "scene-0344": {
+      "log_token": "92af2609d31445e5a71b2d895376fed6",
+      "role": "heldout_eval"
+    },
+    "scene-0345": {
+      "log_token": "92af2609d31445e5a71b2d895376fed6",
+      "role": "heldout_eval"
+    },
+    "scene-0346": {
+      "log_token": "92af2609d31445e5a71b2d895376fed6",
+      "role": "heldout_eval"
+    },
+    "scene-0347": {
+      "log_token": "ddc03471df3e4c9bb9663629a4097743",
+      "role": "train"
+    },
+    "scene-0348": {
+      "log_token": "ddc03471df3e4c9bb9663629a4097743",
+      "role": "train"
+    },
+    "scene-0349": {
+      "log_token": "ddc03471df3e4c9bb9663629a4097743",
+      "role": "train"
+    },
+    "scene-0350": {
+      "log_token": "ddc03471df3e4c9bb9663629a4097743",
+      "role": "train"
+    },
+    "scene-0351": {
+      "log_token": "ddc03471df3e4c9bb9663629a4097743",
+      "role": "train"
+    },
+    "scene-0352": {
+      "log_token": "ddc03471df3e4c9bb9663629a4097743",
+      "role": "train"
+    },
+    "scene-0353": {
+      "log_token": "ddc03471df3e4c9bb9663629a4097743",
+      "role": "train"
+    },
+    "scene-0354": {
+      "log_token": "ddc03471df3e4c9bb9663629a4097743",
+      "role": "train"
+    },
+    "scene-0355": {
+      "log_token": "ddc03471df3e4c9bb9663629a4097743",
+      "role": "train"
+    },
+    "scene-0356": {
+      "log_token": "ddc03471df3e4c9bb9663629a4097743",
+      "role": "train"
+    },
+    "scene-0357": {
+      "log_token": "ddc03471df3e4c9bb9663629a4097743",
+      "role": "train"
+    },
+    "scene-0358": {
+      "log_token": "ddc03471df3e4c9bb9663629a4097743",
+      "role": "train"
+    },
+    "scene-0359": {
+      "log_token": "ddc03471df3e4c9bb9663629a4097743",
+      "role": "train"
+    },
+    "scene-0360": {
+      "log_token": "f8699afb7a2247e38549e4d250b4581b",
+      "role": "train"
+    },
+    "scene-0361": {
+      "log_token": "f8699afb7a2247e38549e4d250b4581b",
+      "role": "train"
+    },
+    "scene-0362": {
+      "log_token": "f8699afb7a2247e38549e4d250b4581b",
+      "role": "train"
+    },
+    "scene-0363": {
+      "log_token": "f8699afb7a2247e38549e4d250b4581b",
+      "role": "train"
+    },
+    "scene-0364": {
+      "log_token": "f8699afb7a2247e38549e4d250b4581b",
+      "role": "train"
+    },
+    "scene-0365": {
+      "log_token": "f8699afb7a2247e38549e4d250b4581b",
+      "role": "train"
+    },
+    "scene-0366": {
+      "log_token": "f8699afb7a2247e38549e4d250b4581b",
+      "role": "train"
+    },
+    "scene-0367": {
+      "log_token": "f8699afb7a2247e38549e4d250b4581b",
+      "role": "train"
+    },
+    "scene-0368": {
+      "log_token": "f8699afb7a2247e38549e4d250b4581b",
+      "role": "train"
+    },
+    "scene-0369": {
+      "log_token": "f8699afb7a2247e38549e4d250b4581b",
+      "role": "train"
+    },
+    "scene-0370": {
+      "log_token": "f8699afb7a2247e38549e4d250b4581b",
+      "role": "train"
+    },
+    "scene-0371": {
+      "log_token": "f8699afb7a2247e38549e4d250b4581b",
+      "role": "train"
+    },
+    "scene-0372": {
+      "log_token": "f8699afb7a2247e38549e4d250b4581b",
+      "role": "train"
+    },
+    "scene-0373": {
+      "log_token": "f8699afb7a2247e38549e4d250b4581b",
+      "role": "train"
+    },
+    "scene-0374": {
+      "log_token": "f8699afb7a2247e38549e4d250b4581b",
+      "role": "train"
+    },
+    "scene-0375": {
+      "log_token": "f8699afb7a2247e38549e4d250b4581b",
+      "role": "train"
+    },
+    "scene-0376": {
+      "log_token": "eda311bda86f4e54857b0554639d6426",
+      "role": "train"
+    },
+    "scene-0377": {
+      "log_token": "eda311bda86f4e54857b0554639d6426",
+      "role": "train"
+    },
+    "scene-0378": {
+      "log_token": "eda311bda86f4e54857b0554639d6426",
+      "role": "train"
+    },
+    "scene-0379": {
+      "log_token": "eda311bda86f4e54857b0554639d6426",
+      "role": "train"
+    },
+    "scene-0380": {
+      "log_token": "eda311bda86f4e54857b0554639d6426",
+      "role": "train"
+    },
+    "scene-0381": {
+      "log_token": "eda311bda86f4e54857b0554639d6426",
+      "role": "train"
+    },
+    "scene-0382": {
+      "log_token": "f8699afb7a2247e38549e4d250b4581b",
+      "role": "train"
+    },
+    "scene-0383": {
+      "log_token": "1c9b302455ff44a9a290c372b31aa3ce",
+      "role": "train"
+    },
+    "scene-0384": {
+      "log_token": "1c9b302455ff44a9a290c372b31aa3ce",
+      "role": "train"
+    },
+    "scene-0385": {
+      "log_token": "1c9b302455ff44a9a290c372b31aa3ce",
+      "role": "train"
+    },
+    "scene-0386": {
+      "log_token": "1c9b302455ff44a9a290c372b31aa3ce",
+      "role": "train"
+    },
+    "scene-0388": {
+      "log_token": "efa31cf3cd2f452789ca7f3e7541ea69",
+      "role": "train"
+    },
+    "scene-0389": {
+      "log_token": "efa31cf3cd2f452789ca7f3e7541ea69",
+      "role": "train"
+    },
+    "scene-0390": {
+      "log_token": "efa31cf3cd2f452789ca7f3e7541ea69",
+      "role": "train"
+    },
+    "scene-0391": {
+      "log_token": "efa31cf3cd2f452789ca7f3e7541ea69",
+      "role": "train"
+    },
+    "scene-0392": {
+      "log_token": "efa31cf3cd2f452789ca7f3e7541ea69",
+      "role": "train"
+    },
+    "scene-0393": {
+      "log_token": "efa31cf3cd2f452789ca7f3e7541ea69",
+      "role": "train"
+    },
+    "scene-0394": {
+      "log_token": "efa31cf3cd2f452789ca7f3e7541ea69",
+      "role": "train"
+    },
+    "scene-0395": {
+      "log_token": "efa31cf3cd2f452789ca7f3e7541ea69",
+      "role": "train"
+    },
+    "scene-0396": {
+      "log_token": "efa31cf3cd2f452789ca7f3e7541ea69",
+      "role": "train"
+    },
+    "scene-0397": {
+      "log_token": "efa31cf3cd2f452789ca7f3e7541ea69",
+      "role": "train"
+    },
+    "scene-0398": {
+      "log_token": "efa31cf3cd2f452789ca7f3e7541ea69",
+      "role": "train"
+    },
+    "scene-0399": {
+      "log_token": "89a56a5dc3aa4e56a2e57b52de738da5",
+      "role": "train"
+    },
+    "scene-0400": {
+      "log_token": "89a56a5dc3aa4e56a2e57b52de738da5",
+      "role": "train"
+    },
+    "scene-0401": {
+      "log_token": "89a56a5dc3aa4e56a2e57b52de738da5",
+      "role": "train"
+    },
+    "scene-0402": {
+      "log_token": "89a56a5dc3aa4e56a2e57b52de738da5",
+      "role": "train"
+    },
+    "scene-0403": {
+      "log_token": "89a56a5dc3aa4e56a2e57b52de738da5",
+      "role": "train"
+    },
+    "scene-0405": {
+      "log_token": "89a56a5dc3aa4e56a2e57b52de738da5",
+      "role": "train"
+    },
+    "scene-0406": {
+      "log_token": "89a56a5dc3aa4e56a2e57b52de738da5",
+      "role": "train"
+    },
+    "scene-0407": {
+      "log_token": "89a56a5dc3aa4e56a2e57b52de738da5",
+      "role": "train"
+    },
+    "scene-0408": {
+      "log_token": "89a56a5dc3aa4e56a2e57b52de738da5",
+      "role": "train"
+    },
+    "scene-0410": {
+      "log_token": "89a56a5dc3aa4e56a2e57b52de738da5",
+      "role": "train"
+    },
+    "scene-0411": {
+      "log_token": "89a56a5dc3aa4e56a2e57b52de738da5",
+      "role": "train"
+    },
+    "scene-0412": {
+      "log_token": "89a56a5dc3aa4e56a2e57b52de738da5",
+      "role": "train"
+    },
+    "scene-0413": {
+      "log_token": "89a56a5dc3aa4e56a2e57b52de738da5",
+      "role": "train"
+    },
+    "scene-0414": {
+      "log_token": "89a56a5dc3aa4e56a2e57b52de738da5",
+      "role": "train"
+    },
+    "scene-0415": {
+      "log_token": "89a56a5dc3aa4e56a2e57b52de738da5",
+      "role": "train"
+    },
+    "scene-0416": {
+      "log_token": "89a56a5dc3aa4e56a2e57b52de738da5",
+      "role": "train"
+    },
+    "scene-0417": {
+      "log_token": "89a56a5dc3aa4e56a2e57b52de738da5",
+      "role": "train"
+    },
+    "scene-0418": {
+      "log_token": "89a56a5dc3aa4e56a2e57b52de738da5",
+      "role": "train"
+    },
+    "scene-0419": {
+      "log_token": "89a56a5dc3aa4e56a2e57b52de738da5",
+      "role": "train"
+    },
+    "scene-0420": {
+      "log_token": "75f5ca2350b346d19a39aa7439f61755",
+      "role": "train"
+    },
+    "scene-0421": {
+      "log_token": "75f5ca2350b346d19a39aa7439f61755",
+      "role": "train"
+    },
+    "scene-0422": {
+      "log_token": "75f5ca2350b346d19a39aa7439f61755",
+      "role": "train"
+    },
+    "scene-0423": {
+      "log_token": "75f5ca2350b346d19a39aa7439f61755",
+      "role": "train"
+    },
+    "scene-0424": {
+      "log_token": "75f5ca2350b346d19a39aa7439f61755",
+      "role": "train"
+    },
+    "scene-0425": {
+      "log_token": "75f5ca2350b346d19a39aa7439f61755",
+      "role": "train"
+    },
+    "scene-0426": {
+      "log_token": "75f5ca2350b346d19a39aa7439f61755",
+      "role": "train"
+    },
+    "scene-0427": {
+      "log_token": "75f5ca2350b346d19a39aa7439f61755",
+      "role": "train"
+    },
+    "scene-0428": {
+      "log_token": "75f5ca2350b346d19a39aa7439f61755",
+      "role": "train"
+    },
+    "scene-0429": {
+      "log_token": "75f5ca2350b346d19a39aa7439f61755",
+      "role": "train"
+    },
+    "scene-0430": {
+      "log_token": "75f5ca2350b346d19a39aa7439f61755",
+      "role": "train"
+    },
+    "scene-0431": {
+      "log_token": "75f5ca2350b346d19a39aa7439f61755",
+      "role": "train"
+    },
+    "scene-0432": {
+      "log_token": "75f5ca2350b346d19a39aa7439f61755",
+      "role": "train"
+    },
+    "scene-0433": {
+      "log_token": "75f5ca2350b346d19a39aa7439f61755",
+      "role": "train"
+    },
+    "scene-0434": {
+      "log_token": "75f5ca2350b346d19a39aa7439f61755",
+      "role": "train"
+    },
+    "scene-0435": {
+      "log_token": "75f5ca2350b346d19a39aa7439f61755",
+      "role": "train"
+    },
+    "scene-0436": {
+      "log_token": "75f5ca2350b346d19a39aa7439f61755",
+      "role": "train"
+    },
+    "scene-0437": {
+      "log_token": "75f5ca2350b346d19a39aa7439f61755",
+      "role": "train"
+    },
+    "scene-0438": {
+      "log_token": "75f5ca2350b346d19a39aa7439f61755",
+      "role": "train"
+    },
+    "scene-0439": {
+      "log_token": "75f5ca2350b346d19a39aa7439f61755",
+      "role": "train"
+    },
+    "scene-0440": {
+      "log_token": "b2685a235700404581dc7354dd5b4eda",
+      "role": "dev"
+    },
+    "scene-0441": {
+      "log_token": "b2685a235700404581dc7354dd5b4eda",
+      "role": "dev"
+    },
+    "scene-0442": {
+      "log_token": "b2685a235700404581dc7354dd5b4eda",
+      "role": "dev"
+    },
+    "scene-0443": {
+      "log_token": "b2685a235700404581dc7354dd5b4eda",
+      "role": "dev"
+    },
+    "scene-0444": {
+      "log_token": "b2685a235700404581dc7354dd5b4eda",
+      "role": "dev"
+    },
+    "scene-0445": {
+      "log_token": "b2685a235700404581dc7354dd5b4eda",
+      "role": "dev"
+    },
+    "scene-0446": {
+      "log_token": "b2685a235700404581dc7354dd5b4eda",
+      "role": "dev"
+    },
+    "scene-0447": {
+      "log_token": "b2685a235700404581dc7354dd5b4eda",
+      "role": "dev"
+    },
+    "scene-0448": {
+      "log_token": "b2685a235700404581dc7354dd5b4eda",
+      "role": "dev"
+    },
+    "scene-0449": {
+      "log_token": "b2685a235700404581dc7354dd5b4eda",
+      "role": "dev"
+    },
+    "scene-0450": {
+      "log_token": "b2685a235700404581dc7354dd5b4eda",
+      "role": "dev"
+    },
+    "scene-0451": {
+      "log_token": "b2685a235700404581dc7354dd5b4eda",
+      "role": "dev"
+    },
+    "scene-0452": {
+      "log_token": "b2685a235700404581dc7354dd5b4eda",
+      "role": "dev"
+    },
+    "scene-0453": {
+      "log_token": "b2685a235700404581dc7354dd5b4eda",
+      "role": "dev"
+    },
+    "scene-0454": {
+      "log_token": "b2685a235700404581dc7354dd5b4eda",
+      "role": "dev"
+    },
+    "scene-0455": {
+      "log_token": "b2685a235700404581dc7354dd5b4eda",
+      "role": "dev"
+    },
+    "scene-0456": {
+      "log_token": "b2685a235700404581dc7354dd5b4eda",
+      "role": "dev"
+    },
+    "scene-0457": {
+      "log_token": "69271ec7af1f446ca16820ac46d2047a",
+      "role": "train"
+    },
+    "scene-0458": {
+      "log_token": "69271ec7af1f446ca16820ac46d2047a",
+      "role": "train"
+    },
+    "scene-0459": {
+      "log_token": "69271ec7af1f446ca16820ac46d2047a",
+      "role": "train"
+    },
+    "scene-0461": {
+      "log_token": "69271ec7af1f446ca16820ac46d2047a",
+      "role": "train"
+    },
+    "scene-0462": {
+      "log_token": "69271ec7af1f446ca16820ac46d2047a",
+      "role": "train"
+    },
+    "scene-0463": {
+      "log_token": "69271ec7af1f446ca16820ac46d2047a",
+      "role": "train"
+    },
+    "scene-0464": {
+      "log_token": "69271ec7af1f446ca16820ac46d2047a",
+      "role": "train"
+    },
+    "scene-0465": {
+      "log_token": "69271ec7af1f446ca16820ac46d2047a",
+      "role": "train"
+    },
+    "scene-0467": {
+      "log_token": "69271ec7af1f446ca16820ac46d2047a",
+      "role": "train"
+    },
+    "scene-0468": {
+      "log_token": "69271ec7af1f446ca16820ac46d2047a",
+      "role": "train"
+    },
+    "scene-0469": {
+      "log_token": "69271ec7af1f446ca16820ac46d2047a",
+      "role": "train"
+    },
+    "scene-0471": {
+      "log_token": "69271ec7af1f446ca16820ac46d2047a",
+      "role": "train"
+    },
+    "scene-0472": {
+      "log_token": "69271ec7af1f446ca16820ac46d2047a",
+      "role": "train"
+    },
+    "scene-0474": {
+      "log_token": "69271ec7af1f446ca16820ac46d2047a",
+      "role": "train"
+    },
+    "scene-0475": {
+      "log_token": "69271ec7af1f446ca16820ac46d2047a",
+      "role": "train"
+    },
+    "scene-0476": {
+      "log_token": "69271ec7af1f446ca16820ac46d2047a",
+      "role": "train"
+    },
+    "scene-0477": {
+      "log_token": "69271ec7af1f446ca16820ac46d2047a",
+      "role": "train"
+    },
+    "scene-0478": {
+      "log_token": "69271ec7af1f446ca16820ac46d2047a",
+      "role": "train"
+    },
+    "scene-0479": {
+      "log_token": "69271ec7af1f446ca16820ac46d2047a",
+      "role": "train"
+    },
+    "scene-0480": {
+      "log_token": "69271ec7af1f446ca16820ac46d2047a",
+      "role": "train"
+    },
+    "scene-0499": {
+      "log_token": "20db5722b62c4c17bbff2d7b265a3c51",
+      "role": "train"
+    },
+    "scene-0500": {
+      "log_token": "20db5722b62c4c17bbff2d7b265a3c51",
+      "role": "train"
+    },
+    "scene-0501": {
+      "log_token": "20db5722b62c4c17bbff2d7b265a3c51",
+      "role": "train"
+    },
+    "scene-0502": {
+      "log_token": "20db5722b62c4c17bbff2d7b265a3c51",
+      "role": "train"
+    },
+    "scene-0504": {
+      "log_token": "20db5722b62c4c17bbff2d7b265a3c51",
+      "role": "train"
+    },
+    "scene-0505": {
+      "log_token": "20db5722b62c4c17bbff2d7b265a3c51",
+      "role": "train"
+    },
+    "scene-0506": {
+      "log_token": "20db5722b62c4c17bbff2d7b265a3c51",
+      "role": "train"
+    },
+    "scene-0507": {
+      "log_token": "20db5722b62c4c17bbff2d7b265a3c51",
+      "role": "train"
+    },
+    "scene-0508": {
+      "log_token": "20db5722b62c4c17bbff2d7b265a3c51",
+      "role": "train"
+    },
+    "scene-0509": {
+      "log_token": "20db5722b62c4c17bbff2d7b265a3c51",
+      "role": "train"
+    },
+    "scene-0510": {
+      "log_token": "20db5722b62c4c17bbff2d7b265a3c51",
+      "role": "train"
+    },
+    "scene-0511": {
+      "log_token": "20db5722b62c4c17bbff2d7b265a3c51",
+      "role": "train"
+    },
+    "scene-0512": {
+      "log_token": "20db5722b62c4c17bbff2d7b265a3c51",
+      "role": "train"
+    },
+    "scene-0513": {
+      "log_token": "20db5722b62c4c17bbff2d7b265a3c51",
+      "role": "train"
+    },
+    "scene-0514": {
+      "log_token": "6577357788b24c35a3b0419c138f50db",
+      "role": "dev"
+    },
+    "scene-0515": {
+      "log_token": "6577357788b24c35a3b0419c138f50db",
+      "role": "dev"
+    },
+    "scene-0517": {
+      "log_token": "6577357788b24c35a3b0419c138f50db",
+      "role": "dev"
+    },
+    "scene-0518": {
+      "log_token": "6577357788b24c35a3b0419c138f50db",
+      "role": "dev"
+    },
+    "scene-0519": {
+      "log_token": "ca6d14b008ed4e0bb6b1eaaedadbd6c1",
+      "role": "heldout_eval"
+    },
+    "scene-0520": {
+      "log_token": "ca6d14b008ed4e0bb6b1eaaedadbd6c1",
+      "role": "heldout_eval"
+    },
+    "scene-0521": {
+      "log_token": "ca6d14b008ed4e0bb6b1eaaedadbd6c1",
+      "role": "heldout_eval"
+    },
+    "scene-0522": {
+      "log_token": "ca6d14b008ed4e0bb6b1eaaedadbd6c1",
+      "role": "heldout_eval"
+    },
+    "scene-0523": {
+      "log_token": "ca6d14b008ed4e0bb6b1eaaedadbd6c1",
+      "role": "heldout_eval"
+    },
+    "scene-0524": {
+      "log_token": "ca6d14b008ed4e0bb6b1eaaedadbd6c1",
+      "role": "heldout_eval"
+    },
+    "scene-0525": {
+      "log_token": "6c12081a828548b6b0a36f12d53be6ca",
+      "role": "train"
+    },
+    "scene-0526": {
+      "log_token": "6c12081a828548b6b0a36f12d53be6ca",
+      "role": "train"
+    },
+    "scene-0527": {
+      "log_token": "6c12081a828548b6b0a36f12d53be6ca",
+      "role": "train"
+    },
+    "scene-0528": {
+      "log_token": "6c12081a828548b6b0a36f12d53be6ca",
+      "role": "train"
+    },
+    "scene-0529": {
+      "log_token": "6c12081a828548b6b0a36f12d53be6ca",
+      "role": "train"
+    },
+    "scene-0530": {
+      "log_token": "6c12081a828548b6b0a36f12d53be6ca",
+      "role": "train"
+    },
+    "scene-0531": {
+      "log_token": "6c12081a828548b6b0a36f12d53be6ca",
+      "role": "train"
+    },
+    "scene-0532": {
+      "log_token": "6c12081a828548b6b0a36f12d53be6ca",
+      "role": "train"
+    },
+    "scene-0533": {
+      "log_token": "6c12081a828548b6b0a36f12d53be6ca",
+      "role": "train"
+    },
+    "scene-0534": {
+      "log_token": "6c12081a828548b6b0a36f12d53be6ca",
+      "role": "train"
+    },
+    "scene-0535": {
+      "log_token": "6c12081a828548b6b0a36f12d53be6ca",
+      "role": "train"
+    },
+    "scene-0536": {
+      "log_token": "6c12081a828548b6b0a36f12d53be6ca",
+      "role": "train"
+    },
+    "scene-0537": {
+      "log_token": "6c12081a828548b6b0a36f12d53be6ca",
+      "role": "train"
+    },
+    "scene-0538": {
+      "log_token": "6c12081a828548b6b0a36f12d53be6ca",
+      "role": "train"
+    },
+    "scene-0539": {
+      "log_token": "6c12081a828548b6b0a36f12d53be6ca",
+      "role": "train"
+    },
+    "scene-0541": {
+      "log_token": "6c12081a828548b6b0a36f12d53be6ca",
+      "role": "train"
+    },
+    "scene-0542": {
+      "log_token": "6c12081a828548b6b0a36f12d53be6ca",
+      "role": "train"
+    },
+    "scene-0543": {
+      "log_token": "6c12081a828548b6b0a36f12d53be6ca",
+      "role": "train"
+    },
+    "scene-0544": {
+      "log_token": "6c12081a828548b6b0a36f12d53be6ca",
+      "role": "train"
+    },
+    "scene-0545": {
+      "log_token": "6c12081a828548b6b0a36f12d53be6ca",
+      "role": "train"
+    },
+    "scene-0546": {
+      "log_token": "6c12081a828548b6b0a36f12d53be6ca",
+      "role": "train"
+    },
+    "scene-0552": {
+      "log_token": "881dd2f8aaec49b681eb54be5bf3b3e2",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0553": {
+      "log_token": "881dd2f8aaec49b681eb54be5bf3b3e2",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0554": {
+      "log_token": "881dd2f8aaec49b681eb54be5bf3b3e2",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0555": {
+      "log_token": "881dd2f8aaec49b681eb54be5bf3b3e2",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0556": {
+      "log_token": "0d68b81100a640129a185cca5aa1edd7",
+      "role": "heldout_eval"
+    },
+    "scene-0557": {
+      "log_token": "0d68b81100a640129a185cca5aa1edd7",
+      "role": "heldout_eval"
+    },
+    "scene-0558": {
+      "log_token": "0d68b81100a640129a185cca5aa1edd7",
+      "role": "heldout_eval"
+    },
+    "scene-0559": {
+      "log_token": "0d68b81100a640129a185cca5aa1edd7",
+      "role": "heldout_eval"
+    },
+    "scene-0560": {
+      "log_token": "0d68b81100a640129a185cca5aa1edd7",
+      "role": "heldout_eval"
+    },
+    "scene-0561": {
+      "log_token": "0d68b81100a640129a185cca5aa1edd7",
+      "role": "heldout_eval"
+    },
+    "scene-0562": {
+      "log_token": "0d68b81100a640129a185cca5aa1edd7",
+      "role": "heldout_eval"
+    },
+    "scene-0563": {
+      "log_token": "0d68b81100a640129a185cca5aa1edd7",
+      "role": "heldout_eval"
+    },
+    "scene-0564": {
+      "log_token": "0d68b81100a640129a185cca5aa1edd7",
+      "role": "heldout_eval"
+    },
+    "scene-0565": {
+      "log_token": "0d68b81100a640129a185cca5aa1edd7",
+      "role": "heldout_eval"
+    },
+    "scene-0566": {
+      "log_token": "84ff0dbb8d7343ab95e776c4955d5884",
+      "role": "dev"
+    },
+    "scene-0568": {
+      "log_token": "84ff0dbb8d7343ab95e776c4955d5884",
+      "role": "dev"
+    },
+    "scene-0570": {
+      "log_token": "84ff0dbb8d7343ab95e776c4955d5884",
+      "role": "dev"
+    },
+    "scene-0571": {
+      "log_token": "84ff0dbb8d7343ab95e776c4955d5884",
+      "role": "dev"
+    },
+    "scene-0572": {
+      "log_token": "84ff0dbb8d7343ab95e776c4955d5884",
+      "role": "dev"
+    },
+    "scene-0573": {
+      "log_token": "84ff0dbb8d7343ab95e776c4955d5884",
+      "role": "dev"
+    },
+    "scene-0574": {
+      "log_token": "84ff0dbb8d7343ab95e776c4955d5884",
+      "role": "dev"
+    },
+    "scene-0575": {
+      "log_token": "84ff0dbb8d7343ab95e776c4955d5884",
+      "role": "dev"
+    },
+    "scene-0576": {
+      "log_token": "84ff0dbb8d7343ab95e776c4955d5884",
+      "role": "dev"
+    },
+    "scene-0577": {
+      "log_token": "84ff0dbb8d7343ab95e776c4955d5884",
+      "role": "dev"
+    },
+    "scene-0578": {
+      "log_token": "84ff0dbb8d7343ab95e776c4955d5884",
+      "role": "dev"
+    },
+    "scene-0580": {
+      "log_token": "84ff0dbb8d7343ab95e776c4955d5884",
+      "role": "dev"
+    },
+    "scene-0582": {
+      "log_token": "84ff0dbb8d7343ab95e776c4955d5884",
+      "role": "dev"
+    },
+    "scene-0583": {
+      "log_token": "84ff0dbb8d7343ab95e776c4955d5884",
+      "role": "dev"
+    },
+    "scene-0584": {
+      "log_token": "8e0ced20b9d847608afcfbc23056460e",
+      "role": "dev"
+    },
+    "scene-0585": {
+      "log_token": "8e0ced20b9d847608afcfbc23056460e",
+      "role": "dev"
+    },
+    "scene-0586": {
+      "log_token": "8e0ced20b9d847608afcfbc23056460e",
+      "role": "dev"
+    },
+    "scene-0587": {
+      "log_token": "8e0ced20b9d847608afcfbc23056460e",
+      "role": "dev"
+    },
+    "scene-0588": {
+      "log_token": "8e0ced20b9d847608afcfbc23056460e",
+      "role": "dev"
+    },
+    "scene-0589": {
+      "log_token": "8e0ced20b9d847608afcfbc23056460e",
+      "role": "dev"
+    },
+    "scene-0590": {
+      "log_token": "8e0ced20b9d847608afcfbc23056460e",
+      "role": "dev"
+    },
+    "scene-0591": {
+      "log_token": "8e0ced20b9d847608afcfbc23056460e",
+      "role": "dev"
+    },
+    "scene-0592": {
+      "log_token": "8e0ced20b9d847608afcfbc23056460e",
+      "role": "dev"
+    },
+    "scene-0593": {
+      "log_token": "8e0ced20b9d847608afcfbc23056460e",
+      "role": "dev"
+    },
+    "scene-0594": {
+      "log_token": "8e0ced20b9d847608afcfbc23056460e",
+      "role": "dev"
+    },
+    "scene-0595": {
+      "log_token": "8e0ced20b9d847608afcfbc23056460e",
+      "role": "dev"
+    },
+    "scene-0596": {
+      "log_token": "8e0ced20b9d847608afcfbc23056460e",
+      "role": "dev"
+    },
+    "scene-0597": {
+      "log_token": "8e0ced20b9d847608afcfbc23056460e",
+      "role": "dev"
+    },
+    "scene-0598": {
+      "log_token": "8e0ced20b9d847608afcfbc23056460e",
+      "role": "dev"
+    },
+    "scene-0599": {
+      "log_token": "8e0ced20b9d847608afcfbc23056460e",
+      "role": "dev"
+    },
+    "scene-0600": {
+      "log_token": "8e0ced20b9d847608afcfbc23056460e",
+      "role": "dev"
+    },
+    "scene-0625": {
+      "log_token": "01ebe4444f624b4699ec6bf58837b153",
+      "role": "heldout_eval"
+    },
+    "scene-0626": {
+      "log_token": "01ebe4444f624b4699ec6bf58837b153",
+      "role": "heldout_eval"
+    },
+    "scene-0627": {
+      "log_token": "01ebe4444f624b4699ec6bf58837b153",
+      "role": "heldout_eval"
+    },
+    "scene-0629": {
+      "log_token": "01ebe4444f624b4699ec6bf58837b153",
+      "role": "heldout_eval"
+    },
+    "scene-0630": {
+      "log_token": "01ebe4444f624b4699ec6bf58837b153",
+      "role": "heldout_eval"
+    },
+    "scene-0632": {
+      "log_token": "01ebe4444f624b4699ec6bf58837b153",
+      "role": "heldout_eval"
+    },
+    "scene-0633": {
+      "log_token": "01ebe4444f624b4699ec6bf58837b153",
+      "role": "heldout_eval"
+    },
+    "scene-0634": {
+      "log_token": "01ebe4444f624b4699ec6bf58837b153",
+      "role": "heldout_eval"
+    },
+    "scene-0635": {
+      "log_token": "01ebe4444f624b4699ec6bf58837b153",
+      "role": "heldout_eval"
+    },
+    "scene-0636": {
+      "log_token": "01ebe4444f624b4699ec6bf58837b153",
+      "role": "heldout_eval"
+    },
+    "scene-0637": {
+      "log_token": "01ebe4444f624b4699ec6bf58837b153",
+      "role": "heldout_eval"
+    },
+    "scene-0638": {
+      "log_token": "01ebe4444f624b4699ec6bf58837b153",
+      "role": "heldout_eval"
+    },
+    "scene-0639": {
+      "log_token": "8aa38e0d963f48ba84708bc8eb1a07c2",
+      "role": "train"
+    },
+    "scene-0640": {
+      "log_token": "8aa38e0d963f48ba84708bc8eb1a07c2",
+      "role": "train"
+    },
+    "scene-0641": {
+      "log_token": "8aa38e0d963f48ba84708bc8eb1a07c2",
+      "role": "train"
+    },
+    "scene-0642": {
+      "log_token": "8aa38e0d963f48ba84708bc8eb1a07c2",
+      "role": "train"
+    },
+    "scene-0643": {
+      "log_token": "8aa38e0d963f48ba84708bc8eb1a07c2",
+      "role": "train"
+    },
+    "scene-0644": {
+      "log_token": "8aa38e0d963f48ba84708bc8eb1a07c2",
+      "role": "train"
+    },
+    "scene-0645": {
+      "log_token": "8aa38e0d963f48ba84708bc8eb1a07c2",
+      "role": "train"
+    },
+    "scene-0646": {
+      "log_token": "8aa38e0d963f48ba84708bc8eb1a07c2",
+      "role": "train"
+    },
+    "scene-0647": {
+      "log_token": "8aa38e0d963f48ba84708bc8eb1a07c2",
+      "role": "train"
+    },
+    "scene-0648": {
+      "log_token": "8aa38e0d963f48ba84708bc8eb1a07c2",
+      "role": "train"
+    },
+    "scene-0649": {
+      "log_token": "8aa38e0d963f48ba84708bc8eb1a07c2",
+      "role": "train"
+    },
+    "scene-0650": {
+      "log_token": "8aa38e0d963f48ba84708bc8eb1a07c2",
+      "role": "train"
+    },
+    "scene-0651": {
+      "log_token": "8aa38e0d963f48ba84708bc8eb1a07c2",
+      "role": "train"
+    },
+    "scene-0652": {
+      "log_token": "8aa38e0d963f48ba84708bc8eb1a07c2",
+      "role": "train"
+    },
+    "scene-0653": {
+      "log_token": "6f7fe59adf984e55a82571ab4f17e4e2",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0654": {
+      "log_token": "6f7fe59adf984e55a82571ab4f17e4e2",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0655": {
+      "log_token": "6f7fe59adf984e55a82571ab4f17e4e2",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0656": {
+      "log_token": "6f7fe59adf984e55a82571ab4f17e4e2",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0657": {
+      "log_token": "6f7fe59adf984e55a82571ab4f17e4e2",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0658": {
+      "log_token": "6f7fe59adf984e55a82571ab4f17e4e2",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0659": {
+      "log_token": "6f7fe59adf984e55a82571ab4f17e4e2",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0660": {
+      "log_token": "6f7fe59adf984e55a82571ab4f17e4e2",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0661": {
+      "log_token": "6f7fe59adf984e55a82571ab4f17e4e2",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0662": {
+      "log_token": "6f7fe59adf984e55a82571ab4f17e4e2",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0663": {
+      "log_token": "6f7fe59adf984e55a82571ab4f17e4e2",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0664": {
+      "log_token": "6f7fe59adf984e55a82571ab4f17e4e2",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0665": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0666": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0667": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0668": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0669": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0670": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0671": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0672": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0673": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0674": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0675": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0676": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0677": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0678": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0679": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0681": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0683": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0684": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0685": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0686": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0687": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0688": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0689": {
+      "log_token": "169c1773af08486c80ed3e9540528290",
+      "role": "train"
+    },
+    "scene-0695": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0696": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0697": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0698": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0700": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0701": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0703": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0704": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0705": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0706": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0707": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0708": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0709": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0710": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0711": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0712": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0713": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0714": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0715": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0716": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0717": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0718": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0719": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0726": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0727": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0728": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0730": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0731": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0733": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0734": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0735": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0736": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0737": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0738": {
+      "log_token": "4de1fda752ae4cf8b650a5245734eb4c",
+      "role": "dev"
+    },
+    "scene-0739": {
+      "log_token": "3a43824b84534c98bda1d07548db5817",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0740": {
+      "log_token": "3a43824b84534c98bda1d07548db5817",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0741": {
+      "log_token": "3a43824b84534c98bda1d07548db5817",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0744": {
+      "log_token": "3a43824b84534c98bda1d07548db5817",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0746": {
+      "log_token": "3a43824b84534c98bda1d07548db5817",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0747": {
+      "log_token": "3a43824b84534c98bda1d07548db5817",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0749": {
+      "log_token": "3a43824b84534c98bda1d07548db5817",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0750": {
+      "log_token": "3a43824b84534c98bda1d07548db5817",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0751": {
+      "log_token": "3a43824b84534c98bda1d07548db5817",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0752": {
+      "log_token": "3a43824b84534c98bda1d07548db5817",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0757": {
+      "log_token": "3a43824b84534c98bda1d07548db5817",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0758": {
+      "log_token": "3a43824b84534c98bda1d07548db5817",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0759": {
+      "log_token": "3a43824b84534c98bda1d07548db5817",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0760": {
+      "log_token": "3a43824b84534c98bda1d07548db5817",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0761": {
+      "log_token": "3a43824b84534c98bda1d07548db5817",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0762": {
+      "log_token": "3a43824b84534c98bda1d07548db5817",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0763": {
+      "log_token": "3a43824b84534c98bda1d07548db5817",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0764": {
+      "log_token": "3a43824b84534c98bda1d07548db5817",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0765": {
+      "log_token": "3a43824b84534c98bda1d07548db5817",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0767": {
+      "log_token": "3a43824b84534c98bda1d07548db5817",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0768": {
+      "log_token": "3a43824b84534c98bda1d07548db5817",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0769": {
+      "log_token": "3a43824b84534c98bda1d07548db5817",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0770": {
+      "log_token": "bd38be48fba140f1941bf7c84a33255d",
+      "role": "heldout_eval"
+    },
+    "scene-0771": {
+      "log_token": "bd38be48fba140f1941bf7c84a33255d",
+      "role": "heldout_eval"
+    },
+    "scene-0775": {
+      "log_token": "bd38be48fba140f1941bf7c84a33255d",
+      "role": "heldout_eval"
+    },
+    "scene-0777": {
+      "log_token": "bd38be48fba140f1941bf7c84a33255d",
+      "role": "heldout_eval"
+    },
+    "scene-0778": {
+      "log_token": "bd38be48fba140f1941bf7c84a33255d",
+      "role": "heldout_eval"
+    },
+    "scene-0780": {
+      "log_token": "bd38be48fba140f1941bf7c84a33255d",
+      "role": "heldout_eval"
+    },
+    "scene-0781": {
+      "log_token": "bd38be48fba140f1941bf7c84a33255d",
+      "role": "heldout_eval"
+    },
+    "scene-0782": {
+      "log_token": "bd38be48fba140f1941bf7c84a33255d",
+      "role": "heldout_eval"
+    },
+    "scene-0783": {
+      "log_token": "bd38be48fba140f1941bf7c84a33255d",
+      "role": "heldout_eval"
+    },
+    "scene-0784": {
+      "log_token": "bd38be48fba140f1941bf7c84a33255d",
+      "role": "heldout_eval"
+    },
+    "scene-0786": {
+      "log_token": "18f99982fba24684a9ea03c0cdc53fc8",
+      "role": "dev"
+    },
+    "scene-0787": {
+      "log_token": "18f99982fba24684a9ea03c0cdc53fc8",
+      "role": "dev"
+    },
+    "scene-0789": {
+      "log_token": "18f99982fba24684a9ea03c0cdc53fc8",
+      "role": "dev"
+    },
+    "scene-0790": {
+      "log_token": "18f99982fba24684a9ea03c0cdc53fc8",
+      "role": "dev"
+    },
+    "scene-0791": {
+      "log_token": "18f99982fba24684a9ea03c0cdc53fc8",
+      "role": "dev"
+    },
+    "scene-0792": {
+      "log_token": "18f99982fba24684a9ea03c0cdc53fc8",
+      "role": "dev"
+    },
+    "scene-0794": {
+      "log_token": "8ff48ad1df8e4966a2151730c92b7f3c",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0795": {
+      "log_token": "8ff48ad1df8e4966a2151730c92b7f3c",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0796": {
+      "log_token": "8ff48ad1df8e4966a2151730c92b7f3c",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0797": {
+      "log_token": "8ff48ad1df8e4966a2151730c92b7f3c",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0798": {
+      "log_token": "8ff48ad1df8e4966a2151730c92b7f3c",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0799": {
+      "log_token": "8ff48ad1df8e4966a2151730c92b7f3c",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0800": {
+      "log_token": "8ff48ad1df8e4966a2151730c92b7f3c",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0802": {
+      "log_token": "8ff48ad1df8e4966a2151730c92b7f3c",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0803": {
+      "log_token": "246e7da6bb344941bac92be421a545e2",
+      "role": "dev"
+    },
+    "scene-0804": {
+      "log_token": "246e7da6bb344941bac92be421a545e2",
+      "role": "dev"
+    },
+    "scene-0805": {
+      "log_token": "246e7da6bb344941bac92be421a545e2",
+      "role": "dev"
+    },
+    "scene-0806": {
+      "log_token": "246e7da6bb344941bac92be421a545e2",
+      "role": "dev"
+    },
+    "scene-0808": {
+      "log_token": "246e7da6bb344941bac92be421a545e2",
+      "role": "dev"
+    },
+    "scene-0809": {
+      "log_token": "246e7da6bb344941bac92be421a545e2",
+      "role": "dev"
+    },
+    "scene-0810": {
+      "log_token": "246e7da6bb344941bac92be421a545e2",
+      "role": "dev"
+    },
+    "scene-0811": {
+      "log_token": "246e7da6bb344941bac92be421a545e2",
+      "role": "dev"
+    },
+    "scene-0812": {
+      "log_token": "246e7da6bb344941bac92be421a545e2",
+      "role": "dev"
+    },
+    "scene-0813": {
+      "log_token": "246e7da6bb344941bac92be421a545e2",
+      "role": "dev"
+    },
+    "scene-0815": {
+      "log_token": "246e7da6bb344941bac92be421a545e2",
+      "role": "dev"
+    },
+    "scene-0816": {
+      "log_token": "246e7da6bb344941bac92be421a545e2",
+      "role": "dev"
+    },
+    "scene-0817": {
+      "log_token": "246e7da6bb344941bac92be421a545e2",
+      "role": "dev"
+    },
+    "scene-0819": {
+      "log_token": "246e7da6bb344941bac92be421a545e2",
+      "role": "dev"
+    },
+    "scene-0820": {
+      "log_token": "246e7da6bb344941bac92be421a545e2",
+      "role": "dev"
+    },
+    "scene-0821": {
+      "log_token": "246e7da6bb344941bac92be421a545e2",
+      "role": "dev"
+    },
+    "scene-0822": {
+      "log_token": "246e7da6bb344941bac92be421a545e2",
+      "role": "dev"
+    },
+    "scene-0847": {
+      "log_token": "2f3c08142bc04ac3af6a8cf6c721b816",
+      "role": "train"
+    },
+    "scene-0848": {
+      "log_token": "2f3c08142bc04ac3af6a8cf6c721b816",
+      "role": "train"
+    },
+    "scene-0849": {
+      "log_token": "2f3c08142bc04ac3af6a8cf6c721b816",
+      "role": "train"
+    },
+    "scene-0850": {
+      "log_token": "2f3c08142bc04ac3af6a8cf6c721b816",
+      "role": "train"
+    },
+    "scene-0851": {
+      "log_token": "2f3c08142bc04ac3af6a8cf6c721b816",
+      "role": "train"
+    },
+    "scene-0852": {
+      "log_token": "2f3c08142bc04ac3af6a8cf6c721b816",
+      "role": "train"
+    },
+    "scene-0853": {
+      "log_token": "2f3c08142bc04ac3af6a8cf6c721b816",
+      "role": "train"
+    },
+    "scene-0854": {
+      "log_token": "2f3c08142bc04ac3af6a8cf6c721b816",
+      "role": "train"
+    },
+    "scene-0855": {
+      "log_token": "2f3c08142bc04ac3af6a8cf6c721b816",
+      "role": "train"
+    },
+    "scene-0856": {
+      "log_token": "2f3c08142bc04ac3af6a8cf6c721b816",
+      "role": "train"
+    },
+    "scene-0858": {
+      "log_token": "2f3c08142bc04ac3af6a8cf6c721b816",
+      "role": "train"
+    },
+    "scene-0860": {
+      "log_token": "2f3c08142bc04ac3af6a8cf6c721b816",
+      "role": "train"
+    },
+    "scene-0861": {
+      "log_token": "2f3c08142bc04ac3af6a8cf6c721b816",
+      "role": "train"
+    },
+    "scene-0862": {
+      "log_token": "2f3c08142bc04ac3af6a8cf6c721b816",
+      "role": "train"
+    },
+    "scene-0863": {
+      "log_token": "2f3c08142bc04ac3af6a8cf6c721b816",
+      "role": "train"
+    },
+    "scene-0864": {
+      "log_token": "2f3c08142bc04ac3af6a8cf6c721b816",
+      "role": "train"
+    },
+    "scene-0865": {
+      "log_token": "2f3c08142bc04ac3af6a8cf6c721b816",
+      "role": "train"
+    },
+    "scene-0866": {
+      "log_token": "2f3c08142bc04ac3af6a8cf6c721b816",
+      "role": "train"
+    },
+    "scene-0868": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0869": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0870": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0871": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0872": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0873": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0875": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0876": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0877": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0878": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0880": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0882": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0883": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0884": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0885": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0886": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0887": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0888": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0889": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0890": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0891": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0892": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0893": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0894": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0895": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0896": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0897": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0898": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0899": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0900": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0901": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0902": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0903": {
+      "log_token": "65629cfc47fe489fabc497ead466a313",
+      "role": "train"
+    },
+    "scene-0904": {
+      "log_token": "8c66d9d518c54aed98dce7e3095501bc",
+      "role": "heldout_eval"
+    },
+    "scene-0905": {
+      "log_token": "8c66d9d518c54aed98dce7e3095501bc",
+      "role": "heldout_eval"
+    },
+    "scene-0906": {
+      "log_token": "8c66d9d518c54aed98dce7e3095501bc",
+      "role": "heldout_eval"
+    },
+    "scene-0907": {
+      "log_token": "8c66d9d518c54aed98dce7e3095501bc",
+      "role": "heldout_eval"
+    },
+    "scene-0908": {
+      "log_token": "8c66d9d518c54aed98dce7e3095501bc",
+      "role": "heldout_eval"
+    },
+    "scene-0909": {
+      "log_token": "8c66d9d518c54aed98dce7e3095501bc",
+      "role": "heldout_eval"
+    },
+    "scene-0910": {
+      "log_token": "8c66d9d518c54aed98dce7e3095501bc",
+      "role": "heldout_eval"
+    },
+    "scene-0911": {
+      "log_token": "8c66d9d518c54aed98dce7e3095501bc",
+      "role": "heldout_eval"
+    },
+    "scene-0912": {
+      "log_token": "8c66d9d518c54aed98dce7e3095501bc",
+      "role": "heldout_eval"
+    },
+    "scene-0913": {
+      "log_token": "8c66d9d518c54aed98dce7e3095501bc",
+      "role": "heldout_eval"
+    },
+    "scene-0914": {
+      "log_token": "8c66d9d518c54aed98dce7e3095501bc",
+      "role": "heldout_eval"
+    },
+    "scene-0915": {
+      "log_token": "8c66d9d518c54aed98dce7e3095501bc",
+      "role": "heldout_eval"
+    },
+    "scene-0916": {
+      "log_token": "5bd40b613ac740cd9dbacdfbc3d68201",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0917": {
+      "log_token": "5bd40b613ac740cd9dbacdfbc3d68201",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0919": {
+      "log_token": "5bd40b613ac740cd9dbacdfbc3d68201",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0920": {
+      "log_token": "5bd40b613ac740cd9dbacdfbc3d68201",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0921": {
+      "log_token": "5bd40b613ac740cd9dbacdfbc3d68201",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0922": {
+      "log_token": "5bd40b613ac740cd9dbacdfbc3d68201",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-0923": {
+      "log_token": "f61e86a4241b484484da143725dce8fc",
+      "role": "heldout_eval"
+    },
+    "scene-0924": {
+      "log_token": "f61e86a4241b484484da143725dce8fc",
+      "role": "heldout_eval"
+    },
+    "scene-0925": {
+      "log_token": "f61e86a4241b484484da143725dce8fc",
+      "role": "heldout_eval"
+    },
+    "scene-0926": {
+      "log_token": "f61e86a4241b484484da143725dce8fc",
+      "role": "heldout_eval"
+    },
+    "scene-0927": {
+      "log_token": "f61e86a4241b484484da143725dce8fc",
+      "role": "heldout_eval"
+    },
+    "scene-0928": {
+      "log_token": "f61e86a4241b484484da143725dce8fc",
+      "role": "heldout_eval"
+    },
+    "scene-0929": {
+      "log_token": "f61e86a4241b484484da143725dce8fc",
+      "role": "heldout_eval"
+    },
+    "scene-0930": {
+      "log_token": "f61e86a4241b484484da143725dce8fc",
+      "role": "heldout_eval"
+    },
+    "scene-0931": {
+      "log_token": "f61e86a4241b484484da143725dce8fc",
+      "role": "heldout_eval"
+    },
+    "scene-0945": {
+      "log_token": "0986cb758b1d43fdaa051ab23d45582b",
+      "role": "dev"
+    },
+    "scene-0947": {
+      "log_token": "0986cb758b1d43fdaa051ab23d45582b",
+      "role": "dev"
+    },
+    "scene-0949": {
+      "log_token": "0986cb758b1d43fdaa051ab23d45582b",
+      "role": "dev"
+    },
+    "scene-0952": {
+      "log_token": "0986cb758b1d43fdaa051ab23d45582b",
+      "role": "dev"
+    },
+    "scene-0953": {
+      "log_token": "0986cb758b1d43fdaa051ab23d45582b",
+      "role": "dev"
+    },
+    "scene-0955": {
+      "log_token": "0986cb758b1d43fdaa051ab23d45582b",
+      "role": "dev"
+    },
+    "scene-0956": {
+      "log_token": "0986cb758b1d43fdaa051ab23d45582b",
+      "role": "dev"
+    },
+    "scene-0957": {
+      "log_token": "0986cb758b1d43fdaa051ab23d45582b",
+      "role": "dev"
+    },
+    "scene-0958": {
+      "log_token": "0986cb758b1d43fdaa051ab23d45582b",
+      "role": "dev"
+    },
+    "scene-0959": {
+      "log_token": "0986cb758b1d43fdaa051ab23d45582b",
+      "role": "dev"
+    },
+    "scene-0960": {
+      "log_token": "0986cb758b1d43fdaa051ab23d45582b",
+      "role": "dev"
+    },
+    "scene-0961": {
+      "log_token": "0986cb758b1d43fdaa051ab23d45582b",
+      "role": "dev"
+    },
+    "scene-0962": {
+      "log_token": "ee155e99938a4c2698fed50fc5b5d16a",
+      "role": "heldout_eval"
+    },
+    "scene-0963": {
+      "log_token": "ee155e99938a4c2698fed50fc5b5d16a",
+      "role": "heldout_eval"
+    },
+    "scene-0966": {
+      "log_token": "ee155e99938a4c2698fed50fc5b5d16a",
+      "role": "heldout_eval"
+    },
+    "scene-0967": {
+      "log_token": "ee155e99938a4c2698fed50fc5b5d16a",
+      "role": "heldout_eval"
+    },
+    "scene-0968": {
+      "log_token": "ee155e99938a4c2698fed50fc5b5d16a",
+      "role": "heldout_eval"
+    },
+    "scene-0969": {
+      "log_token": "ee155e99938a4c2698fed50fc5b5d16a",
+      "role": "heldout_eval"
+    },
+    "scene-0971": {
+      "log_token": "ee155e99938a4c2698fed50fc5b5d16a",
+      "role": "heldout_eval"
+    },
+    "scene-0972": {
+      "log_token": "ee155e99938a4c2698fed50fc5b5d16a",
+      "role": "heldout_eval"
+    },
+    "scene-0975": {
+      "log_token": "700b800c787842ba83493d9b2775234a",
+      "role": "train"
+    },
+    "scene-0976": {
+      "log_token": "700b800c787842ba83493d9b2775234a",
+      "role": "train"
+    },
+    "scene-0977": {
+      "log_token": "700b800c787842ba83493d9b2775234a",
+      "role": "train"
+    },
+    "scene-0978": {
+      "log_token": "700b800c787842ba83493d9b2775234a",
+      "role": "train"
+    },
+    "scene-0979": {
+      "log_token": "700b800c787842ba83493d9b2775234a",
+      "role": "train"
+    },
+    "scene-0980": {
+      "log_token": "700b800c787842ba83493d9b2775234a",
+      "role": "train"
+    },
+    "scene-0981": {
+      "log_token": "700b800c787842ba83493d9b2775234a",
+      "role": "train"
+    },
+    "scene-0982": {
+      "log_token": "700b800c787842ba83493d9b2775234a",
+      "role": "train"
+    },
+    "scene-0983": {
+      "log_token": "700b800c787842ba83493d9b2775234a",
+      "role": "train"
+    },
+    "scene-0984": {
+      "log_token": "700b800c787842ba83493d9b2775234a",
+      "role": "train"
+    },
+    "scene-0988": {
+      "log_token": "700b800c787842ba83493d9b2775234a",
+      "role": "train"
+    },
+    "scene-0989": {
+      "log_token": "700b800c787842ba83493d9b2775234a",
+      "role": "train"
+    },
+    "scene-0990": {
+      "log_token": "700b800c787842ba83493d9b2775234a",
+      "role": "train"
+    },
+    "scene-0991": {
+      "log_token": "700b800c787842ba83493d9b2775234a",
+      "role": "train"
+    },
+    "scene-0992": {
+      "log_token": "6175c3299ae0482791f4ab1e9d54b326",
+      "role": "train"
+    },
+    "scene-0994": {
+      "log_token": "6175c3299ae0482791f4ab1e9d54b326",
+      "role": "train"
+    },
+    "scene-0995": {
+      "log_token": "6175c3299ae0482791f4ab1e9d54b326",
+      "role": "train"
+    },
+    "scene-0996": {
+      "log_token": "6175c3299ae0482791f4ab1e9d54b326",
+      "role": "train"
+    },
+    "scene-0997": {
+      "log_token": "6175c3299ae0482791f4ab1e9d54b326",
+      "role": "train"
+    },
+    "scene-0998": {
+      "log_token": "6175c3299ae0482791f4ab1e9d54b326",
+      "role": "train"
+    },
+    "scene-0999": {
+      "log_token": "6175c3299ae0482791f4ab1e9d54b326",
+      "role": "train"
+    },
+    "scene-1000": {
+      "log_token": "6175c3299ae0482791f4ab1e9d54b326",
+      "role": "train"
+    },
+    "scene-1001": {
+      "log_token": "6175c3299ae0482791f4ab1e9d54b326",
+      "role": "train"
+    },
+    "scene-1002": {
+      "log_token": "6175c3299ae0482791f4ab1e9d54b326",
+      "role": "train"
+    },
+    "scene-1003": {
+      "log_token": "6175c3299ae0482791f4ab1e9d54b326",
+      "role": "train"
+    },
+    "scene-1004": {
+      "log_token": "6175c3299ae0482791f4ab1e9d54b326",
+      "role": "train"
+    },
+    "scene-1005": {
+      "log_token": "6175c3299ae0482791f4ab1e9d54b326",
+      "role": "train"
+    },
+    "scene-1006": {
+      "log_token": "6175c3299ae0482791f4ab1e9d54b326",
+      "role": "train"
+    },
+    "scene-1007": {
+      "log_token": "6175c3299ae0482791f4ab1e9d54b326",
+      "role": "train"
+    },
+    "scene-1008": {
+      "log_token": "6175c3299ae0482791f4ab1e9d54b326",
+      "role": "train"
+    },
+    "scene-1009": {
+      "log_token": "6175c3299ae0482791f4ab1e9d54b326",
+      "role": "train"
+    },
+    "scene-1010": {
+      "log_token": "6175c3299ae0482791f4ab1e9d54b326",
+      "role": "train"
+    },
+    "scene-1011": {
+      "log_token": "c9b039c47ec54cc7b5c0fcc7a5730e38",
+      "role": "train"
+    },
+    "scene-1012": {
+      "log_token": "c9b039c47ec54cc7b5c0fcc7a5730e38",
+      "role": "train"
+    },
+    "scene-1013": {
+      "log_token": "c9b039c47ec54cc7b5c0fcc7a5730e38",
+      "role": "train"
+    },
+    "scene-1014": {
+      "log_token": "c9b039c47ec54cc7b5c0fcc7a5730e38",
+      "role": "train"
+    },
+    "scene-1015": {
+      "log_token": "c9b039c47ec54cc7b5c0fcc7a5730e38",
+      "role": "train"
+    },
+    "scene-1016": {
+      "log_token": "c9b039c47ec54cc7b5c0fcc7a5730e38",
+      "role": "train"
+    },
+    "scene-1017": {
+      "log_token": "c9b039c47ec54cc7b5c0fcc7a5730e38",
+      "role": "train"
+    },
+    "scene-1018": {
+      "log_token": "c9b039c47ec54cc7b5c0fcc7a5730e38",
+      "role": "train"
+    },
+    "scene-1019": {
+      "log_token": "c9b039c47ec54cc7b5c0fcc7a5730e38",
+      "role": "train"
+    },
+    "scene-1020": {
+      "log_token": "c9b039c47ec54cc7b5c0fcc7a5730e38",
+      "role": "train"
+    },
+    "scene-1021": {
+      "log_token": "c9b039c47ec54cc7b5c0fcc7a5730e38",
+      "role": "train"
+    },
+    "scene-1022": {
+      "log_token": "c9b039c47ec54cc7b5c0fcc7a5730e38",
+      "role": "train"
+    },
+    "scene-1023": {
+      "log_token": "c9b039c47ec54cc7b5c0fcc7a5730e38",
+      "role": "train"
+    },
+    "scene-1024": {
+      "log_token": "c9b039c47ec54cc7b5c0fcc7a5730e38",
+      "role": "train"
+    },
+    "scene-1025": {
+      "log_token": "c9b039c47ec54cc7b5c0fcc7a5730e38",
+      "role": "train"
+    },
+    "scene-1044": {
+      "log_token": "853a9f9fe7e84bb8b24bff8ebf23f287",
+      "role": "train"
+    },
+    "scene-1045": {
+      "log_token": "853a9f9fe7e84bb8b24bff8ebf23f287",
+      "role": "train"
+    },
+    "scene-1046": {
+      "log_token": "853a9f9fe7e84bb8b24bff8ebf23f287",
+      "role": "train"
+    },
+    "scene-1047": {
+      "log_token": "853a9f9fe7e84bb8b24bff8ebf23f287",
+      "role": "train"
+    },
+    "scene-1048": {
+      "log_token": "853a9f9fe7e84bb8b24bff8ebf23f287",
+      "role": "train"
+    },
+    "scene-1049": {
+      "log_token": "853a9f9fe7e84bb8b24bff8ebf23f287",
+      "role": "train"
+    },
+    "scene-1050": {
+      "log_token": "853a9f9fe7e84bb8b24bff8ebf23f287",
+      "role": "train"
+    },
+    "scene-1051": {
+      "log_token": "853a9f9fe7e84bb8b24bff8ebf23f287",
+      "role": "train"
+    },
+    "scene-1052": {
+      "log_token": "853a9f9fe7e84bb8b24bff8ebf23f287",
+      "role": "train"
+    },
+    "scene-1053": {
+      "log_token": "853a9f9fe7e84bb8b24bff8ebf23f287",
+      "role": "train"
+    },
+    "scene-1054": {
+      "log_token": "853a9f9fe7e84bb8b24bff8ebf23f287",
+      "role": "train"
+    },
+    "scene-1055": {
+      "log_token": "853a9f9fe7e84bb8b24bff8ebf23f287",
+      "role": "train"
+    },
+    "scene-1056": {
+      "log_token": "853a9f9fe7e84bb8b24bff8ebf23f287",
+      "role": "train"
+    },
+    "scene-1057": {
+      "log_token": "853a9f9fe7e84bb8b24bff8ebf23f287",
+      "role": "train"
+    },
+    "scene-1058": {
+      "log_token": "853a9f9fe7e84bb8b24bff8ebf23f287",
+      "role": "train"
+    },
+    "scene-1059": {
+      "log_token": "e55205b1f2894b49957905d7ddfdb96d",
+      "role": "heldout_eval"
+    },
+    "scene-1060": {
+      "log_token": "e55205b1f2894b49957905d7ddfdb96d",
+      "role": "heldout_eval"
+    },
+    "scene-1061": {
+      "log_token": "e55205b1f2894b49957905d7ddfdb96d",
+      "role": "heldout_eval"
+    },
+    "scene-1062": {
+      "log_token": "e55205b1f2894b49957905d7ddfdb96d",
+      "role": "heldout_eval"
+    },
+    "scene-1063": {
+      "log_token": "e55205b1f2894b49957905d7ddfdb96d",
+      "role": "heldout_eval"
+    },
+    "scene-1064": {
+      "log_token": "e55205b1f2894b49957905d7ddfdb96d",
+      "role": "heldout_eval"
+    },
+    "scene-1065": {
+      "log_token": "e55205b1f2894b49957905d7ddfdb96d",
+      "role": "heldout_eval"
+    },
+    "scene-1066": {
+      "log_token": "e55205b1f2894b49957905d7ddfdb96d",
+      "role": "heldout_eval"
+    },
+    "scene-1067": {
+      "log_token": "e55205b1f2894b49957905d7ddfdb96d",
+      "role": "heldout_eval"
+    },
+    "scene-1068": {
+      "log_token": "e55205b1f2894b49957905d7ddfdb96d",
+      "role": "heldout_eval"
+    },
+    "scene-1069": {
+      "log_token": "e55205b1f2894b49957905d7ddfdb96d",
+      "role": "heldout_eval"
+    },
+    "scene-1070": {
+      "log_token": "e55205b1f2894b49957905d7ddfdb96d",
+      "role": "heldout_eval"
+    },
+    "scene-1071": {
+      "log_token": "e55205b1f2894b49957905d7ddfdb96d",
+      "role": "heldout_eval"
+    },
+    "scene-1072": {
+      "log_token": "e55205b1f2894b49957905d7ddfdb96d",
+      "role": "heldout_eval"
+    },
+    "scene-1073": {
+      "log_token": "e55205b1f2894b49957905d7ddfdb96d",
+      "role": "heldout_eval"
+    },
+    "scene-1074": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1075": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1076": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1077": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1078": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1079": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1080": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1081": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1082": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1083": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1084": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1085": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1086": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1087": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1088": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1089": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1090": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1091": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1092": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1093": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1094": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1095": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1096": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1097": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1098": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1099": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1100": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1101": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1102": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1104": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1105": {
+      "log_token": "8fefc430cbfa4c2191978c0df302eb98",
+      "role": "excluded_previously_used_mini_log"
+    },
+    "scene-1106": {
+      "log_token": "f93e8d66ce4b4fbea7062d19b1fe29fb",
+      "role": "train"
+    },
+    "scene-1107": {
+      "log_token": "f93e8d66ce4b4fbea7062d19b1fe29fb",
+      "role": "train"
+    },
+    "scene-1108": {
+      "log_token": "f93e8d66ce4b4fbea7062d19b1fe29fb",
+      "role": "train"
+    },
+    "scene-1109": {
+      "log_token": "f93e8d66ce4b4fbea7062d19b1fe29fb",
+      "role": "train"
+    },
+    "scene-1110": {
+      "log_token": "f93e8d66ce4b4fbea7062d19b1fe29fb",
+      "role": "train"
+    }
+  },
+  "source_acquisition_report_sha256": "f18c6da594fd0d465e9fc8f7ad032bfdaea88691236ef04e155a5d1b36e9abf7",
+  "source_identity_sha256": "671ceeb3b21045c8450c5d58b639da721b763867f99c6c3466beb617488328ba"
+}

@@ -1,0 +1,31 @@
+{
+  "revision": "NUSCENES-FULL-COVERAGE-0-6M-2026-10-28-r1",
+  "expected_scenes": 850,
+  "expected_keyframes": 34149,
+  "expected_scenes_per_part": 85,
+  "parts": [1,2,3,4,5,6,7,8,9,10],
+  "reviewed_download_manifest_file_sha256": "ec635ffeff5eda6f87151366a9d5516f96c474986eac6a0684831736c90161e5",
+  "classes": {
+    "Vehicle": ["vehicle.car", "vehicle.truck", "vehicle.bus.bendy", "vehicle.bus.rigid", "vehicle.trailer", "vehicle.construction", "vehicle.emergency.ambulance", "vehicle.emergency.police"],
+    "Pedestrian": ["human.pedestrian.adult", "human.pedestrian.child", "human.pedestrian.construction_worker", "human.pedestrian.police_officer"]
+  },
+  "range_bands_m": [[0,1],[1,2],[0,2],[2,4],[4,6],[0,6]],
+  "range_membership": "Camera-axis Z > 0; left closed/right open except all bands ending at 6 include 6m. No interpolation into missing LiDAR truth.",
+  "boundary_guard": {"window_pixels": 5, "maximum_local_depth_span_m": 0.5},
+  "maximum_camera_lidar_gap_ms": 50,
+  "minimum_surface_points_per_object_camera_band": 5,
+  "minimum_surface_points_per_image_band": 5,
+  "keyframes_per_chunk": 64,
+  "workers": 4,
+  "local_disk_reserve_gb": 8,
+  "maximum_archive_member_bytes": 2147483648,
+  "runtime_packages": {"numpy":"2.1.3","scipy":"1.16.3","pillow":"11.3.0","ijson":"3.4.0.post0"},
+  "frozen_roles_file": "configs/nuscenes_parking_frozen_roles_v1.json",
+  "download_sources_file": "configs/nuscenes_drive_sources_v1.json",
+  "accuracy_threshold_m": null,
+  "accuracy_pass_fail_enabled": false,
+  "model_inference_performed": false,
+  "training_authorized": false,
+  "scope": "Coverage only across all trainval scenes, including separately reported excluded roles. Scene/log roles never change. Counts separate measured surface support from annotation-centre proxies; no complete-visibility, depth-accuracy, or deployment qualification claim.",
+  "resumption": "Keep compressed result chunks on Drive; stage and process at most one sensor archive locally. Clean only helper-owned local part scratch after durable completion; never remove Drive archives or historical experiments."
+}
