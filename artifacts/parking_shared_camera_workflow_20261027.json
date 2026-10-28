@@ -1,0 +1,70 @@
+{
+  "revision": "PARKING-SHARED-CAMERA-2026-10-27-r1",
+  "status": "workflow_verified_for_colab_pilot_not_trained",
+  "notebook": "notebooks/Parking_Shared_Camera_Aware_Pilot_Colab.ipynb",
+  "purpose": "Test whether camera calibration improves near-range depth compared with a parameter-matched fixed-camera control",
+  "warmstart": {
+    "arm": "parking_balanced",
+    "epoch": 7,
+    "checkpoint_sha256": "31bd01a9c1a3383e16bb83e807260ddd534d366ad39fda6d4befc54924ed1214",
+    "bundle_sha256": "8239f27a75ba6e06ed8865f3d964426503c61414661cb45b734299769038cd45"
+  },
+  "data": {
+    "train_images": 1536,
+    "dev_images": 256,
+    "heldout_images_used": 0,
+    "input_manifest_file_sha256": "5bc99105a295ef80f4f2c8ed4c3ff71879f993b5cc2afaf54162e0ca907bc85d",
+    "new_download_or_split_required": false
+  },
+  "model": {
+    "unchanged_frozen_urban_body": true,
+    "base_depth_parameters": 57441,
+    "extra_adapter_parameters_per_arm": 1553,
+    "trainable_parameters_per_arm": 58994,
+    "arms": ["reference_camera", "actual_camera"],
+    "both_arms_same_architecture_and_initial_state": true,
+    "zero_initialized_adapter_initial_predictions_bit_exact": true,
+    "adapter_adds_batchnorm": false
+  },
+  "planned_budget": {
+    "epochs_per_arm": 5,
+    "batch_size": 8,
+    "updates_per_epoch": 192,
+    "updates_per_arm": 960,
+    "fresh_adamw_learning_rate": 0.0001,
+    "weight_decay": 0.0001,
+    "huber_delta_m": 0.2,
+    "parking_loss_weight": 0.8,
+    "broad_loss_weight": 0.2,
+    "checkpoint_selection": "Development equal-four-cell MAE, including epoch 0; earlier epoch wins ties"
+  },
+  "verification": {
+    "cpu_real_checkpoint_smoke_passed": true,
+    "finite_backward_passed": true,
+    "real_feature_cache_roundtrip_images": 2,
+    "sampled_depth_parity_max_delta_m": 0.0,
+    "full_development_replay_images": 256,
+    "reviewed_gpu_equal_four_cell_mae_m": 0.7599000045476201,
+    "cpu_replay_equal_four_cell_mae_m": 0.7600089855851706,
+    "maximum_cell_replay_delta_m": 0.00017629540998376214,
+    "replay_guard_maximum_allowed_cell_delta_m": 0.005,
+    "matched_critical_image_and_point_counts": true,
+    "real_data_optimizer_steps": 0,
+    "synthetic_optimizer_and_epoch_resume_tested": true,
+    "clean_main_dependency_release_tested": true,
+    "local_runtime": "macOS arm64 CPU, Python 3.12.11, Torch 2.12.0, Ultralytics 8.4.61",
+    "cuda_execution_tested_locally": false,
+    "cuda_preflight_in_notebook": true
+  },
+  "research_checks": {
+    "minimum_relative_dev_gain_vs_initial_and_control": 0.05,
+    "maximum_individual_cell_regression_m": 0.05,
+    "vehicle_2_4m_must_beat_fixed_4m_diagnostic": true,
+    "are_product_acceptance_thresholds": false
+  },
+  "knowledge_distillation": false,
+  "heldout_evaluation_performed": false,
+  "phone_app_changed": false,
+  "extended_training_authorized": false,
+  "deployment_qualified": false
+}
