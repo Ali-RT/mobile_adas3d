@@ -1,0 +1,166 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MobileADAS3D near field progress update</title><style>body{max-width:1060px;margin:40px auto;padding:0 24px;font:17px/1.65 system-ui;color:#171c25;background:#fff}h1{font-size:34px;line-height:1.2}h2{margin-top:2em;line-height:1.25}nav{display:flex;gap:14px;flex-wrap:wrap}a{color:#17539a}table{border-collapse:collapse;width:100%;margin:20px 0 28px;font-size:15px}th,td{border:1px solid #d9d9d9;padding:11px;text-align:left}th{background:#e8eef4}td:not(:first-child){text-align:center}p{max-width:90ch}.meta{color:#526071}details{margin:20px 0}code{overflow-wrap:anywhere;font-size:13px}@media print{nav,button{display:none}body{margin:0;font-size:11pt}h2{break-after:avoid}tr{break-inside:avoid}}</style>
+<h1>MobileADAS3D near field progress update</h1><p class="meta">29 October 2026 · Addendum to the October 28 report</p><button onclick="window.print()">Print or save as PDF</button><nav>
+<a href="#s0">Progress and current decision</a>
+<a href="#s1">What the model experiments showed</a>
+<a href="#s2">What data we now have</a>
+<a href="#s3">What the coverage means</a>
+<a href="#s4">How we will compare V0 and V1</a>
+<a href="#s5">Next actions and reporting boundaries</a>
+</nav>
+<section id="s0"><h2>Progress and current decision</h2>
+<p>We have a trained shared parking model, a complete near-field data census, and a frozen benchmark for measuring the next improvement. We selected the actual-camera adapter at epoch 4 as V0. Its weights will remain unchanged while we measure the new development baseline. No V0 or V1 accuracy score has yet been produced on this new benchmark.</p>
+<p>The use case is a camera mounted on a slowly moving vehicle, providing Vehicle and Pedestrian labels and distance estimates for ultrasonic-sensor validation. The critical distance band is 2 to 6 metres. We also retain 0 to 2 metre coverage so the closest range is not forgotten. Projected 3D cuboids are optional.</p>
+<p>This update continues the October 28 report. The earlier A2 and A2 Lite experiments remain historical baselines; this work focuses on a shared Urban nano image backbone with a trained depth decoder and camera-aware adapter. We have not replaced the iPhone app with the selected V0 checkpoint.</p>
+<table><thead><tr><th>Work item</th><th>Status</th><th>Evidence</th></tr></thead><tbody>
+<tr><td>Near-range depth training</td><td>Completed</td><td>Epoch 7 selected from 10 epochs per arm</td></tr>
+<tr><td>Joint camera-aware pilot</td><td>Completed</td><td>Epoch 0 retained; no selected improvement</td></tr>
+<tr><td>Adapter-only full-pool pilot</td><td>Completed</td><td>Actual-camera epoch 4 selected</td></tr>
+<tr><td>Full nuScenes coverage census</td><td>Completed</td><td>34,149 keyframes across 850 scenes</td></tr>
+<tr><td>Frozen V0/V1 benchmark</td><td>Prepared</td><td>512 dev and 512 held-out images</td></tr>
+<tr><td>V0 score on the new benchmark</td><td>Next</td><td>No model inference yet</td></tr>
+</tbody></table>
+</section>
+<section id="s1"><h2>What the model experiments showed</h2>
+<p>The shared model processes an image once and reuses three feature scales for detection, projected cuboid corners and depth. The detection body and its BatchNorm statistics stay frozen during these depth pilots. The depth decoder was trained using sparse LiDAR ground truth, not a teacher model. A small camera adapter then uses the camera calibration to adjust depth predictions.</p>
+<p>The parking-balanced depth recipe reduced the old development error from 2.142 m for its broad-loss control to 0.760 m. Training the camera-aware decoder and adapter together did not improve the selected checkpoint. Training only the 1,553 adapter parameters gave a selected error of 0.716 m, about 5.8% lower than the 0.760 m initialization. The original 57,441 depth parameters and detector stayed frozen.</p>
+<p>These numbers use the earlier 256-image development set and an image-macro four-cell metric. They are not the new benchmark score and cannot be directly compared with it. The adapter did not pass every earlier research check: Vehicle at 2 to 4 metres remained worse than a constant 4 metre diagnostic. This is a useful improvement, not deployment qualification.</p>
+<table><thead><tr><th>Experiment</th><th>Budget per arm</th><th>Selected epoch</th><th>Old dev MAE</th></tr></thead><tbody>
+<tr><td>Broad-loss control</td><td>10 epochs / 1,920 updates</td><td>4</td><td>2.142 m</td></tr>
+<tr><td>Parking-balanced depth</td><td>10 epochs / 1,920 updates</td><td>7</td><td>0.760 m</td></tr>
+<tr><td>Joint camera pilot</td><td>5 epochs / 960 updates</td><td>0</td><td>0.760 m</td></tr>
+<tr><td>Adapter fixed-camera control</td><td>5 epochs / 1,920 updates</td><td>3</td><td>0.759 m</td></tr>
+<tr><td>Adapter actual camera  V0</td><td>5 epochs / 1,920 updates</td><td>4</td><td>0.716 m</td></tr>
+</tbody></table>
+</section>
+<section id="s2"><h2>What data we now have</h2>
+<p>We acquired the nuScenes v1.0 trainval metadata, LiDAR semantic labels and all ten keyframe-only sensor parts in Google Drive. The 12 compressed archives total 45.53 GB. The complete census checked 204,894 image headers and projected 204,889 camera views. Five views were excluded because the camera and LiDAR timestamps differed by more than 50 milliseconds.</p>
+<p>Training, development and evaluation roles are kept apart by recording log. The assigned pools contain 477 training scenes, 150 development scenes and 113 evaluation scenes. Another 110 scenes from Mini recording logs are excluded. Three previously inspected evaluation logs are excluded from the new final benchmark, leaving 98 scenes in 11 uninspected logs. These are our frozen custom roles, not a claim to the standard official nuScenes benchmark split.</p>
+<p>Counts below are object observations at individual keyframes, supported by at least five conservative object-owned LiDAR points in a camera and range band. A moving sequence can contain many observations of the same tracked object. Unique tracks show the number of distinct annotated instances. Extended objects can occupy several bands, so rows must not be added together.</p>
+<table><thead><tr><th>Training band</th><th>Vehicle observations</th><th>Vehicle tracks</th><th>Pedestrian observations</th><th>Pedestrian tracks</th></tr></thead><tbody>
+<tr><td>0 to 1 m</td><td>1</td><td>1</td><td>24</td><td>5</td></tr>
+<tr><td>0 to 2 m</td><td>2,290</td><td>578</td><td>110</td><td>43</td></tr>
+<tr><td>2 to 4 m</td><td>10,930</td><td>2,043</td><td>1,049</td><td>347</td></tr>
+<tr><td>4 to 6 m</td><td>19,186</td><td>3,142</td><td>2,742</td><td>843</td></tr>
+<tr><td>0 to 6 m</td><td>20,366</td><td>3,154</td><td>3,573</td><td>863</td></tr>
+</tbody></table>
+</section>
+<section id="s3"><h2>What the coverage means</h2>
+<p>Vehicle observations outnumber Pedestrian observations by about 5.7 to 1 across 0 to 6 metres and 20.8 to 1 below 2 metres. The larger pool gives us substantially more training material in the critical 2 to 6 metre range, but it does not remove the closest-range pedestrian gap.</p>
+<p>The 0 to 1 metre region is too sparse for a credible qualification claim, especially for vehicles. The new development benchmark contains no supported Vehicle observations in that band. Pedestrian below 2 metres is also small: 12 observations from eight tracks and three logs in development. We will report this limitation rather than convert a few examples into a pass or fail.</p>
+<p>The reference is camera-axis depth in metres at visible LiDAR surface points. It is not distance to an object centre, radial range from the lens, or the nearest surface seen by an ultrasonic sensor. Sensor validation will still need camera and sensor alignment, timing checks and a defined target surface. A lower depth error alone does not establish ultrasonic equivalence.</p>
+<table><thead><tr><th>Benchmark cell</th><th>Dev observations / tracks / logs</th><th>Held-out observations / tracks / logs</th></tr></thead><tbody>
+<tr><td>Vehicle 2 to 4 m</td><td>262 / 131 / 12</td><td>232 / 121 / 11</td></tr>
+<tr><td>Vehicle 4 to 6 m</td><td>314 / 191 / 12</td><td>308 / 171 / 11</td></tr>
+<tr><td>Pedestrian 2 to 4 m</td><td>132 / 63 / 12</td><td>140 / 58 / 9</td></tr>
+<tr><td>Pedestrian 4 to 6 m</td><td>231 / 110 / 12</td><td>224 / 106 / 11</td></tr>
+<tr><td>Vehicle 0 to 2 m</td><td>120 / 55 / 12</td><td>102 / 53 / 9</td></tr>
+<tr><td>Pedestrian 0 to 2 m</td><td>12 / 8 / 3</td><td>61 / 13 / 6</td></tr>
+</tbody></table>
+</section>
+<section id="s4"><h2>How we will compare V0 and V1</h2>
+<p>The frozen package contains 512 development images and 512 held-out images, covering 1,009 unique keyframes. Its 39 immutable image and sparse-ground-truth shards total about 156 MB. Selection used ground-truth coverage only, retained rare close-range views, and did not consult model predictions. This deliberately enriched sample is not an estimate of natural traffic prevalence.</p>
+<p>Our primary metric is mean absolute depth error in metres, averaged equally across Vehicle and Pedestrian in the 2 to 4 and 4 to 6 metre bands. Within each cell, cameras are averaged within an object observation, observations within a tracked object, tracks within a recording log, and then logs equally. This reduces domination by dense point clouds, repeated frames or long logs.</p>
+<p>We also report pointwise mean, median and 90th-percentile absolute error, prediction coverage and the 0 to 2 metre breakdown. The 0 to 1 metre result is exploratory. Invalid or missing predictions remain visible in the denominator; later V0/V1 comparisons will also use exactly the same valid points. We will not fit an individual scale to each image, clamp predictions into the ground-truth band, or interpolate missing ground truth.</p>
+<p>This is a depth comparison on ground-truth-labelled object surfaces. It does not measure detection mAP, missed objects or cuboid quality. There is no plus-or-minus 10 centimetre accuracy rule and no product pass or fail threshold in this benchmark. We must set any eventual acceptance rule from the sensor-validation requirement, not from whichever model result looks best.</p>
+</section>
+<section id="s5"><h2>Next actions and reporting boundaries</h2>
+<p>First, freeze V0 as the unchanged actual-camera epoch-4 checkpoint. Register its checkpoint hash, architecture, preprocessing, calibration mapping, depth sampling and runtime. Run the 512 development images only, save resumable predictions, and publish errors alongside prediction coverage. This is inference only: no optimizer updates, BatchNorm changes or checkpoint selection.</p>
+<p>Second, inspect the development errors by class, range, track and recording log. Use those findings to write a prospective V1 training recipe using training logs only. Keep the architecture and scoring identities fixed for a weight-only comparison. Extra epochs, class sampling or new losses should be justified by this baseline, not assumed to help.</p>
+<p>Third, compare the chosen V1 with V0 on development using paired points. Freeze the final candidate before opening the held-out benchmark. Evaluate on the iPhone separately for latency, heat and sustained camera operation. No V1 training, held-out model scoring or phone replacement has started in this update.</p>
+<p>For next week, the completed deliverables are the trained shared-model pilots, the full 0 to 6 metre census, explicit coverage gaps and a reproducible benchmark package. The next evidence we need is the new V0 development score. We should not claim a new benchmark improvement or a production-ready distance model before those measurements exist.</p>
+</section>
+<h2>Evidence and reproducibility</h2><p>Source result bundles are retained separately from this report. The frozen data and metric identities allow the next model result to be traced to the same benchmark.</p><details><summary>Show source hashes and frozen identities</summary><pre><code>{
+  &quot;revision&quot;: &quot;PARKING-PROGRESS-2026-10-29-r1&quot;,
+  &quot;report_date&quot;: &quot;2026-10-29&quot;,
+  &quot;scope&quot;: &quot;Shared parking model training, full nuScenes near-field coverage and frozen V0/V1 benchmark preparation; addendum to the October 28 report&quot;,
+  &quot;sources&quot;: {
+    &quot;parking_shared_near_results.zip&quot;: &quot;8239f27a75ba6e06ed8865f3d964426503c61414661cb45b734299769038cd45&quot;,
+    &quot;parking_shared_camera_results.zip&quot;: &quot;30df38ae68638ebc00c4f42992d3a5f9c5fba329d85cbd9c7f970ab972ddc3b0&quot;,
+    &quot;parking_shared_adapter_results.zip&quot;: &quot;4b637f7f13aef2724e4841fb19fa961f268463f045f885665f83d13818208739&quot;,
+    &quot;download_manifest_keyframes_all.json&quot;: &quot;ec635ffeff5eda6f87151366a9d5516f96c474986eac6a0684831736c90161e5&quot;,
+    &quot;nuscenes_0_6m_coverage_results.zip&quot;: &quot;c81d1decd24ee920ad38fd5f80a036f59703f231bc3712b1692fbf35ef3fa265&quot;,
+    &quot;parking_v0_v1_benchmark_results.zip&quot;: &quot;0fd31d9ac26352bd8d710a74abcc9ac919c39e0509103740f3d550f728fca909&quot;
+  },
+  &quot;v0&quot;: {
+    &quot;architecture&quot;: &quot;Urban pretrained nano shared image features plus trained metric depth decoder and actual-camera residual adapter&quot;,
+    &quot;arm&quot;: &quot;actual_camera&quot;,
+    &quot;selected_epoch&quot;: 4,
+    &quot;checkpoint_sha256&quot;: &quot;e896a73c33682d3934bafccd7dcf874450291b56817b4c6997b9955fa926f90b&quot;,
+    &quot;parent_run_identity&quot;: &quot;5c09ffd13125f8c6532bbad4971ac7f1e69980a16f6effa2a1453518f4815222&quot;,
+    &quot;old_dev_image_macro_four_cell_mae_m&quot;: 0.7159343222153897,
+    &quot;new_frozen_benchmark_dev_score&quot;: null,
+    &quot;heldout_score&quot;: null,
+    &quot;user_approved_baseline&quot;: true
+  },
+  &quot;coverage&quot;: {
+    &quot;unique_keyframes&quot;: 34149,
+    &quot;scenes&quot;: 850,
+    &quot;recording_logs&quot;: 68,
+    &quot;camera_headers_checked&quot;: 204894,
+    &quot;projected_camera_views&quot;: 204889,
+    &quot;timing_excluded_views&quot;: 5,
+    &quot;compressed_archive_bytes&quot;: 45527157484,
+    &quot;range_definition&quot;: &quot;Positive camera-axis Z of conservative object-owned LiDAR returns; not radial range or ultrasonic nearest surface&quot;,
+    &quot;train_counts_observations_and_tracks&quot;: {
+      &quot;Vehicle:0-1m&quot;: [
+        1,
+        1
+      ],
+      &quot;Pedestrian:0-1m&quot;: [
+        24,
+        5
+      ],
+      &quot;Vehicle:0-2m&quot;: [
+        2290,
+        578
+      ],
+      &quot;Pedestrian:0-2m&quot;: [
+        110,
+        43
+      ],
+      &quot;Vehicle:2-4m&quot;: [
+        10930,
+        2043
+      ],
+      &quot;Pedestrian:2-4m&quot;: [
+        1049,
+        347
+      ],
+      &quot;Vehicle:4-6m&quot;: [
+        19186,
+        3142
+      ],
+      &quot;Pedestrian:4-6m&quot;: [
+        2742,
+        843
+      ],
+      &quot;Vehicle:0-6m&quot;: [
+        20366,
+        3154
+      ],
+      &quot;Pedestrian:0-6m&quot;: [
+        3573,
+        863
+      ]
+    }
+  },
+  &quot;benchmark&quot;: {
+    &quot;identity_sha256&quot;: &quot;39a060fe2e5474317d1ab8c22f47afd924ac5163ba579656c48ad2d415820382&quot;,
+    &quot;manifest_sha256&quot;: &quot;3c20cc4281e1afe70422fb49c17836957f29b62a6ba47b1fe7a3948429c37a9f&quot;,
+    &quot;dev_images&quot;: 512,
+    &quot;heldout_images&quot;: 512,
+    &quot;dev_unique_keyframes&quot;: 509,
+    &quot;heldout_unique_keyframes&quot;: 500,
+    &quot;shards&quot;: 39,
+    &quot;shard_bytes&quot;: 156050378,
+    &quot;primary&quot;: &quot;Equal mean of Vehicle and Pedestrian in 2-4m and 4-6m; within a cell equal cameras per observation, observations per track, tracks per log, then logs&quot;,
+    &quot;secondary&quot;: &quot;0-2m; 0-1m exploratory&quot;,
+    &quot;requires_prediction_coverage&quot;: true,
+    &quot;accuracy_pass_fail_enabled&quot;: false,
+    &quot;model_inference_performed&quot;: false,
+    &quot;training_performed&quot;: false,
+    &quot;phone_app_changed&quot;: false
+  },
+  &quot;next_authorized_step&quot;: &quot;Freeze the unchanged actual-camera epoch-4 V0 and evaluate only the 512 development images; no V1 training, held-out scoring or phone replacement&quot;
+}</code></pre></details></html>

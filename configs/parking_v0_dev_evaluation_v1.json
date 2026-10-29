@@ -1,0 +1,20 @@
+{
+  "revision": "PARKING-V0-DEV-CPU-2026-10-29-r1",
+  "benchmark_manifest_sha256": "3c20cc4281e1afe70422fb49c17836957f29b62a6ba47b1fe7a3948429c37a9f",
+  "benchmark_identity_sha256": "39a060fe2e5474317d1ab8c22f47afd924ac5163ba579656c48ad2d415820382",
+  "adapter_bundle_sha256": "4b637f7f13aef2724e4841fb19fa961f268463f045f885665f83d13818208739",
+  "adapter_run_identity": "5c09ffd13125f8c6532bbad4971ac7f1e69980a16f6effa2a1453518f4815222",
+  "checkpoint_sha256": "e896a73c33682d3934bafccd7dcf874450291b56817b4c6997b9955fa926f90b",
+  "checkpoint_member": "actual_camera/checkpoints/epoch_004.pth",
+  "arm": "actual_camera",
+  "epoch": 4,
+  "role": "dev",
+  "expected_images": 512,
+  "device": "cpu",
+  "cpu_threads": 2,
+  "dtype": "float32",
+  "training_authorized": false,
+  "heldout_scoring_authorized": false,
+  "phone_app_changed": false,
+  "accuracy_pass_fail_enabled": false
+}

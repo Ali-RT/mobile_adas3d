@@ -1,0 +1,27 @@
+{
+  "revision": "PARKING-V0-DEV-WORKFLOW-VERIFICATION-2026-10-29-r1",
+  "user_approved_publication": true,
+  "user_selected_v0": "Unchanged actual-camera adapter epoch 4",
+  "checkpoint_sha256": "e896a73c33682d3934bafccd7dcf874450291b56817b4c6997b9955fa926f90b",
+  "frozen_benchmark_manifest_sha256": "3c20cc4281e1afe70422fb49c17836957f29b62a6ba47b1fe7a3948429c37a9f",
+  "actual_manifest_preflight": {"passed": true, "dev_images": 512, "dev_shards": 20, "heldout_shard_bodies_opened": 0},
+  "targeted_tests": {"v0_workflow": 12, "benchmark": 18, "full_coverage": 20, "passed": true},
+  "clean_index_snapshot": {"passed": true, "total_tests": 68, "includes_download_regressions": true, "untracked_workspace_helpers_required": false, "native_loader_registration_and_independent_grid_sample_parity_passed": true},
+  "native_cpu_smoke": {
+    "fixture": "One previously used Mini development image, not the new frozen benchmark",
+    "points": 40,
+    "finite_positive_predictions": true,
+    "two_inferences_bit_exact": true,
+    "weights_and_batchnorm_unchanged": true,
+    "frozen_body_state_sha256": "76025834b6d2f6ec18efc91128e9fcb2035cfddcc2665de19a2910be669e7ab8",
+    "trained_decoder_state_sha256": "1efbb91b5c3685c62c9c932b1698b8d77f0c7cbe103763fb262772121a53d592",
+    "runtime": {"python": "3.12.11", "torch": "2.12.0", "ultralytics": "8.4.61", "numpy": "2.4.6", "pillow": "12.2.0", "opencv_imported": "4.13.0", "device": "cpu", "cpu_threads": 2}
+  },
+  "report": {"word_pages": 6, "all_pages_visually_checked": true, "html_and_word_created": true, "old_reports_preserved": true},
+  "new_frozen_benchmark_model_score": null,
+  "full_512_image_evaluation_run_locally": false,
+  "v1_training_performed": false,
+  "heldout_model_evaluation_performed": false,
+  "phone_app_changed": false,
+  "notes": "Local smoke and synthetic integration tests verify the workflow, not the full Colab result. Colab records its actual CPU runtime before any inference and rejects mixed-runtime resumes. Return parking_v0_dev_results.zip after the development-only run."
+}

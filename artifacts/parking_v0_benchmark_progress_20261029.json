@@ -1,0 +1,59 @@
+{
+  "revision": "PARKING-PROGRESS-2026-10-29-r1",
+  "report_date": "2026-10-29",
+  "scope": "Shared parking model training, full nuScenes near-field coverage and frozen V0/V1 benchmark preparation; addendum to the October 28 report",
+  "sources": {
+    "parking_shared_near_results.zip": "8239f27a75ba6e06ed8865f3d964426503c61414661cb45b734299769038cd45",
+    "parking_shared_camera_results.zip": "30df38ae68638ebc00c4f42992d3a5f9c5fba329d85cbd9c7f970ab972ddc3b0",
+    "parking_shared_adapter_results.zip": "4b637f7f13aef2724e4841fb19fa961f268463f045f885665f83d13818208739",
+    "download_manifest_keyframes_all.json": "ec635ffeff5eda6f87151366a9d5516f96c474986eac6a0684831736c90161e5",
+    "nuscenes_0_6m_coverage_results.zip": "c81d1decd24ee920ad38fd5f80a036f59703f231bc3712b1692fbf35ef3fa265",
+    "parking_v0_v1_benchmark_results.zip": "0fd31d9ac26352bd8d710a74abcc9ac919c39e0509103740f3d550f728fca909"
+  },
+  "v0": {
+    "architecture": "Urban pretrained nano shared image features plus trained metric depth decoder and actual-camera residual adapter",
+    "arm": "actual_camera",
+    "selected_epoch": 4,
+    "checkpoint_sha256": "e896a73c33682d3934bafccd7dcf874450291b56817b4c6997b9955fa926f90b",
+    "parent_run_identity": "5c09ffd13125f8c6532bbad4971ac7f1e69980a16f6effa2a1453518f4815222",
+    "old_dev_image_macro_four_cell_mae_m": 0.7159343222153897,
+    "new_frozen_benchmark_dev_score": null,
+    "heldout_score": null,
+    "user_approved_baseline": true
+  },
+  "coverage": {
+    "unique_keyframes": 34149,
+    "scenes": 850,
+    "recording_logs": 68,
+    "camera_headers_checked": 204894,
+    "projected_camera_views": 204889,
+    "timing_excluded_views": 5,
+    "compressed_archive_bytes": 45527157484,
+    "range_definition": "Positive camera-axis Z of conservative object-owned LiDAR returns; not radial range or ultrasonic nearest surface",
+    "train_counts_observations_and_tracks": {
+      "Vehicle:0-1m": [1, 1], "Pedestrian:0-1m": [24, 5],
+      "Vehicle:0-2m": [2290, 578], "Pedestrian:0-2m": [110, 43],
+      "Vehicle:2-4m": [10930, 2043], "Pedestrian:2-4m": [1049, 347],
+      "Vehicle:4-6m": [19186, 3142], "Pedestrian:4-6m": [2742, 843],
+      "Vehicle:0-6m": [20366, 3154], "Pedestrian:0-6m": [3573, 863]
+    }
+  },
+  "benchmark": {
+    "identity_sha256": "39a060fe2e5474317d1ab8c22f47afd924ac5163ba579656c48ad2d415820382",
+    "manifest_sha256": "3c20cc4281e1afe70422fb49c17836957f29b62a6ba47b1fe7a3948429c37a9f",
+    "dev_images": 512,
+    "heldout_images": 512,
+    "dev_unique_keyframes": 509,
+    "heldout_unique_keyframes": 500,
+    "shards": 39,
+    "shard_bytes": 156050378,
+    "primary": "Equal mean of Vehicle and Pedestrian in 2-4m and 4-6m; within a cell equal cameras per observation, observations per track, tracks per log, then logs",
+    "secondary": "0-2m; 0-1m exploratory",
+    "requires_prediction_coverage": true,
+    "accuracy_pass_fail_enabled": false,
+    "model_inference_performed": false,
+    "training_performed": false,
+    "phone_app_changed": false
+  },
+  "next_authorized_step": "Freeze the unchanged actual-camera epoch-4 V0 and evaluate only the 512 development images; no V1 training, held-out scoring or phone replacement"
+}
