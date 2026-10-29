@@ -179,7 +179,7 @@ class V0Tests(unittest.TestCase):
                 text = cell["source"] if isinstance(cell["source"], str) else "".join(cell["source"])
                 ast.parse(text); source += text
         self.assertIn("parking_shared_adapter_results.zip", source)
-        self.assertIn("--device", source); self.assertIn("'cpu'", source)
+        self.assertIn("'evaluate-local'", source); self.assertIn("CPU runtime", source)
         self.assertNotIn("nvidia-smi", source)
 
 
