@@ -1,0 +1,58 @@
+{
+  "revision": "PARKING-V1-TRAINING-INPUTS-WORKFLOW-2026-10-29-r1",
+  "scope": "CPU-only preparation workflow for new train-log-only 0-6m shared-model inputs; no real sensor preparation or training was started on this Mac",
+  "notebook": "notebooks/Parking_V1_Training_Inputs_CPU_Colab.ipynb",
+  "notebook_revision": "PARKING-V1-TRAINING-INPUTS-CPU-2026-10-29-r1",
+  "source_sha256": {
+    "scripts/prepare_parking_v1_training.py": "99c1dfdc5271cfe770a4bb17237cbfc6c269df49365f886e95fa6e12418bd3d0",
+    "tests/test_parking_v1_training_inputs.py": "1468c744cadd438bc06e9277ce7f6ee631bcb3b38b15c04fcff676062f122b53",
+    "notebooks/Parking_V1_Training_Inputs_CPU_Colab.ipynb": "3a6ea3cf4f11f5162fadb5df9badbdac1ca175a02a11e781a3edb7cb01eea298",
+    "configs/parking_v1_training_inputs_v1.json": "b718c47d1c2d9772e976e787fe69a3078d18fcd82c128b7fa02b622f5f20ab01"
+  },
+  "frozen_v0_benchmark_manifest_sha256": "3c20cc4281e1afe70422fb49c17836957f29b62a6ba47b1fe7a3948429c37a9f",
+  "v0_weights_unchanged": true,
+  "candidate_training_recording_logs": 34,
+  "maximum_training_views": 4096,
+  "cells": ["Vehicle:0-2m", "Pedestrian:0-2m", "Vehicle:2-4m", "Pedestrian:2-4m", "Vehicle:4-6m", "Pedestrian:4-6m"],
+  "data_contract": {
+    "candidate_role": "train",
+    "selection": "GT-only deterministic six-cell, log/camera-fair selection, retaining scarce sub-2m/sub-1m views before fill",
+    "near": "Original-resolution sparse object-owned positive camera-Z points in (0,6], exact reviewed masks, no hole interpolation",
+    "broad": "Separate conservative 2-80m sparse protection references from the same source scans",
+    "readiness": "At least two unique instance tracks and two recording logs in each selected near cell; minimal diversity only, not accuracy or qualification",
+    "camera_gaps": "All six camera channels reported; missing cells flagged rather than treated as zero error",
+    "submetre": "0-1m remains exploratory"
+  },
+  "io_and_resume": {
+    "coverage_snapshot": "One reusable source_state.zip binds the reviewed 537 coverage chunks and download manifest",
+    "default": "Use a Drive website coverage-folder ZIP upload; initial small mounted-Drive chunk reads require explicit opt-in",
+    "source_archives": "Sequential verified copy of at most one sensor part at a time; about 45 GB may be read once for all ten source parts",
+    "durable_training_outputs": "One ZIP per completed source part, containing bounded RGB/near-GT/broad-GT shards",
+    "same_vm": "Reuse verified local source state, selected plan, completed shards and publication acknowledgements",
+    "new_vm": "Restore completed source/selection/part archives; one read of each restored archive and no immediate duplicate verification read from Drive",
+    "interruption": "Completed part archives survive on Drive; unfinished source transfers/shards resume on the same VM, but an unfinished part may rebuild after VM deletion",
+    "quota": "Errno 5 stops with no automatic retry or remount; quota or mount failure remains a possibility, not a confirmed diagnosis"
+  },
+  "verification": {
+    "clean_snapshot_base": "ae2c8ea06e844e61684290efea63567dde650d53",
+    "new_preparation_tests": 24,
+    "v0_error_tests": 20,
+    "frozen_v0_evaluator_tests": 12,
+    "local_io_tests": 18,
+    "frozen_benchmark_tests": 18,
+    "full_coverage_geometry_tests": 20,
+    "total_passed": 112,
+    "all_notebook_code_cells_compile": true,
+    "real_reviewed_catalog_verified": {"coverage_chunks": 537, "source_archives": 12},
+    "synthetic_end_to_end": "Raw sensor archive -> selected original RGB + measured sub-2m GT + separate broad GT -> immutable part archive -> preparation report",
+    "additional_checks": ["no model imports", "held-out/dev candidate rejection", "metadata/source integrity", "rare-view budget failure", "missing-cell stop before sensor work", "deterministic archives", "same/new-VM resume", "interrupted shard reuse", "completed archive conflicts preserved"],
+    "validation_limit": "No 4096-view package, training-data readiness result or new model score is claimed before the user runs Colab."
+  },
+  "model_inference_performed": false,
+  "training_performed": false,
+  "optimizer_steps": 0,
+  "heldout_evaluation_performed": false,
+  "benchmark_or_frozen_helpers_changed": false,
+  "phone_app_changed": false,
+  "deployment_qualified": false
+}

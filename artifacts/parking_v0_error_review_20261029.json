@@ -1,0 +1,51 @@
+{
+  "revision": "PARKING-V0-ERROR-REVIEW-2026-10-29-r1",
+  "complete": true,
+  "scope": "Independent frozen-development metric recomputation and descriptive signed-error analysis; prospective V1 proposal only",
+  "source_result_sha256": "b75bc9e32458e6965080720595f7ead990cca34e806a5ae17f019fb4bd614ee6",
+  "diagnostic_script": "scripts/diagnose_parking_v0_errors.py",
+  "diagnostic_script_sha256": "0e854695e0dd720fc25b2ba48f56576543227c5593f20d1c7707056fdff3b933",
+  "diagnostic_output": "outputs/parking_v0_error_analysis_20261029/v0_error_diagnostic.json",
+  "diagnostic_output_sha256": "495610a5598db4177b5b7ce670b8894e5994de68bc1ff83fc0947c63802d03b7",
+  "v1_proposal": "configs/parking_v1_near_field_proposal_v1.json",
+  "v1_proposal_sha256": "fe059150cacf7a19dc6027eedfca8c824128d1de8dca7ac7c0e443bef9d9a645",
+  "images": 512,
+  "prediction_shards": 20,
+  "recording_logs": 12,
+  "primary_four_cell_mae_m": 0.777648492124065,
+  "signed_error_convention": "Prediction minus true camera-axis Z; positive means too far, negative means too close. Same log/track/observation weighting as the frozen primary MAE.",
+  "signed_error_m": {
+    "Vehicle:0-2m": 1.4593199740050755,
+    "Vehicle:2-4m": 0.6475006657699711,
+    "Vehicle:4-6m": -0.213011944209239,
+    "Pedestrian:0-2m": 1.1724807143625624,
+    "Pedestrian:2-4m": 0.4620672413538063,
+    "Pedestrian:4-6m": -0.33851913651278515
+  },
+  "findings": [
+    "Every eligible evaluated 0-2m point in both classes is overestimated. Vehicle close-range overestimation occurs in all twelve development recording logs; Pedestrian 0-2m support is only eight tracks across three logs.",
+    "Vehicle 2-4m average signed error is positive in all twelve development logs. Average 4-6m signed errors are negative for both classes, so subtracting a global distance offset would not address both ranges.",
+    "The pinned prior training input manifest explicitly has depth_min_m=2. Its reviewed 1536-image training pool spans five training logs. Lack of below-2m supervision is confirmed; its causal share of the error is not established.",
+    "No eligible CAM_FRONT 0-2m reference exists for either class in this frozen development selection. Vehicle 0-1m is absent; Pedestrian 0-1m has one track in one log. No reliable front-camera sub-2m or general sub-1m performance claim is possible.",
+    "Camera-specific primary scores range from about 0.693 to 1.082m, but camera slices contain different objects and depths, so this is not a causal ranking of cameras.",
+    "Removing one recording log at a time changes the primary score to 0.732-0.795m. This is descriptive sensitivity, not a confidence interval; no log is removed from the actual benchmark."
+  ],
+  "v1_recommendation": "Prepare new frozen training-only 0-6m sparse GT from the 34 available training logs, maintaining the existing dev/held-out boundaries and archive-first I/O. Then prospectively test matched 1920-update adapter-only continuation-control and six-cell close-range-supervision arms, both starting from unchanged V0. Keep architecture, detection, base decoder, all BN state and numerical scoring identities unchanged. The recipe is proposed, not executed.",
+  "tests": {
+    "test_parking_v0_error_diagnostic.py": 20,
+    "test_parking_v0_dev.py": 12,
+    "test_parking_v0_local_io.py": 18,
+    "test_parking_v0_v1_benchmark.py": 18,
+    "total_passed": 68,
+    "runtime_note": "Benchmark integration tests require the existing pinned ijson 3.4.0.post0 metadata runtime; after supplying that task-local dependency all eighteen passed."
+  },
+  "frozen_metrics_recomputed_exactly": true,
+  "original_evaluator_byte_unchanged": true,
+  "model_inference_performed": false,
+  "training_performed": false,
+  "scale_or_shift_fitted": false,
+  "heldout_image_or_gt_bodies_opened": 0,
+  "phone_app_changed": false,
+  "accuracy_pass_fail_enabled": false,
+  "deployment_qualified": false
+}
