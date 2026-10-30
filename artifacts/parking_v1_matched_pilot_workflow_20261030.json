@@ -1,0 +1,85 @@
+{
+  "revision": "PARKING-V1-MATCHED-NEAR-PILOT-2026-10-30-r1",
+  "status": "Implemented and locally verified; actual Colab GPU execution pending",
+  "notebook": "notebooks/Parking_V1_Matched_Near_Field_GPU_Colab.ipynb",
+  "starting_model": "Unchanged development-selected shared actual-camera adapter epoch 4 (V0)",
+  "v0_checkpoint_sha256": "e896a73c33682d3934bafccd7dcf874450291b56817b4c6997b9955fa926f90b",
+  "architecture_unchanged": true,
+  "trainable_parameters": 1553,
+  "frozen": ["Urban image body and detection/corner head", "base metric-depth decoder", "all BatchNorm affine tensors and running buffers"],
+  "training_inputs": {
+    "summary_sha256": "47e34d7accf4b313e3f47b5ca0366d6e0b604c5b514b71a6f81a428e90210176",
+    "manifest_sha256": "cdcac77c2a2c73901b1661d6861ed8f3d39088818b1c0823cc29b4c5ad9a1b8f",
+    "images": 4096,
+    "recording_logs": 34,
+    "archives": 10,
+    "archive_bytes": 774908830,
+    "actual_summary_preflight_accepted": true,
+    "part_bodies_available_for_local_review": false,
+    "before_training": "CPU stage revalidates all part CRCs, hashes, RGB, near GT and broad GT bodies. No model or optimizer runs at that stage."
+  },
+  "matched_design": {
+    "control": "0.8 equal four Vehicle/Pedestrian 2-4/4-6m Huber components + 0.2 broad 2-80m Huber",
+    "candidate": "0.8 equal six Vehicle/Pedestrian 0-2/2-4/4-6m Huber components + 0.2 broad 2-80m Huber",
+    "huber_delta_m": 0.2,
+    "optimizer": "AdamW",
+    "learning_rate": 0.0003,
+    "weight_decay": 0,
+    "gradient_clip_norm": 5,
+    "batch_size": 8,
+    "updates_per_block": 384,
+    "blocks_per_arm": 5,
+    "updates_per_arm": 1920,
+    "image_draws_per_arm": 15360,
+    "same_seeded_draws_for_both_arms": true,
+    "block_is_not_full_dataset_epoch": true,
+    "knowledge_distillation": false
+  },
+  "io_and_resume": {
+    "active_work_local_only": true,
+    "archive_first_inputs": true,
+    "features_cached_once_for_both_arms": true,
+    "durable_progress": "One small archive per completed optimization block, with checkpoints, optimizer state, development predictions and source/runtime identity; excludes images and feature cache",
+    "same_vm": "Rerun failed section with the same RUN_ID; restart an incomplete block from the previous completed checkpoint",
+    "new_vm": "Restore the latest printed progress ZIP, rebuild local inputs/features in the same recorded runtime/GPU and resume",
+    "changed_runtime_or_code": "Fail closed; do not mix runs",
+    "drive_errno5": "Stop source transfer without automatic retry or remount; previously verified local archives remain reusable"
+  },
+  "evaluation": {
+    "dev_images": 512,
+    "primary": "Unchanged frozen equal-four-cell, log/track/observation-balanced 2-6m conditional MAE",
+    "secondary": "Every class/range cell, prediction coverage, signed bias, and paired own/common-valid V0/control/candidate metrics",
+    "selection": "Include unchanged V0 block zero; choose lowest finite primary score without reduced numerical prediction coverage; ties prefer earlier block; also report fixed block 5",
+    "required_v0_pointwise_replay_atol_m": 0.001,
+    "required_v0_pointwise_replay_rtol": 0.0001,
+    "heldout_bodies_opened": 0,
+    "heldout_evaluation_authorized": false,
+    "accuracy_threshold_m": null,
+    "deployment_qualified": false
+  },
+  "limitations": [
+    "No eligible CAM_FRONT Vehicle 0-2m training examples; other camera channels do not fill that front-camera gap.",
+    "Sub-1m data remains exploratory.",
+    "Sparse object-owned camera-axis Z is not ultrasonic nearest-surface range or detector mAP/recall.",
+    "Actual GPU runtime and full-pool training remain unexecuted locally; mandatory runtime and V0 replay gates run in Colab."
+  ],
+  "verification": {
+    "new_synthetic_tests_passed": 27,
+    "frozen_v0_and_benchmark_regression_tests_passed": 68,
+    "clean_main_snapshot_new_tests_passed": 27,
+    "clean_snapshot": "/private/tmp/parking-v1-pilot-clean.ui5b0e",
+    "syntax_and_command_help_passed": true,
+    "notebook_all_code_cells_compile": true,
+    "tested": ["train/dev/heldout metadata separation", "actual preparation-summary preflight", "raw training-shard validation and byte tamper", "six-cell hierarchical seeded sampling", "control excludes sub-2m gradient and candidate includes it", "raw-metre Huber scaling", "real adapter gradients with frozen base/BN", "optimizer checkpoint resume numerical equality", "training-loop completed-block interruption/reentry", "atomic feature and checkpoint archives", "progress restore with more than 64 files", "endpoint selection preserves coverage"]
+  },
+  "files_sha256": {
+    "configs/parking_v1_matched_pilot_v1.json": "cca9df8d3ad79e0a8da006723ccae1d479d936c7eee53aef2ac5bfd2a2c69369",
+    "notebooks/Parking_V1_Matched_Near_Field_GPU_Colab.ipynb": "f445e5069ff2e7c5c4ca818ecfa7b4d77af71749e38753698525b54587d8dda6",
+    "scripts/parking_v1_pilot_data.py": "b1d839145e1f3fe7b8981abfa550180f550581410408f86e3877938405ca09d5",
+    "scripts/train_parking_v1_near.py": "7d5f35818e880641d430df662ef3f9dcdc67d96778dc0b479eddd009e414ce01",
+    "tests/test_parking_v1_matched_pilot.py": "855ff4bbc650aefeeef449fae92d5a5609ccdc98781da6fc43157f8f57fbf305"
+  },
+  "real_dataset_training_performed": false,
+  "phone_app_changed": false,
+  "publication_authorized": true
+}
