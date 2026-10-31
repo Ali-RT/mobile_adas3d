@@ -1,0 +1,42 @@
+{
+  "revision": "PARKING-V0-V1-ONNX-CPU-2026-10-31-r1",
+  "capsule_sha256": "d75d93187cff95360de1b71c16f177916ea1d81274b4ecd93daabdaef7579f4b",
+  "pilot_sha256": "d5798d772b7df24bdf3b9859b4a4ac2cbccdf33078731603f9c7a134d33badbe",
+  "pilot_run_identity": "a5f110e919293a5696c3bb4bde5fd5dd53cca00fb04733aa48f58ad9c77bd4bd",
+  "v1_arm": "continuation_2_6_control",
+  "v1_block": 5,
+  "v1_checkpoint_member": "checkpoints/continuation_2_6_control/block_005.zip",
+  "v1_checkpoint_sha256": "e2a5a34a04c80437ca27c0f88ab236de4c88e69d4d2954aecbe5f8bc94f6d9ad",
+  "v0_decoder_sha256": "1efbb91b5c3685c62c9c932b1698b8d77f0c7cbe103763fb262772121a53d592",
+  "v1_decoder_sha256": "857a131178f2ca158df1f8f7ef4afa9f124043ad33c71ae070b191c36471d40d",
+  "architecture_sha256": "fa39adf1bb3059a95afddf5dfb1deebdef8e028ee6092cd94ac6f2fab3af4dab",
+  "torch_base_version": "2.11.0",
+  "torchvision_base_version": "0.26.0",
+  "reviewed_primary_mae_m": {"V0": 0.7776485364044708, "V1": 0.7291450518548702},
+  "packages": {
+    "ultralytics": "8.4.61", "ultralytics-thop": "2.0.18", "numpy": "2.1.3",
+    "pillow": "11.3.0", "opencv-python-headless": "5.0.0.93", "scipy": "1.16.3",
+    "onnx": "1.20.1", "onnxruntime": "1.30.0", "ml-dtypes": "0.5.4",
+    "protobuf": "6.33.0", "flatbuffers": "25.9.23"
+  },
+  "input_shapes": {"image": [1, 3, 384, 640], "camera": [1, 4]},
+  "output_shapes": {"candidates": [1, 32, 5040], "depth_m": [1, 1, 96, 160]},
+  "camera_layout": "fx,fy,cx,cy in letterboxed input pixels; OpenCV half-pixel resize convention",
+  "depth_definition": "camera-axis Z in metres; sparse conservative object-owned LiDAR reference, not ultrasonic nearest-surface distance",
+  "opset": 17,
+  "threads": 2,
+  "parity": {
+    "candidate_atol": 0.005, "candidate_rtol": 0.0001,
+    "depth_atol_m": 0.001, "depth_rtol": 0.0001,
+    "reviewed_point_atol_m": 0.001, "reviewed_point_rtol": 0.0001,
+    "metric_atol_m": 0.001
+  },
+  "fixed_phone_fixtures": 16,
+  "phone_accuracy_input_codec": "lossless_uint8_indexed_float32_table_v1",
+  "maximum_phone_package_bytes": 1000000000,
+  "development_images": 512,
+  "training_authorized": false,
+  "heldout_scoring_authorized": false,
+  "phone_app_changes_authorized": false,
+  "product_accuracy_pass_fail_enabled": false
+}

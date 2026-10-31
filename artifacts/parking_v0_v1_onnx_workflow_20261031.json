@@ -1,0 +1,72 @@
+{
+  "revision": "PARKING-V0-V1-ONNX-CPU-2026-10-31-r1",
+  "purpose": "Export the unchanged trained V0 and development-selected V1 for a later matched ONNX Runtime CPU iPhone benchmark, before considering V2.",
+  "notebook": "notebooks/Parking_V0_V1_Trained_ONNX_CPU_Colab.ipynb",
+  "base_commit": "b7a1cc9656ca8e58dbd47c01748221d22494ce4a",
+  "versions": {
+    "V0": "Original actual-camera shared adapter, epoch 4",
+    "V1": "Matched 2-6m continuation control, block 5; NOT the six-cell candidate",
+    "V2": "Not trained or implemented by this workflow"
+  },
+  "test_suites": {
+    "test_parking_v0_star": {"tests": 84, "passed": true, "includes_16_new_export_tests": true},
+    "test_parking_shared_star": {"tests": 117, "passed": true},
+    "test_parking_v1_matched_pilot": {"tests": 27, "passed": true},
+    "total_unique_tests": 228,
+    "scope": "Local regression/unit tests. Includes real small two-input ONNX roundtrip and synthetic end-to-end package/transfer tests, not a completed Colab export qualification."
+  },
+  "real_mac_host_diagnostic": {
+    "images": 512,
+    "native_vs_onnx_full_output_parity_passed": true,
+    "calibrated_inputs": {"image": [1, 3, 384, 640], "camera": [1, 4]},
+    "outputs": {"candidates": [1, 32, 5040], "depth_m": [1, 1, 96, 160]},
+    "V0": {
+      "onnx_sha256": "56e110fa990785ad3a7a7e836b0684f713042a0124c98f85ce200b18db2765bc",
+      "onnx_bytes": 10991019,
+      "native_vs_onnx_dense_max_abs_delta_m": 0.00022125244140625,
+      "candidate_max_abs_delta": 0.003326416015625,
+      "host_native_primary_mae_m": 0.779939067058029,
+      "host_onnx_primary_mae_m": 0.7799389989237919,
+      "reviewed_linux_primary_mae_m": 0.7776485364044708,
+      "host_vs_reviewed_max_point_delta_m": 0.8243522644042969
+    },
+    "V1": {
+      "onnx_sha256": "d7950e7b5f04633b6bb285309f02bb4d4e3d5c51740845f4f152f761f33fb142",
+      "onnx_bytes": 10989555,
+      "native_vs_onnx_dense_max_abs_delta_m": 0.0001983642578125,
+      "candidate_max_abs_delta": 0.003326416015625,
+      "host_native_primary_mae_m": 0.7310380088808845,
+      "host_onnx_primary_mae_m": 0.7310379733197212,
+      "reviewed_linux_primary_mae_m": 0.7291450518548702,
+      "host_vs_reviewed_max_point_delta_m": 0.7306375503540039
+    },
+    "onnx_detector_outputs_bitwise_equal_between_V0_and_V1": true,
+    "reviewed_linux_point_replay_passed": false,
+    "reviewed_point_gate_failed_images_each_model": 512,
+    "root_cause_of_mac_linux_native_discrepancy": "Not established. Native Mac inference itself differs from the saved Linux endpoint; ONNX closely matches native Mac inference. Matching Torch 2.11.0 did not remove the discrepancy. Do not attribute it to ONNX or a model weight change.",
+    "production_gate_action": "Stop before deployment packaging. Do not relax tolerances, replace the reviewed metrics, refit scale, retrain or change weights to conceal the discrepancy.",
+    "raw_diagnostic": "outputs/parking_v0_v1_onnx_20261031/host_diagnostic.json",
+    "preprocessing_digests": "outputs/parking_v0_v1_onnx_20261031/host_preprocessing_digests.json",
+    "runtime": {"platform": "macOS arm64", "python": "3.12.11", "torch": "2.11.0", "onnx": "1.20.1", "onnxruntime": "1.30.0", "numpy": "2.1.3", "pillow": "11.3.0", "opencv": "5.0.0", "cpu_threads": 2}
+  },
+  "workflow_contract": {
+    "runtime": "CPU-only Colab, task-local pinned packages; no CUDA extension or M67 environment",
+    "input_handling": "Two authenticated ZIPs staged once locally. Inference never reads hundreds of mounted-Drive image files.",
+    "resume": "Complete graph and per-shard comparison artifacts are verified/reused on the same VM/code/runtime. Partial shard restarts. No automatic cross-VM resume claim.",
+    "gate": "All512 frozen dev images: dense outputs, reviewed point predictions, coverage/denominators, per-class/range MAE and primary MAE must pass unchanged numerical tolerances.",
+    "phone_package": "Only after every gate passes: two graphs, 16 metadata-selected full-output runtime fixtures, and all512 losslessly stored preprocessed FP32 inputs with exact camera/grid/GT owner/mask arrays and native depth references.",
+    "input_storage_is_model_quantization": false,
+    "maximum_phone_archive_bytes": 1000000000,
+    "scope": "Sparse conservative object-owned camera-axis Z in metres, not detector mAP/recall, dense GT, metric 3D-cuboid accuracy or ultrasonic nearest-surface range.",
+    "product_10cm_accuracy_threshold_enabled": false
+  },
+  "next_step": "Publish after approval, then run the CPU-only notebook in Colab against the unchanged frozen Linux endpoints. Review parking_v0_v1_onnx_results.zip before integrating V0/V1 into the existing app.",
+  "colab_full_replay_completed": false,
+  "real_deployment_phone_package_produced": false,
+  "training_performed": false,
+  "optimizer_steps": 0,
+  "heldout_bodies_opened": 0,
+  "iphone_performance_measured": false,
+  "phone_app_changed": false,
+  "deployment_qualified": false
+}
